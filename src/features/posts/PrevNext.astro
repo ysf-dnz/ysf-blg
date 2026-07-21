@@ -1,0 +1,39 @@
+---
+import { postPath, type Post } from "@/lib/posts.ts";
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  prev?: Post;
+  next?: Post;
+}
+
+const { prev, next } = Astro.props;
+const t = useTranslations(langFromUrl(Astro.url.pathname));
+---
+
+{
+  (prev || next) && (
+    <nav class="mt-10 grid gap-4 sm:grid-cols-2" aria-label="Yazı gezintisi">
+      {prev ? (
+        <a
+          href={postPath(prev)}
+          class="rounded-xl border border-line p-4 transition-colors hover:border-accent"
+        >
+          <span class="text-xs text-ink-muted">← {t("post.oncekiYazi")}</span>
+          <p class="font-display mt-1 font-semibold text-ink">{prev.data.title}</p>
+        </a>
+      ) : (
+        <span />
+      )}
+      {next && (
+        <a
+          href={postPath(next)}
+          class="rounded-xl border border-line p-4 text-right transition-colors hover:border-accent"
+        >
+          <span class="text-xs text-ink-muted">{t("post.sonrakiYazi")} →</span>
+          <p class="font-display mt-1 font-semibold text-ink">{next.data.title}</p>
+        </a>
+      )}
+    </nav>
+  )
+}

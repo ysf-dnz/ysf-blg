@@ -1,0 +1,55 @@
+---
+import { Image } from "astro:assets";
+import { postPath, type Post } from "@/lib/posts.ts";
+import { readingTimeMinutes } from "@/lib/reading-time.ts";
+import { formatDate } from "@/lib/dates.ts";
+import { useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { data } = post;
+const t = useTranslations(data.lang);
+const okumaSuresi = readingTimeMinutes(post.body ?? "");
+---
+
+<article
+  class="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface-raised transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg"
+>
+  {
+    data.cover && (
+      <Image
+        src={data.cover}
+        alt=""
+        class="aspect-[16/9] w-full object-cover"
+        widths={[400, 640]}
+        sizes="(max-width: 640px) 100vw, 400px"
+      />
+    )
+  }
+  <div class="flex flex-1 flex-col p-5">
+    <span
+      class={`w-fit rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-white`}
+      style={`background-color: var(--color-kat-${data.category})`}
+    >
+      {t(`kategori.${data.category}`)}
+    </span>
+    <h3 class="font-display mt-3 text-lg font-semibold leading-snug text-ink group-hover:text-accent">
+      <a href={postPath(post)} class="after:absolute after:inset-0">
+        {data.title}
+      </a>
+    </h3>
+    <p class="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-ink-muted">
+      {data.description}
+    </p>
+    <p class="mt-4 flex items-center gap-2 text-xs text-ink-muted">
+      <time datetime={data.pubDate.toISOString()}>
+        {formatDate(data.pubDate, data.lang)}
+      </time>
+      <span aria-hidden="true">·</span>
+      <span>{okumaSuresi} {t("post.okumaSuresi")}</span>
+    </p>
+  </div>
+</article>

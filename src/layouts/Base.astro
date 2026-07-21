@@ -1,0 +1,103 @@
+---
+import "@/styles/global.css";
+import { langFromUrl, localizePath, useTranslations } from "@/lib/i18n/index.ts";
+import ThemeToggle from "@/features/theme/ThemeToggle.astro";
+import SearchModal from "@/features/search/SearchModal.astro";
+import Seo from "@/features/seo/Seo.astro";
+import JsonLd from "@/features/seo/JsonLd.astro";
+import type { SeoProps } from "@/features/seo/Seo.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  seo?: Partial<SeoProps>;
+  /** true ise sayfa kendi JsonLd'sini basar; Base varsayılanı atlanır */
+  ownJsonLd?: boolean;
+}
+
+const lang = langFromUrl(Astro.url.pathname);
+const t = useTranslations(lang);
+
+const { title, description = t("site.description"), seo, ownJsonLd } = Astro.props;
+const pageTitle = title ? `${title} · ${t("site.title")}` : t("site.title");
+
+const nav = [
+  { href: localizePath("/yazilar", lang), label: t("nav.yazilar") },
+  { href: localizePath("/kutuphane", lang), label: t("nav.kutuphane") },
+  { href: localizePath("/hakkimda", lang), label: t("nav.hakkimda") },
+];
+---
+
+<!doctype html>
+<html lang={lang} data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Seo
+      title={pageTitle}
+      description={description}
+      translationPath={seo?.translationPath}
+      ogImagePath={seo?.ogImagePath}
+      article={seo?.article}
+      noindex={seo?.noindex}
+    />
+    {!ownJsonLd && <JsonLd />}
+    <slot name="head" />
+    <script is:inline>
+      // No-flash tema: render'dan önce data-theme çözülür
+      (() => {
+        try {
+          const pref = localStorage.getItem("ysf:theme") ?? "system";
+          const dark =
+            pref === "dark" ||
+            (pref === "system" &&
+              matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
+        <a
+          href={localizePath("/", lang)}
+          class="font-display text-xl font-semibold tracking-tight text-ink hover:text-accent"
+        >
+          {t("site.title")}
+        </a>
+        <nav class="flex items-center gap-1 sm:gap-2" aria-label="Ana menü">
+          {
+            nav.map((item) => (
+              <a
+                href={item.href}
+                class="rounded-md px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
+              >
+                {item.label}
+              </a>
+            ))
+          }
+          <slot name="header-extra" />
+          <SearchModal />
+          <ThemeToggle />
+        </nav>
+      </div>
+      <slot name="below-header" />
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="girih-texture border-t border-line">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-6 text-sm text-ink-muted">
+        <p>© {new Date().getFullYear()} {t("site.title")}</p>
+        <a href="/rss.xml" class="hover:text-accent">{t("footer.rss")}</a>
+      </div>
+    </footer>
+  </body>
+</html>

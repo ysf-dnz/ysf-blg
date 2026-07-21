@@ -1,0 +1,43 @@
+---
+import { langFromUrl, localizePath, useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  notebook: {
+    id: string;
+    name: string;
+    nameEn?: string;
+    color: string;
+    sourceCount: number;
+    shared: boolean;
+  };
+  /** true ise site içi defter sayfasına, değilse doğrudan NotebookLM'e gider */
+  linkInternal?: boolean;
+}
+
+const { notebook, linkInternal = true } = Astro.props;
+const lang = langFromUrl(Astro.url.pathname);
+const t = useTranslations(lang);
+const ad = lang === "en" && notebook.nameEn ? notebook.nameEn : notebook.name;
+const href = linkInternal
+  ? localizePath(`/kutuphane/${notebook.id}`, lang)
+  : `https://notebooklm.google.com/notebook/${notebook.id}`;
+---
+
+<a
+  href={href}
+  class="group flex items-start gap-3 rounded-lg border border-line bg-surface-raised p-3 transition-colors hover:border-accent/60"
+>
+  <span
+    class="mt-1 size-3 shrink-0 rounded-full"
+    style={`background-color:${notebook.color}`}
+    aria-hidden="true"></span>
+  <span class="min-w-0">
+    <span class="block truncate text-sm font-medium text-ink group-hover:text-accent">
+      {ad}
+    </span>
+    <span class="text-xs text-ink-muted">
+      {notebook.sourceCount} {t("kutuphane.kaynak")}
+      {notebook.shared && " · 🔗"}
+    </span>
+  </span>
+</a>

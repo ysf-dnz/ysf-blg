@@ -1,0 +1,41 @@
+---
+interface Props {
+  type?: "bilgi" | "uyari" | "ipucu";
+  baslik?: string;
+}
+
+const { type = "bilgi", baslik } = Astro.props;
+
+const styles = {
+  bilgi: {
+    box: "border-blue-500/40 bg-blue-500/5",
+    label: "text-blue-600 dark:text-blue-400",
+    icon: "ℹ",
+    default: "Bilgi",
+  },
+  uyari: {
+    box: "border-amber-500/40 bg-amber-500/5",
+    label: "text-amber-600 dark:text-amber-400",
+    icon: "⚠",
+    default: "Uyarı",
+  },
+  ipucu: {
+    box: "border-emerald-500/40 bg-emerald-500/5",
+    label: "text-emerald-600 dark:text-emerald-400",
+    icon: "✦",
+    default: "İpucu",
+  },
+} as const;
+
+const s = styles[type];
+---
+
+<aside class={`not-prose my-6 rounded-lg border px-4 py-3 ${s.box}`}>
+  <p class={`mb-1 flex items-center gap-2 text-sm font-semibold ${s.label}`}>
+    <span aria-hidden="true">{s.icon}</span>
+    {baslik ?? s.default}
+  </p>
+  <div class="text-sm leading-relaxed text-ink [&_a]:text-accent [&_a]:underline">
+    <slot />
+  </div>
+</aside>

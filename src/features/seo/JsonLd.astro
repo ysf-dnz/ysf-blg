@@ -1,0 +1,78 @@
+---
+/**
+ * Yapısal veri: tek @graph içinde Person + WebSite (+ BlogPosting + Breadcrumb).
+ * Person.sameAs entity bağlama için kritik (GEO).
+ */
+import { KUTUPHANEM_URL } from "@/lib/urls.ts";
+
+interface Props {
+  article?: {
+    title: string;
+    description: string;
+    publishedTime: Date;
+    modifiedTime?: Date;
+    lang: string;
+    category: string;
+    ogImagePath?: string;
+  };
+  breadcrumbs?: { name: string; path: string }[];
+}
+
+const { article, breadcrumbs } = Astro.props;
+const site = Astro.site!;
+const url = (p: string) => new URL(p, site).toString();
+
+const person = {
+  "@type": "Person",
+  "@id": url("/hakkimda#person"),
+  name: "Yusuf Deniz",
+  url: url("/hakkimda"),
+  sameAs: [KUTUPHANEM_URL, "https://github.com/ysf-dnz"],
+};
+
+const graph: Record<string, unknown>[] = [
+  person,
+  {
+    "@type": "WebSite",
+    "@id": url("/#website"),
+    name: "Yusuf Deniz",
+    url: url("/"),
+    inLanguage: ["tr", "en"],
+    author: { "@id": person["@id"] },
+  },
+];
+
+if (article) {
+  graph.push({
+    "@type": "BlogPosting",
+    headline: article.title,
+    description: article.description,
+    url: url(Astro.url.pathname),
+    datePublished: article.publishedTime.toISOString(),
+    ...(article.modifiedTime && {
+      dateModified: article.modifiedTime.toISOString(),
+    }),
+    inLanguage: article.lang,
+    articleSection: article.category,
+    image: url(article.ogImagePath ?? "/og/default.png"),
+    author: { "@id": person["@id"] },
+    mainEntityOfPage: url(Astro.url.pathname),
+  });
+}
+
+if (breadcrumbs && breadcrumbs.length > 0) {
+  graph.push({
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((crumb, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: crumb.name,
+      item: url(crumb.path),
+    })),
+  });
+}
+
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+---
+
+<script type="application/ld+json" set:html={jsonLd} />

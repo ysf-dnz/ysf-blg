@@ -1,0 +1,255 @@
+---
+import type { MarkdownHeading } from "astro";
+import Base from "@/layouts/Base.astro";
+import Toc from "@/features/posts/Toc.astro";
+import Kaynaklar from "@/features/posts/Kaynaklar.astro";
+import PrevNext from "@/features/posts/PrevNext.astro";
+import ShareLinks from "@/features/posts/ShareLinks.astro";
+import { Image } from "astro:assets";
+import { getCollection } from "astro:content";
+import { localizePath } from "@/lib/i18n/index.ts";
+import { formatDate } from "@/lib/dates.ts";
+import { readingTimeMinutes } from "@/lib/reading-time.ts";
+import { findTranslation, postPath, postSlug, type Post } from "@/lib/posts.ts";
+import JsonLd from "@/features/seo/JsonLd.astro";
+import { useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  allPosts: Post[];
+  prev?: Post;
+  next?: Post;
+}
+
+const { post, headings, allPosts, prev, next } = Astro.props;
+const { data } = post;
+const t = useTranslations(data.lang);
+const okumaSuresi = readingTimeMinutes(post.body ?? "");
+const translation = findTranslation(post, allPosts);
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+// kutuphaneNode → defter kartı (çift yönlü bağın yazı tarafı)
+const notebook = data.kutuphaneNode
+  ? (await getCollection("libraryNotebooks")).find(
+      (n) => n.data.id === data.kutuphaneNode,
+    )
+  : undefined;
+---
+
+<Base
+  title={data.title}
+  description={data.description}
+  ownJsonLd
+  seo={{
+    translationPath: translation ? postPath(translation) : undefined,
+    ogImagePath: `/og/${postSlug(post)}.png`,
+    article: {
+      publishedTime: data.pubDate,
+      modifiedTime: data.updatedDate,
+      tags: [data.category, ...data.tags],
+    },
+  }}
+>
+  <JsonLd
+    slot="head"
+    article={{
+      title: data.title,
+      description: data.description,
+      publishedTime: data.pubDate,
+      modifiedTime: data.updatedDate,
+      lang: data.lang,
+      category: data.category,
+      ogImagePath: `/og/${postSlug(post)}.png`,
+    }}
+    breadcrumbs={[
+      { name: t("site.title"), path: data.lang === "en" ? "/en" : "/" },
+      {
+        name: t("arsiv.baslik"),
+        path: data.lang === "en" ? "/en/yazilar" : "/yazilar",
+      },
+      { name: data.title, path: Astro.url.pathname },
+    ]}
+  />
+  <article
+    class="mx-auto max-w-6xl lg:grid lg:grid-cols-[1fr_240px] lg:gap-12"
+    data-pagefind-body
+  >
+    <div class="min-w-0">
+      <header class="mb-8">
+        <div class="flex flex-wrap items-center gap-3 text-sm text-ink-muted">
+          <span
+            class="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium uppercase tracking-wide text-accent"
+            data-pagefind-filter="kategori"
+          >
+            {t(`kategori.${data.category}`)}
+          </span>
+          <time datetime={data.pubDate.toISOString()}>
+            {formatDate(data.pubDate, data.lang)}
+          </time>
+          <span>· {okumaSuresi} {t("post.okumaSuresi")}</span>
+          {data.draft && (
+            <span class="rounded bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">
+              {t("post.taslak")}
+            </span>
+          )}
+        </div>
+        <h1 class="font-display mt-4 text-3xl font-semibold leading-tight text-ink sm:text-4xl">
+          {data.title}
+        </h1>
+        <p class="mt-3 text-lg leading-relaxed text-ink-muted">
+          {data.description}
+        </p>
+        {data.updatedDate && (
+          <p class="mt-2 text-sm text-ink-muted">
+            {t("post.guncelleme")}:{" "}
+            <time datetime={data.updatedDate.toISOString()}>
+              {formatDate(data.updatedDate, data.lang)}
+            </time>
+          </p>
+        )}
+        {translation && (
+          <a
+            href={postPath(translation)}
+            class="mt-3 inline-block text-sm font-medium text-accent hover:underline"
+          >
+            {t("post.dilDegistir")} →
+          </a>
+        )}
+        {data.cover && (
+          <Image
+            src={data.cover}
+            alt=""
+            class="mt-6 w-full rounded-xl"
+            widths={[640, 960, 1280]}
+            sizes="(max-width: 768px) 100vw, 768px"
+          />
+        )}
+      </header>
+
+      <div class="prose prose-lg max-w-[68ch] dark:prose-invert prose-headings:font-display prose-a:text-accent prose-blockquote:border-accent">
+        <slot />
+      </div>
+
+      {data.kaynaklar && <Kaynaklar kaynaklar={data.kaynaklar} />}
+
+      {notebook && (
+        <a
+          href={localizePath(`/kutuphane/${notebook.data.id}`, data.lang)}
+          class="mt-6 flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-4 transition-colors hover:border-accent/60"
+        >
+          <span
+            class="size-3 shrink-0 rounded-full"
+            style={`background-color:${notebook.data.color}`}
+            aria-hidden="true"
+          />
+          <span class="min-w-0">
+            <span class="block text-xs uppercase tracking-wide text-ink-muted">
+              📔 NotebookLM
+            </span>
+            <span class="block truncate font-medium text-ink">
+              {notebook.data.name}
+            </span>
+            <span class="text-xs text-ink-muted">
+              {notebook.data.sourceCount} {t("kutuphane.kaynak")}
+            </span>
+          </span>
+        </a>
+      )}
+
+      <footer class="mt-10 border-t border-line pt-6">
+        <ShareLinks title={data.title} url={canonicalUrl} />
+        <PrevNext prev={prev} next={next} />
+        <slot name="comments" />
+      </footer>
+    </div>
+
+    <aside class="hidden lg:block" data-pagefind-ignore>
+      <div class="sticky top-8">
+        <Toc headings={headings} />
+      </div>
+    </aside>
+  </article>
+</Base>
+
+<style is:global>
+  /* Shiki dual theme: dark modda --shiki-dark değişkenleri devreye girer */
+  [data-theme="dark"] .astro-code,
+  [data-theme="dark"] .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  .prose pre.astro-code {
+    position: relative;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--line);
+  }
+
+  /* Dosya adı başlığı: ```ts title="dosya.ts" */
+  .prose pre.astro-code[data-title] {
+    padding-top: 2.6rem;
+  }
+  .prose pre.astro-code[data-title]::before {
+    content: attr(data-title);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 0.4rem 1.25rem;
+    font-size: 0.75rem;
+    font-family: var(--font-sans);
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Satır vurgulama: // [!code highlight] */
+  .astro-code .line.highlighted {
+    display: inline-block;
+    width: calc(100% + 2.5rem);
+    margin: 0 -1.25rem;
+    padding: 0 1.25rem;
+    background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  /* Kopyala butonu (script ile eklenir) */
+  .code-copy-btn {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-family: var(--font-sans);
+    border-radius: 0.4rem;
+    border: 1px solid var(--line);
+    background: var(--surface-raised);
+    color: var(--ink-muted);
+    opacity: 0;
+    transition: opacity 0.15s;
+    cursor: pointer;
+  }
+  .prose pre.astro-code:hover .code-copy-btn,
+  .code-copy-btn:focus-visible {
+    opacity: 1;
+  }
+  .code-copy-btn:hover {
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  // Her kod bloğuna kopyala butonu ekle (progressive enhancement)
+  for (const pre of document.querySelectorAll("pre.astro-code")) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "code-copy-btn";
+    btn.textContent = "Kopyala";
+    btn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(pre.querySelector("code")?.innerText ?? "");
+      btn.textContent = "Kopyalandı ✓";
+      setTimeout(() => (btn.textContent = "Kopyala"), 2000);
+    });
+    pre.appendChild(btn);
+  }
+</script>

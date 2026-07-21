@@ -1,0 +1,55 @@
+---
+title: "Astro Content Collections ile Tip Güvenli Blog"
+description: "Astro 5'in content layer API'siyle frontmatter'ı Zod şemasına bağlayıp yazı arşivini derleme zamanında doğrulamak."
+pubDate: 2026-07-18
+category: "yazilim"
+tags: ["astro", "typescript", "blog"]
+lang: "tr"
+---
+
+Bir blogda en sinsi hata türü, sessizce bozulan içeriktir: eksik tarih,
+yanlış kategori, kırık kapak görseli. Astro'nun content layer API'si bu
+sınıfı derleme zamanında yok ediyor.
+
+## Şema tanımı
+
+Koleksiyon şeması tek yerde durur ve her yazının frontmatter'ı buradan geçer:
+
+```ts title="content.config.ts"
+import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
+
+const posts = defineCollection({
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/posts" }),
+  schema: z.object({
+    title: z.string().min(1),
+    pubDate: z.coerce.date(), // [!code highlight]
+    category: z.enum(["ai", "yazilim", "girisimcilik"]),
+    draft: z.boolean().default(false),
+  }),
+});
+```
+
+<Callout type="ipucu" baslik="Neden z.coerce.date?">
+  YAML'da tarihler bazen string, bazen Date olarak parse edilir.
+  `z.coerce.date()` iki durumu da normalize eder.
+</Callout>
+
+## Sorgulama
+
+Yazıları çekerken filtre fonksiyonu draft'ları üretimde gizler:
+
+```ts title="src/lib/posts.ts"
+const posts = await getCollection("posts", ({ data }) => {
+  return !(data.draft && import.meta.env.PROD);
+});
+```
+
+Konuyu video olarak izlemek istersen Astro ekibinin content layer tanıtımı iyi bir başlangıç:
+
+<YouTube id="glwocSx1X8E" title="Astro Content Layer" />
+
+<Callout type="uyari">
+  `astro sync` çalışmadan `astro:content` tipleri güncellenmez; CI'da build
+  öncesi otomatik çalışır ama editörde eski tip görebilirsin.
+</Callout>

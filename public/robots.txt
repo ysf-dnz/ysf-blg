@@ -1,0 +1,29 @@
+# Klasik arama motorları
+User-agent: *
+Allow: /
+
+# AI arama/cevap motorları — açıkça izinli (GEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://yusufdeniz.dev/sitemap-index.xml
+
+# AI için içerik haritası: https://yusufdeniz.dev/llms.txt

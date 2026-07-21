@@ -1,0 +1,47 @@
+---
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  title: string;
+  url: string;
+}
+
+const { title, url } = Astro.props;
+const t = useTranslations(langFromUrl(Astro.url.pathname));
+
+const encoded = {
+  url: encodeURIComponent(url),
+  title: encodeURIComponent(title),
+};
+
+const targets = [
+  {
+    ad: "X",
+    href: `https://x.com/intent/tweet?text=${encoded.title}&url=${encoded.url}`,
+  },
+  {
+    ad: "LinkedIn",
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encoded.url}`,
+  },
+  {
+    ad: "WhatsApp",
+    href: `https://wa.me/?text=${encoded.title}%20${encoded.url}`,
+  },
+];
+---
+
+<div class="flex items-center gap-2 text-sm text-ink-muted">
+  <span>{t("post.paylas")}:</span>
+  {
+    targets.map((s) => (
+      <a
+        href={s.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="rounded-md px-2 py-1 hover:bg-accent-soft hover:text-accent"
+      >
+        {s.ad}
+      </a>
+    ))
+  }
+</div>

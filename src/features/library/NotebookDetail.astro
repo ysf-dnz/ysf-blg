@@ -1,0 +1,64 @@
+---
+import PostCard from "@/features/posts/PostCard.astro";
+import { useTranslations, type Lang } from "@/lib/i18n/index.ts";
+import type { CollectionEntry } from "astro:content";
+import type { Post } from "@/lib/posts.ts";
+
+interface Props {
+  notebook: CollectionEntry<"libraryNotebooks">;
+  category?: CollectionEntry<"libraryCategories">;
+  relatedPosts: Post[];
+  lang: Lang;
+}
+
+const { notebook, category, relatedPosts, lang } = Astro.props;
+const t = useTranslations(lang);
+const ad =
+  lang === "en" && notebook.data.nameEn ? notebook.data.nameEn : notebook.data.name;
+---
+
+<article>
+  <header class="rounded-2xl border border-line bg-surface-raised p-8">
+    {
+      category && (
+        <p class="flex items-center gap-2 text-sm text-ink-muted">
+          <span
+            class="size-3 rounded-full"
+            style={`background-color:${category.data.color}`}
+            aria-hidden="true"
+          />
+          {category.data.name}
+        </p>
+      )
+    }
+    <h1 class="font-display mt-2 text-3xl font-semibold text-ink">{ad}</h1>
+    <p class="mt-3 text-sm text-ink-muted">
+      {notebook.data.sourceCount} {t("kutuphane.kaynak")}
+    </p>
+    <a
+      href={notebook.data.notebookUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+    >
+      📔 {t("kutuphane.notebooklmAc")} ↗
+    </a>
+  </header>
+
+  {
+    relatedPosts.length > 0 && (
+      <section class="mt-10">
+        <h2 class="font-display text-xl font-semibold text-ink">
+          {t("kutuphane.ilgiliYazilar")}
+        </h2>
+        <ul class="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {relatedPosts.map((post) => (
+            <li>
+              <PostCard post={post} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</article>

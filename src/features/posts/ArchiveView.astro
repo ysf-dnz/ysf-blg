@@ -1,0 +1,64 @@
+---
+import type { Page } from "astro";
+import PostCard from "./PostCard.astro";
+import Pagination from "@/components/ui/Pagination.astro";
+import { CATEGORIES } from "@/lib/types.ts";
+import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
+import type { Post } from "@/lib/posts.ts";
+
+interface Props {
+  page: Page<Post>;
+  lang: Lang;
+  aktifKategori?: string;
+}
+
+const { page, lang, aktifKategori } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section>
+  <h1 class="font-display text-3xl font-semibold text-ink">
+    {aktifKategori ? t(`kategori.${aktifKategori}` as never) : t("arsiv.baslik")}
+  </h1>
+
+  <nav class="mt-6 flex flex-wrap gap-2" aria-label={t("kategori.baslik")}>
+    <a
+      href={localizePath("/yazilar", lang)}
+      class:list={[
+        "rounded-full border px-3 py-1 text-sm transition-colors",
+        aktifKategori
+          ? "border-line text-ink-muted hover:border-accent hover:text-accent"
+          : "border-accent bg-accent-soft text-accent",
+      ]}
+    >
+      {t("arsiv.tumKategoriler")}
+    </a>
+    {
+      CATEGORIES.map((kat) => (
+        <a
+          href={localizePath(`/kategori/${kat}`, lang)}
+          class:list={[
+            "rounded-full border px-3 py-1 text-sm transition-colors",
+            aktifKategori === kat
+              ? "border-accent bg-accent-soft text-accent"
+              : "border-line text-ink-muted hover:border-accent hover:text-accent",
+          ]}
+        >
+          {t(`kategori.${kat}`)}
+        </a>
+      ))
+    }
+  </nav>
+
+  <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      page.data.map((post) => (
+        <li>
+          <PostCard post={post} />
+        </li>
+      ))
+    }
+  </ul>
+
+  <Pagination page={page} />
+</section>

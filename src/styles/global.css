@@ -1,0 +1,141 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Dark mode: html[data-theme="dark"] ile kontrol edilir (system tercihi
+   inline script'te data-theme'e çözülür). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  /* Marka: derin turkuaz / petrol yeşili — Türk çinisi göndermesi */
+  --color-cini-50: #eefbfa;
+  --color-cini-100: #d5f4f2;
+  --color-cini-200: #b0e8e7;
+  --color-cini-300: #79d5d6;
+  --color-cini-400: #3fb8bc;
+  --color-cini-500: #239ba1;
+  --color-cini-600: #1a7d86;
+  --color-cini-700: #19646d;
+  --color-cini-800: #1a525a;
+  --color-cini-900: #1a454d;
+  --color-cini-950: #0a2b33;
+
+  /* Kategori renkleri */
+  --color-kat-ai: #7c5cff;
+  --color-kat-yazilim: #1a7d86;
+  --color-kat-girisimcilik: #d97706;
+  --color-kat-egitim: #2563eb;
+  --color-kat-kisisel: #db2777;
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Semantik yüzey/metin token'ları — tema ile değişir */
+:root {
+  --surface: #fdfcfa;
+  --surface-raised: #ffffff;
+  --ink: #1c2427;
+  --ink-muted: #5b6b70;
+  --line: #e4e2dc;
+  --accent: var(--color-cini-600);
+  --accent-soft: var(--color-cini-100);
+}
+
+[data-theme="dark"] {
+  --surface: #0e1517;
+  --surface-raised: #162023;
+  --ink: #e8ebe9;
+  --ink-muted: #93a5a8;
+  --line: #24343a;
+  /* dark'ta vurgu hafif açılır */
+  --accent: var(--color-cini-400);
+  --accent-soft: var(--color-cini-950);
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background-color: var(--accent);
+    color: var(--surface);
+  }
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/fraunces-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/fraunces-latin-ext.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin-ext.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Girih deseni — hero/footer'da %3-5 opaklıkta doku */
+.girih-texture {
+  position: relative;
+}
+.girih-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/patterns/girih.svg");
+  background-size: 220px;
+  opacity: 0.04;
+  pointer-events: none;
+}
+[data-theme="dark"] .girih-texture::before {
+  opacity: 0.06;
+  filter: invert(1);
+}

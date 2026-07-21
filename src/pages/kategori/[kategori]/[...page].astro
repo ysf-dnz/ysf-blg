@@ -1,0 +1,26 @@
+---
+import type { GetStaticPaths } from "astro";
+import Base from "@/layouts/Base.astro";
+import ArchiveView from "@/features/posts/ArchiveView.astro";
+import { getPublishedPosts } from "@/lib/posts.ts";
+import { CATEGORIES } from "@/lib/types.ts";
+import { useTranslations } from "@/lib/i18n/index.ts";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPublishedPosts("tr");
+  return CATEGORIES.flatMap((kategori) =>
+    paginate(
+      posts.filter((p) => p.data.category === kategori),
+      { pageSize: 9, params: { kategori } },
+    ),
+  );
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const { kategori } = Astro.params;
+const t = useTranslations("tr");
+---
+
+<Base title={t(`kategori.${kategori}` as never)}>
+  <ArchiveView page={page} lang="tr" aktifKategori={kategori} />
+</Base>

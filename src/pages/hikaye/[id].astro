@@ -1,0 +1,62 @@
+---
+/**
+ * Story deep-link + JS'siz fallback: slide'lar dikey statik listelenir.
+ * Arama motorlarına kapalı (kısa ömürlü içerik).
+ */
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import Base from "@/layouts/Base.astro";
+
+export async function getStaticPaths() {
+  const stories = await getCollection(
+    "stories",
+    ({ data }) => (data.slides?.length ?? 0) > 0,
+  );
+  return stories.map((story) => ({ params: { id: story.id }, props: { story } }));
+}
+
+const { story } = Astro.props;
+const slides = story.data.slides ?? [];
+---
+
+<Base title={story.data.title}>
+  <meta slot="head" name="robots" content="noindex" />
+  <article class="mx-auto max-w-md">
+    <h1 class="font-display text-2xl font-semibold text-ink">
+      {story.data.title}
+    </h1>
+    <ol class="mt-6 space-y-6">
+      {
+        slides.map((slide) => (
+          <li class="overflow-hidden rounded-2xl border border-line bg-surface-raised">
+            {slide.image && (
+              <Image src={slide.image} alt="" class="w-full" widths={[480, 720]} sizes="(max-width: 480px) 100vw, 480px" />
+            )}
+            <div class="p-5">
+              {slide.title && (
+                <h2 class="font-display text-lg font-semibold text-ink">
+                  {slide.title}
+                </h2>
+              )}
+              {slide.text && <p class="mt-2 text-ink-muted">{slide.text}</p>}
+              {slide.cta && (
+                <a
+                  href={slide.cta.url}
+                  class="mt-4 inline-block rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+                >
+                  {slide.cta.label}
+                </a>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <a
+      href={story.data.targetUrl}
+      class="mt-8 block text-center font-medium text-accent hover:underline"
+    >
+      {story.data.title} →
+    </a>
+  </article>
+</Base>

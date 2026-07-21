@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from "astro";
+import Base from "@/layouts/Base.astro";
+import ArchiveView from "@/features/posts/ArchiveView.astro";
+import { getPublishedPosts } from "@/lib/posts.ts";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPublishedPosts("tr");
+  return paginate(posts, { pageSize: 9 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<Base title="Yazılar">
+  <ArchiveView page={page} lang="tr" />
+</Base>

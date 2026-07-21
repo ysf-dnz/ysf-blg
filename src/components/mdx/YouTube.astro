@@ -1,0 +1,25 @@
+---
+import "lite-youtube-embed/src/lite-yt-embed.css";
+
+interface Props {
+  id: string;
+  title?: string;
+}
+
+const { id, title = "YouTube video" } = Astro.props;
+---
+
+<lite-youtube
+  videoid={id}
+  title={title}
+  class="my-6 overflow-hidden rounded-xl"
+  style={`background-image:url('https://i.ytimg.com/vi/${id}/hqdefault.jpg')`}
+>
+  <button type="button" class="lty-playbtn">
+    <span class="lyt-visually-hidden">{title}</span>
+  </button>
+</lite-youtube>
+
+<script>
+  import "lite-youtube-embed";
+</script>

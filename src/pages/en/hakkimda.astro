@@ -1,0 +1,40 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+
+const entry = await getEntry("singletons", "hakkimda.en");
+if (!entry) throw new Error("singletons/hakkimda.en.mdx bulunamadı");
+const { Content } = await render(entry);
+const projeler = entry.data.projeler ?? [];
+---
+
+<Base title={entry.data.title}>
+  <article class="mx-auto max-w-2xl">
+    <h1 class="font-display text-3xl font-semibold text-ink">{entry.data.title}</h1>
+    <div class="prose prose-lg mt-6 dark:prose-invert prose-a:text-accent">
+      <Content />
+    </div>
+
+    {
+      projeler.length > 0 && (
+        <section class="mt-10">
+          <h2 class="font-display text-xl font-semibold text-ink">Projects</h2>
+          <ul class="mt-4 grid gap-4 sm:grid-cols-2">
+            {projeler.map((proje) => (
+              <li class="rounded-xl border border-line bg-surface-raised p-4">
+                {proje.url ? (
+                  <a href={proje.url} target="_blank" rel="noopener noreferrer" class="font-semibold text-accent hover:underline">
+                    {proje.ad} ↗
+                  </a>
+                ) : (
+                  <span class="font-semibold text-ink">{proje.ad}</span>
+                )}
+                <p class="mt-1 text-sm text-ink-muted">{proje.aciklama}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </article>
+</Base>

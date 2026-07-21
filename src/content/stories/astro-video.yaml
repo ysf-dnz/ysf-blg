@@ -1,0 +1,8 @@
+# Slide'sız hikâye: tıklayınca doğrudan YouTube'a gider
+title: "Astro içerik videosu"
+cover: "../../assets/stories/youtube-video.svg"
+ringColor: "#d97706"
+targetUrl: "https://www.youtube.com/watch?v=glwocSx1X8E"
+targetType: "youtube"
+publishedAt: 2026-07-18
+order: 1

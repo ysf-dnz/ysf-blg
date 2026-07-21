@@ -1,0 +1,11 @@
+---
+import Base from "@/layouts/Base.astro";
+import LibraryView from "@/features/library/LibraryView.astro";
+import { useTranslations } from "@/lib/i18n/index.ts";
+
+const t = useTranslations("en");
+---
+
+<Base title={t("kutuphane.baslik")} description={t("kutuphane.aciklama")}>
+  <LibraryView lang="en" />
+</Base>

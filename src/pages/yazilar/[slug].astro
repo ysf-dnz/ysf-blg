@@ -1,0 +1,27 @@
+---
+import { render } from "astro:content";
+import PostLayout from "@/layouts/PostLayout.astro";
+import YouTube from "@/components/mdx/YouTube.astro";
+import Callout from "@/components/mdx/Callout.astro";
+import D3Chart from "@/components/mdx/D3Chart.astro";
+import Giscus from "@/features/comments/Giscus.astro";
+import { getPublishedPosts, postSlug, prevNext } from "@/lib/posts.ts";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts("tr");
+  const all = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { slug: postSlug(post) },
+    props: { post, posts, all },
+  }));
+}
+
+const { post, posts, all } = Astro.props;
+const { Content, headings } = await render(post);
+const { prev, next } = prevNext(post, posts);
+---
+
+<PostLayout post={post} headings={headings} allPosts={all} prev={prev} next={next}>
+  <Content components={{ YouTube, Callout, D3Chart }} />
+  <Giscus slot="comments" />
+</PostLayout>

@@ -1,0 +1,75 @@
+---
+import type { MarkdownHeading } from "astro";
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const t = useTranslations(langFromUrl(Astro.url.pathname));
+const visible = headings.filter((h) => h.depth <= 3);
+---
+
+{
+  visible.length > 1 && (
+    <nav aria-label={t("post.icindekiler")} class="toc text-sm" data-toc>
+      <p class="mb-3 font-semibold uppercase tracking-wide text-ink-muted">
+        {t("post.icindekiler")}
+      </p>
+      <ul class="space-y-1 border-l border-line">
+        {visible.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              data-toc-link={h.slug}
+              class:list={[
+                "-ml-px block border-l-2 border-transparent py-1 text-ink-muted transition-colors hover:text-accent",
+                h.depth === 2 ? "pl-4" : "pl-8",
+              ]}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc a[aria-current="true"] {
+    border-left-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  // Scroll-spy: görünür başlığa göre aktif TOC linki
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
+  if (links.length > 0) {
+    const bySlug = new Map(
+      [...links].map((a) => [a.dataset.tocLink!, a] as const),
+    );
+    let active: HTMLAnchorElement | undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting);
+        if (!hit) return;
+        const link = bySlug.get(hit.target.id);
+        if (!link || link === active) return;
+        active?.removeAttribute("aria-current");
+        link.setAttribute("aria-current", "true");
+        active = link;
+      },
+      { rootMargin: "-10% 0px -70% 0px" },
+    );
+
+    for (const slug of bySlug.keys()) {
+      const heading = document.getElementById(slug);
+      if (heading) observer.observe(heading);
+    }
+  }
+</script>

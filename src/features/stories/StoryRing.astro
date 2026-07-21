@@ -1,0 +1,102 @@
+---
+/**
+ * Instagram tarzı hikâye halkaları. Hibrit davranış:
+ * - slide'lı hikâye → data-slides ile SSR'lanır, island viewer'da açılır
+ * - slide'sız hikâye → düz <a>, JS olmadan da çalışır (progressive enhancement)
+ * Görülen hikâyeler localStorage("ysf:stories:seen") ile soluklaşır.
+ */
+import { getImage } from "astro:assets";
+import { getActiveStories, hasSlides } from "./stories.ts";
+import { langFromUrl, localizePath } from "@/lib/i18n/index.ts";
+
+const stories = await getActiveStories();
+const lang = langFromUrl(Astro.url.pathname);
+
+const rings = await Promise.all(
+  stories.map(async (story) => {
+    const cover = await getImage({
+      src: story.data.cover,
+      width: 160,
+      height: 160,
+    });
+    const slides = story.data.slides ?? [];
+    const slidePayload = await Promise.all(
+      slides.map(async (slide) => ({
+        image: slide.image
+          ? (await getImage({ src: slide.image, width: 720 })).src
+          : undefined,
+        title: slide.title,
+        text: slide.text,
+        durationMs: slide.durationMs,
+        cta: slide.cta,
+      })),
+    );
+    return { story, cover, slidePayload };
+  }),
+);
+---
+
+{
+  rings.length > 0 && (
+    <div class="border-b border-line" data-stories>
+      <ul class="mx-auto flex max-w-5xl gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none]">
+        {rings.map(({ story, cover, slidePayload }) => {
+          const interactive = hasSlides(story);
+          const href = interactive
+            ? localizePath(`/hikaye/${story.id}`, lang)
+            : story.data.targetUrl;
+          return (
+            <li class="shrink-0">
+              <a
+                href={href}
+                data-story-id={story.id}
+                data-story-title={story.data.title}
+                data-target-url={story.data.targetUrl}
+                data-target-type={story.data.targetType}
+                data-slides={
+                  interactive ? JSON.stringify(slidePayload) : undefined
+                }
+                {...(!interactive && story.data.targetType !== "internal"
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+                class="story-ring group flex w-20 flex-col items-center gap-1.5"
+              >
+                <span
+                  class="rounded-full p-[3px] transition-transform group-hover:scale-105"
+                  style={`background: conic-gradient(from 210deg, ${story.data.ringColor ?? "var(--accent)"}, ${story.data.ringColor ?? "var(--accent)"}66, ${story.data.ringColor ?? "var(--accent)"})`}
+                >
+                  <img
+                    src={cover.src}
+                    alt=""
+                    width="64"
+                    height="64"
+                    loading="lazy"
+                    class="size-16 rounded-full border-2 border-surface bg-surface-raised object-cover"
+                  />
+                </span>
+                <span class="w-full truncate text-center text-xs text-ink-muted">
+                  {story.data.title}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .story-ring.seen > span:first-of-type {
+    background: var(--line) !important;
+  }
+  .story-ring.seen img {
+    filter: grayscale(0.7);
+    opacity: 0.8;
+  }
+</style>
+
+<script>
+  import { initStories } from "./story-viewer.ts";
+  initStories();
+</script>

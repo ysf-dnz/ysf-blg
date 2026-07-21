@@ -1,0 +1,64 @@
+---
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
+import { KUTUPHANEM_URL } from "@/lib/urls.ts";
+
+interface Kaynak {
+  baslik: string;
+  url: string;
+  tur?: "notebooklm" | "kitap" | "makale" | "video";
+}
+
+interface Props {
+  kaynaklar: Kaynak[];
+}
+
+const { kaynaklar } = Astro.props;
+const t = useTranslations(langFromUrl(Astro.url.pathname));
+
+const ikonlar: Record<string, string> = {
+  notebooklm: "📔",
+  kitap: "📖",
+  makale: "📄",
+  video: "▶",
+};
+---
+
+{
+  kaynaklar.length > 0 && (
+    <section class="not-prose mt-12 rounded-xl border border-line bg-surface-raised p-5">
+      <h2 class="font-display mb-4 text-lg font-semibold text-ink">
+        {t("post.kaynaklar")}
+      </h2>
+      <ul class="space-y-2">
+        {kaynaklar.map((k) => (
+          <li class="flex items-start gap-2 text-sm">
+            <span aria-hidden="true">{ikonlar[k.tur ?? "makale"] ?? "•"}</span>
+            <span>
+              <a
+                href={k.url}
+                rel="noopener noreferrer"
+                target="_blank"
+                class="font-medium text-accent hover:underline"
+              >
+                {k.baslik}
+              </a>
+              {k.tur === "notebooklm" && (
+                <>
+                  {" · "}
+                  <a
+                    href={KUTUPHANEM_URL}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    class="text-ink-muted hover:text-accent hover:underline"
+                  >
+                    kutuphanem
+                  </a>
+                </>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

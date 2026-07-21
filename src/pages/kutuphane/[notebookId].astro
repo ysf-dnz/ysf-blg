@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import NotebookDetail from "@/features/library/NotebookDetail.astro";
+import { getPublishedPosts } from "@/lib/posts.ts";
+
+export async function getStaticPaths() {
+  const notebooks = await getCollection("libraryNotebooks");
+  const categories = await getCollection("libraryCategories");
+  const posts = await getPublishedPosts("tr");
+  return notebooks.map((notebook) => ({
+    params: { notebookId: notebook.data.id },
+    props: {
+      notebook,
+      category: categories.find((c) => c.data.id === notebook.data.category),
+      relatedPosts: posts.filter(
+        (p) => p.data.kutuphaneNode === notebook.data.id,
+      ),
+    },
+  }));
+}
+
+const { notebook, category, relatedPosts } = Astro.props;
+---
+
+<Base title={notebook.data.name}>
+  <NotebookDetail
+    notebook={notebook}
+    category={category}
+    relatedPosts={relatedPosts}
+    lang="tr"
+  />
+</Base>

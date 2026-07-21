@@ -1,0 +1,51 @@
+---
+import Base from "@/layouts/Base.astro";
+import StoryRing from "@/features/stories/StoryRing.astro";
+import PostCard from "@/features/posts/PostCard.astro";
+import MindMapMini from "@/features/library/MindMapMini.astro";
+import { getPublishedPosts } from "@/lib/posts.ts";
+import { useTranslations, localizePath } from "@/lib/i18n/index.ts";
+
+const t = useTranslations("en");
+const posts = (await getPublishedPosts("en")).slice(0, 6);
+---
+
+<Base>
+  <StoryRing slot="below-header" />
+  <section class="girih-texture -mx-4 px-4 py-16 sm:py-20">
+    <h1 class="font-display max-w-2xl text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+      Where I turn what I read into <span class="text-accent">output</span>.
+    </h1>
+    <p class="mt-4 max-w-xl text-lg text-ink-muted">
+      On AI, software, entrepreneurship and education; every post is fed by a
+      notebook.
+    </p>
+  </section>
+
+  <section class="py-10">
+    <div class="mb-6 flex items-baseline justify-between">
+      <h2 class="font-display text-2xl font-semibold text-ink">
+        {t("home.sonYazilar")}
+      </h2>
+      <a
+        href={localizePath("/yazilar", "en")}
+        class="text-sm font-medium text-accent hover:underline"
+      >
+        {t("home.tumYazilar")} →
+      </a>
+    </div>
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        posts.map((post) => (
+          <li>
+            <PostCard post={post} />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="py-10">
+    <MindMapMini />
+  </section>
+</Base>

@@ -1,0 +1,73 @@
+---
+/**
+ * Giscus yorumları — GitHub Discussions tabanlı, lazy yüklenir.
+ * Yapılandırma env üzerinden: PUBLIC_GISCUS_REPO ("kullanici/repo"),
+ * PUBLIC_GISCUS_REPO_ID, PUBLIC_GISCUS_CATEGORY_ID.
+ * Env eksikse bileşen hiçbir şey render etmez (kurulum README'de).
+ */
+const repo = import.meta.env.PUBLIC_GISCUS_REPO as string | undefined;
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID as string | undefined;
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID as string | undefined;
+
+const enabled = Boolean(repo && repoId && categoryId);
+---
+
+{
+  enabled && (
+    <section
+      id="giscus-slot"
+      class="mt-10"
+      data-repo={repo}
+      data-repo-id={repoId}
+      data-category-id={categoryId}
+      data-pagefind-ignore
+    />
+  )
+}
+
+{
+  enabled && (
+    <script>
+      {`
+      // Giscus görünür olunca yüklenir; tema blog temasıyla senkron
+      const slot = document.getElementById("giscus-slot");
+      if (slot) {
+        const theme = () =>
+          document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+        const load = () => {
+          const s = document.createElement("script");
+          s.src = "https://giscus.app/client.js";
+          s.async = true;
+          s.crossOrigin = "anonymous";
+          Object.assign(s.dataset, {
+            repo: slot.dataset.repo,
+            repoId: slot.dataset.repoId,
+            categoryId: slot.dataset.categoryId,
+            mapping: "pathname",
+            strict: "1",
+            reactionsEnabled: "1",
+            inputPosition: "top",
+            theme: theme(),
+            lang: document.documentElement.lang === "en" ? "en" : "tr",
+          });
+          slot.appendChild(s);
+        };
+        new IntersectionObserver((entries, obs) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            obs.disconnect();
+            load();
+          }
+        }, { rootMargin: "300px" }).observe(slot);
+
+        new MutationObserver(() => {
+          const frame = document.querySelector("iframe.giscus-frame");
+          frame?.contentWindow?.postMessage(
+            { giscus: { setConfig: { theme: theme() } } },
+            "https://giscus.app",
+          );
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      }
+      `}
+    </script>
+  )
+}

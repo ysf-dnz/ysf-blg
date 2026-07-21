@@ -1,0 +1,20 @@
+# build
+dist/
+.astro/
+.vercel/
+
+# deps
+node_modules/
+
+# test/kalite
+.lighthouseci/
+playwright-report/
+test-results/
+
+# env
+.env
+.env.*
+!.env.example
+
+# os
+.DS_Store

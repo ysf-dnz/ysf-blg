@@ -1,0 +1,131 @@
+---
+/**
+ * Genel amaçlı D3 island sarmalayıcısı.
+ * `render` prop'u, sayfada global tanımlanan bir render fonksiyonunun adıdır;
+ * MDX içinde <script> ile `window.__d3Renders.ornekCizgi = (el, d3) => {...}`
+ * şeklinde kaydedilir. Hazır tipler için `type="line"` + `data` yeterlidir.
+ */
+interface Props {
+  type?: "line";
+  data?: { x: number | string; y: number }[];
+  render?: string;
+  height?: number;
+  baslik?: string;
+}
+
+const { type, data, render, height = 280, baslik } = Astro.props;
+---
+
+<figure class="not-prose my-8">
+  {baslik && <figcaption class="mb-2 text-sm font-medium text-ink-muted">{baslik}</figcaption>}
+  <div
+    class="d3-chart w-full rounded-xl border border-line bg-surface-raised p-4"
+    data-type={type}
+    data-render={render}
+    data-data={data ? JSON.stringify(data) : undefined}
+    style={`min-height:${height}px`}
+  >
+  </div>
+</figure>
+
+<script>
+  // d3 yalnızca grafik görünür olduğunda indirilir (ayrı chunk)
+  type D3 = typeof import("d3");
+  type Point = { x: number | string; y: number };
+
+  declare global {
+    interface Window {
+      __d3Renders?: Record<string, (el: HTMLElement, d3lib: D3) => void>;
+    }
+  }
+
+  function drawLine(d3: D3, el: HTMLElement, points: Point[]) {
+    const width = el.clientWidth - 32;
+    const height = el.clientHeight - 32 || 248;
+    const margin = { top: 12, right: 12, bottom: 28, left: 40 };
+
+    const svg = d3
+      .select(el)
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("width", "100%")
+      .attr("role", "img");
+
+    const xs = points.map((_, i) => i);
+    const x = d3
+      .scaleLinear()
+      .domain([0, points.length - 1])
+      .range([margin.left, width - margin.right]);
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(points, (p) => p.y) ?? 1])
+      .nice()
+      .range([height - margin.bottom, margin.top]);
+
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(points.length)
+          .tickFormat((i) => String(points[Number(i)]?.x ?? "")),
+      );
+    svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y).ticks(5));
+
+    svg
+      .append("path")
+      .datum(xs)
+      .attr("fill", "none")
+      .attr("stroke", "var(--accent)")
+      .attr("stroke-width", 2.5)
+      .attr(
+        "d",
+        d3
+          .line<number>()
+          .x((i) => x(i))
+          .y((i) => y(points[i]!.y))
+          .curve(d3.curveMonotoneX),
+      );
+
+    svg
+      .selectAll("circle")
+      .data(xs)
+      .join("circle")
+      .attr("cx", (i) => x(i))
+      .attr("cy", (i) => y(points[i]!.y))
+      .attr("r", 3.5)
+      .attr("fill", "var(--accent)");
+  }
+
+  const observer = new IntersectionObserver(
+    async (entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (visible.length === 0) return;
+      const d3 = await import("d3");
+      for (const entry of visible) {
+        const el = entry.target as HTMLElement;
+        observer.unobserve(el);
+        if (el.dataset.rendered) continue;
+        el.dataset.rendered = "1";
+
+        const custom = el.dataset.render
+          ? window.__d3Renders?.[el.dataset.render]
+          : undefined;
+        if (custom) {
+          custom(el, d3);
+        } else if (el.dataset.type === "line" && el.dataset.data) {
+          drawLine(d3, el, JSON.parse(el.dataset.data) as Point[]);
+        }
+      }
+    },
+    { rootMargin: "120px" },
+  );
+
+  document.querySelectorAll<HTMLElement>(".d3-chart").forEach((el) => {
+    observer.observe(el);
+  });
+</script>

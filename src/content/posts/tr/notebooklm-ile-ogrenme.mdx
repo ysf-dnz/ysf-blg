@@ -1,0 +1,56 @@
+---
+title: "NotebookLM ile Katmanlı Öğrenme Sistemi"
+description: "438 defterlik bir NotebookLM kütüphanesini nasıl kurdum: kaynak toplama, defter mimarisi ve öğrenmenin ölçülebilir hâle gelmesi."
+pubDate: 2026-07-15
+category: "egitim"
+tags: ["notebooklm", "öğrenme", "bilgi-yönetimi"]
+lang: "tr"
+kutuphaneNode: "45dc0362-b3c3-49d9-9334-0cbab845eccd"
+kaynaklar:
+  - baslik: "NotebookLM — LLM Defterleri"
+    url: "https://notebooklm.google.com"
+    tur: "notebooklm"
+  - baslik: "How to Take Smart Notes — Sönke Ahrens"
+    url: "https://www.soenkeahrens.de/en/takesmartnotes"
+    tur: "kitap"
+  - baslik: "Building a Second Brain — Tiago Forte"
+    url: "https://www.buildingasecondbrain.com"
+    tur: "kitap"
+---
+
+Okuduğum her kitap, izlediğim her video bir NotebookLM defterine giriyor.
+Bugün bu sistemde 438 defter var ve en değerli çıktısı şu: öğrenme artık
+ölçülebilir bir eğri.
+
+## Defter mimarisi
+
+Sistemin üç katmanı var:
+
+1. **Kaynak defterleri** — tek konu, çok kaynak (kitap + makale + video)
+2. **Kategori defterleri** — bir alanın haritası (ör. "AI Ajanları")
+3. **Köprü defterleri** — iki alanın kesişimi (ör. "AI × Eğitim")
+
+## Birikimin eğrisi
+
+Son altı ayda aylık eklenen defter sayısı:
+
+<D3Chart
+  type="line"
+  baslik="Aylık yeni defter sayısı (2026)"
+  data={[
+    { x: "Oca", y: 18 },
+    { x: "Şub", y: 24 },
+    { x: "Mar", y: 31 },
+    { x: "Nis", y: 27 },
+    { x: "May", y: 42 },
+    { x: "Haz", y: 38 },
+  ]}
+/>
+
+Eğrinin yükselişi motivasyondan değil, sistemin sürtünmesizliğinden geliyor:
+kaynak eklemek 30 saniye sürüyor.
+
+<Callout type="bilgi" baslik="Kütüphanenin tamamı açık">
+  Tüm defter ağını [kutuphanem](https://ysf-dnz.github.io/kutuphanem)
+  sayfasında interaktif graf olarak gezebilirsin.
+</Callout>

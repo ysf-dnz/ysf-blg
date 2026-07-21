@@ -1,0 +1,83 @@
+---
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
+
+const lang = langFromUrl(Astro.url.pathname);
+const t = useTranslations(lang);
+---
+
+<button
+  id="search-open"
+  type="button"
+  class="rounded-full p-2 text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
+  aria-label={t("nav.ara")}
+  title={t("nav.ara")}
+>
+  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7"></circle>
+    <path d="m21 21-4.3-4.3"></path>
+  </svg>
+</button>
+
+<dialog
+  id="search-dialog"
+  class="mx-auto mt-[10vh] w-[min(640px,92vw)] rounded-2xl border border-line bg-surface p-4 text-ink shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+>
+  <div id="search-container" data-lang={lang}></div>
+  <p id="search-dev-note" class="hidden py-4 text-center text-sm text-ink-muted">
+    {t("arama.devUyari")}
+  </p>
+</dialog>
+
+<style is:global>
+  #search-dialog {
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--ink);
+    --pagefind-ui-background: var(--surface);
+    --pagefind-ui-border: var(--line);
+    --pagefind-ui-tag: var(--accent-soft);
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>
+
+<script>
+  const dialog = document.getElementById("search-dialog") as HTMLDialogElement | null;
+  const openBtn = document.getElementById("search-open");
+  let loaded = false;
+
+  async function openSearch() {
+    if (!dialog) return;
+    dialog.showModal();
+    if (loaded) return;
+    loaded = true;
+    try {
+      // Pagefind UI yalnızca ilk açılışta yüklenir (postbuild çıktısı);
+      // değişken kullanımı Rollup'ın import'u çözmeye çalışmasını engeller
+      const pagefindUiUrl = "/pagefind/pagefind-ui.js";
+      await import(/* @vite-ignore */ pagefindUiUrl);
+      const container = document.getElementById("search-container")!;
+      // @ts-expect-error — global PagefindUI
+      new PagefindUI({
+        element: "#search-container",
+        showSubResults: true,
+        translations:
+          container.dataset.lang === "tr"
+            ? { placeholder: "Yazılarda ara…", zero_results: "Sonuç yok: [SEARCH_TERM]" }
+            : undefined,
+      });
+      dialog.querySelector<HTMLInputElement>("input")?.focus();
+    } catch {
+      document.getElementById("search-dev-note")?.classList.remove("hidden");
+    }
+  }
+
+  openBtn?.addEventListener("click", openSearch);
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      dialog?.open ? dialog.close() : openSearch();
+    }
+  });
+  dialog?.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+</script>

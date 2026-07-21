@@ -1,0 +1,20 @@
+# Slide'lı hikâye: site içi story viewer'da açılır
+title: "Yeni yazı: NotebookLM"
+cover: "../../assets/stories/yeni-yazi.svg"
+ringColor: "#1a7d86"
+targetUrl: "https://yusufdeniz.dev/yazilar/notebooklm-ile-ogrenme"
+targetType: "internal"
+publishedAt: 2026-07-15
+pinned: true
+order: 0
+slides:
+  - image: "../../assets/stories/yeni-yazi.svg"
+    title: "NotebookLM ile Katmanlı Öğrenme"
+    text: "438 defterlik kütüphanenin arkasındaki sistem yayında."
+    durationMs: 5000
+  - title: "Üç katman"
+    text: "Kaynak defterleri → kategori defterleri → köprü defterleri. Öğrenme artık ölçülebilir bir eğri."
+    durationMs: 6000
+    cta:
+      label: "Yazının tamamını oku"
+      url: "https://yusufdeniz.dev/yazilar/notebooklm-ile-ogrenme"

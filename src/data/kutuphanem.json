@@ -1,0 +1,4069 @@
+{
+  "syncedAt": "2026-07-21T11:52:36.721Z",
+  "source": "https://raw.githubusercontent.com/ysf-dnz/kutuphanem/main/index.html",
+  "categories": [
+    {
+      "id": "agent",
+      "name": "AI Ajanları",
+      "full": "AI Ajanları · Agentic Sistemler · MCP",
+      "color": "#7c8cf0",
+      "notebookCount": 29
+    },
+    {
+      "id": "aigeneral",
+      "name": "Yapay Zeka",
+      "full": "Yapay Zeka · Genel · Teori · Etik · Sektörel",
+      "color": "#9d7bf0",
+      "notebookCount": 35
+    },
+    {
+      "id": "business",
+      "name": "İş",
+      "full": "İş · Yönetim · Strateji · Liderlik",
+      "color": "#c9a24b",
+      "notebookCount": 14
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "full": "Claude · Anthropic · OpenClaw",
+      "color": "#d97757",
+      "notebookCount": 17
+    },
+    {
+      "id": "datasci",
+      "name": "Veri Bilimi",
+      "full": "Veri Bilimi · ML Mühendisliği · MLOps",
+      "color": "#f06fa0",
+      "notebookCount": 35
+    },
+    {
+      "id": "drone",
+      "name": "Drone",
+      "full": "Drone · İHA · Havacılık · Uzaktan Algılama · Coğrafi",
+      "color": "#6fb0f0",
+      "notebookCount": 17
+    },
+    {
+      "id": "islam",
+      "name": "İslami",
+      "full": "İslami · Manevi · Risale-i Nur · Enneagram",
+      "color": "#5ec6a8",
+      "notebookCount": 27
+    },
+    {
+      "id": "lang",
+      "name": "Dil Öğrenimi (İngilizce)",
+      "full": "Dil Öğrenimi (İngilizce)",
+      "color": "#f0d05e",
+      "notebookCount": 12
+    },
+    {
+      "id": "llm",
+      "name": "LLM",
+      "full": "LLM · NLP · Transformer · Generative AI · Prompt",
+      "color": "#b06ff0",
+      "notebookCount": 53
+    },
+    {
+      "id": "marketing",
+      "name": "Pazarlama",
+      "full": "Pazarlama · SEO · E-ticaret · Reklam",
+      "color": "#f0915e",
+      "notebookCount": 22
+    },
+    {
+      "id": "other",
+      "name": "Diğer",
+      "full": "Diğer · Genel Kültür",
+      "color": "#9aa3b5",
+      "notebookCount": 22
+    },
+    {
+      "id": "product",
+      "name": "Ürün Yönetimi",
+      "full": "Ürün Yönetimi · UX · Tasarım",
+      "color": "#5ad0d0",
+      "notebookCount": 14
+    },
+    {
+      "id": "quantum",
+      "name": "Kuantum Bilişim",
+      "full": "Kuantum Bilişim",
+      "color": "#4fb8e8",
+      "notebookCount": 25
+    },
+    {
+      "id": "science",
+      "name": "Bilim",
+      "full": "Bilim · Fizik · Doğa · Sağlık",
+      "color": "#8fd06f",
+      "notebookCount": 15
+    },
+    {
+      "id": "self",
+      "name": "Kişisel Gelişim",
+      "full": "Kişisel Gelişim · Verimlilik · Psikoloji · Öğrenme",
+      "color": "#e86fd0",
+      "notebookCount": 25
+    },
+    {
+      "id": "software",
+      "name": "Yazılım Geliştirme",
+      "full": "Yazılım Geliştirme · DevOps · Mühendislik",
+      "color": "#6fd08c",
+      "notebookCount": 58
+    },
+    {
+      "id": "spk",
+      "name": "Sermaye Piyasası",
+      "full": "Sermaye Piyasası · Finans · Ekonomi",
+      "color": "#e0b15a",
+      "notebookCount": 18
+    }
+  ],
+  "notebooks": [
+    {
+      "id": "013c050d-c105-4dea-ab3b-487ef0d1e4c8",
+      "name": "Algoritmik Tasarım ve Analiz Stratejileri",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/013c050d-c105-4dea-ab3b-487ef0d1e4c8"
+    },
+    {
+      "id": "0154d7b7-052c-4757-8896-b31ddeb03c16",
+      "name": "Claude Bağlam Penceresi",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0154d7b7-052c-4757-8896-b31ddeb03c16"
+    },
+    {
+      "id": "01872ec2-29fe-4c6a-b0cf-9116f51a1617",
+      "name": "Mozart'ın Sığırcığı",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/01872ec2-29fe-4c6a-b0cf-9116f51a1617"
+    },
+    {
+      "id": "0196424b-3ea7-4690-908a-e8a32b81cc2f",
+      "name": "YZ Çağında Kişiselleştirme Stratejisi",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0196424b-3ea7-4690-908a-e8a32b81cc2f"
+    },
+    {
+      "id": "021a08ff-dcba-4bf6-bbc6-e9b2303bb69f",
+      "name": "Merkezi Olmayan Finans, Blockchain ve Düzenleme",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/021a08ff-dcba-4bf6-bbc6-e9b2303bb69f"
+    },
+    {
+      "id": "0234b0e2-cc31-4583-ad6c-81f1043ccc39",
+      "name": "Agentic Mesh: Kurumsal Otonom Ajan Ekosistemi",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0234b0e2-cc31-4583-ad6c-81f1043ccc39"
+    },
+    {
+      "id": "03230c57-ac77-40fd-8795-65e9960da73a",
+      "name": "Enneagram ve Hafızlık Eğitiminin Fıtratı",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 27,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/03230c57-ac77-40fd-8795-65e9960da73a"
+    },
+    {
+      "id": "032730b1-3fb4-4148-8c48-a8ff1e99be9c",
+      "name": "Ölçeklenme Çağı: YZ'nin Sözlü Tarihi 2019-2025",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/032730b1-3fb4-4148-8c48-a8ff1e99be9c"
+    },
+    {
+      "id": "03b9629a-b96f-4cdc-a22f-56f1e01d3f89",
+      "name": "Unity Oyun Geliştirme: Temeller ve Çekirdek Programlama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 2,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/03b9629a-b96f-4cdc-a22f-56f1e01d3f89"
+    },
+    {
+      "id": "04046288-d9ab-4fd4-a6ef-cadccfeb5ade",
+      "name": "Yazılım Proje Yönetimi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/04046288-d9ab-4fd4-a6ef-cadccfeb5ade"
+    },
+    {
+      "id": "04371d65-00cb-42cb-8df1-9893ba5b5f71",
+      "name": "Niceliğin Değil Niteliğin Önceliği",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/04371d65-00cb-42cb-8df1-9893ba5b5f71"
+    },
+    {
+      "id": "05071dd7-a9e1-4ae6-81dd-d56c1b6edf19",
+      "name": "Stressiz Verimlilik Sanatı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/05071dd7-a9e1-4ae6-81dd-d56c1b6edf19"
+    },
+    {
+      "id": "0648c803-5f24-42ed-8a4b-c9668c017324",
+      "name": "Öğrenciler için Kuantum Hesaplama Rehberi",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0648c803-5f24-42ed-8a4b-c9668c017324"
+    },
+    {
+      "id": "08dda5d7-db25-45f1-9b69-32ecb87d90ae",
+      "name": "Derin Öğrenme Algoritmalarının İlke ve Temelleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/08dda5d7-db25-45f1-9b69-32ecb87d90ae"
+    },
+    {
+      "id": "096e8f93-e333-4824-83a5-1b8ddb10b658",
+      "name": "Mantık ve Mantık: Sıfırdan LLM Akıl Yürütme İnşası",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/096e8f93-e333-4824-83a5-1b8ddb10b658"
+    },
+    {
+      "id": "09a02857-7dd0-4cb6-a8f4-3ccb070d1531",
+      "name": "İnovasyonu Korumak: Fikri Mülkiyet Başarısı El Kitabı",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/09a02857-7dd0-4cb6-a8f4-3ccb070d1531"
+    },
+    {
+      "id": "0b33332c-57c0-447a-a495-f2b906f5835c",
+      "name": "Sağlıklı Bağırsak için Prebiyotik Gıdalar",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0b33332c-57c0-447a-a495-f2b906f5835c"
+    },
+    {
+      "id": "0b8b51f4-0280-4232-8b74-09301ddc0e83",
+      "name": "scikit-learn Tarif Kitabı: Python'da Makine Öğrenmesi Tarifleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0b8b51f4-0280-4232-8b74-09301ddc0e83"
+    },
+    {
+      "id": "0e186d82-ea1a-435a-be8d-70fd969f4763",
+      "name": "Yapay Zekâ ve Oyunlar, İkinci Baskı",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0e186d82-ea1a-435a-be8d-70fd969f4763"
+    },
+    {
+      "id": "0e2e32d3-6c06-458b-84da-08b9149ad4c7",
+      "name": "Bağlam Mühendisliği: Sıfırdan YZ Ajanları Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0e2e32d3-6c06-458b-84da-08b9149ad4c7"
+    },
+    {
+      "id": "0ead42a3-02fc-455e-aa68-371fc7e9b88b",
+      "name": "Yaşam Bilimleri ve Sağlık İnovasyonu için LangChain",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0ead42a3-02fc-455e-aa68-371fc7e9b88b"
+    },
+    {
+      "id": "0f0a7fcc-eab1-41e5-a83f-fa84f5ebde01",
+      "name": "Hac Yolunda Adamın Duası Beni Ağlattı (Mesut Yağmahan | Hisar Kapısı)",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0f0a7fcc-eab1-41e5-a83f-fa84f5ebde01"
+    },
+    {
+      "id": "0fca5a2c-93e2-41ac-a0c4-7fed0dfda736",
+      "name": "[CHATGPT] Ghost Medium Entegrasyonu",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/0fca5a2c-93e2-41ac-a0c4-7fed0dfda736"
+    },
+    {
+      "id": "105abe87-2b87-4a67-8313-76c663b1645a",
+      "name": "Emlak Komisyoncuları için YZ El Kitabı",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/105abe87-2b87-4a67-8313-76c663b1645a"
+    },
+    {
+      "id": "10aa1887-04c6-4b0b-b99c-4aa5cb7c1be3",
+      "name": "Pazarlama 6.0: Gelecek Sürükleyici (Immersive)",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/10aa1887-04c6-4b0b-b99c-4aa5cb7c1be3"
+    },
+    {
+      "id": "10d22f3e-a8f9-4c12-a61d-48f9ffd21e30",
+      "name": "İleri Makine Öğrenmesi Teknolojileri ve Uygulamaları Cilt 1",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/10d22f3e-a8f9-4c12-a61d-48f9ffd21e30"
+    },
+    {
+      "id": "10f6f067-6de7-41ae-bf85-925796a93d75",
+      "name": "Üretimde LLM'ler: Modellerden Ürünlere",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/10f6f067-6de7-41ae-bf85-925796a93d75"
+    },
+    {
+      "id": "12870935-3d30-46c8-84be-966668944d2b",
+      "name": "Model Context Protocol ile YZ Ajanları Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/12870935-3d30-46c8-84be-966668944d2b"
+    },
+    {
+      "id": "1365a652-7ed2-4fa6-9fe9-22ae4da62185",
+      "name": "Kuantum Hesaplama Algoritmaları",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1365a652-7ed2-4fa6-9fe9-22ae4da62185"
+    },
+    {
+      "id": "14792adf-80c7-4544-bb18-9a28128267b4",
+      "name": "İHA Sürü İşbirliği: Bir Ağ Perspektifi",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/14792adf-80c7-4544-bb18-9a28128267b4"
+    },
+    {
+      "id": "14997708-648b-4b76-84c1-1b709629fe03",
+      "name": "Yapay Genel Zekâda İlerlemeler 2025",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/14997708-648b-4b76-84c1-1b709629fe03"
+    },
+    {
+      "id": "1610fd85-5d4e-4011-b998-a393f75657e5",
+      "name": "Plazma Kimyası",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1610fd85-5d4e-4011-b998-a393f75657e5"
+    },
+    {
+      "id": "16c570ae-8d0d-4fe0-8c4b-d6b16162e74a",
+      "name": "PAMI ile Örüntü Madenciliği: Kuram ve Örnekler",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/16c570ae-8d0d-4fe0-8c4b-d6b16162e74a"
+    },
+    {
+      "id": "16fb66a7-1307-4ba5-83a6-89174a3f9808",
+      "name": "YZ ve Mikroservisler: Akıllı Dağıtık Sistemler Mühendisliği",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/16fb66a7-1307-4ba5-83a6-89174a3f9808"
+    },
+    {
+      "id": "172f0a72-b27b-45d4-810e-f47dc6c369a6",
+      "name": "Makine Bölgesi: Tasarımla Kumar ve Bağımlılık",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/172f0a72-b27b-45d4-810e-f47dc6c369a6"
+    },
+    {
+      "id": "17d2b443-3100-4224-a982-2c53a620ca33",
+      "name": "Kuantum Hesaplama Stratejisi: Temeller ve Uygulanabilirlik",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/17d2b443-3100-4224-a982-2c53a620ca33"
+    },
+    {
+      "id": "1869858f-91be-4650-aa9a-996f77dd2990",
+      "name": "Kuantum Teknolojisi: Uygulamalar, Etki ve Gelecek Zorluklar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1869858f-91be-4650-aa9a-996f77dd2990"
+    },
+    {
+      "id": "187febac-c0b4-4228-b260-a63810de70bb",
+      "name": "LLM'ler için Prompt Mühendisliği: Uygulama Geliştirme",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/187febac-c0b4-4228-b260-a63810de70bb"
+    },
+    {
+      "id": "1882c729-93c3-472a-bab1-627bdcd2735f",
+      "name": "Tolstoy'un Hz. Muhammed Üzerine Gizli Kitabı",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1882c729-93c3-472a-bab1-627bdcd2735f"
+    },
+    {
+      "id": "1a2ac0e5-3cda-457f-9bd2-b23343e116d9",
+      "name": "İyimser: Sam Altman ve OpenAI Devrimi",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1a2ac0e5-3cda-457f-9bd2-b23343e116d9"
+    },
+    {
+      "id": "1a621416-c896-40fd-8664-d37711d6d399",
+      "name": "Jira 8 Temelleri",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1a621416-c896-40fd-8664-d37711d6d399"
+    },
+    {
+      "id": "1a68f37e-6fb2-4ab1-9a38-1ce76541c935",
+      "name": ".NET 10 Mikroservisleri Mimarileme: Tasarım Kalıpları ve Uygulama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1a68f37e-6fb2-4ab1-9a38-1ce76541c935"
+    },
+    {
+      "id": "1a9e5fc1-705f-4fe5-a49f-e72dc17d2781",
+      "name": "UX Yasaları: Daha İyi Ürün Tasarımı için Psikoloji",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1a9e5fc1-705f-4fe5-a49f-e72dc17d2781"
+    },
+    {
+      "id": "1ab29441-72fe-4a47-b539-9cd7193cd178",
+      "name": "199 Çok Faydalı İngilizce Kalıp ve İfade",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1ab29441-72fe-4a47-b539-9cd7193cd178"
+    },
+    {
+      "id": "1b204331-d96a-4370-8d20-03f742741d9e",
+      "name": "YZ Veri Mühendisliği ve İleri Prompt Teknikleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1b204331-d96a-4370-8d20-03f742741d9e"
+    },
+    {
+      "id": "1c394c00-e22d-4bde-a6b9-731d6e4096f4",
+      "name": "Temel Modellerle Zaman Serisi Tahmini",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1c394c00-e22d-4bde-a6b9-731d6e4096f4"
+    },
+    {
+      "id": "1c61163e-7861-43b1-88f6-9755e8ac411f",
+      "name": "Databricks'te Unity Catalog",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1c61163e-7861-43b1-88f6-9755e8ac411f"
+    },
+    {
+      "id": "1d9518e8-dbe9-4f2b-b82d-eb7138ffaa0f",
+      "name": "LLM Uygulamaları Kurma: RAG'den YZ Ajanlarına",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1d9518e8-dbe9-4f2b-b82d-eb7138ffaa0f"
+    },
+    {
+      "id": "1e021c3b-082d-469a-9126-30cd556e3af4",
+      "name": "NLP, LLM ile Buluşunca: Konuşma Tabanlı Soru-Cevaba Sinirsel Yaklaşımlar",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1e021c3b-082d-469a-9126-30cd556e3af4"
+    },
+    {
+      "id": "1e480ee9-6391-4d83-990a-d8e56537fcee",
+      "name": "Pinterest Refahı: Görsel Pazarlama ve Para Kazanma",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1e480ee9-6391-4d83-990a-d8e56537fcee"
+    },
+    {
+      "id": "1f62bce2-d4b1-41cd-b19d-b15af9d0436c",
+      "name": "İş Yönetiminde YZ: Teknoloji ile Stratejiyi Birleştirmek",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/1f62bce2-d4b1-41cd-b19d-b15af9d0436c"
+    },
+    {
+      "id": "200a0b2c-b31b-43e6-8e35-96774a7a46b4",
+      "name": "Yönetim Pratiğinin İlkeleri ve İşlevleri",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/200a0b2c-b31b-43e6-8e35-96774a7a46b4"
+    },
+    {
+      "id": "20a7fdea-4d7e-403d-9415-831ece9ec337",
+      "name": "Sağlıkta Üretici YZ: Uygulamalar, Etik ve İnovasyon",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/20a7fdea-4d7e-403d-9415-831ece9ec337"
+    },
+    {
+      "id": "2186950b-e238-44c3-954b-1d0904390ec9",
+      "name": "Makine Öğrenmesi Teknolojileri ve Uygulamalarında İlerlemeler 2025",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2186950b-e238-44c3-954b-1d0904390ec9"
+    },
+    {
+      "id": "21da4e84-d6f4-4e57-a37b-474472f85db2",
+      "name": "Orta Düzey Öğrenciler için İngilizce Kısa Hikâyeler",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/21da4e84-d6f4-4e57-a37b-474472f85db2"
+    },
+    {
+      "id": "221d8a58-0a7b-4583-8853-02d8ac790d9c",
+      "name": "LangChain ve LangGraph ile Üretici YZ",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/221d8a58-0a7b-4583-8853-02d8ac790d9c"
+    },
+    {
+      "id": "2272e60d-1bc4-494f-bd82-ff4157393d4d",
+      "name": "Mühendisler için Kuantum Hesaplama Mimarisi ve Donanımı",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2272e60d-1bc4-494f-bd82-ff4157393d4d"
+    },
+    {
+      "id": "2337b127-f612-48c8-a36f-c01184526e4a",
+      "name": "YZ için UX: YZ Odaklı Ürün Tasarımı Çerçevesi",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2337b127-f612-48c8-a36f-c01184526e4a"
+    },
+    {
+      "id": "2382653f-63c0-401a-be16-213686afcdac",
+      "name": "Makine Öğrenmesi İş Akışları: Model Yaşam Döngülerini Otomatikleştirme",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2382653f-63c0-401a-be16-213686afcdac"
+    },
+    {
+      "id": "2385f5c7-16ce-49e1-88d1-0ff4207113ad",
+      "name": "KI 2025: Yapay Zekâda İlerlemeler Konferans Bildirileri",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2385f5c7-16ce-49e1-88d1-0ff4207113ad"
+    },
+    {
+      "id": "2399eb71-308a-4f7e-89e0-f28ff502552d",
+      "name": "Vibe Coding: YZ Destekli Mühendisliğin Geleceği",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2399eb71-308a-4f7e-89e0-f28ff502552d"
+    },
+    {
+      "id": "23ca71f1-39a8-490d-94ee-8d75ac59ade5",
+      "name": "İş Başında Blockchain: Akıllı Sözleşmeler ve Dapp'ler",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/23ca71f1-39a8-490d-94ee-8d75ac59ade5"
+    },
+    {
+      "id": "23e9a12d-a4bf-4ff3-b3cf-da5c9f028343",
+      "name": "Claude AI ile Otomasyon ve Para Kazanma",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/23e9a12d-a4bf-4ff3-b3cf-da5c9f028343"
+    },
+    {
+      "id": "269a8970-fae6-4c61-ba75-b4ebe5d6774d",
+      "name": "Cep Boyu Projelerle Go Öğren",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/269a8970-fae6-4c61-ba75-b4ebe5d6774d"
+    },
+    {
+      "id": "27079fd2-e3ef-418b-b1c7-a6b3b2349e38",
+      "name": "Yıldırım: Elektrik Sistemleri",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/27079fd2-e3ef-418b-b1c7-a6b3b2349e38"
+    },
+    {
+      "id": "28a6145a-1404-40fc-ba8d-d21747984f74",
+      "name": "PostgreSQL Hataları ve Bunlardan Kaçınma Yolları",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/28a6145a-1404-40fc-ba8d-d21747984f74"
+    },
+    {
+      "id": "2a5d0a73-0149-4677-89c3-a6b54e4436ac",
+      "name": "Sherlock Olmak: Kızıl Çember",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2a5d0a73-0149-4677-89c3-a6b54e4436ac"
+    },
+    {
+      "id": "2cb60387-0995-4729-baf1-f9dc7b993dd2",
+      "name": "FastAPI ile Üretici YZ Servisleri Kurma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2cb60387-0995-4729-baf1-f9dc7b993dd2"
+    },
+    {
+      "id": "2cf34e11-d97e-4648-a8c6-6d971228cb37",
+      "name": "İş Başında Büyük Veri: Küresel Liderlerden Vaka Çalışmaları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 2,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2cf34e11-d97e-4648-a8c6-6d971228cb37"
+    },
+    {
+      "id": "2d8314a2-b40c-456d-9727-6d8f8937a304",
+      "name": "YZ Pazarlamacın: Pratik Oyun Kitabı",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 4,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2d8314a2-b40c-456d-9727-6d8f8937a304"
+    },
+    {
+      "id": "2db19bc6-7bae-49ec-8d80-52e206c68b84",
+      "name": "TensorFlow, Keras ve Üretici YZ ile Sinir Ağları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2db19bc6-7bae-49ec-8d80-52e206c68b84"
+    },
+    {
+      "id": "2de45153-9ee8-4c2c-b19b-e0d87faa65bb",
+      "name": "Mektûbat'ın Hikmeti",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2de45153-9ee8-4c2c-b19b-e0d87faa65bb"
+    },
+    {
+      "id": "2ebc5671-c791-461e-9441-36aff6b2e297",
+      "name": "Beslenme Psikolojisi: Gıda, Zihin ve Ruh Sağlığı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2ebc5671-c791-461e-9441-36aff6b2e297"
+    },
+    {
+      "id": "2fcc621c-fbcf-4b89-832e-f9e5c5054fa8",
+      "name": "Kali Linux Tarif Kitabı: Üçüncü Baskı Kapsamlı Lab Kılavuzu",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/2fcc621c-fbcf-4b89-832e-f9e5c5054fa8"
+    },
+    {
+      "id": "3097ac5b-23a8-4421-b847-dc789382a50c",
+      "name": "Python Nesne Yönelimli Programlama: Tasarım, Kalıplar ve Pratik",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3097ac5b-23a8-4421-b847-dc789382a50c"
+    },
+    {
+      "id": "30c66f03-d7f2-42b0-a78b-e8da683cd4c8",
+      "name": "LangChain'i Öğrenmek",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/30c66f03-d7f2-42b0-a78b-e8da683cd4c8"
+    },
+    {
+      "id": "31089593-349c-4df8-9531-7809e9d41e78",
+      "name": "Enneagram Temelli Hafızlık Eğitimi: Öğrenciyi Tanıma Kılavuzu",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 6,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/31089593-349c-4df8-9531-7809e9d41e78"
+    },
+    {
+      "id": "3112227a-81df-42d2-9686-9e9da4b40630",
+      "name": "Next.js 15'te Ustalaşma: Modern Web Geliştirmenin Geleceği",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3112227a-81df-42d2-9686-9e9da4b40630"
+    },
+    {
+      "id": "3176bb5e-32bb-419c-a172-d826145e5bca",
+      "name": "Yarın için Tasarım: ICoRD 2021 Bildirileri Cilt 2",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3176bb5e-32bb-419c-a172-d826145e5bca"
+    },
+    {
+      "id": "3294346b-6bd5-4e21-bde5-ae75860366d7",
+      "name": "Blockchain: Akıllı Sözleşmeler ve Dapp Geliştirme",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3294346b-6bd5-4e21-bde5-ae75860366d7"
+    },
+    {
+      "id": "33b55136-80c9-470d-b7f6-f28a9b0fe681",
+      "name": "Umre Duaları: Hac için Kutsal Dualar ve Niyazlar",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/33b55136-80c9-470d-b7f6-f28a9b0fe681"
+    },
+    {
+      "id": "3470cffb-cc8b-41cf-8e19-391aa0baac13",
+      "name": "Rust Web Programlama: Mikroservis ve Dağıtım Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3470cffb-cc8b-41cf-8e19-391aa0baac13"
+    },
+    {
+      "id": "35aa498e-ae40-425f-b84f-c6d35a2520bb",
+      "name": "YZ Ürün Geliştirme Sanatı",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/35aa498e-ae40-425f-b84f-c6d35a2520bb"
+    },
+    {
+      "id": "36d9c65f-0bae-467c-8c43-34dfcb69450b",
+      "name": "Arama Motoru Optimizasyonunda Ustalaşma: Strateji ve Pratik",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/36d9c65f-0bae-467c-8c43-34dfcb69450b"
+    },
+    {
+      "id": "376dea35-ba02-40c7-8eb7-254508affb5b",
+      "name": "The Coder Cafe: Yazılımcılar için 66 Zamansız Kavram",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/376dea35-ba02-40c7-8eb7-254508affb5b"
+    },
+    {
+      "id": "38a29ecb-969c-4e41-9390-54607f27a113",
+      "name": "[GOOGLE DOCS] Çoğu Kişi Claude'u Akıllı Bir Google Araması Gibi Kullanıyor",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/38a29ecb-969c-4e41-9390-54607f27a113"
+    },
+    {
+      "id": "394b496c-4213-497f-96bb-207d91ebe62c",
+      "name": "İslam'da Bilim ve Teknik",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/394b496c-4213-497f-96bb-207d91ebe62c"
+    },
+    {
+      "id": "394c7171-9139-47b4-9fa2-e80b718145fa",
+      "name": "Temellerden Ajanlara NLP'de Ustalaşma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/394c7171-9139-47b4-9fa2-e80b718145fa"
+    },
+    {
+      "id": "3991b230-0a6e-4492-adc5-b263fb804b9e",
+      "name": "Osmanlı İmparatorluğu: Klasik Çağ 1300-1600",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3991b230-0a6e-4492-adc5-b263fb804b9e"
+    },
+    {
+      "id": "39963917-9434-455b-aede-4da77b326ae2",
+      "name": "Casus Sırları: Nihai CIA Satış ve İş Kılavuzu",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/39963917-9434-455b-aede-4da77b326ae2"
+    },
+    {
+      "id": "39cfd1a8-36bc-40a1-b886-bccb34694f2b",
+      "name": "Üretici YZ'yi Görselleştirme: Mimari, Kullanım Senaryoları ve Mühendislik",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/39cfd1a8-36bc-40a1-b886-bccb34694f2b"
+    },
+    {
+      "id": "3a17fa5f-4534-45aa-b541-89515a6d9544",
+      "name": "Sezgisel Yöntemler ve Önyargılar: İnsan Sezgisinin Mekaniği",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3a17fa5f-4534-45aa-b541-89515a6d9544"
+    },
+    {
+      "id": "3a24b014-4b1d-48ca-a6ee-1a5697e9acc7",
+      "name": "Kuantum Işınlanma Şemalarının Tasarımı",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3a24b014-4b1d-48ca-a6ee-1a5697e9acc7"
+    },
+    {
+      "id": "3a398996-3c28-45a3-a694-9f7d42031480",
+      "name": "Ürün Yöneticileri için Claude Code",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3a398996-3c28-45a3-a694-9f7d42031480"
+    },
+    {
+      "id": "3a432217-fbea-4ae3-b6e5-6987dd9d0f3b",
+      "name": "Qiskit ve IBM Quantum ile Python Kuantum Pratiği",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3a432217-fbea-4ae3-b6e5-6987dd9d0f3b"
+    },
+    {
+      "id": "3ac7d4db-a322-4df8-8ec4-4e3f980aea4e",
+      "name": "Platform Mühendisliği",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3ac7d4db-a322-4df8-8ec4-4e3f980aea4e"
+    },
+    {
+      "id": "3ae4c2a4-2d0b-4c4c-85a9-8c110e46ee3f",
+      "name": "Transformer Mimarisi ve Uygulamaları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 10,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3ae4c2a4-2d0b-4c4c-85a9-8c110e46ee3f"
+    },
+    {
+      "id": "3b0a54ec-6546-42f2-93f5-1b9cadab8ffa",
+      "name": "Yıldırım Elektromanyetiği: Modelleme",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3b0a54ec-6546-42f2-93f5-1b9cadab8ffa"
+    },
+    {
+      "id": "3b9f3aa5-d2d3-46ee-8aff-3889aa67ce7a",
+      "name": "Zaman Yönetimi 2 — Ölümlüler için Zaman Yönetimi",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3b9f3aa5-d2d3-46ee-8aff-3889aa67ce7a"
+    },
+    {
+      "id": "3bbad3b4-15c9-4a22-8a5b-0ad4f08261d8",
+      "name": "DevOps için Podman: Güvenli Köksüz Konteynerler ve YZ İş Akışları",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3bbad3b4-15c9-4a22-8a5b-0ad4f08261d8"
+    },
+    {
+      "id": "3f3c8f96-a2a0-43d7-b398-728a7e6d52c5",
+      "name": "OpenClaw Kurulum Rehberi: 7/24 Otonom YZ Asistanı Dağıtımı",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3f3c8f96-a2a0-43d7-b398-728a7e6d52c5"
+    },
+    {
+      "id": "3f8db972-3052-4856-864a-acc89cccd69b",
+      "name": "Agentic YZ Veri Mimarileri",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/3f8db972-3052-4856-864a-acc89cccd69b"
+    },
+    {
+      "id": "400fd42a-2c35-462a-9354-d8f263b45472",
+      "name": "FastAPI ile Üretici YZ Servisleri Kurma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/400fd42a-2c35-462a-9354-d8f263b45472"
+    },
+    {
+      "id": "40b4eb8e-1713-49ce-8f28-8afc42889016",
+      "name": "TED Gibi Konuş",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/40b4eb8e-1713-49ce-8f28-8afc42889016"
+    },
+    {
+      "id": "40f1eb23-66ad-4b9e-bcb3-aef587da7d32",
+      "name": "YZ: Zekâ Çağında Yardımcı Pilotun",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/40f1eb23-66ad-4b9e-bcb3-aef587da7d32"
+    },
+    {
+      "id": "417361c9-bfb1-44bc-b146-9830e3691eef",
+      "name": "İnsanla Uyumlu: YZ ve Kontrol Sorunu",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/417361c9-bfb1-44bc-b146-9830e3691eef"
+    },
+    {
+      "id": "41c09c7c-ca30-4688-8d5e-c7a0350c6bef",
+      "name": "Sıfırdan Büyük Dil Modelleri Mimarileme ve Geliştirme",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/41c09c7c-ca30-4688-8d5e-c7a0350c6bef"
+    },
+    {
+      "id": "42131c10-9ecb-4b5e-aaea-54d261f7f34c",
+      "name": "Cep Boyu Projelerle Go Öğren",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/42131c10-9ecb-4b5e-aaea-54d261f7f34c"
+    },
+    {
+      "id": "42e39799-4a9f-4837-be93-f8c019de39da",
+      "name": "Otonom YZ Ajanı Geliştirme için Python",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/42e39799-4a9f-4837-be93-f8c019de39da"
+    },
+    {
+      "id": "438114eb-ceef-4b58-9070-2068decf9557",
+      "name": "İş Başında Graf Sinir Ağları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/438114eb-ceef-4b58-9070-2068decf9557"
+    },
+    {
+      "id": "43afb340-0b28-4ab2-be1d-61db3fe8e21f",
+      "name": "Modern SEO için Üretici YZ Uygulamaları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/43afb340-0b28-4ab2-be1d-61db3fe8e21f"
+    },
+    {
+      "id": "457df370-c517-474c-b40a-5804c66601b4",
+      "name": "Ürün Odaklı Mühendis",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/457df370-c517-474c-b40a-5804c66601b4"
+    },
+    {
+      "id": "45dc0362-b3c3-49d9-9334-0cbab845eccd",
+      "name": "Kuantum Öğrenme: YZ ve Veri Odaklı Eğitimin Geleceği",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/45dc0362-b3c3-49d9-9334-0cbab845eccd"
+    },
+    {
+      "id": "45f4398e-3f9a-4ce9-97e5-dfa487a4f14b",
+      "name": "Birinci Taraf Veri Etkinleştirme: Pazarlamayı Modernleştirme",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/45f4398e-3f9a-4ce9-97e5-dfa487a4f14b"
+    },
+    {
+      "id": "4606efe0-bc6f-4e49-a7c4-90192a37446c",
+      "name": "Sıfırdan Büyük Dil Modelleri Kurma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4606efe0-bc6f-4e49-a7c4-90192a37446c"
+    },
+    {
+      "id": "492d236e-07ff-4a57-b67b-9a4598fe13f1",
+      "name": "Claude Code: 18 İleri Token Optimizasyon Stratejisi",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/492d236e-07ff-4a57-b67b-9a4598fe13f1"
+    },
+    {
+      "id": "49f9e81f-cdeb-4eb8-81e3-92d8ded49606",
+      "name": "Yazılım Geliştirme için Üretici YZ",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/49f9e81f-cdeb-4eb8-81e3-92d8ded49606"
+    },
+    {
+      "id": "4b6b261d-d609-41a2-929d-8b2f6f93c068",
+      "name": "YZ Nakit Akışı: ChatGPT'yi 7/24 Para Makinesine Çevirmek",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4b6b261d-d609-41a2-929d-8b2f6f93c068"
+    },
+    {
+      "id": "4c8ca53a-a4c8-44bb-b19a-dde78a77ca0c",
+      "name": "Google Cloud'da Üretici YZ: Prototipten Üretim Mühendisliğine",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4c8ca53a-a4c8-44bb-b19a-dde78a77ca0c"
+    },
+    {
+      "id": "4d2a8033-3004-492d-87cd-c01cb6df59e0",
+      "name": "İyiden Mükemmele: Kirpi Kavramı ve 5. Düzey Liderlik",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4d2a8033-3004-492d-87cd-c01cb6df59e0"
+    },
+    {
+      "id": "4d4d3e1b-eb95-4f03-acfb-b8550a66b128",
+      "name": "Nexus: Bilgi Ağlarının Kısa Tarihi",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4d4d3e1b-eb95-4f03-acfb-b8550a66b128"
+    },
+    {
+      "id": "4df9195f-72af-44f3-92f7-138774bee87c",
+      "name": "Derin Öğrenme Algoritmalarının İlke ve Temelleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4df9195f-72af-44f3-92f7-138774bee87c"
+    },
+    {
+      "id": "4e6f2fdb-849c-40f8-aeb3-04c0bc7eb698",
+      "name": "Bağlam Mühendisliği: Google'ın ADK Mimarisinin İçinde",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4e6f2fdb-849c-40f8-aeb3-04c0bc7eb698"
+    },
+    {
+      "id": "4eaa98ef-a316-47fc-b521-bdc3ac9d3d46",
+      "name": "Modern Eğitimi Şekillendirmede Blockchain ve YZ",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4eaa98ef-a316-47fc-b521-bdc3ac9d3d46"
+    },
+    {
+      "id": "4ee934a2-2c17-416e-a18a-b49893a36e68",
+      "name": "Otonom YZ Ajanlarını Mimarileme",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4ee934a2-2c17-416e-a18a-b49893a36e68"
+    },
+    {
+      "id": "4ef1eee8-afec-45c1-8955-7342f53c8923",
+      "name": "Mantık Tabanlı Program Sentezi ve Dönüşümü: LOPSTR 2025",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4ef1eee8-afec-45c1-8955-7342f53c8923"
+    },
+    {
+      "id": "4f0ecfae-4647-45fb-a5d5-389e614d4cfe",
+      "name": "SAP Business AI ile Akıllı Kurumsal Yapı İnşası",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4f0ecfae-4647-45fb-a5d5-389e614d4cfe"
+    },
+    {
+      "id": "4f9ab103-8384-431a-87f1-ed47a1085a03",
+      "name": "Yaratıcı Eylem: Bir Var Olma Biçimi",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4f9ab103-8384-431a-87f1-ed47a1085a03"
+    },
+    {
+      "id": "4fb71292-8dcc-4ac5-89c7-86e588f9c44b",
+      "name": "Yıldırım Güç Sistemleri",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/4fb71292-8dcc-4ac5-89c7-86e588f9c44b"
+    },
+    {
+      "id": "50199f0e-2e48-4588-9ad9-934f10fb21cb",
+      "name": "Entegre Modüler Aviyonik Projelerinde Sertifikasyon Sorunları",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/50199f0e-2e48-4588-9ad9-934f10fb21cb"
+    },
+    {
+      "id": "5122fcbf-0e8f-4df7-af5e-a1726b015b58",
+      "name": "Kuantum Ops: Kuantum Hesaplama ile BT Operasyonlarını Köprülemek",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5122fcbf-0e8f-4df7-af5e-a1726b015b58"
+    },
+    {
+      "id": "51704f78-0523-446d-95d1-bc2a4746ba8d",
+      "name": "Batı Palearktik Kuşları El Kitabı ve İncelemeleri",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 61,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/51704f78-0523-446d-95d1-bc2a4746ba8d"
+    },
+    {
+      "id": "5184a449-2699-4ec0-8a33-fa3d829b9121",
+      "name": "YZ Pazarlama Kanvası: Pazarlamacılar için Beş Adımlı Plan",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5184a449-2699-4ec0-8a33-fa3d829b9121"
+    },
+    {
+      "id": "52fcc7a3-70dd-4d7f-92ff-b660d851d983",
+      "name": "İş Maceraları: Wall Street'ten On İki Klasik Hikâye",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/52fcc7a3-70dd-4d7f-92ff-b660d851d983"
+    },
+    {
+      "id": "53272c99-e697-45ea-8044-d1ec2f8f5bb6",
+      "name": "Kuantum Blockchain, YZ ve Kriptografi",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/53272c99-e697-45ea-8044-d1ec2f8f5bb6"
+    },
+    {
+      "id": "53714861-00f5-49be-a3c2-ec1ad945268f",
+      "name": "İş Başında YZ Ajanları: LLM'ler, Asistanlar ve Çok-Ajanlı Sistemler",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 11,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/53714861-00f5-49be-a3c2-ec1ad945268f"
+    },
+    {
+      "id": "53901dd3-992f-47ac-8db0-e2167d36353c",
+      "name": "Rekabet Stratejisi: Sektör Analizi ve Rakip Teknikleri",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/53901dd3-992f-47ac-8db0-e2167d36353c"
+    },
+    {
+      "id": "546c47c0-9b31-472d-a5a2-d2c52bd51d33",
+      "name": "Görüntü İşlemede YZ Derin Öğrenme",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/546c47c0-9b31-472d-a5a2-d2c52bd51d33"
+    },
+    {
+      "id": "54c14bab-8e8d-4a99-aacd-da0b99d79d5b",
+      "name": "Çok-Ajanlı Sistemler için Bağlam Mühendisliği",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/54c14bab-8e8d-4a99-aacd-da0b99d79d5b"
+    },
+    {
+      "id": "54c9d006-84eb-43ae-989a-971ddd212baf",
+      "name": "Excel için Üretici YZ Araçlarını Öğrenmek",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/54c9d006-84eb-43ae-989a-971ddd212baf"
+    },
+    {
+      "id": "5629a23a-c1bb-442d-91f2-15400ec06df4",
+      "name": "Zihniyet (Mindset)",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5629a23a-c1bb-442d-91f2-15400ec06df4"
+    },
+    {
+      "id": "569f30b2-ac7e-4c86-a3fa-facf8aa7bb64",
+      "name": "Üretimde LLM'ler: Dil Modellerinden Başarılı Ürünlere",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/569f30b2-ac7e-4c86-a3fa-facf8aa7bb64"
+    },
+    {
+      "id": "56d4ce34-254f-4c66-9540-f2756cab4173",
+      "name": "OpenClaw Rehberi: Özel YZ Akıllı Ağ Geçidinde Ustalaşma",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/56d4ce34-254f-4c66-9540-f2756cab4173"
+    },
+    {
+      "id": "56f13806-6003-4ff9-a25b-84c5bf48ecb2",
+      "name": "DaVinci Resolve 20 ile Kolay Video Düzenleme",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/56f13806-6003-4ff9-a25b-84c5bf48ecb2"
+    },
+    {
+      "id": "57494067-9adf-4ac9-bbae-af7fb5bb2375",
+      "name": "Enneagram: Dokuz Kişilik, İlişkiler ve Manevi Gelişim",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/57494067-9adf-4ac9-bbae-af7fb5bb2375"
+    },
+    {
+      "id": "575be727-f3b0-4d82-aea5-c78e2e8b259b",
+      "name": "Enneagram: Kişilik Tipleri ve Kendini Keşif",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/575be727-f3b0-4d82-aea5-c78e2e8b259b"
+    },
+    {
+      "id": "5862e270-aa18-493b-bcbf-5fb298e88f19",
+      "name": "Dikkat Yeterli: Transformer Model Mimarisi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5862e270-aa18-493b-bcbf-5fb298e88f19"
+    },
+    {
+      "id": "58691c4f-7ae1-4edd-821c-53cb0647204a",
+      "name": "Pazarlama Yönetimi: Stratejik Çerçeveler ve Yeni Gerçekler",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/58691c4f-7ae1-4edd-821c-53cb0647204a"
+    },
+    {
+      "id": "5912cac7-b97f-4ab9-b927-2abbac4cd8cb",
+      "name": "Uçuş Kabini Otomasyonu ve Havayolu Pilotlarının Geleceği",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5912cac7-b97f-4ab9-b927-2abbac4cd8cb"
+    },
+    {
+      "id": "5ad101c1-dc13-4f1e-ad1e-1554c2b35cc8",
+      "name": "Bir Ayda Öğle Aralarında Docker",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5ad101c1-dc13-4f1e-ad1e-1554c2b35cc8"
+    },
+    {
+      "id": "5baa0bf8-a2a8-412e-ba7a-f2af62cfcdf3",
+      "name": "Kancalı: Alışkanlık Yaratan Ürünler Nasıl Kurulur",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5baa0bf8-a2a8-412e-ba7a-f2af62cfcdf3"
+    },
+    {
+      "id": "5be3c339-c2eb-4152-94e4-451c58194620",
+      "name": "SEO için Üretici YZ: Strateji ve Uygulama",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5be3c339-c2eb-4152-94e4-451c58194620"
+    },
+    {
+      "id": "5d65308a-3b0f-41ec-9661-2e1b535d408c",
+      "name": "Vibe Mühendisliği: YZ Geliştirmede Disiplin ve Titizlik",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5d65308a-3b0f-41ec-9661-2e1b535d408c"
+    },
+    {
+      "id": "5d7a2003-7a72-41ca-9370-02afeec02801",
+      "name": "PostgreSQL Hataları ve Bunlardan Kaçınma Yolları",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5d7a2003-7a72-41ca-9370-02afeec02801"
+    },
+    {
+      "id": "5de070e1-cecc-42b2-9a10-148b687f57fa",
+      "name": "Veri Mühendisliği Tasarım Kalıpları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5de070e1-cecc-42b2-9a10-148b687f57fa"
+    },
+    {
+      "id": "5e2a7480-43d3-48a3-b4a1-726408e30aeb",
+      "name": "Kuantum Programlama ve Algoritmalarının İlke ve Uygulamaları",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 5,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5e2a7480-43d3-48a3-b4a1-726408e30aeb"
+    },
+    {
+      "id": "5e3f7d9d-cb78-4058-b5f8-1e955b355beb",
+      "name": "Yeni Çağ Agentic ve Çok Modlu Üretici YZ Sistemlerinde Ustalaşma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5e3f7d9d-cb78-4058-b5f8-1e955b355beb"
+    },
+    {
+      "id": "5eb4804f-e3c7-4c78-8c78-47abeb2646b7",
+      "name": "Makine Öğrenmesi İş Akışlarını Yapılandırma ve Optimize Etme",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5eb4804f-e3c7-4c78-8c78-47abeb2646b7"
+    },
+    {
+      "id": "5f2cff76-150c-4f14-8e62-314ab0dea546",
+      "name": "Sadece Postgres Kullan: Çok Yönlü Veritabanı Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/5f2cff76-150c-4f14-8e62-314ab0dea546"
+    },
+    {
+      "id": "6171c388-70d7-48c9-96fd-a824a3ba6cf4",
+      "name": "Kuantum Hesaplama: Evrim, Temeller ve Gelecek Ufukları",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6171c388-70d7-48c9-96fd-a824a3ba6cf4"
+    },
+    {
+      "id": "621ca268-6d29-4dbe-9d5c-c07c680dcc6e",
+      "name": "Geleceğin Akıllı Şehirleri için Sürü Zekâsı ve Dijital İnovasyon",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/621ca268-6d29-4dbe-9d5c-c07c680dcc6e"
+    },
+    {
+      "id": "621dd984-b68f-466f-8edc-2e21720b9221",
+      "name": "Sıfırdan Bire: Aykırı Tekellerle Geleceği İnşa Etmek",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/621dd984-b68f-466f-8edc-2e21720b9221"
+    },
+    {
+      "id": "62618733-3fc6-42f5-93b1-225eb8ba9e1b",
+      "name": "Ağız Hokkabazlığı: Sözel Yeniden Çerçevelemeyle İnanç Değişimi",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/62618733-3fc6-42f5-93b1-225eb8ba9e1b"
+    },
+    {
+      "id": "627c87ce-bd30-41ed-8601-4825b45807b0",
+      "name": "Dijital Emlak Pazarlama Oyun Kitabı",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/627c87ce-bd30-41ed-8601-4825b45807b0"
+    },
+    {
+      "id": "631a59ad-fd8a-4a1e-a7ed-c61a9aa809bf",
+      "name": "Altair ve YZ ile Veri Hikâyeleştirme",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/631a59ad-fd8a-4a1e-a7ed-c61a9aa809bf"
+    },
+    {
+      "id": "635777cd-24ae-4094-bfcd-893c82c878cc",
+      "name": "Yıldırım Fiziğinin ve Korumasının İlke ve Parametreleri",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/635777cd-24ae-4094-bfcd-893c82c878cc"
+    },
+    {
+      "id": "6450147b-564a-48d2-a4b0-3c448130e286",
+      "name": "Mevzuat",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 3,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6450147b-564a-48d2-a4b0-3c448130e286"
+    },
+    {
+      "id": "6510e33e-cb64-4e40-b95f-acec13a666fe",
+      "name": "Etkili İnsanların 7 Alışkanlığı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6510e33e-cb64-4e40-b95f-acec13a666fe"
+    },
+    {
+      "id": "6511ad7a-7f38-455a-a541-83b5a2a79ff6",
+      "name": "Seçkin Bir Uşağın Profesyonel Anıları",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6511ad7a-7f38-455a-a541-83b5a2a79ff6"
+    },
+    {
+      "id": "6570c21a-9e3e-47eb-b2d9-c2b5360691e5",
+      "name": "Modellerin Sırrı: Doğrusal Regresyondan Derin Öğrenmeye",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6570c21a-9e3e-47eb-b2d9-c2b5360691e5"
+    },
+    {
+      "id": "671b9e53-160f-412b-942f-27cc0682c2a6",
+      "name": "Çığır Açan Reklamcılık: Kitlesel Arzuyu Yönlendirme Sanatı",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/671b9e53-160f-412b-942f-27cc0682c2a6"
+    },
+    {
+      "id": "6809fe09-ed7f-4396-96b4-9c4b5edbca4e",
+      "name": "Prompt Mühendisliği Teknikleri ve Kalıpları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6809fe09-ed7f-4396-96b4-9c4b5edbca4e"
+    },
+    {
+      "id": "6915d79e-98bd-4c2d-ba1d-ac0aaaad3794",
+      "name": "Yapay Sinir Ağlarından Büyük Dil Modellerine (LLM) Uzanan Evrim",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6915d79e-98bd-4c2d-ba1d-ac0aaaad3794"
+    },
+    {
+      "id": "6a0f40a2-5f3d-4393-8287-532e4de80b0e",
+      "name": "İş için UX: Değer, Teşhis ve Olasılık Tasarımı",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6a0f40a2-5f3d-4393-8287-532e4de80b0e"
+    },
+    {
+      "id": "6a3c95fd-8644-46d5-985e-92f08c7b4795",
+      "name": "Coğrafi Veri için R'de Veri Bilimi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6a3c95fd-8644-46d5-985e-92f08c7b4795"
+    },
+    {
+      "id": "6b8e6d71-7dc5-40af-8bda-35f78d294579",
+      "name": "Algoritmalara Giriş (CLRS)",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6b8e6d71-7dc5-40af-8bda-35f78d294579"
+    },
+    {
+      "id": "6cad76e8-8b33-44a5-b6bf-a92f42ad7f12",
+      "name": "İş Başında GitHub Actions: DevOps için CI/CD",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6cad76e8-8b33-44a5-b6bf-a92f42ad7f12"
+    },
+    {
+      "id": "6d55c48e-3e85-442a-8d10-0cc7c95802da",
+      "name": "Spor için YZ: Evrim, Kuram ve Gelecek Uygulamalar",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6d55c48e-3e85-442a-8d10-0cc7c95802da"
+    },
+    {
+      "id": "6d9dfe06-ad66-46ca-a260-942a52aff837",
+      "name": "Resimli Python: Programlamayı Eğlenceli Öğrenin",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6d9dfe06-ad66-46ca-a260-942a52aff837"
+    },
+    {
+      "id": "6fa30b1f-b90f-49e3-9e08-cf4d8c8ec7e6",
+      "name": "Arduino Programlama: Kapsamlı Uygulamalı Rehber",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/6fa30b1f-b90f-49e3-9e08-cf4d8c8ec7e6"
+    },
+    {
+      "id": "703d2e85-b67c-4074-98fd-be058c423b5c",
+      "name": "Zaman Yönetimi 1",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/703d2e85-b67c-4074-98fd-be058c423b5c"
+    },
+    {
+      "id": "715ef461-4c41-4d62-a495-874b2b5472f6",
+      "name": "Sürü Zekâsında İlerlemeler: ICSI 2025 Konferans Bildirileri",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/715ef461-4c41-4d62-a495-874b2b5472f6"
+    },
+    {
+      "id": "725de797-81ff-4ff8-88be-3983d5f476f4",
+      "name": "Nihai Docker Konteyner Kitabı: Dördüncü Baskı",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/725de797-81ff-4ff8-88be-3983d5f476f4"
+    },
+    {
+      "id": "72817ad0-d5b9-4cca-8366-b7f62310eb23",
+      "name": "Kuantum Üstünlüğü: Tıp, Enerji ve Fiziğin Dönüşümü",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/72817ad0-d5b9-4cca-8366-b7f62310eb23"
+    },
+    {
+      "id": "73d979d5-b4ac-4c69-99cd-eb8c8793ac34",
+      "name": "İhyâu Ulûmi'd-Dîn",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 4,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/73d979d5-b4ac-4c69-99cd-eb8c8793ac34"
+    },
+    {
+      "id": "74c735e0-9646-46fe-b538-cb284a72ce12",
+      "name": "Hesaplamalı Kolektif Zekâda İlerlemeler 2025 Bildirileri",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/74c735e0-9646-46fe-b538-cb284a72ce12"
+    },
+    {
+      "id": "7580bfc3-d38e-490e-98f2-6d06152f84e7",
+      "name": "NotebookLM Ustalığı: Her Şeyi 10 Kat Hızlı Öğren",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7580bfc3-d38e-490e-98f2-6d06152f84e7"
+    },
+    {
+      "id": "75dd62c3-c0a0-4b55-ae20-05518424298e",
+      "name": "SEO 2025: Stratejiler ve Google YZ Güncellemeleri",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/75dd62c3-c0a0-4b55-ae20-05518424298e"
+    },
+    {
+      "id": "75e17baa-d7c4-4213-bf68-55b63e9644ec",
+      "name": "Mikroservis Kalıpları: Hızlı Akış için Mimari",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/75e17baa-d7c4-4213-bf68-55b63e9644ec"
+    },
+    {
+      "id": "7748cf3f-e664-43f7-a57e-68446b77a18e",
+      "name": "[CHATGPT] Yazılım Ürünü Kitap Önerisi",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7748cf3f-e664-43f7-a57e-68446b77a18e"
+    },
+    {
+      "id": "777eb119-504b-4659-859a-cdaf2c3c40a7",
+      "name": "Agentic Tasarım Kalıpları: Akıllı Sistemler Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/777eb119-504b-4659-859a-cdaf2c3c40a7"
+    },
+    {
+      "id": "77d255d2-a924-4e0c-9c9e-8edd24eb571e",
+      "name": "Charlie'nin Çikolata Fabrikası",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/77d255d2-a924-4e0c-9c9e-8edd24eb571e"
+    },
+    {
+      "id": "78c599ad-f7c7-4a07-b047-7ecb32b6090d",
+      "name": "Dönüştürücü Pazarlama: Pazarlama 5.0 ve Yeni Çağ Teknolojileri",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/78c599ad-f7c7-4a07-b047-7ecb32b6090d"
+    },
+    {
+      "id": "79e75db2-66b9-4725-bbf9-f071950cb8d0",
+      "name": "İslam'da Bilim",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/79e75db2-66b9-4725-bbf9-f071950cb8d0"
+    },
+    {
+      "id": "7a51c4f9-cb05-4d11-a3f6-cb9e53de705a",
+      "name": "49 İngilizce Konuşma Konusu ve Sorusu",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7a51c4f9-cb05-4d11-a3f6-cb9e53de705a"
+    },
+    {
+      "id": "7a75c060-a27e-463c-834e-26a99a3a0d0a",
+      "name": "YZ Mühendisliği ve Temel Model Sistemleri",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7a75c060-a27e-463c-834e-26a99a3a0d0a"
+    },
+    {
+      "id": "7b7173de-bec5-4c80-9c44-3db6f400b213",
+      "name": "Kuantum Makine Öğrenmesi Üzerine",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7b7173de-bec5-4c80-9c44-3db6f400b213"
+    },
+    {
+      "id": "7c1fc58a-6484-442e-9ea1-5ffdc95eb2bd",
+      "name": "Kayseri Genç Girişimcilik ve İstihdam Merkezi Proje Önerisi",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7c1fc58a-6484-442e-9ea1-5ffdc95eb2bd"
+    },
+    {
+      "id": "7c8eec75-b4a3-4c30-bc6d-673d41c806ea",
+      "name": "Charlie'nin Çikolata Fabrikası",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7c8eec75-b4a3-4c30-bc6d-673d41c806ea"
+    },
+    {
+      "id": "7ce71b32-4827-427e-a19d-65a78b4c945c",
+      "name": "Mektubat",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7ce71b32-4827-427e-a19d-65a78b4c945c"
+    },
+    {
+      "id": "7cf13302-d125-498a-918f-fc8e727b0658",
+      "name": "Fuat Sezgin",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7cf13302-d125-498a-918f-fc8e727b0658"
+    },
+    {
+      "id": "7cf35ab7-2969-47e3-a8fe-dc9ae2ba4c78",
+      "name": "Salesforce Sertifikalı Platform Yöneticisi Çalışma Rehberi",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7cf35ab7-2969-47e3-a8fe-dc9ae2ba4c78"
+    },
+    {
+      "id": "7d6a3b9b-a043-4371-ba4d-d585115b8db0",
+      "name": "İşârâtü'l-İ'câz",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7d6a3b9b-a043-4371-ba4d-d585115b8db0"
+    },
+    {
+      "id": "7ee66d41-0eb7-4e3b-a1f0-3a7399b6b33c",
+      "name": ".NET 10 ile Gerçek Dünya Web Geliştirme Referans Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7ee66d41-0eb7-4e3b-a1f0-3a7399b6b33c"
+    },
+    {
+      "id": "7fc249a8-d250-4b1c-9c2c-66bdb22d0982",
+      "name": "MEP için Revit 2025",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/7fc249a8-d250-4b1c-9c2c-66bdb22d0982"
+    },
+    {
+      "id": "8053fae4-831b-4e30-8522-f7b3504ab5ac",
+      "name": "Kuantum Hesaplama: Evrim, Mimariler ve Uygulamalar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8053fae4-831b-4e30-8522-f7b3504ab5ac"
+    },
+    {
+      "id": "80e651f5-8435-49a4-a5ba-d79d1d58286d",
+      "name": "Drone Görüntüsü ve Verisi Yakalama ve İşlemenin Temelleri",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/80e651f5-8435-49a4-a5ba-d79d1d58286d"
+    },
+    {
+      "id": "81076fa2-833c-4619-97f3-809aa0f8f179",
+      "name": "Jeolojik Tehlikeler ve Doğal Kaynaklar için Uzaktan Algılama",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/81076fa2-833c-4619-97f3-809aa0f8f179"
+    },
+    {
+      "id": "812aed43-69a5-47f1-9ffe-148da91b175a",
+      "name": "Sağlam ve Ölçeklenebilir YZ Yazılım Sistemleri Mimarisi",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/812aed43-69a5-47f1-9ffe-148da91b175a"
+    },
+    {
+      "id": "81331e7f-e802-4cba-9aae-d18454452496",
+      "name": "Dropshipping Planında Ustalaşma: Lansmandan Kârlılığa Ölçeklenme",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/81331e7f-e802-4cba-9aae-d18454452496"
+    },
+    {
+      "id": "813a4fc5-eb76-400c-975a-96abb69aa236",
+      "name": "Meta Reklamları Uygun Fiyat Prompt Paketi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/813a4fc5-eb76-400c-975a-96abb69aa236"
+    },
+    {
+      "id": "816e50e7-152d-4dd7-9187-e8a984624a70",
+      "name": "Anlaşılır JavaScript: Modern Programlama Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/816e50e7-152d-4dd7-9187-e8a984624a70"
+    },
+    {
+      "id": "82c65c99-a46a-488a-964b-a2db9e467105",
+      "name": "Claude 4'te Ustalaşma: YZ Verimliliği için Nihai Rehber",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/82c65c99-a46a-488a-964b-a2db9e467105"
+    },
+    {
+      "id": "8345cd3a-3187-47d9-b9ab-2fe1c36f390c",
+      "name": "Pazarlama 6.0: Gelecek Sürükleyici (Immersive)",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8345cd3a-3187-47d9-b9ab-2fe1c36f390c"
+    },
+    {
+      "id": "8385d590-7cf2-4c80-bfd6-1e901372777b",
+      "name": "İngilizce Dil Öğretimi Pratiği",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8385d590-7cf2-4c80-bfd6-1e901372777b"
+    },
+    {
+      "id": "83bbd4f4-c6b0-4732-9bbe-2826b55de7d3",
+      "name": "AGI 2025: Makine Zekâsının Temelleri ve Sınırları",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/83bbd4f4-c6b0-4732-9bbe-2826b55de7d3"
+    },
+    {
+      "id": "84411661-e3da-47c4-a513-87b47ad39d00",
+      "name": "Moltbot El Kitabı: Mac Mini'de Yerel YZ Ajanları Dağıtımı",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 6,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/84411661-e3da-47c4-a513-87b47ad39d00"
+    },
+    {
+      "id": "84fa8d4a-ce6f-4895-82d2-9e4b3c6d31d0",
+      "name": "Mikro Ön Yüzler Kurma: Dağıtık Mimarilere Pratik Rehber",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/84fa8d4a-ce6f-4895-82d2-9e4b3c6d31d0"
+    },
+    {
+      "id": "8627344e-82a0-4adc-ab3b-93040f77d81d",
+      "name": "İnsanla Uyumlu: YZ ve Kontrol Sorunu",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8627344e-82a0-4adc-ab3b-93040f77d81d"
+    },
+    {
+      "id": "86833c32-f34c-416d-bb78-78fe70c52787",
+      "name": "Ta'lîkât: Klasik Mantık ve Aklî Hakikatler",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/86833c32-f34c-416d-bb78-78fe70c52787"
+    },
+    {
+      "id": "869a1a89-5dc4-4bcf-9ec7-f93928a89ebf",
+      "name": "Kuantum Kriptografi",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/869a1a89-5dc4-4bcf-9ec7-f93928a89ebf"
+    },
+    {
+      "id": "86c18293-c5d0-49ea-ba7f-d193d18dccab",
+      "name": "Rust'a Geçiş :)",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 11,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/86c18293-c5d0-49ea-ba7f-d193d18dccab"
+    },
+    {
+      "id": "88c07d22-6cc4-4ff3-8f76-29a448b68541",
+      "name": "Girişim Teknik Rehberi: Google Cloud'da YZ Ajanları",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/88c07d22-6cc4-4ff3-8f76-29a448b68541"
+    },
+    {
+      "id": "89897ae5-d45c-4209-b768-275d59eab3ed",
+      "name": "Agentic YZ Veri Mimarileri",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/89897ae5-d45c-4209-b768-275d59eab3ed"
+    },
+    {
+      "id": "8ae428d7-3609-45f8-9ac7-374c1c1b0c23",
+      "name": "İHA Formasyon Kontrolü ve Beyinden İlham Alan Robotik Zekâ",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8ae428d7-3609-45f8-9ac7-374c1c1b0c23"
+    },
+    {
+      "id": "8b5a2ae6-0daf-4798-884e-68355121dcb0",
+      "name": "Python ile Model Context Protocol",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8b5a2ae6-0daf-4798-884e-68355121dcb0"
+    },
+    {
+      "id": "8c8e1f8a-56db-44e0-a1ed-4f54b8ad9df7",
+      "name": "Pinterest Refahı: Görsel Pazarlama ve Para Kazanma",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8c8e1f8a-56db-44e0-a1ed-4f54b8ad9df7"
+    },
+    {
+      "id": "8ccb525f-affd-417d-b870-e48b532c69f2",
+      "name": "Go'da gRPC Mikroservisleri",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 5,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8ccb525f-affd-417d-b870-e48b532c69f2"
+    },
+    {
+      "id": "8d20916c-a35b-44f5-9d92-c40e6d410da9",
+      "name": "Sığırcıklar ve Mynalar: Taksonomik ve Biyolojik Bir İnceleme",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8d20916c-a35b-44f5-9d92-c40e6d410da9"
+    },
+    {
+      "id": "8d5a4faa-c4d4-47c3-b83a-b9bc04171954",
+      "name": "Blockchain ile Askeri Uygulamalar için YZ",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8d5a4faa-c4d4-47c3-b83a-b9bc04171954"
+    },
+    {
+      "id": "8da02794-3d9b-4206-b902-40d1ac2bcbde",
+      "name": "Vibe Coding: Programlamanın Geleceği",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8da02794-3d9b-4206-b902-40d1ac2bcbde"
+    },
+    {
+      "id": "8e757f24-650a-479f-8ddb-8bc54fdf01a5",
+      "name": "Üretici YZ ve Büyük Dil Modellerine Giriş",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8e757f24-650a-479f-8ddb-8bc54fdf01a5"
+    },
+    {
+      "id": "8ef14fae-6668-41ed-9df1-25d974b7abd3",
+      "name": "Borsanın Gölgesinde: Sermaye Piyasası Hukuku ve Finansal Adalet",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/8ef14fae-6668-41ed-9df1-25d974b7abd3"
+    },
+    {
+      "id": "91046d59-d8aa-4650-848c-a3e1c57ce531",
+      "name": "İş Başında Apache Kafka: Temellerden Üretime",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/91046d59-d8aa-4650-848c-a3e1c57ce531"
+    },
+    {
+      "id": "9155a4a8-8de3-4f91-ae1c-4df3c0740f19",
+      "name": "Meta Veri Yönetimi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9155a4a8-8de3-4f91-ae1c-4df3c0740f19"
+    },
+    {
+      "id": "91b5d076-d465-4498-8bcd-8fe956c29796",
+      "name": "SEO Üstünlüğü için Semrush",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/91b5d076-d465-4498-8bcd-8fe956c29796"
+    },
+    {
+      "id": "91bcab88-cec9-44db-a7ca-0cb92a434332",
+      "name": "Gayrimenkul Değerleme Esasları ve Yöntemleri",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/91bcab88-cec9-44db-a7ca-0cb92a434332"
+    },
+    {
+      "id": "924d5735-30c1-4ddb-9879-280f50b5ba1d",
+      "name": "Coğrafi Veri Bilimi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/924d5735-30c1-4ddb-9879-280f50b5ba1d"
+    },
+    {
+      "id": "9255655e-d028-4343-8678-d44b861fe805",
+      "name": "YZ Ajan Platformları Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9255655e-d028-4343-8678-d44b861fe805"
+    },
+    {
+      "id": "937c2060-87bb-4f96-a504-6eb890102c52",
+      "name": "Sertifikalı Kubernetes Yöneticisi (CKA) Çalışma Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/937c2060-87bb-4f96-a504-6eb890102c52"
+    },
+    {
+      "id": "9462b31c-d336-4cdb-8b01-876de6aa56e7",
+      "name": "Boeing, 737 MAX Krizi ve Havacılık Güvenliği",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9462b31c-d336-4cdb-8b01-876de6aa56e7"
+    },
+    {
+      "id": "94bd01ab-7138-4ae5-b7de-a9ee0e720360",
+      "name": "Obsidian Bilgeliği: YZ Destekli Bilgi Yönetiminde Ustalaşma",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/94bd01ab-7138-4ae5-b7de-a9ee0e720360"
+    },
+    {
+      "id": "9541f771-6823-4f2a-834e-3599e62155a9",
+      "name": "LangChain ve LangGraph ile Üretime Hazır Ajanlar",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9541f771-6823-4f2a-834e-3599e62155a9"
+    },
+    {
+      "id": "954f2455-858b-44a0-b47a-2b6d7ff7ee58",
+      "name": "DevOps için Go'da Ustalaşma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/954f2455-858b-44a0-b47a-2b6d7ff7ee58"
+    },
+    {
+      "id": "95c987d2-8b64-4227-808d-c96e0f44f06e",
+      "name": "Drone ve İHA'lar için YZ, Siber Güvenlik ve Veri Bilimi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/95c987d2-8b64-4227-808d-c96e0f44f06e"
+    },
+    {
+      "id": "95ee9354-8752-4b6b-8ff3-90345c2afc98",
+      "name": "FinTech'te Üretici YZ: Küresel Finansal Sistemlerde Devrim",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/95ee9354-8752-4b6b-8ff3-90345c2afc98"
+    },
+    {
+      "id": "96015d24-5d10-40bd-bbb1-0849a1f69d7e",
+      "name": "Python ile Test Odaklı Geliştirme: Test Keçisine Uy",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/96015d24-5d10-40bd-bbb1-0849a1f69d7e"
+    },
+    {
+      "id": "96855772-5339-463e-bef1-12f7aa73383e",
+      "name": "Üretim: Ürün Ekipleri",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/96855772-5339-463e-bef1-12f7aa73383e"
+    },
+    {
+      "id": "96f3826c-69f5-4aa1-8660-6d339902ca72",
+      "name": "ITAI 2025 Bildirileri: YZ ve BT'de İlerlemeler",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/96f3826c-69f5-4aa1-8660-6d339902ca72"
+    },
+    {
+      "id": "9750b986-7aac-4b8b-a3a6-fd25cea78423",
+      "name": "Doğanın Müziği: Kuş Ötüşünün Bilimi ve Gelişimi",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9750b986-7aac-4b8b-a3a6-fd25cea78423"
+    },
+    {
+      "id": "97bd9a99-f11f-4ac0-aa82-b56f6f8e5c03",
+      "name": "Sui, Move, Narwhal ve Bullshark Temel Kaynakları",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/97bd9a99-f11f-4ac0-aa82-b56f6f8e5c03"
+    },
+    {
+      "id": "992d9957-28c8-401b-a62c-14a56354ebf0",
+      "name": "Dijital Pazarlama için Nihai YZ Prompt Çalışma Kitabı",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/992d9957-28c8-401b-a62c-14a56354ebf0"
+    },
+    {
+      "id": "9a2a12dd-747d-4197-a68f-4ab2a1ee8f52",
+      "name": "Pinterest Stratejisiyle Etsy Satışlarında Ustalaşma",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9a2a12dd-747d-4197-a68f-4ab2a1ee8f52"
+    },
+    {
+      "id": "9ae14fb5-e090-4bb8-bd4f-ea34f130ba89",
+      "name": "Kızıl İcâz",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9ae14fb5-e090-4bb8-bd4f-ea34f130ba89"
+    },
+    {
+      "id": "9bfa8caf-d43a-467e-a91f-776b1876965a",
+      "name": "YZ Ajanlarıyla Uygulama Geliştirme (Michael Albada, O'Reilly)",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9bfa8caf-d43a-467e-a91f-776b1876965a"
+    },
+    {
+      "id": "9c5700d8-47ed-4190-80aa-85e0518fecd7",
+      "name": "Keras 3: Gradyan İnişinden Üretici YZ'ye",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9c5700d8-47ed-4190-80aa-85e0518fecd7"
+    },
+    {
+      "id": "9c6d457a-396c-4bcd-bb80-1fbd3d859da6",
+      "name": "Temel Yapay Zekâ",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9c6d457a-396c-4bcd-bb80-1fbd3d859da6"
+    },
+    {
+      "id": "9cced868-01b6-454a-b1d4-d4d748840c29",
+      "name": "Oyun Başlasın! Oyunlaştırma ve Oyuncu-Eğitimcinin Yükselişi",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9cced868-01b6-454a-b1d4-d4d748840c29"
+    },
+    {
+      "id": "9cd993c2-f0af-42eb-b169-baa907e57820",
+      "name": "Merkezi Olmayan Finansı Anlamak: Kavramlar, Teknoloji ve Düzenleme",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9cd993c2-f0af-42eb-b169-baa907e57820"
+    },
+    {
+      "id": "9d1fd639-c79b-48a9-9935-854f7805b510",
+      "name": "Dropshipping Ustalığı",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9d1fd639-c79b-48a9-9935-854f7805b510"
+    },
+    {
+      "id": "9e0718cd-b3f4-4300-990c-8244ffa406b3",
+      "name": "İş Maceraları: Wall Street'ten On İki Klasik Hikâye",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9e0718cd-b3f4-4300-990c-8244ffa406b3"
+    },
+    {
+      "id": "9e12ab54-7eed-4bb6-a497-3a0dc72798f1",
+      "name": "Mekke-i Mükerreme · Kâbe-i Muazzama · Tavaf · Hac (Mesut Yağmahan)",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9e12ab54-7eed-4bb6-a497-3a0dc72798f1"
+    },
+    {
+      "id": "9ee98321-a012-4784-a3d3-16c64c3b1d2b",
+      "name": "YZ Ağ Tarif Kitabı: Ağ Otomasyonu için Pratik Tarifler",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9ee98321-a012-4784-a3d3-16c64c3b1d2b"
+    },
+    {
+      "id": "9f47c04e-bf70-4133-bd37-e91c4dd05d89",
+      "name": "Şimdinin Gücü",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9f47c04e-bf70-4133-bd37-e91c4dd05d89"
+    },
+    {
+      "id": "9f7bc6ca-72d6-44b3-b770-1b9b845ffe1c",
+      "name": "Dijital Yetkinlikler ve Yapay Zekâ Atölyesi",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9f7bc6ca-72d6-44b3-b770-1b9b845ffe1c"
+    },
+    {
+      "id": "9f888d5c-114a-43f1-9123-f30d2cbc413f",
+      "name": "Figma ile Arayüz Tasarımı ve Prototipleme",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9f888d5c-114a-43f1-9123-f30d2cbc413f"
+    },
+    {
+      "id": "9f9ee64e-a572-4afa-a58e-6689379cf953",
+      "name": "Pix4D Fotogrametri Rehberi: GCP'lerle Drone Görüntüsü İşleme",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9f9ee64e-a572-4afa-a58e-6689379cf953"
+    },
+    {
+      "id": "9fdcdd07-f791-4cb2-bcd2-be8d4eda1271",
+      "name": "Umre 1",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/9fdcdd07-f791-4cb2-bcd2-be8d4eda1271"
+    },
+    {
+      "id": "a01e1be6-e54d-4f60-a05e-415f993a41fe",
+      "name": "Makine Öğrenmesi (ML)",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 7,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a01e1be6-e54d-4f60-a05e-415f993a41fe"
+    },
+    {
+      "id": "a11a4c92-1448-4612-b3a9-f3d0e3b675b6",
+      "name": "Python Çekirdek Kavramları ve Yapıları",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a11a4c92-1448-4612-b3a9-f3d0e3b675b6"
+    },
+    {
+      "id": "a1afed77-95aa-4f39-895f-96f566290f71",
+      "name": "Üretici YZ'de Ustalaşma: Mimari, İnce Ayar ve Uygulama",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a1afed77-95aa-4f39-895f-96f566290f71"
+    },
+    {
+      "id": "a2c6fc8a-d26d-443a-ac27-d6c96e7669fe",
+      "name": "Modern Eğitim Sistemini Şekillendirmede Blockchain ve YZ",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a2c6fc8a-d26d-443a-ac27-d6c96e7669fe"
+    },
+    {
+      "id": "a3765259-d71d-4395-802f-e068f6b0acc5",
+      "name": "İyimser: Sam Altman ve OpenAI Devrimi",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a3765259-d71d-4395-802f-e068f6b0acc5"
+    },
+    {
+      "id": "a41c93d8-2787-48ba-88b3-0c0fa0cd92ca",
+      "name": "SEO Üstünlüğü için Semrush",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a41c93d8-2787-48ba-88b3-0c0fa0cd92ca"
+    },
+    {
+      "id": "a4ef22e2-1755-4ad3-826d-9eda7baf25b2",
+      "name": "Atomik Alışkanlıklar Çalışma Kitabı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a4ef22e2-1755-4ad3-826d-9eda7baf25b2"
+    },
+    {
+      "id": "a508449b-77fc-4419-b0e3-3822ec6f467c",
+      "name": "Kasırganın İçinde: Yüksek Teknoloji Pazarlama ve Hızlı Büyüme",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 7,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a508449b-77fc-4419-b0e3-3822ec6f467c"
+    },
+    {
+      "id": "a53f5aa6-1c29-4476-bc89-5c92e1e8f4c2",
+      "name": "100 Go Hatası ve Bunlardan Kaçınma Yolları",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a53f5aa6-1c29-4476-bc89-5c92e1e8f4c2"
+    },
+    {
+      "id": "a573ca3d-9412-4fd7-9781-fe360fe87fc5",
+      "name": "Pazarlama Ekipleri için YZ Stratejisi 2025",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a573ca3d-9412-4fd7-9781-fe360fe87fc5"
+    },
+    {
+      "id": "a57ec62a-8724-4372-bacf-217e06bca6e4",
+      "name": "Yeni Başlayanlar için Flutter: Platformlar Arası Geliştirme Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a57ec62a-8724-4372-bacf-217e06bca6e4"
+    },
+    {
+      "id": "a5c7ab22-e418-4e6c-b755-dde86ef73c70",
+      "name": "Meta Reklamları Uygun Fiyata: YZ Prompt Paketi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a5c7ab22-e418-4e6c-b755-dde86ef73c70"
+    },
+    {
+      "id": "a706e645-316e-42b8-88a2-0df1ef2816fd",
+      "name": "Argo CD: Kurulum ve Çalıştırma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a706e645-316e-42b8-88a2-0df1ef2816fd"
+    },
+    {
+      "id": "a7d2fb84-f094-4ec2-ba63-6c6e81e426c1",
+      "name": "Scikit-Learn ve PyTorch ile Uygulamalı Makine Öğrenmesi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a7d2fb84-f094-4ec2-ba63-6c6e81e426c1"
+    },
+    {
+      "id": "a8499b03-6a04-4d71-b5e5-b47194f2d7df",
+      "name": "Alan-Odaklı Dönüşüm (Domain-Driven Transformation)",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a8499b03-6a04-4d71-b5e5-b47194f2d7df"
+    },
+    {
+      "id": "a917c23f-2a54-478d-8d3b-3c44f96de64b",
+      "name": "İş Başında Bilgi Grafları ve LLM'ler",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a917c23f-2a54-478d-8d3b-3c44f96de64b"
+    },
+    {
+      "id": "a95e57ad-fcb9-4556-950c-59b0984a0779",
+      "name": "İnsanlar Nasıl Öğrenir Tasarımı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/a95e57ad-fcb9-4556-950c-59b0984a0779"
+    },
+    {
+      "id": "aa678673-587a-4570-9297-e5368dd583b9",
+      "name": "Ölçekte Olay-Güdümlü Mikroservisler Kurma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/aa678673-587a-4570-9297-e5368dd583b9"
+    },
+    {
+      "id": "aa81aac8-86e5-4e5e-9d2f-0100acfa2804",
+      "name": "Veri Bilimi ve Uygulamaları: ICDSA 2024 Bildirileri, Cilt 4",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/aa81aac8-86e5-4e5e-9d2f-0100acfa2804"
+    },
+    {
+      "id": "aac0fd9d-7873-4048-a218-d041f3549457",
+      "name": "Kuş Ötüşü, Konuşma ve Dil: Evrimsel ve Sinirsel Bakışlar",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/aac0fd9d-7873-4048-a218-d041f3549457"
+    },
+    {
+      "id": "ad25eef6-a1f7-47ad-831f-a53604164c79",
+      "name": "Kaggle ile Veri Bilimi: Teknikler ve Stratejiler",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ad25eef6-a1f7-47ad-831f-a53604164c79"
+    },
+    {
+      "id": "adeda7de-5dfd-43be-a264-1dd31ee00eb8",
+      "name": "Perakende için Agentic YZ'nin Temelleri",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/adeda7de-5dfd-43be-a264-1dd31ee00eb8"
+    },
+    {
+      "id": "ae5d62ef-e5fe-451c-a837-7488a31bd697",
+      "name": "MCP ve A2A ile Agentic YZ Sistemleri Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ae5d62ef-e5fe-451c-a837-7488a31bd697"
+    },
+    {
+      "id": "aea684b6-385c-48e1-9f84-d03622a796b0",
+      "name": "Yazılım Mühendisliğinin Temelleri: Kodlayıcıdan Mühendise",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/aea684b6-385c-48e1-9f84-d03622a796b0"
+    },
+    {
+      "id": "aeb0ab27-c300-43b2-90a1-cac8646f86b6",
+      "name": "Hızlı Öğrenme ve Bilişsel Ustalığın Bilimi",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/aeb0ab27-c300-43b2-90a1-cac8646f86b6"
+    },
+    {
+      "id": "afff4703-2b2c-4ea0-bbd5-b02a76a79137",
+      "name": "Claude AI'da Ustalaşma: Profesyonel İşbirliğine Pratik Yolculuk",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/afff4703-2b2c-4ea0-bbd5-b02a76a79137"
+    },
+    {
+      "id": "b014a540-ff5a-49e0-997e-7ce45902579c",
+      "name": "İş Maceraları: Wall Street'ten On İki Klasik Hikâye",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b014a540-ff5a-49e0-997e-7ce45902579c"
+    },
+    {
+      "id": "b0546ef1-cab2-42e7-a2f2-c393bbb76cc7",
+      "name": "İHA Sürü İşbirliği: Bir Ağ Perspektifi",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 9,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b0546ef1-cab2-42e7-a2f2-c393bbb76cc7"
+    },
+    {
+      "id": "b05e4b5a-047a-451b-9cf3-14b6ec0b6d3b",
+      "name": "Graf Madenciliği: Teknikler, Uygulamalar ve Ağ Analiz Araçları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b05e4b5a-047a-451b-9cf3-14b6ec0b6d3b"
+    },
+    {
+      "id": "b1270ab9-69a1-4c0c-985c-4756abf23253",
+      "name": "Büyük Dil Modellerine Hızlı Başlangıç Rehberi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b1270ab9-69a1-4c0c-985c-4756abf23253"
+    },
+    {
+      "id": "b19c80ad-115f-4681-b465-4358143f2ef4",
+      "name": "Üretici Koçluk: Başarının Çoklu Düzeyleri",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b19c80ad-115f-4681-b465-4358143f2ef4"
+    },
+    {
+      "id": "b401a879-6ea3-42e0-a186-1f1f42b92fe3",
+      "name": "Yıkıcı İnovasyonun Mekaniğinde Ustalaşma",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b401a879-6ea3-42e0-a186-1f1f42b92fe3"
+    },
+    {
+      "id": "b49da383-ae46-425a-82f6-1cbf8033262f",
+      "name": "Yer Bilimlerinde Gelişen YZ Uygulamaları",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b49da383-ae46-425a-82f6-1cbf8033262f"
+    },
+    {
+      "id": "b4d97265-7dbd-4d8a-ab0b-551139eab7b6",
+      "name": "Orta Düzey İngilizcede 101 Konuşma",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b4d97265-7dbd-4d8a-ab0b-551139eab7b6"
+    },
+    {
+      "id": "b55154cf-44bd-4043-84d7-cba5869cc733",
+      "name": "Basic Grammar In Use: Kısa Yanıtlar ve Fiil Zamanları",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b55154cf-44bd-4043-84d7-cba5869cc733"
+    },
+    {
+      "id": "b55e34cf-4141-474b-85ee-2b9c7556ee8b",
+      "name": "Sürdürülebilir Gelecek için AGI ve Kuantum Hesaplama",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b55e34cf-4141-474b-85ee-2b9c7556ee8b"
+    },
+    {
+      "id": "b5a8c1f2-b515-4bb5-8f2f-19bdebb9957c",
+      "name": "Mutlak Yeni Başlayanlar için YZ Prompt Mühendisliği Rehberi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b5a8c1f2-b515-4bb5-8f2f-19bdebb9957c"
+    },
+    {
+      "id": "b5b31e5d-a231-43e8-8a79-12fd5f5480d8",
+      "name": "GEN-2030: Yapay Zekâ Tarihi, Etiği ve Uygulamaları",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b5b31e5d-a231-43e8-8a79-12fd5f5480d8"
+    },
+    {
+      "id": "b5b4d0ac-ecd3-4378-bfed-1089ea93d50f",
+      "name": "Node.js Projeleri: Gerçek Dünya Web ve Backend API'leri",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b5b4d0ac-ecd3-4378-bfed-1089ea93d50f"
+    },
+    {
+      "id": "b5ed045c-249c-45b6-b777-ac4c3fc01a97",
+      "name": "İş Başında Üretici YZ: Kurumsal Strateji ve Uygulama",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b5ed045c-249c-45b6-b777-ac4c3fc01a97"
+    },
+    {
+      "id": "b7772c26-9e0f-414a-b0f0-3d8759b22e3e",
+      "name": "21. Yüzyıl için 21 Ders",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b7772c26-9e0f-414a-b0f0-3d8759b22e3e"
+    },
+    {
+      "id": "b7bb27d7-a2a7-44ec-9d48-c83b6230ea1d",
+      "name": "Model Context Protocol ile YZ Ajanları Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b7bb27d7-a2a7-44ec-9d48-c83b6230ea1d"
+    },
+    {
+      "id": "b7bfa926-f8a7-460e-8838-846a749ff9ac",
+      "name": "Mekke-i Mükerreme · Hac (Mesud Yağmahan)",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b7bfa926-f8a7-460e-8838-846a749ff9ac"
+    },
+    {
+      "id": "b80bae89-7754-4fdb-a111-d647d75ac148",
+      "name": "Kuş Şarkısı: Biyolojik Temalar ve Çeşitlemeler",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b80bae89-7754-4fdb-a111-d647d75ac148"
+    },
+    {
+      "id": "b8502596-a6f3-4d9a-8dd2-e8043edbb8df",
+      "name": "LangChain'de Ustalaşma: Üretici YZ Uygulamaları Rehberi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 2,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b8502596-a6f3-4d9a-8dd2-e8043edbb8df"
+    },
+    {
+      "id": "b8b7b225-e0c8-4565-ad45-70c3824aea09",
+      "name": "Modern Fotogrametrinin İlke ve Uygulamaları",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b8b7b225-e0c8-4565-ad45-70c3824aea09"
+    },
+    {
+      "id": "b8f35256-3920-42f3-9889-e3102b8ed4fe",
+      "name": "Yapay Zekâ Proje Yönetimini Daha Çevik Yapmak",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/b8f35256-3920-42f3-9889-e3102b8ed4fe"
+    },
+    {
+      "id": "ba07cc66-e496-4527-9084-78ae20be48ed",
+      "name": "Klasik Sınırların Ötesinde Kuantum Operasyonları ve Kurumsal Uygulamalar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ba07cc66-e496-4527-9084-78ae20be48ed"
+    },
+    {
+      "id": "ba8f0aaf-603b-4954-bfc0-29338085b7e3",
+      "name": "Yıldızların Makamları: Sufi Bilgeliği ve Manevi Yükseliş",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ba8f0aaf-603b-4954-bfc0-29338085b7e3"
+    },
+    {
+      "id": "bc9e5d63-9065-4b86-96c8-6e63000f7417",
+      "name": "Çevik (Agile): YZ Entegrasyonu, Hibrit Çalışma ve Ölçeklenme",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/bc9e5d63-9065-4b86-96c8-6e63000f7417"
+    },
+    {
+      "id": "bcd44294-24c3-4907-8846-9c0e6847611c",
+      "name": "Pavlo Cherkashin'den Mistral'ı Öğren",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/bcd44294-24c3-4907-8846-9c0e6847611c"
+    },
+    {
+      "id": "bcdd482f-1ec2-468e-ad29-fa3ff65403a3",
+      "name": "Güvenilir YZ Mühendisliği: AB Uyumluluk Rehberi",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/bcdd482f-1ec2-468e-ad29-fa3ff65403a3"
+    },
+    {
+      "id": "bed5db6f-1f80-42c2-8509-682290cd4421",
+      "name": "Medloaner YZ: Cerrahi Kit Otomasyonu ve Sağlık Teknolojisi Stratejisi",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/bed5db6f-1f80-42c2-8509-682290cd4421"
+    },
+    {
+      "id": "c03ad7ae-ab4d-4f91-aa1e-73823893a339",
+      "name": "İş Başında Graf Sinir Ağları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c03ad7ae-ab4d-4f91-aa1e-73823893a339"
+    },
+    {
+      "id": "c167c2af-10ce-4944-a894-55a90365f107",
+      "name": "Dijital Ürün Yönetimi: Strateji ve Pazar Fırsatı",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c167c2af-10ce-4944-a894-55a90365f107"
+    },
+    {
+      "id": "c32e9a26-c83d-46ce-97d6-0687a81bb11f",
+      "name": "LLM Akıl Yürütme ve Otoregresif Metin Üretimi Mimarisi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c32e9a26-c83d-46ce-97d6-0687a81bb11f"
+    },
+    {
+      "id": "c34f43e5-a6c0-4316-833a-bcdd8d990f15",
+      "name": "LangChain'i Öğrenmek: LLM Uygulamaları Kurma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c34f43e5-a6c0-4316-833a-bcdd8d990f15"
+    },
+    {
+      "id": "c35a96ae-e212-4948-9e00-b96b8beb3d4e",
+      "name": "Umre",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c35a96ae-e212-4948-9e00-b96b8beb3d4e"
+    },
+    {
+      "id": "c42765c3-d58d-47af-98c9-51a4a3ade3ed",
+      "name": "Enneagram Bilgeliği: Dönüşüm ve Gelişim",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c42765c3-d58d-47af-98c9-51a4a3ade3ed"
+    },
+    {
+      "id": "c433b477-ac52-4f15-849f-274c15b20e5d",
+      "name": "Veri Mühendisliği Tasarım Kalıpları ve Tarifleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c433b477-ac52-4f15-849f-274c15b20e5d"
+    },
+    {
+      "id": "c4c7e159-a066-4fc2-a0a5-5f511a88e4b0",
+      "name": "Türk Sermaye Piyasası Kanunu ve Kurumsal Yönetim Esasları",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c4c7e159-a066-4fc2-a0a5-5f511a88e4b0"
+    },
+    {
+      "id": "c53690a3-929b-462c-a815-564e1aff1d31",
+      "name": "Claude Code: Agentic Geliştirme için Kesin Rehber",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c53690a3-929b-462c-a815-564e1aff1d31"
+    },
+    {
+      "id": "c65ca050-bb5f-4f4b-b693-2debd0b5afeb",
+      "name": "Jules Payot: İrade Terbiyesi",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c65ca050-bb5f-4f4b-b693-2debd0b5afeb"
+    },
+    {
+      "id": "c676278a-e1fd-4de4-99fb-98e37681a947",
+      "name": "JavaScript: Kesin Kılavuz",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c676278a-e1fd-4de4-99fb-98e37681a947"
+    },
+    {
+      "id": "c68617c0-b91d-498c-8c3e-0aa68893f91b",
+      "name": "Kuantum Hesaplama: Kavramlar, Kod ve Algoritmalar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c68617c0-b91d-498c-8c3e-0aa68893f91b"
+    },
+    {
+      "id": "c68c5d41-e2fa-45e1-b32a-ad0c620da6a3",
+      "name": "İnsansız Hava Aracı Trafik Yönetimi: İlkeler ve Mimari",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c68c5d41-e2fa-45e1-b32a-ad0c620da6a3"
+    },
+    {
+      "id": "c782ccf0-7801-45bc-99ee-3c2bdcf6e12b",
+      "name": "Muhabbet",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c782ccf0-7801-45bc-99ee-3c2bdcf6e12b"
+    },
+    {
+      "id": "c7da4194-d357-4eb9-a87f-a6dca2df141b",
+      "name": "Sıfırdan DeepSeek Modeli Oluşturma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c7da4194-d357-4eb9-a87f-a6dca2df141b"
+    },
+    {
+      "id": "c7dabf3c-1c7c-4893-b552-c890ebb2bf58",
+      "name": "Lucidis YZ: İş Emri Yönetiminde Veri Karmaşasını Bitirmek",
+      "category": "business",
+      "color": "#c9a24b",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c7dabf3c-1c7c-4893-b552-c890ebb2bf58"
+    },
+    {
+      "id": "c8807927-970a-4a3d-b6fd-c450ddf85324",
+      "name": "Nedensel YZ: Nedensel Çıkarım ve Olasılıksal Makine Öğrenmesi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c8807927-970a-4a3d-b6fd-c450ddf85324"
+    },
+    {
+      "id": "c8981719-350a-417a-af78-8dd8624f2096",
+      "name": "İşe Yarayan Etkili Konuşma Tabanlı YZ Sohbet Botları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c8981719-350a-417a-af78-8dd8624f2096"
+    },
+    {
+      "id": "c8d59b94-fcf2-4924-99a3-7a2b57d1da3c",
+      "name": "Mimarlar için Kafka: Tasarım, Kalıplar ve Kurumsal Uygulama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c8d59b94-fcf2-4924-99a3-7a2b57d1da3c"
+    },
+    {
+      "id": "c91c4107-5999-489a-ab44-cd3215b91b95",
+      "name": "Agentic Tasarım Kalıpları",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c91c4107-5999-489a-ab44-cd3215b91b95"
+    },
+    {
+      "id": "c9ab123f-d22a-43c3-9a58-ae298e8036ed",
+      "name": "Yaşına Göre Ye: Ömür Boyu Sağlık ve Fitness Rehberi",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c9ab123f-d22a-43c3-9a58-ae298e8036ed"
+    },
+    {
+      "id": "c9b3d9ab-4dc2-4451-96cb-7bc905e2e4df",
+      "name": "Kaggle: Veri Analizi ve Makine Öğrenmesi Yarışmaları",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/c9b3d9ab-4dc2-4451-96cb-7bc905e2e4df"
+    },
+    {
+      "id": "ca4e2f2c-0083-4a10-bb48-337f4d7ab839",
+      "name": "Paranın Psikolojisi: Davranış, Risk ve Servet Yönetimi",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ca4e2f2c-0083-4a10-bb48-337f4d7ab839"
+    },
+    {
+      "id": "cae452df-c37e-4ec8-8cf0-f3c0ce701336",
+      "name": "scikit-learn Tarif Kitabı: Python'da Makine Öğrenmesi Tarifleri",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cae452df-c37e-4ec8-8cf0-f3c0ce701336"
+    },
+    {
+      "id": "cb03e1e5-c964-4b03-9bad-0b38afb27728",
+      "name": "Sermaye Piyasası Mevzuatı ve Meslek Kuralları",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cb03e1e5-c964-4b03-9bad-0b38afb27728"
+    },
+    {
+      "id": "cb12a60d-5593-422f-ab7b-59b10ab8d719",
+      "name": "Pratikte DeepSeek: LLM Uygulamaları ve Dağıtımı",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cb12a60d-5593-422f-ab7b-59b10ab8d719"
+    },
+    {
+      "id": "cb50a8ef-c57a-4d58-a578-6232191ae7b0",
+      "name": "Tasarımla Oyunlaştırma: Kullanıcı Etkileşimi Mekanikleri",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cb50a8ef-c57a-4d58-a578-6232191ae7b0"
+    },
+    {
+      "id": "cbc131d1-0ffa-48f0-a868-6471d65d630b",
+      "name": "Yeni Başlayanlar için iOS 26 Programlama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cbc131d1-0ffa-48f0-a868-6471d65d630b"
+    },
+    {
+      "id": "ccdbd6cd-63d5-4ae0-846b-49945408ebd7",
+      "name": "Google Cloud Girişim Rehberi: Agentic YZ Sistemleri Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ccdbd6cd-63d5-4ae0-846b-49945408ebd7"
+    },
+    {
+      "id": "cdf8f49e-4467-494b-8528-d2d507df6e2c",
+      "name": "Veri Bilimi ve Uygulamaları: ICDSA 2024 Bildiriler Cilt 4",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cdf8f49e-4467-494b-8528-d2d507df6e2c"
+    },
+    {
+      "id": "cecf2b32-a830-4728-802c-2bb452f33dc0",
+      "name": "Kurumsal Java Geliştirme için Uygulamalı YZ",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cecf2b32-a830-4728-802c-2bb452f33dc0"
+    },
+    {
+      "id": "cf234ac7-98b7-4348-a993-115cc6862b0e",
+      "name": "Birim Testi Sanatında Ustalaşma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/cf234ac7-98b7-4348-a993-115cc6862b0e"
+    },
+    {
+      "id": "d05f39f6-6d99-4d64-b0c1-212789c8698f",
+      "name": "Zengin Baba Yoksul Baba: Finansal Zekâ Dersleri",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d05f39f6-6d99-4d64-b0c1-212789c8698f"
+    },
+    {
+      "id": "d0f8ed06-a8f6-4a25-a4f0-946bc98d71e4",
+      "name": "Python YZ ve Makine Öğrenmesi: Temellerden Dağıtıma",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d0f8ed06-a8f6-4a25-a4f0-946bc98d71e4"
+    },
+    {
+      "id": "d0f97daa-1a0a-428d-b7ef-402adb98d3cc",
+      "name": "OpenClaw ile 30 Günde Kâr",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d0f97daa-1a0a-428d-b7ef-402adb98d3cc"
+    },
+    {
+      "id": "d219fc83-24b5-464c-b3fa-aaf259932a6c",
+      "name": "[CHATGPT] Yazı Tarzı ve İçerik",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d219fc83-24b5-464c-b3fa-aaf259932a6c"
+    },
+    {
+      "id": "d2abae17-11d6-4297-975b-d578faea44cb",
+      "name": "Claude Code: YZ Programlamada Geliştirici Rehberi",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d2abae17-11d6-4297-975b-d578faea44cb"
+    },
+    {
+      "id": "d2d067c7-8633-46ef-b70c-eca6c0d974e7",
+      "name": "YZ Mühendisliği: Temeller, LLMOps ve Uygulamalar",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d2d067c7-8633-46ef-b70c-eca6c0d974e7"
+    },
+    {
+      "id": "d2ecd201-5156-4748-8d5b-e840cfaefe09",
+      "name": "Yıkıcı İnovasyon Seti: Pazarlarda ve Büyümede Ustalık",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d2ecd201-5156-4748-8d5b-e840cfaefe09"
+    },
+    {
+      "id": "d336e2fd-7a96-472e-9a26-80bbb1937fff",
+      "name": "İlahi Plan: Doğayı Yapay Zekâ ile Taklit Etmek",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d336e2fd-7a96-472e-9a26-80bbb1937fff"
+    },
+    {
+      "id": "d3449a4a-df8c-42c1-948a-1ced63d4e4a3",
+      "name": "Modern Eğitim Sistemlerinde Blockchain ve YZ",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d3449a4a-df8c-42c1-948a-1ced63d4e4a3"
+    },
+    {
+      "id": "d36130d9-3282-400d-ab48-21344cf809a8",
+      "name": "İktisat: Temel Kuram ve Uygulamalar",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d36130d9-3282-400d-ab48-21344cf809a8"
+    },
+    {
+      "id": "d3b9a99a-e5f6-4ab2-9f72-55c043e124ba",
+      "name": "Mevâkiu'n-Nücûm: Manevi Bilginin Yörüngeleri",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d3b9a99a-e5f6-4ab2-9f72-55c043e124ba"
+    },
+    {
+      "id": "d3d81aa8-116b-49f7-97da-f1a15ee09185",
+      "name": "Temel GraphRAG: Bilgi Grafıyla Güçlendirilmiş RAG",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d3d81aa8-116b-49f7-97da-f1a15ee09185"
+    },
+    {
+      "id": "d43a54f9-4bd2-41c5-acb6-3980644e08a6",
+      "name": "YZ Proje Yönetimi El Kitabı: Şelale ve Çevik Entegrasyonu",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d43a54f9-4bd2-41c5-acb6-3980644e08a6"
+    },
+    {
+      "id": "d44149e4-68b4-4a97-848f-d936a55b3034",
+      "name": "Para Harcama Sanatı",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d44149e4-68b4-4a97-848f-d936a55b3034"
+    },
+    {
+      "id": "d5c9d362-25b4-4ce7-84ce-8ad3c35bb328",
+      "name": "DevOps ve Yazılım Teslimatının Temelleri",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d5c9d362-25b4-4ce7-84ce-8ad3c35bb328"
+    },
+    {
+      "id": "d63a5f80-475b-4c7b-ac75-dd105f95ea99",
+      "name": "Çok-Ajanlı Sistemler için Bağlam Mühendisliği",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d63a5f80-475b-4c7b-ac75-dd105f95ea99"
+    },
+    {
+      "id": "d74d7bb7-0b06-4edd-b2af-e16e230762fe",
+      "name": "GeoAI: CBS'de Yapay Zekâ",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d74d7bb7-0b06-4edd-b2af-e16e230762fe"
+    },
+    {
+      "id": "d771ef36-cb14-4daf-b1b5-1d08686e676e",
+      "name": "Python Üretici YZ: Autoencoder'lardan Transformer ve LLM'lere",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d771ef36-cb14-4daf-b1b5-1d08686e676e"
+    },
+    {
+      "id": "d7779f6a-adcc-4d1b-852d-e78b2975e9ab",
+      "name": "Yeni Başlayanlar için Claude AI: Adım Adım Rehber",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d7779f6a-adcc-4d1b-852d-e78b2975e9ab"
+    },
+    {
+      "id": "d7e94af9-a990-4f14-94d7-b9bf811d5aa9",
+      "name": "Mekke-i Mükerreme · Hac (Mesud Yağmahan)",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d7e94af9-a990-4f14-94d7-b9bf811d5aa9"
+    },
+    {
+      "id": "d8cb9f1c-de08-4a6a-bda3-343322c448b1",
+      "name": "Blockchain'e Bağlı YZ ve Bitcoin Ustalığı",
+      "category": "science",
+      "color": "#8fd06f",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d8cb9f1c-de08-4a6a-bda3-343322c448b1"
+    },
+    {
+      "id": "d9aff595-b382-4e32-8cb6-9ce317c3ce24",
+      "name": "Kuantum Algoritmaları: Uygulamalar ve Uçtan Uca Karmaşıklıklar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/d9aff595-b382-4e32-8cb6-9ce317c3ce24"
+    },
+    {
+      "id": "daa37767-6293-4a89-83db-19b4210b8fd2",
+      "name": "YZ Değer Yaratıcıları: Üretici Zihniyetin Ötesinde",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/daa37767-6293-4a89-83db-19b4210b8fd2"
+    },
+    {
+      "id": "db14116c-a0a0-4f8c-8f1f-fd4769434387",
+      "name": "Web API'lerinin Tasarımı: Kapsamlı Referans Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/db14116c-a0a0-4f8c-8f1f-fd4769434387"
+    },
+    {
+      "id": "db9f17d9-158d-4c25-9f88-d38da2d4c69f",
+      "name": "4000 Temel İngilizce Kelime — Kitap 2",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 3,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/db9f17d9-158d-4c25-9f88-d38da2d4c69f"
+    },
+    {
+      "id": "dbab31ce-308a-45da-9597-9cea477cd278",
+      "name": "Sunucu Tarafı WebAssembly: Taşınabilirlik, Güvenlik, Çok Dilli Uygulama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/dbab31ce-308a-45da-9597-9cea477cd278"
+    },
+    {
+      "id": "dbe6df20-5cc5-440c-8b27-8ef5343c2d98",
+      "name": "Sıfırdan Metinden-Görsele Üreteçler Kurma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/dbe6df20-5cc5-440c-8b27-8ef5343c2d98"
+    },
+    {
+      "id": "dc8e8a1a-f300-404b-ba2a-fba183ed46a7",
+      "name": "Veri Bilimi Yarışmalarında Ustalaşma: Kaggle Rehberi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/dc8e8a1a-f300-404b-ba2a-fba183ed46a7"
+    },
+    {
+      "id": "dd5e4132-ae43-4018-8ca8-0143875f49d6",
+      "name": "Yapay Zekâ XLII: AI 2025 Bildirileri",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/dd5e4132-ae43-4018-8ca8-0143875f49d6"
+    },
+    {
+      "id": "decaab4b-66f0-440f-a1fa-d7356e6ec72a",
+      "name": "Web Tasarımını Öğrenmek: Modern Üretim için Başlangıç Rehberi",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/decaab4b-66f0-440f-a1fa-d7356e6ec72a"
+    },
+    {
+      "id": "df01c10c-1dff-41d5-834c-c7de8606715d",
+      "name": "GNSS Gerçek Zamanlı Kinematik Konumlama: Kuram ve Uygulamalar",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/df01c10c-1dff-41d5-834c-c7de8606715d"
+    },
+    {
+      "id": "df9198a5-e9be-4e14-a332-be0bf5996c92",
+      "name": "Kuantum Qiskit",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/df9198a5-e9be-4e14-a332-be0bf5996c92"
+    },
+    {
+      "id": "df9db90d-5285-45a9-ac5a-518d7b03954c",
+      "name": "YZ Devrimi: Eğitim ve Geleceğin İş Gücünde Yol Almak",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/df9db90d-5285-45a9-ac5a-518d7b03954c"
+    },
+    {
+      "id": "dfa8d244-1ee0-41f2-9a9e-5c245e7b5e90",
+      "name": ".NET 10 ile Uygulamalar ve Servisler: Üçüncü Baskı",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/dfa8d244-1ee0-41f2-9a9e-5c245e7b5e90"
+    },
+    {
+      "id": "e02dc449-4226-418e-a367-b790c7598d7f",
+      "name": "Kurumda Agentic YZ: İş Dönüşümü ve Otonomi",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e02dc449-4226-418e-a367-b790c7598d7f"
+    },
+    {
+      "id": "e0c5447a-9658-41b2-a762-e3fa1157180c",
+      "name": "Çoklu İHA için Sağlam Formasyon Kontrolü",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e0c5447a-9658-41b2-a762-e3fa1157180c"
+    },
+    {
+      "id": "e13c5273-d7d9-420f-b7ae-4b32b14027b1",
+      "name": "Sıfırdan Ön Yüz Web Çerçevesi Kurma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e13c5273-d7d9-420f-b7ae-4b32b14027b1"
+    },
+    {
+      "id": "e174849e-f82b-4c97-a940-e725858478a4",
+      "name": "Bir YZ Ajanı İnşa Et: Mimari, Araçlar ve Bağlam Mühendisliği",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e174849e-f82b-4c97-a940-e725858478a4"
+    },
+    {
+      "id": "e2a0e505-1974-4c6b-aa63-3b087eb70b08",
+      "name": "SEO 2025: YZ, Core Web Vitals ve Modern Sıralama",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e2a0e505-1974-4c6b-aa63-3b087eb70b08"
+    },
+    {
+      "id": "e30e17d4-1619-43b2-aca6-470a04497799",
+      "name": "English Grammar in Use — Ek Alıştırmalar, 5. Baskı",
+      "category": "lang",
+      "color": "#f0d05e",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e30e17d4-1619-43b2-aca6-470a04497799"
+    },
+    {
+      "id": "e40a00db-3bb8-4f27-a86b-19db95524fb0",
+      "name": "Drone Tabanlı Ölçüm ve Çoklu-İHA Sistemleri",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e40a00db-3bb8-4f27-a86b-19db95524fb0"
+    },
+    {
+      "id": "e454c9f0-7fdd-40ac-9a2c-2c74e56ea928",
+      "name": "Derinlemesine Kuantum Programlama: Q# ve Qiskit ile Problem Çözme",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e454c9f0-7fdd-40ac-9a2c-2c74e56ea928"
+    },
+    {
+      "id": "e461c569-c6c0-4e58-8bf9-5e646f21bf10",
+      "name": "Kaggle'da Ustalaşma: Nihai Veri Bilimi Yarışması Rehberi",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e461c569-c6c0-4e58-8bf9-5e646f21bf10"
+    },
+    {
+      "id": "e4902039-d859-4b9d-b006-cfcde47f8277",
+      "name": "ITAI 2025: Bilişim Teknolojisi ve Yapay Zekâda İlerlemeler",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e4902039-d859-4b9d-b006-cfcde47f8277"
+    },
+    {
+      "id": "e4fae607-31d4-4c5b-9adc-b1ee205cae73",
+      "name": "YZ Destekli Ürünler Kurma: YZ Ürün Yöneticisi Oyun Kitabı",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e4fae607-31d4-4c5b-9adc-b1ee205cae73"
+    },
+    {
+      "id": "e4fb2912-73cf-422c-a95f-0ba6c6154ea4",
+      "name": "React ile İleri Ön Yüz Geliştirme",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e4fb2912-73cf-422c-a95f-0ba6c6154ea4"
+    },
+    {
+      "id": "e5cf32ed-12b5-4f43-9b06-1bb408334370",
+      "name": "Clawdbot Openclaw: Yerel-Öncelikli YZ Ajanı El Kitabı",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e5cf32ed-12b5-4f43-9b06-1bb408334370"
+    },
+    {
+      "id": "e5e90c85-f081-49d6-8599-a2fad961e508",
+      "name": "Claude Video İçerik Üretimini Kökten Değiştirdi",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e5e90c85-f081-49d6-8599-a2fad961e508"
+    },
+    {
+      "id": "e6450e2f-d078-4005-bf58-a3b63738d5c1",
+      "name": "Ruhlara Şefkat: Said Nursi'nin Hayatı",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e6450e2f-d078-4005-bf58-a3b63738d5c1"
+    },
+    {
+      "id": "e68e40e5-85fe-4bff-a483-c0e22af239cc",
+      "name": "Risale'nin Sesleri: Bediüzzaman ve Talebelerinin Hatıraları",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 4,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e68e40e5-85fe-4bff-a483-c0e22af239cc"
+    },
+    {
+      "id": "e6920a7a-b922-4367-9d02-02f94c075568",
+      "name": "RP2040 ve RP2350 Assembly Dili Programlama Rehberi",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e6920a7a-b922-4367-9d02-02f94c075568"
+    },
+    {
+      "id": "e6eb912c-fe87-422d-89c3-c90d9ec28e0b",
+      "name": "MongoDB 8.0 ve Atlas: Modern Uygulamalar Kurma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e6eb912c-fe87-422d-89c3-c90d9ec28e0b"
+    },
+    {
+      "id": "e73a9d46-67f2-47d7-9247-7c88a00f07a9",
+      "name": "İş Dünyası için YZ: Benimseme Rehberi",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e73a9d46-67f2-47d7-9247-7c88a00f07a9"
+    },
+    {
+      "id": "e7efdc96-8ce9-456c-9f6e-846ca9ff2f52",
+      "name": "[CHATGPT] Drone Işık Gösterisi Planı",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e7efdc96-8ce9-456c-9f6e-846ca9ff2f52"
+    },
+    {
+      "id": "e9773d16-545b-4069-9918-d12fc9fd25fe",
+      "name": "Kuantum Fotoniği: Bimodlar, Kübitler ve Bifotonlar",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e9773d16-545b-4069-9918-d12fc9fd25fe"
+    },
+    {
+      "id": "e97f7d5f-60f4-4134-89eb-6f4e20c82173",
+      "name": "Mikroservis: Dayanıklı Dağıtık Sistemler Mimarisi — Kalıplar ve Pratikler",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e97f7d5f-60f4-4134-89eb-6f4e20c82173"
+    },
+    {
+      "id": "e9d72e9e-8aac-47c6-bff4-cb1e859e83a2",
+      "name": "Üretici YZ Tasarım Kalıpları: Temel Model Uygulama Şablonları",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/e9d72e9e-8aac-47c6-bff4-cb1e859e83a2"
+    },
+    {
+      "id": "ecd5ff82-1ffe-415b-a801-5c9ae061742f",
+      "name": "Ana Algoritma: Nihai Öğrenme Makinesi Arayışı",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ecd5ff82-1ffe-415b-a801-5c9ae061742f"
+    },
+    {
+      "id": "ed47e08b-acb9-40af-af41-d23f68783992",
+      "name": "Transformer ve Difüzyon Modellerinde Ustalaşma",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ed47e08b-acb9-40af-af41-d23f68783992"
+    },
+    {
+      "id": "eda8631c-6856-4677-8c1a-3fb3f0690e35",
+      "name": "LLM Mühendisliği El Kitabı: Pipeline'lar, İnce Ayar ve MLOps",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/eda8631c-6856-4677-8c1a-3fb3f0690e35"
+    },
+    {
+      "id": "ee51dec3-c4db-4948-b9f9-8edcc003fba2",
+      "name": "Cursor, Windsurf ve Lovable ile Vibe Coding",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ee51dec3-c4db-4948-b9f9-8edcc003fba2"
+    },
+    {
+      "id": "eeca99c9-5a78-491e-bb5b-0bd07d772da9",
+      "name": "OpenClaw'a Derin Bakış: Eksiksiz Teknik Rehber",
+      "category": "claude",
+      "color": "#d97757",
+      "sourceCount": 2,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/eeca99c9-5a78-491e-bb5b-0bd07d772da9"
+    },
+    {
+      "id": "eedbad5a-a07e-4f63-a087-aabd9e0dc8ff",
+      "name": "Gerçek Tıp: Yitik Şifanın İzinde",
+      "category": "islam",
+      "color": "#5ec6a8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/eedbad5a-a07e-4f63-a087-aabd9e0dc8ff"
+    },
+    {
+      "id": "ef1bd4c9-1c42-4bac-9b77-fe72e660adbf",
+      "name": "n8n'de Ustalaşma: Agentic YZ Otomasyonu Eksiksiz Rehberi",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/ef1bd4c9-1c42-4bac-9b77-fe72e660adbf"
+    },
+    {
+      "id": "efa3d401-6331-46c8-9b62-106106191512",
+      "name": "Python ile Veri Odaklı SEO",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/efa3d401-6331-46c8-9b62-106106191512"
+    },
+    {
+      "id": "efd5307f-4f84-4561-8d1b-e0bb7b54bb62",
+      "name": "Qiskit ile Kuantum Yapay Zekâ",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/efd5307f-4f84-4561-8d1b-e0bb7b54bb62"
+    },
+    {
+      "id": "f0f7b0fe-5a87-459a-a41c-957adee8b203",
+      "name": "Python Pratik Antrenmanı: Çekirdek Alıştırmalar ve Uygulama",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f0f7b0fe-5a87-459a-a41c-957adee8b203"
+    },
+    {
+      "id": "f4148447-10a3-45a9-b36b-60cda2dac410",
+      "name": "LiDAR Uzaktan Algılamaya Giriş: İlkeler ve Uygulamalar",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f4148447-10a3-45a9-b36b-60cda2dac410"
+    },
+    {
+      "id": "f473e627-ffb5-4339-b82c-3396d4d21d54",
+      "name": "Sağlık Sistemlerinde Üretici YZ: Uygulamalar ve Etik",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f473e627-ffb5-4339-b82c-3396d4d21d54"
+    },
+    {
+      "id": "f5304317-fe26-4fba-b7e7-99634d568489",
+      "name": "Verimli Node.js: Temellerin Ötesinde Bir Rehber",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f5304317-fe26-4fba-b7e7-99634d568489"
+    },
+    {
+      "id": "f5e0cfbf-a43d-4692-ba8c-e8be7192e14f",
+      "name": "Paranın Psikolojisi",
+      "category": "spk",
+      "color": "#e0b15a",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f5e0cfbf-a43d-4692-ba8c-e8be7192e14f"
+    },
+    {
+      "id": "f5ed2e03-04a4-4616-8409-e48d7c807c4c",
+      "name": "YZ ile Drone Teknolojisinde Ustalaşma: Kapsamlı Rehber",
+      "category": "drone",
+      "color": "#6fb0f0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f5ed2e03-04a4-4616-8409-e48d7c807c4c"
+    },
+    {
+      "id": "f6fdff9f-2553-4c3b-80ce-71a334739080",
+      "name": "Bilgi İşleme için Kuantum Hesaplama ve Gelişen Teknolojiler",
+      "category": "quantum",
+      "color": "#4fb8e8",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f6fdff9f-2553-4c3b-80ce-71a334739080"
+    },
+    {
+      "id": "f7142f31-0bf5-4865-acc1-677ca5e864f7",
+      "name": "Pinterest Stratejisiyle Etsy Satışları",
+      "category": "marketing",
+      "color": "#f0915e",
+      "sourceCount": 1,
+      "shared": true,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f7142f31-0bf5-4865-acc1-677ca5e864f7"
+    },
+    {
+      "id": "f7b881a1-ac68-4300-acd3-472c76f01409",
+      "name": "Tasarım Odaklı Düşünme: Kuram ve Uygulama",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f7b881a1-ac68-4300-acd3-472c76f01409"
+    },
+    {
+      "id": "f7f06462-6f6c-48b2-8f06-c690abd0b12e",
+      "name": "Zamanında UAV-IoT Veri Toplama için Pekiştirmeli Öğrenme",
+      "category": "datasci",
+      "color": "#f06fa0",
+      "sourceCount": 2,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f7f06462-6f6c-48b2-8f06-c690abd0b12e"
+    },
+    {
+      "id": "f85b18e6-9284-440a-b247-297ba2f531e3",
+      "name": "Hayat 3.0: Süper Zekâ Çağında İnsanlık",
+      "category": "aigeneral",
+      "color": "#9d7bf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f85b18e6-9284-440a-b247-297ba2f531e3"
+    },
+    {
+      "id": "f87420b0-be9e-4da8-83f8-f2e6adbed8bf",
+      "name": "Node.js Tasarım Kalıpları: Üretim Düzeyi Ölçeklenebilir Uygulamalar",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f87420b0-be9e-4da8-83f8-f2e6adbed8bf"
+    },
+    {
+      "id": "f8d67d2f-cce8-4d74-ae29-a78bccbfab6e",
+      "name": "Go'da Sıfırdan Bir Orkestratör Kurma",
+      "category": "agent",
+      "color": "#7c8cf0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f8d67d2f-cce8-4d74-ae29-a78bccbfab6e"
+    },
+    {
+      "id": "f90c4b60-e633-4120-a2d5-1cce0520f304",
+      "name": "HANA için SAP ABAP 7.5 Optimizasyonu",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f90c4b60-e633-4120-a2d5-1cce0520f304"
+    },
+    {
+      "id": "f9e4b327-08a5-4592-b448-3f9fbdc16b90",
+      "name": "Öz-Belirleme Kuramı Oxford El Kitabı",
+      "category": "self",
+      "color": "#e86fd0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/f9e4b327-08a5-4592-b448-3f9fbdc16b90"
+    },
+    {
+      "id": "fa5c6c52-e3bd-4d93-a2f5-ef2f9e6e9ea4",
+      "name": "2024 KPSS Tarih — Tek Videoda Genel Tekrar (Ramazan Yetgin)",
+      "category": "other",
+      "color": "#9aa3b5",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/fa5c6c52-e3bd-4d93-a2f5-ef2f9e6e9ea4"
+    },
+    {
+      "id": "fc65dab2-5d66-458d-a0a8-9c62bb749bda",
+      "name": "Figma'nın Ötesinde: İleri Sistemler ve İşbirliği Stratejisi",
+      "category": "product",
+      "color": "#5ad0d0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/fc65dab2-5d66-458d-a0a8-9c62bb749bda"
+    },
+    {
+      "id": "fdb26b8b-b309-47f1-bdf4-965c41ad4b12",
+      "name": "İş Başında Streamlit: Python Web Uygulamaları Kurma",
+      "category": "software",
+      "color": "#6fd08c",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/fdb26b8b-b309-47f1-bdf4-965c41ad4b12"
+    },
+    {
+      "id": "fe27f6d5-0775-4815-987e-97307b41cf3d",
+      "name": "İş Başında Transformer'lar: LLM ve Mimari Rehberi",
+      "category": "llm",
+      "color": "#b06ff0",
+      "sourceCount": 1,
+      "shared": false,
+      "notebookUrl": "https://notebooklm.google.com/notebook/fe27f6d5-0775-4815-987e-97307b41cf3d"
+    }
+  ]
+}
