@@ -42,6 +42,13 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    ...(keystaticEnabled && {
+      // Keystatic'in admin sayfası CJS bağımlılıklarıyla (lodash) birlikte
+      // ön-paketlenmeli; yoksa tarayıcıda hydration hatası verir
+      optimizeDeps: {
+        include: ["@keystatic/astro/ui", "@keystatic/core/ui", "lodash/debounce"],
+      },
+    }),
   },
   markdown: {
     shikiConfig: {
