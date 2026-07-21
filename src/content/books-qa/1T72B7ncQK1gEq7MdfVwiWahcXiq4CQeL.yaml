@@ -1,0 +1,59 @@
+# İrade Terbiyesi — Jules Payot (NotebookLM defterinden sentezlendi)
+bookId: "1T72B7ncQK1gEq7MdfVwiWahcXiq4CQeL"
+guncellenme: 2026-07-21
+bolumler:
+  - baslik: "Hızlı Bakış"
+    sorular:
+      - soru: "Bu kitap tek cümlede ne iddia ediyor?"
+        cevap: |
+          İrade doğuştan verili bir güç değil, **enerjini bir muhasebeci gibi yöneterek**
+          ve düzenli çalışmayla terbiye edilen bir alışkanlıktır; kararlılık "dişini sıkmak"
+          değil, stratejik bir enerji ekonomisidir.
+      - soru: "Yazar hangi yaygın inanışın yanlış olduğunu söylüyor? (Kitabın \"düşmanı\" kim?)"
+        cevap: |
+          İki düşmanı var: birincisi **tembellik** — Payot'ya göre bütün ahlaksızlıkların anası,
+          çünkü boş kalan zihne dürtüler yerleşir. İkincisi, dönemin edebiyatının ve bazı
+          doktorların yaydığı bahaneler: "aşk hayatın tek amacıdır", "kendini tutmak sağlığa
+          zararlıdır" gibi iddiaları, irade zayıflığını örtbas eden uydurmalar olarak sertçe reddeder.
+      - soru: "Bu kitabı okumasam kaçıracağım en değerli 3 fikir ne?"
+        cevap: |
+          1. **Kısır döngü teşhisi:** Tembellik insanı gevşetip dürtülere iter; dürtülerin
+             yorgunluğu tekrar tembelliğe sürükler — ikisi müttefiktir, ayrı ayrı yenilmez.
+          2. **Enerji transferi:** Fazla enerji bastırılmaz, başka hesaba aktarılır —
+             zihinsel çalışmaya veya fiziksel aktiviteye.
+          3. **Göğüs göğüse savaşma, kaç:** Dürtüyle doğrudan savaşmak onu güçlendirir;
+             çözüm hatırlatıcı ortamlardan uzak durmak ve zihni dolu tutmaktır.
+  - baslik: "Derinleştirme"
+    sorular:
+      - soru: "Kitabın omurgası olan zihinsel model/framework nedir?"
+        cevap: |
+          **Enerji ekonomisi:** Kendine, bütçesini yöneten bir muhasebeci gibi davran.
+          Enerji fizyolojik bir gerçekliktir; israf edilebilir (gece hayatı, hayaller,
+          dağınık hazlar) ya da hesaplar arası transferle geleceğin entelektüel ve mesleki
+          sermayesine yatırılabilir. Düzenli çalışma bu bütçenin hem geliri hem sigortasıdır.
+      - soru: "Kitaptaki hangi kavramlar birbirine bağlı?"
+        cevap: |
+          Tembellik ↔ dürtüler kısır döngüsü merkezdedir; "boş zihin" bu döngünün kapısı,
+          "düzenli çalışma" hem akademik araç hem savunma mekanizmasıdır. Enerji transferi
+          ilkesi, kaçınma/hijyen stratejisiyle birleşerek pratik yöntemi oluşturur.
+  - baslik: "Uygulama"
+    sorular:
+      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne olmalı?"
+        cevap: |
+          Zihnini boş bırakan ilk saati bul ve oraya **düzenli, küçük bir çalışma bloğu** koy —
+          Payot'ya göre savaş iradeyle değil takvimle kazanılır. Enerjini dağıtan bir
+          alışkanlığı yasaklamak yerine yerine ne koyacağını yaz (transfer ilkesi).
+      - soru: "Kitaptaki fikirleri kendi projeme uygularsam neye benzer?"
+        cevap: |
+          Motivasyon beklemeden çalışan bir sistem kurmak: bildirimsiz bir çalışma ortamı
+          (kaçınma/hijyen), günün aynı saatinde başlayan kısa odak blokları (düzenli çalışma)
+          ve dağılan dikkati suçlamak yerine onu projenin başka bir görevine yönlendirmek
+          (enerji transferi).
+  - baslik: "Eleştiri ve Bağlam"
+    sorular:
+      - soru: "Kitap yazıldığından bu yana hangi iddiaları eskidi, hangileri hâlâ geçerli?"
+        cevap: |
+          Cinsellik ve ahlak üzerine verdiği hükümler ile dönemin tıbbına yaptığı atıflar
+          19. yüzyıl sonunun izlerini taşır ve bugün tartışmalıdır. Buna karşılık çekirdek
+          teşhisi — boş zihnin dürtülere yenik düşmesi, iradenin strateji ve ortam tasarımıyla
+          çalışması — dikkat ekonomisi çağında yazıldığı günden daha güncel duruyor.

@@ -151,7 +151,7 @@ const books = defineCollection({
         id: string;
         hidden?: boolean;
         order?: number;
-        coverUrl?: string;
+        notebookId?: string;
       }[];
       const overrides = new Map(overrideList.map((o) => [o.id, o] as const));
       return raw
@@ -164,11 +164,36 @@ const books = defineCollection({
     title: z.string(),
     author: z.string().optional(),
     format: z.enum(["pdf", "epub"]),
-    coverUrl: z.string().optional(),
-    driveUrl: z.string().url(),
-    sizeBytes: z.number().optional(),
-    category: z.string().optional(),
-    order: z.number().optional(),
+    // public/book-covers altında önceden küçültülmüş jpeg (sync üretir)
+    cover: z.string().startsWith("/book-covers/").optional(),
+      driveUrl: z.string().url(),
+      sizeBytes: z.number().optional(),
+      category: z.string().optional(),
+      notebookId: z.string().uuid().optional(),
+      order: z.number().optional(),
+    }),
+});
+
+const booksQa = defineCollection({
+  loader: glob({
+    pattern: "*.yaml",
+    base: "./src/content/books-qa",
+    generateId: ({ entry }) => entry.replace(/\.yaml$/, ""),
+  }),
+  schema: z.object({
+    bookId: z.string(),
+    guncellenme: z.coerce.date(),
+    bolumler: z.array(
+      z.object({
+        baslik: z.string(),
+        sorular: z.array(
+          z.object({
+            soru: z.string(),
+            cevap: z.string(), // markdown
+          }),
+        ),
+      }),
+    ),
   }),
 });
 
@@ -179,4 +204,5 @@ export const collections = {
   libraryCategories,
   libraryNotebooks,
   books,
+  booksQa,
 };

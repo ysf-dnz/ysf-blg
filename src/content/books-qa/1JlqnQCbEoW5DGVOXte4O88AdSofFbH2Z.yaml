@@ -1,0 +1,67 @@
+# Mindset — Carol Dweck (NotebookLM defterinden sentezlendi)
+bookId: "1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z"
+guncellenme: 2026-07-21
+bolumler:
+  - baslik: "Hızlı Bakış"
+    sorular:
+      - soru: "Bu kitap tek cümlede ne iddia ediyor?"
+        cevap: |
+          Yeteneklerin doğuştan sabit olduğu inancı (sabit zihniyet) hayatımızı sessizce
+          şekillendirir; gelişim zihniyetine geçiş ise bir ilan değil, **ömür boyu süren ve
+          farkındalık gerektiren bir yolculuktur** — herkes iki zihniyetin bir karışımını taşır.
+      - soru: "Yazar hangi yaygın inanışın yanlış olduğunu söylüyor? (Kitabın \"düşmanı\" kim?)"
+        cevap: |
+          Kitabın düşmanı, iradenin ve yeteneğin *doğuştan gelen, ya olan ya olmayan* bir özellik
+          olduğu inancıdır. Dweck ayrıca "artık tamamen gelişim zihniyetindeyim" yanılgısını
+          (**sahte gelişim zihniyeti**) da hedef alır: değişim, eski inancın sökülüp yenisinin
+          takıldığı bir ameliyat değildir — eski ses pusuda bekler.
+      - soru: "Bu kitabı okumasam kaçıracağım en değerli 3 fikir ne?"
+        cevap: |
+          1. **Tetikleyiciler:** Sabit zihniyet durup dururken değil; büyük meydan okuma,
+             çıkmaz, başarısızlık, başkasının başarısı ve değerlendirme baskısı anlarında devreye girer.
+          2. **Persona'ya isim vermek:** İçindeki yargılayıcı sese bir isim ("Duane", "Gertrude", "Z")
+             vermek onu kimliğinden ayırır ve yönetilebilir kılar.
+          3. **İrade değil strateji:** "Kararlı olacağım" demek işe yaramaz; "ne zaman, nerede,
+             nasıl" içeren somut planlar başarı şansını belirler.
+  - baslik: "Derinleştirme"
+    sorular:
+      - soru: "Kitabın omurgası olan zihinsel model/framework nedir?"
+        cevap: |
+          **Dört adımlı değişim yolculuğu:** (1) içindeki sabit zihniyeti utanmadan *kabul et*,
+          (2) onu harekete geçiren *tetikleyicileri tanı*, (3) bu persona'ya *isim ver* ve
+          mesafelen, (4) onu susturmak yerine *eğit ve yolculuğa davet et* — "Beni korumaya
+          çalıştığını biliyorum ama denemek istiyorum."
+      - soru: "Yazarın en güçlü argümanı ve en zayıf/tartışmalı iddiası hangisi?"
+        cevap: |
+          En güçlü argüman, zihniyeti bir kişilik özelliği değil **yönetilebilir bir süreç**
+          olarak tanımlaması: yargılama çerçevesinden (yargılayan/yargılanan) öğrenme çerçevesine
+          (öğrenen/öğrenmeye yardım eden) geçiş. En tartışmalı nokta ise gelişim zihniyeti
+          stratejilerinin "teknik" olarak kullanılınca işe yaramaması — Dweck'in kendi
+          benzetmesiyle, kendini iyi hisseden hastanın **ilacı bırakması** sendromu; sınır,
+          samimi dönüşümle taktik kullanım arasında incedir.
+      - soru: "Kitaptaki hangi kavramlar birbirine bağlı?"
+        cevap: |
+          Tetikleyiciler → persona → dört adımlı yolculuk tek bir zincirdir; irade/strateji
+          ayrımı ile somut planlama ("yarın dişimi fırçaladıktan sonra masaya oturacağım")
+          bu zinciri günlük hayata bağlar. Tembellik değil, *yargı çerçevesi* asıl fren mekanizmasıdır.
+  - baslik: "Uygulama"
+    sorular:
+      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne olmalı?"
+        cevap: |
+          Bugün seni en son tetikleyen anı yaz (eleştiri, kıyas, çıkmaz), o anda konuşan iç sese
+          bir **isim** ver ve yarın için "ne zaman, nerede, nasıl" içeren tek cümlelik somut bir
+          plan kur. Yemin değil, adres ver: *"Yarın 08.00'de, masamda, X'in ilk taslağını yazacağım."*
+      - soru: "Kitaptaki fikirleri kendi projeme uygularsam neye benzer?"
+        cevap: |
+          Bir yazılım ürününde bu, retrospektifleri "kim hata yaptı"dan (yargı çerçevesi)
+          "neyi öğrendik, bir dahaki sefere neyi farklı yapacağız"a (öğrenme çerçevesi) çevirmek
+          demektir. Geri adımlar başarısızlık değil veri sayılır; ekip baskı anlarında yöneticinin
+          "yargıç personası"nın devreye girdiğini bilir ve adlandırır.
+  - baslik: "Eleştiri ve Bağlam"
+    sorular:
+      - soru: "Kitabın hangi tavsiyesi en kalıcı, uygulama nerede zorlaşıyor?"
+        cevap: |
+          Kalıcı olan, değişimi **süreklilik** olarak tanımlaması: sorun düzelince stratejiyi
+          bırakan herkes başlangıç noktasına döner. Zorlaşan yer de aynı: gelişim zihniyeti
+          dili kurumsal bir slogana dönüşüp içi boşaldığında (sahte gelişim zihniyeti),
+          kitabın kendi uyardığı tuzağa düşülür.

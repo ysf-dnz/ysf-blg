@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import BookDetail from "@/features/library/BookDetail.astro";
+
+export async function getStaticPaths() {
+  const books = await getCollection("books");
+  const qas = await getCollection("booksQa");
+  return books.map((book) => ({
+    params: { id: book.data.id },
+    props: {
+      book: book.data,
+      qa: qas.find((q) => q.data.bookId === book.data.id)?.data,
+    },
+  }));
+}
+
+const { book, qa } = Astro.props;
+---
+
+<Base title={book.title} description={`${book.title} — book notes, Q&A analysis and NotebookLM chat.`}>
+  <BookDetail book={book} qa={qa} lang="en" />
+</Base>

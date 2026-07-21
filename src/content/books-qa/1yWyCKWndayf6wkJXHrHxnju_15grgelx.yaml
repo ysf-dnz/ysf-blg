@@ -1,0 +1,53 @@
+# The Coder Cafe — 66 Zamansız Kavram (NotebookLM defterinden sentezlendi)
+bookId: "1yWyCKWndayf6wkJXHrHxnju_15grgelx"
+guncellenme: 2026-07-21
+bolumler:
+  - baslik: "Hızlı Bakış"
+    sorular:
+      - soru: "Bu kitap tek cümlede ne iddia ediyor?"
+        cevap: |
+          Güvenilir sistem, "hiç hata vermeyen" sistem değil; **hatanın kaçınılmaz olduğunu
+          kabul edip nasıl davranacağını önceden planlamış** sistemdir — kullanıcı gözünden
+          "sadece çalışan" tutarlılık budur.
+      - soru: "Bu kitabı okumasam kaçıracağım en değerli 3 fikir ne?"
+        cevap: |
+          1. **Graceful degradation:** Aşırı yükte çökmek yerine bilinçli kalite düşürmek —
+             load shedding, kritik olmayan özellikleri kapatmak.
+          2. **Fail open vs. fail closed:** Hata anında erişilebilirlik mi kontrol mü tercih
+             edilecek — bu bir teknik detay değil, ürün kararıdır.
+          3. **Sert bağımlılığı yumuşatmak:** Güvenilirliği artırmanın en etkili yolu daha az
+             hata yapmak değil, iyi fallback'lerle hard dependency'leri soft'a dönüştürmektir.
+  - baslik: "Derinleştirme"
+    sorular:
+      - soru: "Kitabın omurgası olan zihinsel model/framework nedir?"
+        cevap: |
+          Üç katmanlı bir güvenilirlik çerçevesi: (1) **hata stratejisi** — degradation,
+          fail open/closed, adaptive LIFO gibi önceden verilmiş kararlar; (2) **bağımlılık
+          yönetimi** — hard/soft ayrımı ve fallback tasarımı; (3) **veri katmanı teoremleri** —
+          ACID, CAP ve PACELC ile tutarlılık/erişilebilirlik/gecikme takasları.
+      - soru: "Kitaptaki hangi kavramlar birbirine bağlı?"
+        cevap: |
+          CAP → PACELC bir genişletmedir (bölünme yokken bile gecikme-tutarlılık takası vardır);
+          fail open/closed kararı hard/soft bağımlılık ayrımına dayanır; adaptive LIFO ile
+          load shedding, aynı ilkenin (taze isteğe öncelik, bilinçli vazgeçiş) iki yüzüdür.
+  - baslik: "Uygulama"
+    sorular:
+      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne olmalı?"
+        cevap: |
+          Sistemindeki bağımlılıkları iki listeye ayır: hangileri hard, hangileri soft?
+          Sonra tek bir hard bağımlılık seç ve "bu servis 30 saniye cevap vermezse ne olur?"
+          sorusuna kodda cevabı olan bir fallback yaz.
+      - soru: "Kitaptaki fikirleri kendi projeme uygularsam neye benzer?"
+        cevap: |
+          Bu blogda bile görülebilir: Giscus yorumları ve arama lazy yüklenir ve çalışmazsa
+          sayfa çalışmaya devam eder (soft dependency); kutuphanem senkronu başarısız olursa
+          eski veri korunur (fail closed yerine bilinçli fail open). Aynı düşünce her API
+          entegrasyonuna uygulanır.
+  - baslik: "Eleştiri ve Bağlam"
+    sorular:
+      - soru: "Bu kitabın 80/20'si ne — hangi kavramlar öncelikli?"
+        cevap: |
+          Kavramların çoğu tanıdıksa bile şu üçlü tek başına kitabın değerinin büyük kısmını
+          taşır: hata stratejisini *önceden* seçmek (fail open/closed), hard→soft bağımlılık
+          dönüşümü ve PACELC'in hatırlattığı gündelik gerçek — takas, yalnızca felaket anında
+          değil her istekte vardır.

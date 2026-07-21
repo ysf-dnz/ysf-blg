@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import NotebookCard from "./NotebookCard.astro";
-import { useTranslations, type Lang } from "@/lib/i18n/index.ts";
+import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
 import { KUTUPHANEM_URL } from "@/lib/urls.ts";
 
 interface Props {
@@ -14,7 +14,12 @@ const t = useTranslations(lang);
 const categories = await getCollection("libraryCategories");
 const notebooks = await getCollection("libraryNotebooks");
 const books = (await getCollection("books")).sort(
-  (a, b) => (a.data.order ?? 999) - (b.data.order ?? 999),
+  (a, b) =>
+    (a.data.order ?? 999) - (b.data.order ?? 999) ||
+    a.data.title.localeCompare(b.data.title, "tr"),
+);
+const bookCategories = [...new Set(books.map((b) => b.data.category ?? "genel"))].sort(
+  (a, b) => a.localeCompare(b, "tr"),
 );
 
 const byCategory = new Map(
@@ -60,40 +65,68 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
       <section class="mt-10">
         <h2 class="font-display text-2xl font-semibold text-ink">
           {t("kutuphane.kitapRafi")}
+          <span class="ml-2 text-base font-normal text-ink-muted">
+            ({books.length})
+          </span>
         </h2>
-        <ul class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {books.map((book) => (
-            <li>
-              <a
-                href={book.data.driveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="group block"
-              >
-                {book.data.coverUrl ? (
-                  <img
-                    src={book.data.coverUrl}
-                    alt={book.data.title}
-                    loading="lazy"
-                    class="aspect-[2/3] w-full rounded-lg border border-line object-cover shadow-sm transition-transform group-hover:-translate-y-1"
-                  />
-                ) : (
-                  <span class="flex aspect-[2/3] w-full items-center justify-center rounded-lg border border-line bg-accent-soft p-3 text-center font-display text-sm font-semibold text-accent transition-transform group-hover:-translate-y-1">
-                    {book.data.title}
-                  </span>
-                )}
-                <span class="mt-2 block truncate text-sm font-medium text-ink group-hover:text-accent">
-                  {book.data.title}
+        {bookCategories.map((cat, i) => {
+          const catBooks = books.filter(
+            (b) => (b.data.category ?? "genel") === cat,
+          );
+          return (
+            <details open={i === 0} class="group mt-4">
+              <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-line bg-surface-raised px-4 py-3 font-display text-lg font-semibold text-ink hover:border-accent/50 [&::-webkit-details-marker]:hidden">
+                <svg
+                  class="size-4 text-ink-muted transition-transform group-open:rotate-90"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m9 6 6 6-6 6" />
+                </svg>
+                {cat}
+                <span class="text-sm font-normal text-ink-muted">
+                  ({catBooks.length})
                 </span>
-                {book.data.author && (
-                  <span class="block truncate text-xs text-ink-muted">
-                    {book.data.author}
-                  </span>
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
+              </summary>
+              <ul class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {catBooks.map((book) => (
+                  <li>
+                    <a
+                      href={localizePath(`/kutuphane/kitap/${book.data.id}`, lang)}
+                      class="group/book block"
+                    >
+                      {book.data.cover ? (
+                        <img
+                          src={book.data.cover}
+                          alt={book.data.title}
+                          loading="lazy"
+                          width="320"
+                          class="aspect-[3/4] w-full rounded-lg border border-line object-cover object-top shadow-sm transition-transform group-hover/book:-translate-y-1"
+                        />
+                      ) : (
+                        <span class="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-line bg-accent-soft p-3 text-center font-display text-sm font-semibold text-accent transition-transform group-hover/book:-translate-y-1">
+                          {book.data.title}
+                        </span>
+                      )}
+                      <span class="mt-2 block truncate text-sm font-medium text-ink group-hover/book:text-accent">
+                        {book.data.title}
+                      </span>
+                      {book.data.author && (
+                        <span class="block truncate text-xs text-ink-muted">
+                          {book.data.author}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          );
+        })}
       </section>
     )
   }

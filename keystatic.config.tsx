@@ -251,7 +251,11 @@ export default config({
             }),
             hidden: fields.checkbox({ label: "Gizle", defaultValue: false }),
             order: fields.integer({ label: "Sıra" }),
-            coverUrl: fields.url({ label: "Kapak URL (özel)" }),
+            notebookId: fields.select({
+              label: "NotebookLM defteri (elle düzeltme)",
+              options: notebookOptions,
+              defaultValue: "",
+            }),
           }),
           {
             label: "Kitap ayarları",
