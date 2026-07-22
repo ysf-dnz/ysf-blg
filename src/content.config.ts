@@ -183,17 +183,28 @@ const booksQa = defineCollection({
   schema: z.object({
     bookId: z.string(),
     guncellenme: z.coerce.date(),
-    bolumler: z.array(
-      z.object({
-        baslik: z.string(),
-        sorular: z.array(
-          z.object({
-            soru: z.string(),
-            cevap: z.string(), // markdown
-          }),
-        ),
-      }),
-    ),
+    bolumler: z
+      .array(
+        z.object({
+          baslik: z.string(),
+          sorular: z.array(
+            z.object({
+              soru: z.string(),
+              cevap: z.string(), // markdown
+            }),
+          ),
+        }),
+      )
+      .default([]),
+    // NotebookLM'den bölüm bölüm Türkçe yeniden anlatım (kitap-ozet skill'i üretir)
+    ozet: z
+      .array(
+        z.object({
+          baslik: z.string(),
+          icerik: z.string(), // markdown
+        }),
+      )
+      .optional(),
   }),
 });
 

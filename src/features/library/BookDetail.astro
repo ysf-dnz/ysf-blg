@@ -20,6 +20,21 @@ const notebookUrl = book.notebookId
   ? `https://notebooklm.google.com/notebook/${book.notebookId}`
   : undefined;
 const previewUrl = `https://drive.google.com/file/d/${book.id}/preview`;
+
+// İndirme erişimi e-postayla istenir; limitler Drive tarafında uygulanır
+const requestMail =
+  `mailto:sn.yusufdeniz@gmail.com` +
+  `?subject=${encodeURIComponent(`Kitap erişim isteği: ${book.title}`)}` +
+  `&body=${encodeURIComponent(
+    `Merhaba,\n\n"${book.title}" kitabı için indirme erişimi istiyorum.\n` +
+      `Kitap ID: ${book.id}\nPlanım: Abone / Pro / Max (birini bırakın)\n\nTeşekkürler.`,
+  )}`;
+
+const planlar = [
+  { ad: t("kitap.planStandart"), limit: t("kitap.planStandartLimit") },
+  { ad: t("kitap.planPro"), limit: t("kitap.planProLimit"), one: true },
+  { ad: t("kitap.planMax"), limit: t("kitap.planMaxLimit") },
+];
 ---
 
 <article class="mx-auto max-w-xl">
@@ -108,6 +123,42 @@ const previewUrl = `https://drive.google.com/file/d/${book.id}/preview`;
     )
   }
 
+  <!-- Türkçe özet: bölüm bölüm yeniden anlatım -->
+  {
+    qa?.ozet && qa.ozet.length > 0 && (
+      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
+        <h2 class="font-display text-xl font-semibold text-ink">
+          {t("kitap.ozet")}
+        </h2>
+        <p class="mt-1 text-xs text-ink-muted">{t("kitap.ozetAciklama")}</p>
+        <div class="mt-3 divide-y divide-line">
+          {qa.ozet.map((parca) => (
+            <details class="group py-3">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-[16px] font-semibold text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
+                {parca.baslik}
+                <svg
+                  class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </summary>
+              <div
+                class="prose prose-sm mt-3 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent"
+                set:html={marked.parse(parca.icerik)}
+              />
+            </details>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
   <!-- Drive önizleme (tıkla-yükle) -->
   <section class="mt-8">
     <h2 class="font-display text-xl font-semibold text-ink">{t("kitap.oku")}</h2>
@@ -128,16 +179,38 @@ const previewUrl = `https://drive.google.com/file/d/${book.id}/preview`;
         <span class="text-sm font-medium">{t("kitap.okuYukle")}</span>
       </button>
     </div>
-    <p class="mt-2 text-right">
+  </section>
+
+  <!-- İndirme planları + e-postayla erişim isteği -->
+  <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-6">
+    <h2 class="font-display text-xl font-semibold text-ink">
+      {t("kitap.planBaslik")}
+    </h2>
+    <p class="mt-1 text-sm text-ink-muted">{t("kitap.indirAciklama")}</p>
+    <div class="mt-4 grid gap-3 sm:grid-cols-3">
+      {
+        planlar.map((plan) => (
+          <div
+            class:list={[
+              "rounded-xl border p-4 text-center",
+              plan.one ? "border-accent bg-accent-soft" : "border-line",
+            ]}
+          >
+            <p class="font-display text-lg font-semibold text-ink">{plan.ad}</p>
+            <p class="mt-1 text-sm text-ink-muted">{plan.limit}</p>
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-5 text-center">
       <a
-        href={book.driveUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-sm text-ink-muted hover:text-accent"
+        href={requestMail}
+        class="inline-flex items-center gap-2 rounded-full border border-accent px-6 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white"
       >
-        {t("kitap.driveAc")} ↗
+        ✉️ {t("kitap.indir")}
       </a>
-    </p>
+      <p class="mt-2 text-xs text-ink-muted">{t("kitap.planNot")}</p>
+    </div>
   </section>
 
   <!-- Sohbet köprüsü -->

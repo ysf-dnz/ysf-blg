@@ -1,4 +1,273 @@
 {
   "_aciklama": "Kitap rafı küratörlüğü: id eşleşen kayıtların alanlarını ezer. hidden:true kitabı gizler, order sıralar, coverUrl kapak değiştirir.",
-  "overrides": []
+  "overrides": [
+    {
+      "id": "1R8EC0iPgJUN5853qC-60DFdyO5jZPA6i",
+      "notebookId": "0234b0e2-cc31-4583-ad6c-81f1043ccc39"
+    },
+    {
+      "id": "1k3MtZGDQTDmwDCAqf4v-L5PWG11Cn0Zc",
+      "notebookId": "032730b1-3fb4-4148-8c48-a8ff1e99be9c"
+    },
+    {
+      "id": "1rKg62k1l7vpbc_BglOjLD_VAvsx2eBMT",
+      "notebookId": "1a2ac0e5-3cda-457f-9bd2-b23343e116d9"
+    },
+    {
+      "id": "1m0noNTm-b18EIPrMrfruE-WFoNpOv9Sn",
+      "notebookId": "1a621416-c896-40fd-8664-d37711d6d399"
+    },
+    {
+      "id": "1HqNIWK9vliNfqo2zOZGGtCj8Fh2lsNaP",
+      "notebookId": "1e021c3b-082d-469a-9126-30cd556e3af4"
+    },
+    {
+      "id": "11wxiUGPeVjpIHL62rXrgMUJHozWgFr0V",
+      "notebookId": "221d8a58-0a7b-4583-8853-02d8ac790d9c"
+    },
+    {
+      "id": "1GJXvSpqIz1fPQhcy4g-qEjpJ9_m5U0CL",
+      "notebookId": "2399eb71-308a-4f7e-89e0-f28ff502552d"
+    },
+    {
+      "id": "1Txif3dKwDOvbTXj5GMhi1h1Q1LCSTBXh",
+      "notebookId": "5d65308a-3b0f-41ec-9661-2e1b535d408c"
+    },
+    {
+      "id": "1HEE6qmTwkVCS1aTkMa-aYPMFeK2diWqy",
+      "notebookId": "2db19bc6-7bae-49ec-8d80-52e206c68b84"
+    },
+    {
+      "id": "1feS3aiFSMmkZoouUIOqYgbcn-aRjbQpT",
+      "notebookId": "30c66f03-d7f2-42b0-a78b-e8da683cd4c8"
+    },
+    {
+      "id": "139hknhH-4XFVkvwLGllo4N1N1vzzzW12",
+      "notebookId": "3112227a-81df-42d2-9686-9e9da4b40630"
+    },
+    {
+      "id": "1taJ0lVS_SZH9yBxTRbs8bgibSZERPNWw",
+      "notebookId": "3176bb5e-32bb-419c-a172-d826145e5bca"
+    },
+    {
+      "id": "1GTlz1yq8s1ziI74H5kwUKPYTOBx9UcAO",
+      "notebookId": "3470cffb-cc8b-41cf-8e19-391aa0baac13"
+    },
+    {
+      "id": "1lVTK3q5sP3X-C0EmddxP-POu0Q8AKjxJ",
+      "notebookId": "394b496c-4213-497f-96bb-207d91ebe62c"
+    },
+    {
+      "id": "1A1R99xrTsL4cqJnJNNOOFLhM03xqC23F",
+      "notebookId": "3991b230-0a6e-4492-adc5-b263fb804b9e"
+    },
+    {
+      "id": "13CiPWq7147ffa4tTpzZbfP2-eecgngwN",
+      "notebookId": "39963917-9434-455b-aede-4da77b326ae2"
+    },
+    {
+      "id": "140Hv6IwyAFrazMAa9BoD7mE0LVjXK3fP",
+      "notebookId": "3bbad3b4-15c9-4a22-8a5b-0ad4f08261d8"
+    },
+    {
+      "id": "1snqw6HcxoemIUZSflyi2E34mVEzJrsDD",
+      "notebookId": "40f1eb23-66ad-4b9e-bcb3-aef587da7d32"
+    },
+    {
+      "id": "1n7vjHelnq5xFO7866x_Ekxl_IyB1huAz",
+      "notebookId": "4c8ca53a-a4c8-44bb-b19a-dde78a77ca0c"
+    },
+    {
+      "id": "1bc8FvyXZog-BhVBZexSRMyK9SA9Xw5Em",
+      "notebookId": "4f9ab103-8384-431a-87f1-ed47a1085a03"
+    },
+    {
+      "id": "1W0IBnzZwJavy72utR8KsuPGgECE5QL7S",
+      "notebookId": "56f13806-6003-4ff9-a25b-84c5bf48ecb2"
+    },
+    {
+      "id": "1tbWbVKc_aaIms3iOXBqmlnV5PlhKHQB7",
+      "notebookId": "73d979d5-b4ac-4c69-99cd-eb8c8793ac34"
+    },
+    {
+      "id": "1kU1Vm31-eRrxH_XuIG3tHAmaQwB5vC4D",
+      "notebookId": "75dd62c3-c0a0-4b55-ae20-05518424298e"
+    },
+    {
+      "id": "115aym_2P2jzXa4wyB3UQvS2W5r56J7MF",
+      "notebookId": "7d6a3b9b-a043-4371-ba4d-d585115b8db0"
+    },
+    {
+      "id": "1ZIvBqqdYO4wCDCqWajnHvTxgp_ZyoA4b",
+      "notebookId": "7ee66d41-0eb7-4e3b-a1f0-3a7399b6b33c"
+    },
+    {
+      "id": "1kvOlAhZZNST6qxs_q6DYR21TCy5OXwyW",
+      "notebookId": "7fc249a8-d250-4b1c-9c2c-66bdb22d0982"
+    },
+    {
+      "id": "1e85oF3VPwjhD0hYE4dmT9HNJ3MVlDECO",
+      "notebookId": "83bbd4f4-c6b0-4732-9bbe-2826b55de7d3"
+    },
+    {
+      "id": "1mc6ixJRcckhnJs4UYmoTK58SiwgjhUht",
+      "notebookId": "14997708-648b-4b76-84c1-1b709629fe03"
+    },
+    {
+      "id": "14-FWOV6owIX7TP4GkdUpN-5Fp2cEWDsY",
+      "notebookId": "86833c32-f34c-416d-bb78-78fe70c52787"
+    },
+    {
+      "id": "1XfKq_2kM-uQuSlC9S6damCHco6KnZnAB",
+      "notebookId": "12870935-3d30-46c8-84be-966668944d2b"
+    },
+    {
+      "id": "1IWejR88I7zO0pCTM-Lvw9Kt2uGF40b_l",
+      "notebookId": "8ccb525f-affd-417d-b870-e48b532c69f2"
+    },
+    {
+      "id": "1eqck6E51xI-sNOK-qJYYta5YhLwXQxi-",
+      "notebookId": "91b5d076-d465-4498-8bcd-8fe956c29796"
+    },
+    {
+      "id": "1mvndf1vXd3uBOlV442hv7-5MqpgPs-Vo",
+      "notebookId": "a41c93d8-2787-48ba-88b3-0c0fa0cd92ca"
+    },
+    {
+      "id": "16DT2DBQvkYc3pXTCy5BTxESB72GwUhXv",
+      "notebookId": "a7d2fb84-f094-4ec2-ba63-6c6e81e426c1"
+    },
+    {
+      "id": "1YYijBkMr72GH_2VH0t9x6_zOSm5f_K5E",
+      "notebookId": "aa81aac8-86e5-4e5e-9d2f-0100acfa2804"
+    },
+    {
+      "id": "1gXJhmy8v-rnxG6ySY0k_oYYdv6H_ZjdH",
+      "notebookId": "ae5d62ef-e5fe-451c-a837-7488a31bd697"
+    },
+    {
+      "id": "1Gd6osks6faShVZxdJO8AFJWElX6dE_2g",
+      "notebookId": "aeb0ab27-c300-43b2-90a1-cac8646f86b6"
+    },
+    {
+      "id": "11V3yr8G_rjktfbhn_i7X195OYd7CkOBA",
+      "notebookId": "b55154cf-44bd-4043-84d7-cba5869cc733"
+    },
+    {
+      "id": "164eWsRUwqrLcTfSbrcuZWaQGxwNVYbHl",
+      "notebookId": "bcd44294-24c3-4907-8846-9c0e6847611c"
+    },
+    {
+      "id": "1VWcF8tZt-auDRI1zHyzpZszKQmEzIv7o",
+      "notebookId": "bed5db6f-1f80-42c2-8509-682290cd4421"
+    },
+    {
+      "id": "1x3D6Tz7B_eMfb4i_2ZXgnncDfS6q2POE",
+      "notebookId": "c53690a3-929b-462c-a815-564e1aff1d31"
+    },
+    {
+      "id": "1YLNVx0_K4P_fB6ulsBotzTSwFpQrp448",
+      "notebookId": "dd5e4132-ae43-4018-8ca8-0143875f49d6"
+    },
+    {
+      "id": "1dt2cYWMtbRfgqSwemC0iH1D68wjlhK7w",
+      "notebookId": "e30e17d4-1619-43b2-aca6-470a04497799"
+    },
+    {
+      "id": "1OcjDwJXQxXVNE3JTcs9cPb7nGU7NuWCF",
+      "notebookId": "f5304317-fe26-4fba-b7e7-99634d568489"
+    },
+    {
+      "id": "17ZjL2AXjlDavW_NomMeG46tcNCy6a9jM",
+      "notebookId": "ee51dec3-c4db-4948-b9f9-8edcc003fba2"
+    },
+    {
+      "id": "1L7Hl6st0lHotkd9hm6Iq6wyEJiOQ-KSy",
+      "notebookId": "eedbad5a-a07e-4f63-a087-aabd9e0dc8ff"
+    },
+    {
+      "id": "19wY_RPpgPcNfNTBjR5ATKfwaTDCjMdtD",
+      "notebookId": "ef1bd4c9-1c42-4bac-9b77-fe72e660adbf"
+    },
+    {
+      "id": "12_d5R7tujAUNxy95gFA56j_T9yz3XnTC",
+      "notebookId": "efa3d401-6331-46c8-9b62-106106191512"
+    },
+    {
+      "id": "1tkMdmlraevuK4DvRarRgmRmjMRvCnqbD",
+      "notebookId": "f7f06462-6f6c-48b2-8f06-c690abd0b12e"
+    },
+    {
+      "id": "1MlsppNmlp1DvxRmhSvbN8EG3N7-pH5ed",
+      "notebookId": "f90c4b60-e633-4120-a2d5-1cce0520f304"
+    },
+    {
+      "id": "1ChbFTqWU84bV8w5I1fICqiyzyE6MRGhR",
+      "notebookId": "4f0ecfae-4647-45fb-a5d5-389e614d4cfe"
+    },
+    {
+      "id": "1YmKVcOLhNlJDOqhx9siOxAgrEg5kjpd3",
+      "notebookId": "fdb26b8b-b309-47f1-bdf4-965c41ad4b12"
+    },
+    {
+      "id": "1MPu8Gh2FJaAF8SSQZzGktl5C74r82w_Z",
+      "notebookId": "6d9dfe06-ad66-46ca-a260-942a52aff837"
+    },
+    {
+      "id": "1_C2wEHnt2STPiwNqLU4kXIs2w67jGeEh",
+      "notebookId": "0b8b51f4-0280-4232-8b74-09301ddc0e83"
+    },
+    {
+      "id": "1DPt6GkC-xXUT_znUW6QvfMR5rWFGN9e4",
+      "notebookId": "3097ac5b-23a8-4421-b847-dc789382a50c"
+    },
+    {
+      "id": "1aQ0uM6Ou5yKWAx8GoGLtslyiu7PFIImc",
+      "notebookId": "d8cb9f1c-de08-4a6a-bda3-343322c448b1"
+    },
+    {
+      "id": "1TOgEDEwn8Kr8bUnlanytRfU7NJ5SaCNZ",
+      "notebookId": "a573ca3d-9412-4fd7-9781-fe360fe87fc5"
+    },
+    {
+      "id": "1lYLx8tpyratRar9I5omcOW62-2sFBfIs",
+      "notebookId": "6cad76e8-8b33-44a5-b6bf-a92f42ad7f12"
+    },
+    {
+      "id": "1qQPMPeciPiuk2vVsIr6mgx0IZpUC1rnU",
+      "notebookId": "a57ec62a-8724-4372-bacf-217e06bca6e4"
+    },
+    {
+      "id": "1AWdHr-3ww9SCiwm7AdQ104v6a4wB2kHa",
+      "notebookId": "df9198a5-e9be-4e14-a332-be0bf5996c92"
+    },
+    {
+      "id": "1jOBxS63kS7XuFLTtJW6Go7hgJjlk1U14",
+      "notebookId": "715ef461-4c41-4d62-a495-874b2b5472f6"
+    },
+    {
+      "id": "1LX_QjNFQPajwu8FYKN5bA5AUKgEP9zUz",
+      "notebookId": "4ef1eee8-afec-45c1-8955-7342f53c8923"
+    },
+    {
+      "id": "189JCPyj-MU927HgJfDlPJo55gD_SU1Db",
+      "notebookId": "96f3826c-69f5-4aa1-8660-6d339902ca72"
+    },
+    {
+      "id": "130VAYJUd3o7bjFQKz7Q_nhT6DygMj5tS",
+      "notebookId": "9a2a12dd-747d-4197-a68f-4ab2a1ee8f52"
+    },
+    {
+      "id": "16lJx38FBXSgAJYyKxOyXEqn6Luqz_34j",
+      "notebookId": "9d1fd639-c79b-48a9-9935-854f7805b510"
+    },
+    {
+      "id": "1Dwpm8f-jQljg7QxlwuJx9qwFOtzqXqFG",
+      "notebookId": "7cf35ab7-2969-47e3-a8fe-dc9ae2ba4c78"
+    },
+    {
+      "id": "1NF4BgGlIAiW3AQdJ8gp_TxFXr2dQZ_hb",
+      "notebookId": "3a398996-3c28-45a3-a694-9f7d42031480"
+    }
+  ]
 }
