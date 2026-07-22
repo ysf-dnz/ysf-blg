@@ -50,10 +50,20 @@ const t = useTranslations(lang);
     if (loaded) return;
     loaded = true;
     try {
-      // Pagefind UI yalnızca ilk açılışta yüklenir (postbuild çıktısı);
-      // değişken kullanımı Rollup'ın import'u çözmeye çalışmasını engeller
-      const pagefindUiUrl = "/pagefind/pagefind-ui.js";
-      await import(/* @vite-ignore */ pagefindUiUrl);
+      // Pagefind UI yalnızca ilk açılışta yüklenir (postbuild çıktısı).
+      // Klasik <script> etiketi kullanılır: import() dev'de Vite dönüşüm
+      // hattına girip "/public'ten import edilemez" hatası veriyor.
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "/pagefind/pagefind-ui.css";
+      document.head.appendChild(css);
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "/pagefind/pagefind-ui.js";
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
       const container = document.getElementById("search-container")!;
       // @ts-expect-error — global PagefindUI
       new PagefindUI({

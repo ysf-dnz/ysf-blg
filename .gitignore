@@ -2,6 +2,8 @@
 dist/
 .astro/
 .vercel/
+# postbuild kopyası: dev'de arama çalışsın diye (kaynak değil, üretilmiş)
+public/pagefind/
 
 # deps
 node_modules/
