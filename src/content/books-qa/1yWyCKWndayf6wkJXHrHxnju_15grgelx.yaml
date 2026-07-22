@@ -1,6 +1,6 @@
 # The Coder Cafe — 66 Zamansız Kavram (NotebookLM defterinden sentezlendi)
 bookId: "1yWyCKWndayf6wkJXHrHxnju_15grgelx"
-guncellenme: 2026-07-21
+guncellenme: 2026-07-22
 bolumler:
   - baslik: "Hızlı Bakış"
     sorular:
@@ -32,7 +32,8 @@ bolumler:
           load shedding, aynı ilkenin (taze isteğe öncelik, bilinçli vazgeçiş) iki yüzüdür.
   - baslik: "Uygulama"
     sorular:
-      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne olmalı?"
+      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne
+          olmalı?"
         cevap: |
           Sistemindeki bağımlılıkları iki listeye ayır: hangileri hard, hangileri soft?
           Sonra tek bir hard bağımlılık seç ve "bu servis 30 saniye cevap vermezse ne olur?"
@@ -51,3 +52,4183 @@ bolumler:
           taşır: hata stratejisini *önceden* seçmek (fail open/closed), hard→soft bağımlılık
           dönüşümü ve PACELC'in hatırlattığı gündelik gerçek — takas, yalnızca felaket anında
           değil her istekte vardır.
+ozet:
+  - baslik: Kitabın Yapısı ve Yol Haritası (9 Bölüm)
+    icerik: >-
+      The Coder Cafe kitabı, yazılım mühendisliği temellerini geniş bir
+      yelpazede ele alan ve toplam 9 bölümden (chapter) oluşan bir yapıya
+      sahiptir
+
+
+      . İşte kitabın tam yapısı ve her bölümün içeriği:
+
+      Kitabın Bölümleri ve İçerikleri
+
+      Bölüm 1: Algorithms & Data Structures Temel programlama yapıtaşlarını
+      oluşturarak diziler, bağlı listeler, ikili yığınlar (binary heaps) ve
+      graflar gibi temel veri yapılarının avantajlarını ve takaslarını
+      (trade-offs) inceler
+
+
+      . Ayrıca, bağımlılıkları çözümlemek için Topological Sort ve ağ akış
+      problemlerini çözmek için Ford-Fulkerson gibi kritik algoritmaların nasıl
+      çalıştığını detaylandırır
+
+
+      .
+
+      Bölüm 2: Concurrency Eşzamanlılık (concurrency) ve paralellik
+      (parallelism) kavramları arasındaki temel farkları açıklayarak, görevlerin
+      bağımsız olarak yönetilmesi ile aynı anda çalıştırılması durumlarını
+      örneklendirir
+
+
+      . Çoklu iş parçacığı senaryolarında güvenli kod yazmak için coroutine'ler,
+      mutex, semaphore ve yarış durumları (race conditions) gibi mekanizmaları
+      öğretir
+
+
+      .
+
+      Bölüm 3: Functional Programming Fonksiyonel programlamada fonksiyonları
+      daha yeniden kullanılabilir hale getiren kısmi uygulama (partially applied
+      functions) ve currying tekniklerini açıklar
+
+
+      . Kodu güvenli bir şekilde sarmalamak ve yan etkileri (side effects)
+      yönetmek için Functor, Applicative ve Monad gibi temel ve gelişmiş
+      fonksiyonel soyutlamaların (abstractions) mantığını anlatır
+
+
+      .
+
+      Bölüm 4: Software Engineering Kodun zaman içindeki gelişimini ve sağlığını
+      korumayı hedefleyen erken soyutlamadan kaçınma, YAGNI, okunabilirlik ve
+      bilişsel yükü (cognitive load) azaltma gibi güçlü mühendislik
+      felsefelerine odaklanır
+
+
+      . Sistemin sürdürülebilirliğini sağlamak için yüksek uyum (cohesion),
+      düşük bağlılık (coupling), kontrollü büyüme ve küçük refaktörler (tidy
+      first) konularını inceler
+
+
+      .
+
+      Bölüm 5: Testing Testlerde mantık kullanımından kaçınma (avoiding logic in
+      tests), satır/dal kod kapsamı (line/branch coverage) gibi test temellerini
+      ve özellik bazlı testler (property-based testing) gibi ileri seviye
+      stratejileri öğretir
+
+
+      . Birim testlerinin (unit tests) sadece kodun çalışıp çalışmadığını
+      doğrulamadığını; aynı zamanda yaşayan bir dokümantasyon olduğunu ve
+      uygulamaya değil davranışa odaklanması gerektiğini vurgular
+
+
+      .
+
+      Bölüm 6: Distributed Systems Sistem mimarileri ve veritabanı teorisine
+      inerek ACID özellikleri, CAP ve PACELC teoremleri ile dağıtık sistemlerde
+      erişilebilirlik (availability) ve tutarlılık (consistency) modellerini
+      işler
+
+
+      . İzolasyon seviyeleri ve olası anomaliler ile Bloom filtreleri gibi
+      yaklaşımların yanı sıra, karmaşık (complex) ve karışık (complicated)
+      sistemler arasındaki farklara ve bu sistemlerde nasıl yol alınacağına
+      odaklanır
+
+
+      .
+
+      Bölüm 7: Reliability Sistem güvenilirliğinin esneklik (resilience), hata
+      toleransı ve sağlamlık (robustness) kavramlarından nasıl ayrıştığını
+      netleştirerek, hata durumlarında zarifçe hizmet azaltma (graceful
+      degradation) ve açık/kapalı başarısızlık (fail open/closed) stratejilerini
+      anlatır
+
+
+      . Sistemlerin ayakta kalması için bağımlılık türlerinin (soft/hard)
+      yönetimini ele alırken, sorun tespitindeki bilişsel ve nedensellik
+      yanılgılarına (post hoc ergo propter hoc, lurking variables) dikkat çeker
+
+
+      .
+
+      Bölüm 8: Systems Yazılımın temelinde çalışan donanımı anlamak için
+      geliştiricilerde bir "mekanik sempati" (mechanical sympathy) kurmayı
+      hedefler
+
+      . İşlemcilerin nasıl çalıştığını anlamak üzere komut ardışık düzeni
+      (instruction pipelining) ve Eşzamanlı Çoklu Kullanım (SMT/Hyper-Threading)
+      konularını incelerken, sorun giderme yeteneklerini artırmak için Linux
+      çekirdek kilitlenmelerine (soft/hard lockups) değinir
+
+
+      .
+
+      Bölüm 9: Beyond Code Teknik yeteneklerin dışındaki kritik becerilere
+      odaklanarak etkili yardım isteme (XY problemi) ve net teknik metin yazımı
+      becerilerini sunar
+
+
+      . Kariyer gelişimi ve karar alma mekanizması için bilişsel önyargılar
+      (cognitive biases), yanal düşünme (lateral thinking), not tutma üzerinden
+      etkili bilgi yönetimi (Second Brain / PARA yöntemi) ve zihinsel sağlığı
+      koruma üzerine durur
+
+
+      .
+
+      Kitabın 5 Mantıksal Parçaya Bölünmüş Hali
+
+      Sonraki derinlemesine incelemeler için kitap, içeriğindeki ortak bağlam ve
+      temalara göre şu 5 ana parçaya bölünebilir:
+
+      Parça A: Temel Kavramlar ve Paradigmalar (Bölüm 1 - Bölüm 3) Algoritmalar,
+      veri yapıları, çok iş parçacıklı güvenli kod (concurrency) ve fonksiyonel
+      programlama prensipleriyle kodun en küçük yapıtaşlarını ve mantıksal
+      çalışma biçimlerini içerir.
+
+      Parça B: Kod Mimarisi ve Doğrulama (Bölüm 4 - Bölüm 5) Yazılım
+      mühendisliği prensipleriyle kodun nasıl daha okunabilir ve bakımı
+      yapılabilir şekilde (YAGNI, cohesion/coupling) tasarlanacağına ve bu
+      tasarımın testlerle (Testing) nasıl güvence altına alınacağına odaklanır.
+
+      Parça C: Sistem Tasarımı ve İşletme (Bölüm 6 - Bölüm 7) Dağıtık
+      sistemlerin ölçeklenmesi, veritabanı teoremleri (CAP/PACELC), yüksek
+      erişilebilirlik sağlama ve zorlu şartlar altında sistem güvenilirliğini
+      (Reliability) sağlama stratejilerini kapsar.
+
+      Parça D: Donanım ve İşletim Sistemi (Bölüm 8) Kodun doğrudan üzerinde
+      çalıştığı CPU mimarisini, pipeline operasyonlarını, multithreading donanım
+      seviyesi detaylarını ve Linux çekirdeğindeki temel performans/kilitlenme
+      metriklerini ele alır.
+
+      Parça E: Mühendislik Pratikleri ve Zihin Yapısı (Bölüm 9) Sadece kod
+      yazmanın dışına çıkarak iletişim becerileri, üretkenliği ve bilgiyi
+      organize etmeyi (Knowledge Management/Second Brain), karar
+      mekanizmalarındaki bilişsel yanılgıları yönetmeyi ve kariyer için
+      psikolojik sürdürülebilirliği inceler.
+  - baslik: Parça A · Temel Kavramlar ve Paradigmalar (Bölüm 1-3)
+    icerik: >-
+      Harika bir başlangıç noktası! "The Coder Cafe" kitabının Parça A: Temel
+      Kavramlar ve Paradigmalar bölümü, bir yazılım mühendisinin günlük hayatta
+      ve mülakatlarda karşısına çıkacak en hayati yapıtaşlarını kapsıyor
+
+
+      . Yazar Teiva Harsanyi'nin de dediği gibi, bu kavramları kahvemizi
+      yudumlarken acele etmeden, adım adım (Kaizen felsefesiyle) sindirerek
+      öğreneceğiz
+
+      .
+
+      Görevin kurallarına uygun olarak, hiçbir detayı atlamadan, her bir bölümü
+      sanki karşılıklı kahve içiyormuşuz gibi samimi ama teknik derinliğini
+      koruyarak yeniden anlatıyorum. Hazırsan başlayalım!
+
+      ### Bölüm 1: Algoritmalar ve Veri Yapıları (Algorithms & Data Structures)
+
+      Bu bölüm, kod yazarken kullandığımız en temel yapıtaşlarına, yani verileri
+      nasıl tuttuğumuza ve onları nasıl işlediğimize odaklanıyor
+
+      . Her veri yapısının ve algoritmanın bir bedeli (trade-off) vardır; önemli
+      olan doğru yerde doğru aracı seçmektir
+
+      .
+
+      Diziler (Arrays) ve Bağlı Listeler (Linked Lists) Arasındaki Savaş Veri
+      tutmak istediğimizde aklımıza ilk gelen iki seçenek genellikle diziler ve
+      bağlı listelerdir
+
+
+      . İkisi de temelde bir element koleksiyonunu saklar ama bunu yapış
+      biçimleri gece ve gündüz kadar farklıdır
+
+      . Bir dizi (array), bellekte yan yana (bitişik - contiguous) duran odalar
+      gibidir
+
+      . İki türü vardır: Boyutu baştan belli olan sabit boyutlu diziler
+      (fixed-size arrays) ve doldukça kendine yeni yer açan, Java'daki ArrayList
+      veya Go'daki slices gibi dinamik diziler (dynamic arrays)
+
+      . Öte yandan, bir bağlı liste (linked list), her biri hem veriyi hem de
+      bir sonraki odanın adresini (pointer/reference) tutan düğümlerden (nodes)
+      oluşur
+
+      . Bu ekstra adres tutma işi, bağlı listelerin dizilere göre bellek yükünün
+      (memory overhead) daha fazla olmasına neden olur
+
+      . Çift yönlü bağlı listelerde (doubly linked list) bu yük, hem önceki hem
+      sonraki düğümün adresi tutulduğu için daha da artar
+
+      .
+
+      Yazar burada çok kritik bir karşılaştırma yapıyor: Zaman karmaşıklığı
+      (time complexity)
+
+      . Teorik olarak, bağlı listelerin arasına veya başına eleman
+      eklemek/silmek O(1) zaman alır (eğer eklenecek yeri biliyorsan), oysa bir
+      dizide bu işlem O(n) sürer çünkü tüm elemanları kaydırman veya yeni bir
+      diziye kopyalaman gerekir
+
+      . Peki pratikte durum gerçekten böyle mi? Yazar kendi tasarladığı bir
+      deneyi paylaşıyor: Bellekte aynı anda bitişik olarak tahsis edilmiş bir
+      bağlı listeyi dolaşmak ile bir diziyi dolaşmayı karşılaştırdığında, bağlı
+      listenin diziden %230 daha yavaş çalıştığını görmüş!
+
+      . Neden mi? İki sebebi var: Birincisi, bağlı listenin assembly (makine)
+      kodu döngü başına daha fazla döngü (cycle) içerir
+
+      . İkincisi ve daha önemlisi, bağlı listelerde adresler arasında atlamak
+      CPU için öngörülemez bir durumdur
+
+      . CPU, dizilerdeki gibi yan yana duran verileri önceden tahmin edip
+      belleğe getiremez (prefetching yapamaz)
+
+      . Bu da "cache miss" (önbellek ıskalaması) dediğimiz şeye yol açar ve
+      performansı yerle bir eder
+
+      . Sonuç: Eğer uygulamanın performansı kritikse, sadece O(1) / O(n)
+      teorilerine güvenme, mutlaka test et (benchmark)
+
+      . Kural olarak; listenin sonu haricinde sürekli eleman ekleyip çıkarman
+      gerekiyorsa bağlı listeyi düşün, geri kalan durumlarda diziler genelde
+      donanımla daha uyumludur
+
+
+      .
+
+      İkili Yığınlar (Binary Heaps) Eğer bir veri setindeki en küçük veya en
+      büyük elemana sürekli ve çok hızlı bir şekilde ulaşman gerekiyorsa,
+      sahneye İkili Yığınlar (Binary Heaps) çıkar
+
+      . Bu yapı, tam (complete) bir ikili ağaçtır; yani son seviye hariç her
+      seviye tamamen doludur ve soldan sağa doğru doldurulur
+
+      . İki kuralı vardır: Min-Heap (her ebeveyn düğüm çocuklarından küçüktür)
+      veya Max-Heap (her ebeveyn çocuklarından büyüktür)
+
+      . İkili arama ağaçlarından (BST) farkı şudur: BST'de küçükler solda,
+      büyükler sağdadır; Heap'te ise sadece "ebeveyn büyüktür/küçüktür" kuralı
+      vardır, sağ-sol ayrımı yoktur
+
+      . En üstteki elemana O(1) sürede ulaşırsın, yeni eleman eklemek ise O(log
+      n) sürer
+
+      . Bu özellikleri onu öncelik kuyrukları (priority queues), Dijkstra
+      algoritması ve heapsort için biçilmiş kaftan yapar
+
+
+      .
+
+      Graflar (Graphs) ve Algoritmaları Sosyal ağlardan haritalara kadar her
+      yerde olan graflar, temelde düğümler (vertices/nodes) ve onları birbirine
+      bağlayan kenarlardan (edges/links) oluşur
+
+
+      . Grafların farklı karakterleri vardır:
+
+      Yönlü (Directed) vs Yönsüz (Undirected): Twitter'da birini takip etmen
+      (yönlü) ile Facebook'ta karşılıklı arkadaş olmanız (yönsüz) gibi
+
+
+      .
+
+      Döngüsel (Cyclic) vs Döngüsüz (Acyclic): Düğümler arasında dolaşıp
+      başladığın yere dönebiliyorsan döngüseldir
+
+
+      .
+
+      Ağırlıklı (Weighted) vs Ağırlıksız (Unweighted): Şehirler arası yolculuk
+      süresi kenarın ağırlığıdır; herkesin eşit olduğu bir arkadaşlık ağı
+      ağırlıksızdır
+
+      .
+
+      Bağlı (Connected) vs Kopuk (Disconnected): Ağa bağlı her makinenin
+      birbirine ulaşabilmesi bağlıdır; internetin kopması kopukluğa örnektir
+
+      .
+
+      Yazar burada iki önemli algoritmayı inceliyor: 1. Topolojik Sıralama
+      (Topological Sort): Elimizde yönlü ve döngüsüz bir graf (DAG) olduğunu
+      düşünelim
+
+
+      . Mesela, C işinin bitmesi için A'nın bitmesi gerekiyor, B için A
+      gerekiyor vs.
+
+      . Topolojik sıralama, bu bağımlılıkları dümdüz bir sıraya koyar
+
+      . A -> B -> C -> D gibi yatay bir akış çıkarır
+
+
+      . Bunu nasıl yapar? Her düğümün kendisine gelen ok sayısını (in-degree
+      counter) sayar
+
+
+      . Hiç ok gelmeyen (sıfır olan) düğümü sıraya koyar, o düğümü ve oklarını
+      grafikten siler, sonra yeni sıfır olanları bulup devam eder
+
+      . Zaman karmaşıklığı düğüm ve kenar sayısının toplamı kadardır O(v + e)
+
+      . Nerede kullanılır? Mac'teki Homebrew paket yöneticisinde paket kurulum
+      sırasını bulmakta, GNU Make'te derleme sırasında veya İşletim
+      Sistemlerinde kilitlenmeleri (deadlock) tespit etmede
+
+      .
+
+      2. Ford-Fulkerson Algoritması (Max Flow): Bu, bir sistemden maksimum ne
+      kadar "şey" (veri, su, araba) geçirebileceğimizi bulmamızı sağlar
+
+
+      . Bir musluktan (source) lavaboya (sink) giden farklı kalınlıkta borular
+      düşün
+
+
+      . Her borunun bir kapasitesi (capacity) var. Algoritma şu mantıkla
+      çalışır: Musluktan lavaboya kapasitesi dolmamış bir yol (augmenting path)
+      bul
+
+
+      . Bu yoldaki en dar boru senin o yol için maksimum kapasitendir
+      (bottleneck)
+
+      . Bu değeri toplam akışa ekle ve kullandığın borulardaki kalan kapasiteyi
+      güncelle
+
+      . Yazarın burada vurguladığı harika bir detay var: Yolu rastgele (örneğin
+      DFS ile) seçtiğimiz için yanlış ve verimsiz bir yol seçmiş olabiliriz
+
+
+      . Bunu düzeltmek için algoritma her adımda gönderdiği su miktarı kadar
+      "geriye doğru bir hayali boru (backward edge)" çizer
+
+      . Bu geriye doğru borular, sistemin daha sonra hata yaptığını anlayıp suyu
+      başka bir rotaya kaydırmasını (redistribution of flow) sağlar!
+
+
+      . Eğer bu yolları bulmak için DFS kullanırsan algoritmanın hızı maksimum
+      akış miktarına (U) bağlı olur: O(EU)
+
+
+      . Ama yolları BFS (Breadth-First Search) ile ararsan (buna Edmonds-Karp
+      denir), karmaşıklık tamamen grafın yapısına bağlanır ve O(VE^2) olur
+
+      .
+
+      Bu bölümün özü: Veri yapılarını (dizi, bağlı liste, yığın) seçerken sadece
+      kağıt üzerindeki zaman karmaşıklığına değil, donanımın önbellek dostu olup
+      olmadığına da dikkat etmeliyiz. Graflar ise karmaşık ilişkileri ve
+      bağımlılıkları modellemekte en güçlü silahımızdır; topolojik sıralama
+      bağımlılıkları çözerken, Ford-Fulkerson sistemlerin taşıma kapasitelerinin
+      sınırlarını geriye dönük telafi yeteneğiyle (backward edges) bulur.
+
+      ### Bölüm 2: Eşzamanlılık (Concurrency)
+
+      Programlamada kavramları birbirine karıştırmak çok sık rastlanan bir
+      durumdur. Bu bölüm, en çok karıştırılan konulara odaklanıp onları
+      netleştiriyor
+
+      .
+
+      Eşzamanlılık (Concurrency) vs Paralellik (Parallelism) Bu ikisi genellikle
+      aynı şey zannedilir ama tamamen farklı kavramlardır
+
+      . Yazarın harika kahve dükkanı analojisiyle anlatalım: Düşün ki bir kafede
+      tek bir garson ve tek bir kahve makinesi var
+
+      . Müşteriler sıraya girer, sipariş verir ve bekler
+
+      . Bu standart, sırayla çalışan tek iş parçacıklı (single-threaded)
+      modelimiz. İşler yoğunlaşınca dükkan sahibi ikinci bir garson ve ikinci
+      bir kahve makinesi alıyor
+
+      . Artık iki garson aynı anda farklı müşterilere hizmet verebiliyor
+
+      . İşte bu Paralellik (Parallelism)'dir; işleri aynı anda yapabilmek için
+      sisteme daha fazla kaynak (garson ve makine = thread ve core) eklemektir
+
+
+      . Bu işlem hızı artırır ama donanım maliyetlidir
+
+      .
+
+      Peki sürekli makine mi alacağız? Hayır, yazar "işin yapılış yapısını
+      (structure) değiştirelim" diyor
+
+      . Sipariş alma işlemi kısa sürerken, kahveyi yapmak uzun sürer. O halde
+      bir garson sadece siparişleri alsın, diğer garson (ikinci makineye gerek
+      olmadan) içeride sadece kahveleri yapsın
+
+      . Müşteriler Starbucks'taki gibi siparişi verip kahve bekleme alanına
+      geçerler
+
+      . İşte bu Eşzamanlılık (Concurrency)'dir
+
+      . İşler aslında tam olarak aynı nanosaniyede yapılmak zorunda değildir,
+      ancak bağımsız yönetilebilen parçalara ayrılmışlardır
+
+      . Eğer kahve yapmak yine de yetişmiyorsa, içeriye bir kahve yapan garson
+      daha eklersin
+
+      . Böylece eşzamanlı bir yapının içine belirli bir adım için paralellik
+      eklemiş olursun
+
+      . Yani eşzamanlılık bir tasarım ve yapı (structure) meselesiyken,
+      paralellik bir yürütme (execution) meselesidir
+
+      . Bir sistem eşzamanlı olup paralel çalışmayabilir, paralellik için
+      tasarlanıp eşzamanlı olmayabilir
+
+      . Çok iş parçacıklı programlama (Multithreading) ise her ikisini de temsil
+      edebilir
+
+      .
+
+      Coroutines (Eşyordamlar) Standart fonksiyonları (subroutines) biliyorsun;
+      çağırırsın, baştan sona çalışır, bitene kadar bekletir (bloke eder)
+
+      . Ama coroutines (eşyordamlar) farklıdır. Bunlar sihirli bir şekilde
+      duraklatılabilen (pause) ve sonra kaldıkları yerden devam edebilen
+      (resume) fonksiyonlardır
+
+      . Python'daki yield anahtar kelimesiyle oluşturulan yapılar bunun en iyi
+      örneğidir
+
+      . Fonksiyon yield'ı görünce bir değer döner ve durur
+
+      . Sen tekrar next() çağırdığında fonksiyon en baştan başlamaz, o yield'ın
+      olduğu satırdan hiçbir şey olmamış gibi devam eder
+
+      . Bunun güzelliği şudur: Coroutine'ler yeni bir thread (iş parçacığı)
+      yaratmazlar; tamamen aynı thread içinde çalışırlar
+
+      . Ama bekleme yaparken (örneğin ağdan veri beklerken) diğer coroutine'e
+      geçiş yapılabildiği için bize paralellik olmadan eşzamanlılık (concurrency
+      without parallelism) sağlarlar
+
+      . Özellikle I/O beklemelerinde, veri boru hatlarında (data pipelines) ve
+      hafızayı doldurmadan sayı üreten jeneratörlerde çok faydalıdırlar
+
+      .
+
+      Mutex vs Semaphore (Kilitleme ve Sinyalleşme) İki farklı thread aynı
+      kaynağa ulaşmaya çalıştığında bir trafik polisi gerekir.
+
+      Mutex (Mutual Exclusion - Karşılıklı Dışlama): Bir odaya girmek için tek
+      bir anahtarın olması gibidir
+
+      . Bir thread anahtarı alır (lock), odaya girer ve işini bitirip çıkana
+      kadar anahtarı iade etmez (unlock)
+
+      . Diğerleri kapıda bekler
+
+      . Sahiplik hissi vardır (kitleyen açmalıdır) ve kapasitesi sadece 1'dir
+
+
+      . "Bu kaynağı ben kullanıyorum, işim bitene kadar kimse dokunamaz" der
+
+      .
+
+      Semaphore (Semafor): İçerisinde 5 arabalık yer olan otopark gibidir
+
+      . Ortada tek bir anahtar yoktur, bir sayaç vardır
+
+      . Giren araba sayacı 1 düşürür, çıkan araba sayacı 1 artırır
+
+      . Sayı sıfırsa gelen araba bekler
+
+      . Burada katı bir sahiplik yoktur; başka bir thread de sayacı artırabilir
+
+      . Kapasitesi birden fazla kaynağı (pool of resources) yönetmek içindir
+
+
+      . "Ortada şu kadar kaynak var, ihtiyacın varsa al, bitince haber ver" der
+
+      .
+
+      Data Race (Veri Yarışı) vs Race Condition (Yarış Durumu) Bu iki terim de
+      genellikle birbirine karıştırılır
+
+      .
+
+      Data Race: İki veya daha fazla thread'in aynı anda aynı hafıza bölgesine
+      (memory location) erişmesi ve bunlardan en az birinin yazma (write) işlemi
+      yapmasıdır
+
+      . Örneğin bir thread coffee.price = 10 diye fiyatı güncellerken, diğerinin
+      o esnada fiyatı ekrana bastırmasıdır
+
+      . Çıktı tamamen şansa bağlıdır ve genellikle sistemde derin hatalara (bug)
+      neden olur
+
+
+      .
+
+      Race Condition: Olayların hangi sırayla (timing) gerçekleşeceğinin kontrol
+      edilemediği durumlardır
+
+      . Yazarın çok çarpıcı bir örneği var: Twitter'daki beğeni sayısının birkaç
+      saniyeliğine 606 yerine 605 görünmesi zararsız bir Race Condition'dır
+
+      . Ama banka hesabında bakiyenin güncellenmemiş eski halini görmek
+      tehlikeli bir Race Condition'dır
+
+      .
+
+      Buradaki altın kural şudur: Tüm Data Race'ler aynı zamanda bir Race
+      Condition'dır, ancak her Race Condition bir Data Race değildir
+
+
+      . Mutex kullanarak Data Race'i önleyebilirsin, ancak işlemlerin hangi
+      sırayla çalışacağını (örneğin veritabanı gecikmeleri yüzünden) garanti
+      edemediğin sürece hala bir Race Condition içinde olabilirsin
+
+
+      .
+
+      Bu bölümün özü: Eşzamanlılık programın işleri nasıl parçalara ayırarak
+      planladığıyla ilgiliyken, paralellik işleri fiziksel olarak aynı anda
+      yaptırmakla ilgilidir. Coroutine'ler aynı iş parçacığı içinde paralel
+      olmadan eşzamanlılık sunarken; Mutex ve Semaforlar paylaşılan kaynakları
+      yöneterek, zamanlamaya ve hafıza erişimine dayalı çökertici hataların
+      (data race ve race condition) önüne geçmemizi sağlayan kritik polislerdir.
+
+      ### Bölüm 3: Fonksiyonel Programlama (Functional Programming)
+
+      Nesne yönelimli programlamanın (OOP) hakim olduğu dünyamızda, fonksiyonel
+      programlama ilk başta biraz uzaylı dili gibi gelebiliyor
+
+      . Ancak bu bölüm, fonksiyonları daha esnek ve test edilebilir hale getiren
+      çok güçlü soyutlamaları (abstractions) öğretiyor
+
+      .
+
+      Kısmi Uygulama (Partially Applied Functions) ve Currying Üç sayıyı
+      toplayan bir fonksiyonumuz olsun: add(x, y, z)
+
+
+      . Diyelim ki kodun belli bir yerinde x her zaman 5 olacak şekilde
+      kullanılıyor. Sürekli add(5, y, z) yazmak yerine, Kısmi Uygulama
+      (Partially Applied Function) yaparak, bazı parametreleri sabitleriz
+
+      . Yeni bir fonksiyon yaratırız: val addFive = add(5, _, _). Alt çizgiler,
+      geriye kalan y ve z argümanlarının yer tutucusudur (placeholder)
+
+
+      . Currying ise biraz daha farklıdır
+
+      . Çok parametreli bir fonksiyonu, her biri tek bir argüman alan ardışık
+      fonksiyonlar zincirine dönüştürme işlemidir
+
+      . Yani add(x, y, z) fonksiyonunu curriedAdd(x)(y)(z) formuna getirirsin
+
+      . Peki Currying kendi başına ne işe yarar? Yazar da bu soruyu sorup
+      cevaplıyor: Kendi başına çok işe yaramazmış gibi görünse de Kısmi Uygulama
+      ile birleşince çok temiz bir yazım sunar
+
+      . Alt çizgilerle uğraşmak yerine doğrudan val addFive = curriedAdd(5)
+      diyerek 5'i sabitlersin, o sana geriye sadece kalan iki argümanı bekleyen
+      yepyeni bir fonksiyon döndürür
+
+
+      . Temiz, modüler ve şık
+
+      .
+
+      Functors, Applicatives ve Monads (Kutu Metaforu) Fonksiyonel
+      programlamanın "Kutsal Üçlüsü" olan bu kavramları anlamak için yazar
+      harika bir metafor kullanıyor: Kapalı bir mavi kutu
+
+
+      . Kutu açılmadan içinde ne olduğunu bilemeyiz
+
+      . Kutuyu açıyoruz ve içinden Hayatın, Evrenin ve Her Şeyin Cevabı olan
+      "42" çıkıyor!
+
+      . Programlamada bu kutu, değeri sarmalayan (wrap) bir bağlamdır (context)
+
+      . Mesela Java'daki Optional, Rust'taki Option veya Haskell'deki Maybe tipi
+      bu kutudur
+
+      . Değer olabilir (Just 42) veya kutu boş olabilir (Nothing)
+
+
+      .
+
+      Functor (Kutuya Dışarıdan Müdahale): Elimizde kutunun içindeki 42 değeri
+      ve dışarıda standart bir (+1) toplama fonksiyonu var
+
+      . (+1) normalde sade sayılarla çalışır, kutulu değerlerle değil
+
+      . İşte Functor, kutunun bağlamını (içinde değer olup olmama durumunu) hiç
+      bozmadan dışarıdaki bu fonksiyonu kutunun içine sokup çalıştırmamızı
+      sağlayan yapıdır
+
+      . Haskell'deki fmap fonksiyonu tam olarak bunu yapar
+
+      . fmap (+1) (Just 42) dediğinde sana Just 43 döner
+
+      . Eğer kutu boşsa (Nothing), 1 eklemeye çalışmaz, doğrudan boş kutu
+      (Nothing) döner
+
+      . Kutu bir liste olsa bile (Yeşil kutu), fmap o fonksiyonu listenin tüm
+      elemanlarına uygular
+
+      . Functor = Dışarıdaki bir fonksiyonu, kutunun içindeki veriye
+      uygulamaktır
+
+      .
+
+      Applicative (Kutudaki Fonksiyonu Kutudaki Değere Uygulamak): Peki ya
+      uygulayacağımız (+1) fonksiyonunun kendisi de bir kutunun (Maybe veya
+      Liste) içindeyse?
+
+
+      . Mesela fonksiyon hata verdiği için gelmemiş olabilir (opsiyonel) veya
+      birden fazla fonksiyon listesi olabilir
+
+      . fmap burada derleme hatası verir çünkü o, dışarıda özgür bir fonksiyon
+      bekler
+
+      . İşte burada Applicative Functors (Applicatives) devreye girer
+
+      . Haskell'de <*> operatörüyle gösterilir
+
+
+      . Bu operatör, "Kutunun içindeki fonksiyonu al, diğer kutunun içindeki
+      veriye uygula ve sonucu yeni bir kutuya koy" der
+
+      . Just (+1) <*> Just 42 dersen, sonuç Just 43 olur
+
+      . Hatta listenin içinde [+1, +10] gibi iki fonksiyon ve diğer yanda 
+
+       listesi varsa, hepsini birbirine uygular
+      . Ancak bir şart var: İki kutunun da türü (context) aynı olmak zorundadır
+
+      .
+
+      Monads (Final Boss): Geldik işin en civcivli kısmına
+
+      . Şimdiye kadar hep A -> B (A'dan B'ye giden) fonksiyonlardan bahsettik
+
+      . Peki ya fonksiyon dışarıdaki normal bir değeri (A) alıp, onu işleyip
+      kutu içinde bir değer (Maybe B) döndürüyorsa ne olacak?
+
+      . Mesela, yaşı alıp geçerliyse Just yas, değilse Nothing dönen bir
+      validateAge(age) fonksiyonu ve ismi alıp "Hello İsim" dönen greet(name)
+      fonksiyonumuz olsun
+
+      . Diyelim ki yaşı doğrulayıp o kişiye merhaba demek istiyoruz. greet <$>
+      Just name <*> validateAge age yazmayı deniyoruz ama kod patlıyor (type
+      mismatch error)!
+
+
+      . Çünkü Applicative (<*>), greet <$> Just name işleminden gelen "kutu
+      içindeki String->String" fonksiyonuyla, validateAge'in döndürdüğü "Kutu
+      içindeki Int" (Maybe Int) değerini birleştiremez
+
+
+      . İşte Monad, "Normal değer alıp Kutu (Context) döndüren bağımlı
+      fonksiyonları arka arkaya zincirlememizi (sequence and compose) sağlayan
+      yapıdır"
+
+
+      . Haskell'de bunu ya >>= operatörüyle ya da kodun imperatif (satır satır)
+      görünmesini sağlayan do notasyonuyla yaparız
+
+      .
+
+      Burada validateAge eğer Nothing dönerse (yaş 18'den küçükse), zincir
+      anında kopar ve sonuç otomatik olarak Nothing olur
+
+      . Devamındaki satırlar hiç çalıştırılmaz!
+
+      . Eğer yaş uygunsa, return komutu (ki Haskell'de işlemi sonlandıran bir
+      komut değil, değeri bir Monad kutusunun içine koyan fonksiyondur)
+      sayesinde "Hello John" yazısı Just kutusunun içine konularak döndürülür
+
+
+      . Monad'ların büyüklüğü sadece null (Nothing) kontrolü yapmalarında
+      değildir. Veritabanı veya dosya okuma (I/O) gibi tamamen yan etkili
+      (impure/side-effect) işlemleri bile saf (pure) fonksiyonel dünyanın içinde
+      "Monad kutularına" hapsederek güvenle kullanabilmemizi sağlarlar
+
+      .
+
+      Bu bölümün özü: Fonksiyonel programlamada Currying ve Kısmi Uygulama ile
+      fonksiyonlarımızı lego parçaları gibi modülerleştirirken; Functor,
+      Applicative ve Monad üçlüsü sayesinde yan etkilere, boş değerlere (null)
+      ve hatalara karşı kendi güvenli "bağlam (context) kutularımızı" inşa
+      edebiliriz. Özellikle Monad'lar, normal değerler alıp kutulu veri dönen
+      fonksiyonları, hata durumlarında tüm zinciri otomatik olarak kıracak
+      şekilde harika bir zarafetle (do notasyonu ile) birbirine bağlamamızı
+      sağlar.
+  - baslik: Parça B · Kod Mimarisi ve Doğrulama (Bölüm 4-5)
+    icerik: >-
+      Harika bir tercih! Kahvelerimiz taze, zihnimiz açıkken yazılım
+      mühendisliğinin en derin ama bir o kadar da pratik konularına, Parça B:
+      Kod Mimarisi ve Doğrulama bölümüne geçiş yapıyoruz. Yazar Teiva
+      Harsanyi’nin "The Coder Cafe" kitabında vurguladığı gibi, sadece çalışan
+      kod yazmak yetmez; o kodun zaman içindeki yolculuğunda (bakım, test,
+      okunabilirlik) hayatta kalabilmesi gerekir
+
+      .
+
+      Görevin kurallarına harfiyen uyarak, bu bölümlerdeki hiçbir fikri,
+      anekdotu veya örneği atlamadan, adım adım ve sohbet havasında yeniden
+      anlatıyorum. Başlıyoruz!
+
+      4.1 Erken Soyutlamalar (Premature Abstractions)
+
+      Kod yazarken hepimizin aklında o sihirli kelime yankılanır: Soyutlama
+      (Abstraction). İster arayüzler (interfaces) olsun, ister modüller veya
+      fonksiyonlar olsun; soyutlama, karmaşık uygulama detaylarını gizleyerek
+      bize sadece gerekli özellikleri sunan basitleştirilmiş bir temsildir
+
+      . Ancak yazar, hepimizin çok iyi bildiği bir tuzağa dikkat çekiyor.
+
+      Eminim Donald Knuth'un o meşhur sözünü duymuşsundur: "Erken optimizasyon
+      (premature optimization) bütün kötülüklerin anasıdır"
+
+      . İnsanlar, kodun performansını hiç kritik olmayan %97'lik kısımlarda
+      optimize etmek için devasa zaman harcarlar ve bu durum kodun bakımını
+      felakete sürükler
+
+      . Yazar, bu sözün çok doğru olduğunu kabul etse de, günümüz kod
+      tabanlarında çok daha yıkıcı bir problem olduğunu iddia ediyor: Erken
+      Soyutlamalar (Premature Abstractions)
+
+      .
+
+      Kitaptaki o harika "Çan Eğrisi (Bell Curve)" memini gözünün önüne getir:
+      Sol tarafta "basit kod" yazan bir Junior, ortada "Her yerde soyutlamalar
+      olmalı!" diye ağlayan bir Mid-level (orta seviye) geliştirici ve sağ
+      tarafta yine "basit kod" yazan bilge bir Senior
+
+      . Neden ortadaki grup bu kadar acı çekiyor? Çünkü varsayımlar
+      (conjectures) üzerine, yani henüz elimizde tam kanıtlar yokken geleceği
+      tahmin ederek kod yazıyorlar
+
+      . "Gelecekte X'i yapmamız gerekebilir, o yüzden Y fonksiyonunu yeterince
+      jenerik (esnek) yapalım" veya "Gelecekteki olası ihtiyaçları karşılayacak
+      jenerik bir veri yapısı tasarlayalım" düşüncesi, bu tuzağın temelidir
+
+      .
+
+      Yazar burada kendi acı tecrübesini paylaşıyor: Eski şirketinde, gelecekte
+      "kesin gelir" diye bekledikleri ihtiyaçlar için kod tabanını yeterince
+      jenerik hale getirmek uğruna koca bir sprint'i (haftalarca süren emeği)
+      feda etmişler. Sonuç mu? O beklenen ihtiyaçlar hiçbir zaman gelmemiş
+
+      . Bu, geliştirme süresinin ve eforunun devasa bir israfıdır. Elbette tüm
+      jenerik çözümler veya soyutlamalar kötü değildir; ancak biz mühendislerin
+      işleri "çok erkenden" karmaşıklaştırma gibi bir huyu vardır
+
+      . Kural basit: İhtiyacın olduğunu "tahmin ettiğin" zaman değil, o özelliğe
+      "gerçekten ihtiyacın olduğu" zaman o soyutlamayı yap
+
+      .
+
+      Bu bölümün özü: İhtiyacımız olmayan özellikleri gelecekte lazım olur
+      varsayımıyla koda eklemek (erken soyutlama), sistemi gereksiz yere
+      karmaşıklaştırır ve geliştirme hızını düşürür. Kodumuzu her zaman bugünün
+      gerçek ihtiyaçlarına göre, en basit haliyle tasarlamalıyız.
+
+      4.2 YAGNI ve Ürün Fikirlerine Odaklanmak
+
+      Eğer erken soyutlama bir hastalıksa, bunun en bilinen ilacı YAGNI (You
+      Aren't Gonna Need It - Buna İhtiyacın Olmayacak) prensibidir
+
+      . YAGNI, hipotetik (varsayımsal) gelecekteki gereksinimlere dayanarak koda
+      işlevsellik eklememizi yasaklar
+
+      . Neden mi? Çünkü yazılım mühendisliği araştırmalarına göre, bir yazılımın
+      toplam maliyetinin %40 ila %80'i "bakım" (maintenance) aşamasında harcanır
+
+      . Olmayan bir özellik için yazdığın kodu ömür boyu taşımak, test etmek ve
+      bakımını yapmak zorundasın.
+
+      YAGNI prensibini uygulamanın iki devasa faydası vardır:
+
+      Azaltılmış Karmaşıklık (Reduced complexity): Gereksiz özellikleri silmek,
+      kod tabanını çok daha sade tutar
+
+      .
+
+      Daha İyi Çeviklik (Better agility): Karmaşıklığı dizginlenmiş bir kod,
+      değişen müşteri gereksinimlerine çok daha hızlı adapte olur
+
+      .
+
+      Peki kodumuzun YAGNI'yi ihlal ettiğini nasıl anlarız? Yazar bize 5 adet
+      "kötü koku" (smell) veriyor:
+
+      Basit bir uygulama yetecekken aşırı soyutlanmış sınıflar (Overly
+      abstracted code)
+
+      .
+
+      Hiç gereği yokken kullanılan jenerik (generic) tipler
+
+      .
+
+      Mevcut durumda istenmeyen ama "belki lazım olur" diye eklenen özellikler
+
+      .
+
+      Üretimde (production) hiç kullanılmayan veya sadece testler geçsin diye
+      yazılmış ölü kodlar
+
+      .
+
+      Performansa zerre etkisi olmayan yerlerde yapılan yersiz optimizasyonlar
+
+      .
+
+      Ancak her kural gibi YAGNI'nin de bir sınırı var. Uzun vadeli mimari
+      kararlar alırken, aşırı kullanıcı büyümesi (growth) beklenirken veya yasal
+      uyumluluk (regulatory compliance) gibi konularda ileriye dönük planlama
+      yapmak şarttır
+
+      . İşte tam burada, YAGNI'yi esnetmeden sistemi geleceğe hazırlamanın bir
+      yolu olarak yazar "Gereksinimlere (Requirements) Değil, Ürün Fikirlerine
+      (Product Ideas) Odaklanmayı" öneriyor
+
+      .
+
+      Diyelim ki Starbucks'ın ilk online sipariş sistemini yazan bir Java
+      mühendisisin. Müşteri senden "kahve teslimatı" yapmanı istedi. Gidip şöyle
+      bir interface yazdın
+
+      : public void deliverCoffee(List<Coffee> coffees); Harika, çalışıyor. Peki
+      yarın Starbucks "Biz artık kahvenin yanında yiyecek de teslim edeceğiz"
+      derse ne olacak? Gidip şu metodu mu ekleyeceksin
+
+      ,
+
+      ? public void deliverCoffeeAndFood(List<Coffee> coffees, List<Food>
+      foods); Sonra çay, meyve suyu, kupa bardak eklendiğinde bu interface
+      yüzlerce metodla dolup çöpe dönecek
+
+      . Sorun neydi? Sorun, bize verilen dar "gereksinime" (sadece kahve
+      teslimatı) körü körüne bağlı kalıp, ürünün "ana fikrini" kaçırmamızdı
+
+      . Starbucks ne yapmak istiyor? "Teslimat (Delivery)" yapmak istiyor
+
+      . Bunun yerine domain (iş alanı) objelerini kullanarak şöyle bir yapı
+      kursaydık: public void deliver(DeliveryList items);
+       İşte bu! DeliveryList objesi domain'i temsil eder ve gelecekte ne eklenirse eklensin ana kodumuz değişmez
+      . YAGNI'yi katı bir şekilde ihlal etmedik, sadece sistemi "ürün fikri"
+      etrafında modelleyerek gelecekteki değişikliklere karşı esnek hale
+      getirdik
+
+      .
+
+      Bu bölümün özü: İhtiyacın olmayan kodu "ileride lazım olur" diye yazmak
+      bakım maliyetlerini patlatır (YAGNI). Ancak sistemi günübirlik dar
+      gereksinimlere göre değil, ürünün asıl varoluş amacına (domain) göre
+      genelleştirmek, YAGNI'yi ihlal etmeden esneklik kazanmanın en zeki
+      yoludur.
+
+      4.4 Bilişsel Yük (Cognitive Load)
+
+      Bir koda baktığında beyninin "yanıyormuş" gibi hissettiği oldu mu? İşte
+      bunun teknik bir adı var: Bilişsel Yük (Cognitive Load)
+
+      . Bilişsel yük, bir kodun ne yaptığını anlamak, yeni bir özellik eklemek
+      veya bir hatayı çözmek için harcamamız gereken zihinsel çabadır
+
+      . Yazar bunu ikiye ayırıyor:
+
+      İçsel (Intrinsic) Yük: Çözmeye çalıştığın problemin doğasından gelen
+      zorluktur. Mesela çok karmaşık kuralları olan bir bankacılık domaininde
+      çalışıyorsan, bu iş zaten zordur. Domaini basitleştiremezsin, bu yük
+      kaçınılmazdır
+
+      .
+
+      Dışsal (Extraneous) Yük: Bilginin nasıl sunulduğundan kaynaklanan,
+      problemle doğrudan ilgisi olmayan yüktür
+
+      . İğrenç tasarlanmış bir API veya isimlendirmeleri berbat bir kod
+      okuyorsan, domain ne kadar basit olursa olsun beynin yorulur
+
+      .
+
+      Bir makine olmadığımızı unutmamalıyız. İnsan beyninin "çalışan belleği
+      (working memory)" son derece sınırlıdır. 20 satırlık basit bir fonksiyonu
+      bile birebir aynı değişken isimleriyle ezberden kağıda yazmaya çalış, ne
+      kadar zor olduğunu göreceksin
+
+      . Bu yüzden mühendis olarak asıl işimiz, kaçınılmaz olan içsel yükle
+      savaşmak değil; dışsal bilişsel yükü en aza indirmektir
+
+      . Herhangi bir işi olabildiğince doğrudan (straightforward) hale
+      getirmeliyiz
+
+      .
+
+      Peki bu yükü nasıl yöneteceğiz? Yazar 5 strateji sunuyor
+
+      :
+
+      Kod Karmaşıklığı: İç içe geçmiş (nested) kodu azalt, if/else'leri
+      basitleştir, kalıtım (inheritance) seviyelerini sığ tut
+
+      .
+
+      Soyutlamalar (Abstractions): Koda zerre faydası olmayan, sadece
+      karmaşıklık yaratan erken soyutlamalardan kaçın
+
+      .
+
+      Dokümantasyon: README dosyaları, yorum satırları ve hatta yazılan testler
+      (evet, testler de yaşayan dokümantasyondur!) güncel ve temiz olsun
+
+      .
+
+      İletişim: Takım içi iletişim net olmalı. Yanlış anlaşılmalar ve eksik
+      tasarımlar beyni en çok yoran şeydir
+
+      .
+
+      Bağlam Değiştirme (Context Switching): Kod yazarken sürekli toplantıya
+      girmek, bir yandan kod incelemesi (code review) yapmak veya debug yapmak
+      zihni tüketir. Eğer sürekli bağlam değiştiriyorsan yöneticinle konuşup
+      bunu çözmelisin
+
+      .
+
+      Bizim sorumluluğumuz "Domain çok zor abi, kod ondan karmaşık" bahanesine
+      sığınmak değil, dışsal yükleri hafifleterek o zor domaini bile anlaşılır
+      kılmaktır
+
+      .
+
+      Bu bölümün özü: İnsan beyninin anlık hafıza kapasitesi sınırlıdır, bu
+      yüzden okuyucuyu asıl iş mantığı dışındaki kötü tasarımlarla ve dağınık
+      yapılarla (dışsal yük) yormamak gerekir. Yazılım mühendisinin temel
+      görevi, kendi kodunu başkaları (ve gelecekteki kendisi) için en düşük
+      zihinsel eforla anlaşılır hale getirmektir.
+
+      4.5, 4.6 ve 4.7 Okunabilirlik, İfadeleri Sadeleştirmek ve İç İçe Kodlar
+      (Readability & Code Structures)
+
+      İşte en çok kavga edilen konuya geldik: "Bu kod okunabilir değil!"
+
+      . Pull Request'lerde bunu ne kadar çok gördüğümüzü biliyorsun. Clean Code
+      kitabının o meşhur sözünü hatırlayalım: "Kodunuzu okunabilir yapmak, onu
+      çalıştırılabilir yapmak kadar önemlidir."
+
+      . Peki ama "okunabilir" ne demek?
+
+      Yazarın mükemmel tanımına göre okunabilirlik; okuyucunun kodun niyetini
+      (ne yapmaya çalıştığını - what), gerekçesini (bunu neden böyle yaptığını -
+      why) ve mantığını (nasıl çalıştığını - how) ne kadar kolay
+      anlayabildiğiyle ölçülür
+
+      . Özellikle "neden (rationale)" kısmı çok kritiktir. Çoğu kodda yazarın o
+      mimariyi "neden" öyle seçtiğini asla anlayamayız
+
+      .
+
+      Bunu sağlamanın prensipleri şunlardır
+
+      :
+
+      İlgili soyutlamalar ve mantıklı isimlendirmeler (Naming things is hard!)
+
+      .
+
+      Görsel estetik: Kodun paragraf paragraf, iç içe geçmeden hizalanması
+
+      .
+
+      Yorumlar (Comments): Kodun ne yaptığını (what) değil, koddan anlaşılamayan
+      niyet ve gerekçeyi (intent/rationale) anlatmalıdır
+
+      .
+
+      Zekice (clever) yazılmış janjanlı kod değil, açık ve dilin standartlarına
+      uygun (idiomatic) "ortalama" kod yazmak
+
+      .
+
+      Tüm kod tabanında tutarlılık (consistency)
+
+      .
+
+      Kendi yazdığın kod sana hep "okunabilir" gelir. O yüzden kod incelemeleri
+      (code reviews) şarttır. Google'da her dil için özel bir "readability
+      badge" (okunabilirlik rozeti) olan mühendisler vardır ve 5 satırdan büyük
+      her kod değişikliğinde bu taze, ön yargısız gözlerin onayı şarttır
+
+      . Performans gerektiren kritik yerlerde okunabilirlikten bazen feragat
+      edilebilir, ama denge şarttır
+
+      . Hatta yazarın bir ipucu var: Bazen IDE'yi uzaklaştırıp (zoom out) koda
+      dışarıdan "şekil" olarak bakmak bile kodun ne kadar dağınık olduğunu
+      gösterebilir
+
+      .
+
+      Karmaşık if İfadeleri (Complex IF Statements): Diyelim ki bir kahve
+      dükkanının bildirim sistemine bakıyorsun. Karşına şöyle bir kod çıktı
+
+      :
+
+      if ((((notification.orderID == orderID) || (notification.customerID ==
+      customerID) || ... ) && (isAdmin || ...)) {
+          send(notification);
+      }
+
+
+      Okuması işkence, değil mi
+
+      ? Bunu çözmenin ilk adımı, o upuzun koşulları anlamlı boolean değişkenlere
+      atamaktır
+
+      : boolean orderMatches = notification.orderID == orderID; boolean
+      customerMatches = notification.customerID == customerID; vb. Böylece
+      zihinsel yük inanılmaz azalır
+
+      . Ancak bu 7 satırlık değişken yığını kodun ortasında duruyorsa,
+      okuyucunun dikkatini dağıtır
+
+      . İkinci ve asıl adım, bu mantığı tek bir amaca hizmet eden (bildirim
+      kullanıcıyla eşleşiyor mu?) ayrı bir fonksiyona (notificationMatchesUser)
+      taşımaktır
+
+      ,
+
+      . Kural şu: İçinde iki veya daha fazla && veya || barındıran her if
+      koşulu, sadeleştirilmeye muhtaçtır
+
+      .
+
+      İç İçe Kodlar (Nested Code): Eğer bir if veya for bloğunun içine başka bir
+      if, onun içine başka bir if daha atarsan o kod çekilmez hale gelir
+
+      . Yazarın Go dilinde verdiği örneğe bakalım: Bir join(s1, s2, max)
+      fonksiyonu. s1 boşsa hata dön, değilse s2 boşsa hata dön, değilse
+      concatenate yap, hata varsa dön, hata yoksa max'ı geçip geçmediğine bak...
+      Sürekli sağa doğru kayan "ok ucu" (arrow) şeklinde bir kod
+
+      ,
+
+      .
+
+      Bunun panzehiri, "Mutlu Yolu Sola Hizalamaktır (Align the happy path to
+      the left)" (Mat Ryer)
+
+      . Yani edge case'leri (uç durumları) ve hataları anında if (hata) return;
+      şeklinde aradan çıkar
+
+      . Böylece fonksiyonun asıl iş yaptığı "mutlu yol" (happy path) dümdüz,
+      hizalı bir sütun olarak kalır; hatalar ise yan tarafta bağımsız bir sütun
+      gibi durur
+
+      . Ne kadar az iç içelik (nesting), o kadar yüksek okunabilirlik!
+
+      .
+
+      Bu bölümün özü: Okunabilir kod; zekice numaralarla (cleverness) değil,
+      açık niyetle ve tutarlılıkla yazılmış koddur. Karmaşık koşulları
+      fonksiyonlara taşıyıp, iç içe geçmiş (nested) yapıları "erken dönüşler
+      (early returns)" ile düzleştirerek kodun hem "mutlu yolunu" hem de uç
+      durumlarını bir bakışta anlaşılır hale getirmeliyiz.
+
+      4.8 ve 4.9 Uyum (Cohesion) ve Bağlılık (Coupling)
+
+      Yazılım mimarisinin en ayrılmaz ikilisine (Yin ve Yang'ına) geldik.
+
+      Uyum (Cohesion) Uyum, bir yapı taşı (sınıf, modül veya fonksiyon) içindeki
+      elemanların birbirine "ne kadar ait olduğunu" (belong together) ölçer
+
+      . Günlük hayattan müthiş bir analojiyle anlatalım: Yatak odası. Eğer bir
+      yatak odasına yatak, çatal-bıçak dolabı ve şampuan koyarsan, bu
+      elemanların hiçbirbiri aynı amaca hizmet etmez (biri uyumak, biri yemek
+      yemek, biri yıkanmak için). İşte bu düşük uyumdur (low cohesion)
+
+      . Ama odaya yatak, gardırop ve çalar saat koyarsan, hepsi "dinlenmek ve
+      sabah hazırlanmak" ortak amacına hizmet eder. Bu yüksek uyumdur (high
+      cohesion)
+
+      .
+
+      Yazılımda da bir sınıfın tüm metodları tek bir sorumluluğa (single
+      intention) odaklanmalıdır
+
+      . Yüksek uyum; kodu okunabilir, bakımı kolay, test edilebilir ve yeniden
+      kullanılabilir kılar
+
+      . Eğer sisteminde şu kokular (smells) varsa uyumun düşüktür:
+
+      Shotgun Surgery (Pompalı Tüfek Cerrahisi): Bir davranışı değiştirmek için
+      sistemin bambaşka 5 yerindeki sınıfları da değiştirmen gerekiyorsa, o
+      davranışa ait elemanlar bir araya getirilmemiştir
+
+      .
+
+      God Object (Tanrı Objesi): Her şeyi bilen, her şeyi yapan, devasa
+      sorumlulukları olan obez sınıflardır
+
+      .
+
+      Middle Man (Aracı): Hiçbir değer katmadan sadece bir isteği alıp başka bir
+      sınıfa paslayan gereksiz sınıflardır
+
+      .
+
+      Uyumun da seviyeleri vardır
+
+      -
+
+      . En mükemmeli Fonksiyonel (Functional) uyumdur; CoffeeOrder sınıfının
+      sadece sipariş ekleme, çıkarma ve hesaplama metodlarını (tek bir görevi
+      yerine getirmek için) içermesi gibi
+
+      . Ardından sırasıyla; Çıktının diğerinin girdisi olduğu Sıralı
+      (Sequential), Aynı veri üzerinde çalışan İletişimsel (Communicational),
+      aynı işlemleri yapsa da sıra gerektirmeyen Prosedürel, sadece sistem
+      başlarken beraber çalıştıkları için yan yana konan Zamansal (Temporal),
+      sırf aynı kategorideler diye yan yana konan Mantıksal (Logical - Utility
+      sınıfları gibi) uyum gelir. En kötüsü ise metodların tamamen rastgele aynı
+      sınıfa tıkıştırıldığı Tesadüfi (Coincidental) uyumdur
+
+      ,
+
+      .
+
+      Bağlılık (Coupling) Bağlılık ise, iki farklı bileşenin (component)
+      birbirine ne kadar muhtaç olduğuyla ilgilidir
+
+      . Evinin su tesisatını düşün (plumbing analojisi). Tuvaletin sifonunu
+      çektiğinde, ikisi de aynı su hattına çok sıkı bağlıysa (tight coupling),
+      duştaki su aniden soğur veya buz gibi olur
+
+      . Ama doğru tasarlanmış, gevşek bağlı (loosely coupled) bir sistemde,
+      sifon çekildiğinde duşta sadece çok hafif ve tolere edilebilir bir basınç
+      düşüşü olur, sıcaklık değişmez
+
+      .
+
+      Gevşek bağlılığın sırrı, iki bileşenin birbirinin "iç yapısı" hakkında en
+      az varsayımda bulunmasıdır (reducing assumptions)
+
+      . Sıkı bağlı sistemlerin bakımı kabustur (biri değişince diğeri bozulur),
+      anlaması çok daha zordur ve test etmesi (mock'lama gerektirdiği için) tam
+      bir eziyettir
+
+      ,
+
+      .
+
+      Uyum ve Bağlılık birbirine dik (orthogonal) kavramlar değildir
+
+      . Yüksek uyum, genellikle düşük bağlılık getirir. Çünkü kendi işine
+      odaklanan (single responsibility) bir sınıf, diğer sınıflarla daha az
+      iletişim kurar
+
+      . Shotgun Surgery veya God Object gibi uyumsuzluk kokuları, aslında
+      sistemin sıkı bağlı (tight coupling) olduğunun da göstergesidir
+
+      . Bağlılık türleri
+
+      -
+
+      :
+
+      İçerik (Content) Bağlılığı: Bir sınıfın diğerinin özel (private) verisini
+      doğrudan değiştirmesi.
+
+      Ortak (Common) Bağlılık: Birden fazla bileşenin aynı global değişkeni
+      kullanması.
+
+      Kontrol (Control) Bağlılığı: Bir bileşenin diğerine ne yapması gerektiğini
+      "flag" (bayrak) parametrelerle dikte etmesi.
+
+      Damga (Stamp) Bağlılığı: Sadece küçük bir kısmı kullanılacakken devasa bir
+      veri yapısının (struct) bütünüyle diğer bileşene geçirilmesi.
+
+      Zamansal (Temporal) Bağlılık: Bir servisin çalışması için diğerinin aynı
+      anda ayakta (senkron) olmasının zorunlu olması.
+
+      Bu bölümün özü: Sağlıklı bir yazılım mimarisinin altın kuralı "Yüksek Uyum
+      (High Cohesion)" ve "Gevşek Bağlılık (Loose Coupling)" tır. Kod
+      parçalarımız kendi içinde tek bir amaca kilitlenmiş, birbirleriyle olan
+      ilişkilerinde ise karşılıklı iç yapı varsayımlarından olabildiğince
+      arındırılmış olmalıdır.
+
+      4.10 ve 4.11 "Tidy First?" (Önce Toparla) ve Kodun Güzelliği
+
+      Hepimiz o durumu yaşadık: Sprint planlamasında yöneticiye gidip "Benim 2
+      hafta boyunca eski kodları refactor etmem lazım" demek büyük bir cesaret
+      ister, genelde de reddedilir
+
+      . Kent Beck'in yazdığı "Tidy First?" kitabı tam da bu acıya merhem oluyor.
+      Kitap diyor ki: "Refactoring" kelimesi artık "yeni özellik geliştirmeyi
+      uzun süre durduran devasa molalar" anlamına geldiği için itibarını
+      kaybetti
+
+      . Bunun yerine, kimsenin itiraz edemeyeceği kadar küçük, sevimli (cute,
+      fuzzy) "Toparlamalar (Tidying)" yapmalıyız
+
+      .
+
+      Tidying (Toparlama), bir kod tabanında anlık ve küçük müdahalelerle
+      kaliteyi artırmaktır. Yazarın bu kitaptan çıkardığı temel dersler şunlar:
+
+      Simetrileri Normalleştirmek: Kod tabanları organik olarak büyür. Zamanla
+      aynı sorun, 5 farklı geliştirici tarafından 5 farklı şekilde çözülmüş
+      olabilir. Bir koda bakıp okuyucunun kafasının karışmaması için "Birini seç
+      ve her yerde onu kullan" kuralı geçerlidir
+
+      . İsimlendirmede bile (örneğin bir yerde "cfg", diğer yerde "config"
+      yazmak) tutarlı olmak zorundasın. Tutarlılık (consistency) her şeydir!
+
+      .
+
+      Okuma Sırası (Reading Order): Dosyadaki kodu, okuyucunun mantıksal olarak
+      en çok ihtiyaç duyacağı sırayla diz. Mesela Java'da "önce statik metodlar
+      gelir" gibi katı kurallar yerine, birbiriyle eşleşen (coupled) ve beraber
+      okunan metodları yan yana koy
+
+      ,
+
+      .
+
+      Açıklayıcı Değişkenler: Sırf "bir kez kullanılıyor" diye upuzun karmaşık
+      mantıkları tek satıra gömme. O mantığı x := // uzun ifade şeklinde,
+      niyetini anlatan değişkenlere ata. Değişkenler sadece "yeniden kullanım"
+      için değil, "açıklık" için de vardır
+
+      ,
+
+      .
+
+      İfadeleri Gruplama (Chunk Statements): Temiz kod (Clean Code) kitapları
+      her şeyi bölüp milyonlarca küçük fonksiyona ayırmayı över. Ama bu her
+      zaman pratik değildir. Kent Beck'in harika çözümü: "Bu kod bloğu veriyi
+      alıyor, şurası işliyor." O zaman aralarına sadece boş bir satır (blank
+      line) koy! Kod, tıpkı düz bir metin gibi tek bir fikre odaklanan
+      paragraflardan oluşmalıdır
+
+      ,
+
+      .
+
+      Açıklayıcı Yorumlar: Yorum satırını, kodu yazmadan 15 dakika önceki haline
+      veya gelecekteki okuyucuya "Keşke bunu bilseydim" diyeceğin o kritik,
+      koddan çıkarılamayan detaylar için yaz
+
+      .
+
+      Peki Kodun Güzel Olması Ne Demektir? (Bölüm 4.11) Bir kodun güzel olması
+      için zekice algoritmalarla dolu olması veya son teknoloji örüntüler
+      içermesi mi gerekir? Yazar bu soruya beklenmedik bir cevap veriyor: "Güzel
+      kod, 'ortalama (average)' koddur."
+       Beynimiz bir desen eşleştirme (pattern-making) makinesidir
+      . Daha önce gördüğü ve tanıdığı yapılara enerji harcamadan uyum sağlar.
+      Standart isimlendirme kullanan, dilin deyimlerine (idioms) sadık kalan,
+      zekice oyunlar yerine netliği seçen ve sürpriz barındırmayan kod,
+      okuyucuya bir yük bindirmez
+
+      . Dolayısıyla, yazılım dünyasında "Ne kadar parlak bir Pull Request!"
+      demek yerine, verilebilecek en büyük iltifat aslında "Ne kadar ortalama
+      bir Pull Request!" demektir
+
+      .
+
+      Bu bölümün özü: Devasa ve yıkıcı refactor oturumları yerine, kodumuzu
+      küçük adımlarla (boşluk bırakmak, değişken ismi değiştirmek, birbirine
+      bağlı mantıkları yan yana koymak) sürekli toparlamalıyız (tidying). En
+      güzel ve sürdürülebilir kod; sürprizlerden uzak, standartlara uyan ve
+      okuyucuyu şaşırtmayan "ortalama" koddur.
+
+      4.12 Organik Büyümeye Karşı Kontrollü Büyüme (Organic vs. Controlled
+      Growth)
+
+      Japonların Samuray felsefesi Bushido, tek bir kişinin icadı değildir; yüz
+      yıllar boyunca insanların deneyimleriyle "organik" olarak büyümüş ve
+      şekillenmiştir
+
+      . Birçok kod tabanı da böyledir. Geliştiriciler gelir, gider, herkes kendi
+      vizyonunu katar ve yıllar içinde binlerce küçük değişikliğin yığılmasıyla
+      sistem organik olarak büyür
+
+      ,
+
+      .
+
+      Yazar X (eski Twitter) üzerinden bir anket yaptığında geliştiricilerin
+      %100'ü "Organik Büyüme"yi iyi bir şey olarak oylamış
+
+      . Ancak yazar buna katılmıyor ve harika bir Bahçe (Garden) analojisi
+      yapıyor: Organik büyüme, herkesin istediği bitkiyi istediği yere ektiği,
+      rengarenk ama karmakarışık, plansız bir kamu bahçesine benzer
+      (fotoğraftaki yabani bahçe)
+
+      . Belli bir vizyonu ve tasarımı yoktur
+
+      . Oysa Kontrollü Büyüme (Controlled Growth); nereye neyin ekileceğine
+      karar verilen, sürekli yabani otların temizlendiği, bakımlı ve uyumlu bir
+      Japon bahçesi gibidir
+
+      ,
+
+      .
+
+      Organik büyüme teknik borçları halı altına süpürürken, Kontrollü büyüme şu
+      5 kuralla uygulanır
+
+      :
+
+      Tutarlı Olun: Kod standartlarına ve yazılı olmayan kurallara uyun. Orada X
+      yazıyorsa gidip "cowboy"luk yapıp Y yazmayın
+
+      .
+
+      Büyük Değişiklikleri Önceden Planlayın: Büyük özellikleri (features) tek
+      seferde kaos yaratarak değil, "Tasarım Dokümanları" (Design docs) ile
+      takımla tartışarak küçük fazlara bölün
+
+      .
+
+      Retrospektifler Yapın: Büyük işlerden sonra "Ne iyi gitti, neyi daha iyi
+      yaparız?" diyerek sürekli iyileşme (Kaizen) kültürünü besleyin
+
+      .
+
+      İzci Kuralını (Boy Scout Rule) Uygulayın: Kamp alanını bulduğundan daha
+      temiz bırak! Bir Pull Request açtığında, geçerken bir iki değişken ismini
+      düzeltmekten, ölü bir kodu silmekten zarar gelmez
+
+      .
+
+      Takım İçi Sahiplenme: Kontrollü büyüme sadece Tech Lead'in değil,
+      psikolojik güvenliğin (psychological safety) olduğu bir ortamda herkesin
+      sorumluluğudur
+
+      ,
+
+      .
+
+      Bu bölümün özü: Kod tabanının gelişigüzel, anlık yamalar ve herkesin kendi
+      tarzıyla (organik) büyümesi uzun vadede sistemi kaosa sürükler. Bunun
+      yerine; ortak standartların uygulandığı, değişikliklerin önceden
+      planlandığı ve her kod dokunuşunda sistemin biraz daha temizlendiği (İzci
+      kuralı) "kontrollü büyüme" yaklaşımı benimsenmelidir.
+
+      5.1 Test Temelleri (Testing Fundamentals)
+
+      Şimdi yazılım mühendisliğinin en tartışmalı ve en çok baş ağrıtan
+      konularından birine, testlere (Bölüm 5) geçiyoruz
+
+      .
+
+      Testlerde Mantık (Logic) Kullanmaktan Kaçınmak Kodlarımızı test ederken
+      düştüğümüz en büyük tuzaklardan biri, fonksiyonun içine yazdığımız
+      mantığın aynısını testin içine de yazmaktır
+
+      . Diyelim ki bir ürün listesindeki fiyatlara indirim uygulayıp ne kadar
+      "tasarruf" (economy) ettiğimizi hesaplayan bir Go fonksiyonumuz var
+
+      :
+
+      func economy(prices []float64, discountPercentage float64) float64 {
+          var total float64
+          for _, price := range prices {
+              total += price * (-discountPercentage / 100) // DİKKAT: EKSİ İŞARETİ VAR
+          }
+          return total
+      }
+
+
+      Bunu test etmek istedin ve testin içinde de aynı for döngüsünü kurup,
+      price * (-discountPercentage / 100) mantığıyla bir "beklenen değer
+      (expectedEconomy)" hesaplattın
+
+      . Test yemyeşil geçti, her şey harika! ✅ Ta ki kodu canlıya (production)
+      çıkana kadar
+
+      . Canlıda müşteri tasarrufunu bir anda eksi değer (-17.5) olarak gördü
+
+      . Çünkü ana kodda, tasarrufu hesaplarken yanlışlıkla negatif (-) bir
+      çarpan eklemiştin! Peki test bunu neden yakalamadı? Çünkü testin içine de
+      aynı kusurlu mantığı kopyalamıştın! Testteki hesaplama da eksi ürettiği
+      için birbirini doğruladılar
+
+      .
+
+      Testlerin amacı kodu tekrar yazmak değildir. Çözüm çok basit: Beklenen
+      değerleri (expected results) her zaman elle (hardcoded) yazın
+
+      ,
+
+      . Evet, döngüler kurup dinamik hesaplama yapmaktan daha "ilkel"
+      görünebilir ama test okuyucusuna zihinsel bir işlem (mental computation)
+      yaptırmamış olursun ve kodda bir hata varsa hardcoded olan 17.5 değeri,
+      koddan gelen -17.5 ile çatışarak anında hatayı yakalar
+
+      ,
+
+      .
+
+      Kod Kapsamı (Code Coverage) Yanılgısı Testlerimizin kalitesini nasıl
+      ölçeceğiz? Endüstrinin standart metriği "Satır Kapsamı"dır (Line Coverage)
+
+      . Yazarın eski bir meslektaşının dediği gibi: "Kod kapsamıyla ilgili en
+      önemli şey, onun var olmasıdır."
+
+      . Ancak, %100 kapsama sahip olmak kodunda bug olmadığı anlamına gelmez,
+      sadece o satırların test sırasında "çalıştırıldığını (executed)" gösterir
+
+      .
+
+      Google'ın yaklaşımı şudur: Kapsamı artırmak, hata oranlarını düşürür
+
+      . Ancak bunu katı bir zorunluluğa (örn: "%80 altı kod merge edilemez")
+      dönüştürmek felakettir
+
+      . Neden mi? Goodhart Kanunu der ki: "Bir ölçüm, hedef haline geldiğinde,
+      iyi bir ölçüm olmaktan çıkar."
+
+      . Geliştiriciler sadece kutucuğa tik atmak ve %80'i tutturmak için zerre
+      mantığı olmayan anlamsız testler yazmaya başlarlar
+
+      . Google'da katı bir limit yoktur; %60 kabul edilebilir, %75 övgüye değer,
+      %90 ise örnek teşkil edici (exemplary) olarak görülür
+
+      . Ayrıca %90'dan %95'e çıkmak, %55'ten %60'a çıkmaktan fersah fersah daha
+      zordur ve maliyetlidir (non-linear efor)
+
+      . Bu yüzden her şey sağduyu ve kod incelemelerindeki yorumlarla (judgment)
+      yönetilmelidir
+
+      .
+
+      Satır Kapsamı (Line Coverage) vs. Dal Kapsamı (Branch Coverage) Bazen %100
+      satır kapsamanız olsa bile kodunuz çökebilir. Neden mi? Şu Java koduna
+      bakalım
+
+      :
+
+      public int getNameLength(boolean isCoolUser) {
+          User user = null;
+          if (isCoolUser) {
+              user = new John();
+          }
+          return user.getName().length();
+      }
+
+
+      Testini isCoolUser = true ile yazarsan, kod bloğunun içindeki her satır
+      çalışır ve kapsama %100 olur
+
+      . Fakat canlıda bu fonksiyona false gelirse ne olur? if bloğu çalışmaz,
+      user null kalır ve user.getName() satırında Null Pointer Exception yersin
+
+      . İşte "Dal Kapsamı (Branch Coverage)" burada devreye girer. Dal kapsamı,
+      if koşullarının hem true hem de false senaryolarının test edilip
+      edilmediğine bakar
+
+      . Bu örnekte satır kapsamı %100 iken dal kapsamı %50'dir ve sana tehlikeyi
+      haber verir
+
+      .
+
+      Bu bölümün özü: Testlerinizin içine ana koddaki matematiksel veya
+      mantıksal işlemleri kopyalamayın; beklenen sonuçları her zaman statik
+      (hardcoded) verin. %100 kod kapsamı kusursuzluk demek değildir; kapsamı
+      körü körüne bir zorunluluk (hedef) haline getirmek yerine, sadece
+      satırları değil, dalları (branch) ve uç durumları da kapsayan anlamlı
+      testler yazmaya odaklanılmalıdır.
+
+      5.2 Özellik Bazlı Testler (Property-Based Testing)
+
+      Geleneksel testlerin mantığını hepimiz biliyoruz: Bir başlangıç durumu
+      tanımla, belirli girdiler (inputs) ver, sistemden çıkan çıktıyı (output)
+      beklentinle (assertions) karşılaştır
+
+      ,
+
+      . Bu yöntem on yıllardır çalışıyor ama bazı çok ciddi sınırları var
+
+      .
+
+      Bunu anlamak için yazar harika bir görsel benzetme yapıyor. Sistemini
+      devasa beyaz bir kare kutu olarak düşün. Bu kutunun üst tarafı yeşil
+      (yazılımın doğru ve beklenen davranışları), alt tarafı ise kırmızıdır
+      (hata barındıran, invalid davranışlar/buglar)
+
+      . Sen geleneksel testler yazdığında aslında bu kutunun üstüne üç farklı
+      test seti (A, B, C) yerleştirirsin
+
+      ,
+
+      :
+
+      Test Set A: Yeşil alanın belli bir kısmını kaplar (örneğin %50). Bunlar
+      düzgün çalışan, doğru özellikleri test eden faydalı testlerdir
+
+      . Ancak yeşil alanda test edilmemiş devasa bir boşluk kalır, burası
+      gelecekte regresyon (bozulma) yaşarsa ruhun duymaz (Test coverage gaps)
+
+      .
+
+      Test Set B: Sistemin hata fırlatmasını (kırmızı alanı) beklediğin yerleri
+      test eder. Ancak bu test senin kendi yazdığın kusurlu bir mantığa
+      dayandığı için (False negative) bazı kırmızı alanların üstünü örtemez.
+      Yani bug vardır ama test bunu yakalayamaz (Flawed tests hiding bugs)
+
+      ,
+
+      . Bu en tehlikelisidir çünkü sana sahte bir güven (false sense of
+      security) verir
+
+      .
+
+      Test Set C: Sistemin tamamen dışında (kutunun dışında) durur. Ürün
+      sahibini yanlış anladığın için aslında sistemde hiç var olmayan bir
+      özelliği test edersin
+
+      .
+
+      Peki bu sınırları nasıl aşarız? İnsan beyni test senaryolarını "manuel"
+      olarak ürettiği için her uç durumu hayal edemez
+
+      . İşte burada sahneye Property-Based Testing (PBT - Özellik Bazlı Testler)
+      çıkıyor
+
+      .
+
+      PBT, "Şu spesifik girdiyi verirsem şu çıktıyı alırım" demek yerine; "Girdi
+      ne kadar rastgele (random) ve mantıksız olursa olsun, sistemin her zaman
+      sağlaması gereken 'evrensel kurallar' (properties) nelerdir?" sorusunu
+      sorar
+
+      .
+
+      Örneğin, bir String manipülasyon fonksiyonu yazdın. Geleneksel testte
+      "Elma" verip sonucunu beklersin. PBT'nin bir alt kümesi olan Fuzzing
+      (Bulanıklaştırma) testinde ise sisteme binlerce kez tamamen rastgele,
+      devasa, içinde garip semboller olan veriler fırlatırsın
+
+      . Fuzzing'in asıl baktığı kural/özellik (property) şudur: "Ne verirsem
+      vereyim, yazılımım çökmemelidir (crash)"
+
+      . PBT ise fuzzing'in bu rastgeleliğini alır ama "çökmemenin" ötesinde
+      sistemin iş kurallarının da asla bozulmadığını kontrol eder
+
+      ,
+
+      .
+
+      PBT ile hangi evrensel özellikleri (properties) test edebilirsin?
+
+      Yapısal (Structural): Fonksiyona ne girerse girsin, dönen verinin uzunluğu
+      her zaman girenle aynı olmalıdır.
+
+      Idempotency (Etkisizlik): Bir işlemi bir kez yapmakla, üst üste 100 kez
+      yapmak her zaman aynı sonucu vermelidir.
+
+      Commutativity (Değişmelilik): A ve B parametrelerinin yerini değiştirsem
+      bile (A+B veya B+A) sonuç aynı olmalıdır.
+
+      Roundtrip (Gidiş-Dönüş): Bir veriyi şifreleyip (encode), hemen ardından
+      çözersen (decode) her halükarda orijinal veriyi elde etmelisin.
+
+      Hatta PBT sadece birim (unit) seviyesinde kalmaz. Tüm sistemi kapsayan
+      devasa kurallar için de kullanılabilir (Going Beyond)
+
+      -
+
+      :
+
+      Zamansal (Temporal): API çağrılarının %99'u 30ms'den kısa sürmelidir
+
+      .
+
+      Uygulama Değişmezleri (Application Invariants): Finansal bir işlemde
+      borçlar her zaman alacaklara eşit (debits = credits) olmalıdır
+
+      .
+
+      PBT, geleneksel testlerin yerini almaz, onları tamamlar (complementary
+      approach)
+
+      . Geleneksel testler senin öngördüklerini doğrular, PBT ise senin aklına
+      bile gelmeyen uç durumları sisteme rastgele enjekte ederek arka plandaki o
+      "kutsal kuralların" yıkılıp yıkılmadığını kontrol eder
+
+      ,
+
+      .
+
+      Bu bölümün özü: İnsanlar tarafından kurgulanan geleneksel testler, bizim
+      kendi önyargılarımız ve hayal gücümüzle sınırlıdır; bu da sistemde ciddi
+      boşluklar ve sahte güven hissi bırakır. Property-Based Testing (PBT),
+      sisteme rastgele ve ekstrem veriler göndererek, girdilerden bağımsız
+      olarak her koşulda korunması gereken evrensel doğruları (sistemin
+      çökmemesi, verinin şifrelenip eksiksiz geri dönmesi vb.) test eden
+      mükemmel bir tamamlayıcıdır.
+
+      5.3 Birim Testleri (Unit Tests), Davranış ve TDD Tartışması
+
+      Yazılım geliştirirken en çok direnç gösterilen konulardan biri "Birim
+      Testi (Unit Test)" yazmaktır
+
+      . Kod incelemelerinde en çok duyduğumuz o meşhur bahanelere (argümanlara)
+      yazarın verdiği sert ama gerçekçi cevaplara bakalım
+
+      -
+
+      :
+
+      "Kod test yazmaya değmeyecek kadar basit." -> En basit kod bile geliştikçe
+      karmaşıklaşır. Cidden basitse, testini yazmak zaten 2 dakikanı alır
+
+      .
+
+      "Testleri daha sonra ekleyeceğim." -> Hayır eklemeyeceksin! Kod zihninde
+      en tazeyken testi yazmak her zaman daha kolaydır. Testleri bir külfet
+      değil, uzun vadeli bir sağlık sigortası olarak gör
+
+      .
+
+      "Test etmek tester'ların (QA) işidir." -> Yazarın eski projesinde tam
+      olarak bu yaşanmış. Geliştiriciler sadece özellik geliştirmiş, testleri
+      QA'e atmış. Sonuçta QA ekibi geliştirici ekibinden daha büyük hale gelmiş
+      ve küçücük bir bug'ı bulmak bile devasa bir eziyete dönüşmüş. Kendi
+      kodunun çalıştığından önce sen sorumlusun
+
+      .
+
+      "Entegrasyon testleri nasılsa yakalar." -> Entegrasyon testleri sadece
+      mutlu yolu (nominal cases) test eder, her uç durumu bilemez. Üstelik yavaş
+      çalışırlar ve hata verdiklerinde sorunun nerede olduğunu bulmak samanlıkta
+      iğne aramaktır
+
+      .
+
+      "Bu sadece geçici bir PoC (Kavram Kanıtı), üretime çıkmayacak." -> Geçici
+      kodlar her zaman kalıcı olur! Yazar bir keresinde test yazmadığı bir
+      PoC'yi aniden canlıya çıkması istendiğinde, testleri eklemeye çalışırken
+      kodun aslında çalışmadığını fark edip sıfırdan yazmak zorunda kalmış
+
+      . PoC'de bile en azından temel bir güvenlik ağı şarttır
+
+      .
+
+      İyi bir birim testi nasıl olmalıdır? Yazar bunun 10 özelliğini sayıyor:
+      Odaklı (Focused), Anlaşılabilir (Understandable), Bakımı kolay
+      (Maintainable), Açıklayıcı hata mesajları veren (Informative), Hızlı
+      (Fast), Her çalışmada aynı sonucu veren (Deterministic), Alakasız
+      değişikliklerde kırılmayan (Resilient), Birbirinden İzole (Isolated), Dış
+      dünyayla bağlantısı olmayan (Local) ve içinde asla sleep beklemeleri
+      barındırmayan (Without sleep) testler olmalıdır
+
+      -
+
+      .
+
+      Testler Aynı Zamanda Yaşayan Bir Dokümantasyondur Bir projeye yeni
+      katıldın. Sınıfın ne işe yaradığını anlamak için README dosyasına veya
+      Confluence'a baktın ama aylar öncesinde kalmışlar (outdated)
+
+      . Oysa testler, kodun kendisiyle birlikte sürekli güncellenmek zorunda
+      olan yaşayan dokümantasyonlardır (living documentation)
+
+      ,
+
+      . Bir test fonksiyonunun düzgün verilmiş bir ismi ve atomik (tek bir şeye
+      odaklanan) yapısı varsa, kodu okuyan kişi "Haa, demek ki bu fonksiyon bu
+      uç durumda bu hatayı fırlatıyormuş" diye anında sistemi öğrenir
+
+      .
+
+      Uygulamayı (Implementation) Değil, Davranışı (Behavior) Test Et İşte
+      testlerin sürekli kırılmasına (brittle) yol açan o büyük hataya geldik.
+      Diyelim ki müşterilerin cüzdan bakiyelerini (balance) tutan, arka planda
+      bunu bir hashmap içinde saklayan bir CustomerBalance sınıfımız var. Bir
+      set bir de get metodu var
+
+      .
+
+      Eğer testi şu mantıkla yazarsan:
+
+      set çağır.
+
+      Arka plandaki o "gizli" (private) hashmap'i aç, içine gerçekten 42
+      yazılmış mı diye kontrol et. İşte bu Uygulamayı (Implementation) test
+      etmektir
+
+      . Sıkı bir bağlılık (tight coupling) yarattın. Neden mi? Yarın öbür gün
+      hashmap yerine B-Tree kullanmaya karar verirsen (dışarıdan bakıldığında
+      hiçbir şey değişmese bile) senin testin çöp olacak ve patlayacaktır
+
+      .
+
+      Doğrusu şudur: Davranışı (Behavior) test et
+
+      .
+
+      Sınıfın public API'sinden set(foo, 42) çağır.
+
+      Sınıfın yine public API'sinden get(foo) çağır ve dönen değerin 42 olup
+      olmadığını kontrol et
+
+      . İçeride ister hashmap kullan, ister B-Tree, ister verileri uzaya
+      yollayıp geri al. Davranış (müşterinin parayı verip geri alması)
+      değişmediği sürece testin ASLA kırılmaz (Maintainability)
+
+      ,
+
+      . Sadece API'nin dış dünyayla nasıl konuştuğunu test etmek, yeniden
+      düzenlemeyi (refactoring) korkusuzca yapabilmeni sağlar
+
+      .
+
+      (Not: Bunu BDD (Behavior-Driven Development) ile karıştırmamak lazım. BDD,
+      iş birimleriyle ortak bir dil kullanarak test yazmaktır. Bizim
+      bahsettiğimiz ise tamamen teknik bir prensiptir
+
+      .)
+
+      Test-Driven Development (TDD) Üzerine TDD hepimizin duyduğu o meşhur
+      Red-Green-Refactor döngüsüdür: Önce test yazıp çökmesini izle (Red),
+      sadece onu geçirecek kadar kod yaz (Green), sonra dönüp kodu güzelleştir
+      (Refactor)
+
+      100
+
+      . Yazar TDD'nin özellikle Array sıralama (sorting) gibi net girdi-çıktısı
+      belli olan Utility fonksiyonlarda uç durumları baştan düşünmek için çok
+      faydalı olduğunu söylüyor
+
+      101
+
+      ,
+
+      102
+
+      . Ayrıca "Green-Refactor" kısmını sürekli kullandığını, testler yeşilken
+      kodu düzenlemenin çok güvenli olduğunu itiraf ediyor
+
+      102
+
+      .
+
+      Ancak yazar TDD'ye karşı büyük bir tepki de taşıyor. Çoğu zaman bir koda
+      başlarken API'nin veya dış bağımlılıkların nasıl şekilleneceğini bilemeyiz
+
+      102
+
+      . Kod yazdıkça tasarım şekillenir
+
+      103
+
+      . LinkedIn'de gördüğü şu iş ilanına ise isyan ediyor: "En yüksek kalitede
+      kod yazmanızı bekliyoruz, bu yüzden TDD tecrübesi şarttır."
+
+      103
+       Yazar diyor ki: Bu koca bir saçmalıktır!
+      104
+       Pull Request'lerde bir kodu incelerken kimsenin "Bu kodu TDD ile mi yazdın?" diye sormadığını, asıl önemli olanın "Testler izole mi? Açıklayıcı mı? Davranışı mı test ediyor?" gibi kalite metrikleri olduğunu hatırlatıyor
+      104
+
+      . Kısacası TDD, kodun kalitesini ölçen bir metrik değil, tamamen kişisel
+      bir tercihtir (personal choice)
+
+      104
+
+      . Eğer sana iyi geliyorsa kullan, ama kullanmıyorsun diye kimse senin
+      testlerinin kalitesiz olduğunu iddia edemez
+
+      105
+
+      .
+
+      Bu bölümün özü: Test yazmamak için üretilen bahanelerin tümü kısa vadeli
+      yanılgılardır. Etkili bir birim testi; asla içsel veri yapılarını
+      (implementation) deşmemeli, her zaman modülün dışarıya sunduğu kamuya açık
+      işlevleri (behavior) test etmelidir. Ayrıca endüstrinin TDD'yi bir kalite
+      şartı gibi dayatması anlamsızdır; aslolan testin TDD ile yazılıp
+      yazılmadığı değil, izole, hızlı ve sistemin davranışını netçe belgeleyen
+      yüksek kalitede bir test olmasıdır.
+  - baslik: Parça C · Sistem Tasarımı ve İşletme (Bölüm 6-7)
+    icerik: >-
+      Harika bir noktadayız! Kahvelerimiz hazırsa, yazılım mühendisliğinin en
+      kritik, en çok baş ağrıtan ama doğru kurgulandığında sistemleri ayakta
+      tutan o büyük konularına, Parça C: Sistem Tasarımı ve İşletme (Bölüm 6-7:
+      Distributed Systems, Reliability) dünyasına dalıyoruz.
+
+      Yazar Teiva Harsanyi'nin "The Coder Cafe" kitabında vurguladığı gibi, kod
+      yazmak işin sadece bir boyutudur; asıl mesele o kodun binlerce sunucuda,
+      milyonlarca kullanıcıya, donanım arızalarına ve ağ kesintilerine rağmen
+      "sadece çalışmasını" (it just works) sağlamaktır
+
+
+      . Görevin kurallarına harfiyen uyarak, bu devasa konuları hiçbir detayı,
+      anekdotu veya veriyi atlamadan, adım adım ve sohbet havasında yeniden
+      anlatıyorum.
+
+      6.1 - 6.7 Veritabanı Temelleri: ACID, CAP, PACELC ve Tutarlılık
+
+      Dağıtık sistemlerin kalbi veritabanlarında atar. Veritabanı teorisini
+      anlamak, sadece doğru aracı seçmek için değil, üretim (production)
+      ortamında yaşanabilecek felaketleri önlemek için de hayati bir
+      gerekliliktir
+
+      .
+
+      ACID Prensipleri Bu dört harf, ilişkisel veritabanlarının temelini
+      oluşturur:
+
+      Atomicity (Atomiklik): Bir işlemin (transaction) tüm adımlarının ya
+      tamamen başarılı olması ya da hiçbirinin gerçekleşmemesidir
+
+      . "Ya hep ya hiç" kuralıdır
+
+      . Bir banka transferinde senin hesabından para düşüp karşıya geçmezse, tüm
+      işlem geri alınır (rollback) ve veritabanı eski haline döner
+
+      . Yazar burada ince bir detay veriyor: Atomiklik sadece veritabanı ile
+      sınırlı kalmak zorunda değildir
+
+      . Örneğin, hem veritabanına yazıp hem de Kafka'ya mesaj gönderdiğin
+      dağıtık bir sistemde, biri başarısız olursa diğerini geri alacak bir
+      mekanizma kurarsan, bu tüm sistemin "atomik" olduğu anlamına gelir
+
+
+      .
+
+      Consistency (Tutarlılık): Veritabanının her zaman bir geçerli durumdan
+      (valid state) diğer bir geçerli duruma geçmesidir
+
+      . Bu ikiye ayrılır: İşlem seviyesinde tutarlılık, yabancı anahtar (foreign
+      key) veya veri tipi kurallarının ihlal edilmemesidir
+
+      . Uygulama seviyesinde tutarlılık ise, örneğin "müşteri bakiyelerinin
+      toplamı her zaman pozitif olmalıdır" gibi, veritabanının tek başına
+      garanti edemeyeceği iş (domain) kurallarının korunmasıdır
+
+      . Dağıtık sistemlerdeki "Nihai Tutarlılık" (Eventual Consistency) ile
+      karıştırılmamalıdır; ACID'deki 'C' veri çoğaltmasıyla değil, veri
+      bütünlüğüyle ilgilidir
+
+      .
+
+      Isolation (İzolasyon): Devam eden bir işlemin, eşzamanlı çalışan diğer
+      işlemlerden etkilenmemesidir
+
+      . İdeal dünyada bu, işlemlerin aynı anda çalışsalar bile sanki "sırayla
+      (serializability)" çalışıyormuş gibi davranmasını gerektirir
+
+      .
+
+      Durability (Dayanıklılık): Bir işlem onaylandığında (commit), sistem çökse
+      bile bu değişikliğin asla kaybolmamasıdır
+
+      . Bu genellikle Write-Ahead Logging (WAL) gibi diske yazma teknikleriyle
+      sağlanır
+
+      .
+
+      CAP Teoremi Dağıtık sistemlerin acı gerçeğiyle yüzleşelim: Her şeye aynı
+      anda sahip olamayız. CAP teoremi; Tutarlılık (Consistency),
+      Erişilebilirlik (Availability) ve Bölünme Toleransı (Partition tolerance)
+      arasından sadece ikisini seçebileceğimizi söyler
+
+
+      .
+
+      Tutarlılık (C): Her okuma isteğinin her zaman en güncel veriyi veya bir
+      hatayı döndürmesidir (Linearizability)
+
+      .
+
+      Erişilebilirlik (A): Her isteğin, veri en güncel olmasa bile mutlaka
+      hatasız bir yanıt almasıdır
+
+      .
+
+      Bölünme Toleransı (P): Ağ sorunları yüzünden düğümler (nodes)
+      birbirleriyle iletişim kuramasa bile sistemin çalışmaya devam etmesidir
+
+      .
+
+      Gerçek dünyada ağ kesintileri (partition) kaçınılmaz olduğu için "CA"
+      (Tutarlı ve Erişilebilir) bir sistem imkansızdır
+
+      . Bir ağ kesintisi anında sistemin önünde iki seçenek vardır: Ya
+      tutarlılığı seçip (CP), kesinti bitene kadar bazı düğümlerin yanıt
+      vermesini durdurursun (erişilebilirlikten feragat); ya da erişilebilirliği
+      seçip (AP), tüm düğümlerin eski verilerle de olsa yanıt vermesini
+      sağlarsın (tutarlılıktan feragat)
+
+      .
+
+      PACELC Teoremi CAP teoreminin büyük bir eksiği vardır: Gecikmeyi (Latency)
+      hesaba katmaz
+
+      . Sadece ağ kesintisi olduğunda ne yapılacağını söyler
+
+      . Oysa bir sistem ağ kesintisi yokken de, kullanıcılara yanıt vermek için
+      30 dakika bekletiyorsa, CAP teoremine göre teorik olarak "erişilebilir"
+      sayılır ki bu pratikte tamamen saçmalıktır!
+       PACELC teoremi bu boşluğu doldurur:
+      Eğer bir kesinti varsa (Partition), Erişilebilirlik (Availability) veya
+      Tutarlılık (Consistency) arasında seçim yap
+
+      .
+
+      Eğer kesinti yoksa (Else), Gecikme (Latency) veya Tutarlılık (Consistency)
+      arasında seçim yap
+
+      . Örneğin; Amazon DynamoDB veya Cassandra gibi NoSQL sistemleri PA/EL
+      modelindedir (Kesintide erişilebilirliği, normalde düşük gecikmeyi
+      seçerler)
+
+      . Google Spanner veya CockroachDB gibi SQL/NewSQL sistemleri ise PC/EC
+      modelindedir (Her koşulda tutarlılığı seçerler)
+
+
+      .
+
+      Safety (Güvenlik) ve Liveness (Canlılık) Bir sistemin doğru çalışması için
+      bu iki özelliğe ihtiyacı vardır
+
+      :
+
+      Safety (Güvenlik): "Kötü bir şeyin asla olmayacağını" garanti eder
+
+      . Örneğin, bir kilitlenmenin (deadlock) oluşmaması veya lider seçiminde
+      iki sunucunun birden yanlışlıkla kendini "lider" sanmaması bir güvenlik
+      (safety) özelliğidir (invariant)
+
+
+      .
+
+      Liveness (Canlılık): "İyi bir şeyin eninde sonunda olacağını" garanti eder
+
+      . Kilidin eninde sonunda bırakılması veya lider seçim sürecinin bir
+      noktada başarıyla tamamlanmasıdır
+
+
+      . Linux'taki CFS (Completely Fair Scheduler) gibi mekanizmalar, her
+      sürecin adil bir şekilde CPU zamanı almasını (Fairness) sağlayarak
+      canlılığı destekler
+
+      . Sistem tasarımında bu ikisi arasında takas yapılır: Safety'yi seçen
+      sistemler (fail-safe) hata durumunda durmayı tercih ederken, Liveness'ı
+      seçen sistemler (fail-fast) ne olursa olsun ilerlemeyi tercih eder
+
+
+      .
+
+      Consensus (Fikir Birliği) ve Tutarlılık Modelleri Dağıtık sistemlerde
+      sunucuların (düğümlerin) ağ sorunlarına veya çökmelere rağmen ortak bir
+      karara varmasına Consensus denir
+
+      . Lider seçimi, veri çoğaltması (replication) veya dağıtık sorguların
+      çalıştırılması hep buna dayanır
+
+      . Paxos ve Raft gibi algoritmalar bu işi yapar ve mutlaka Sonlanma
+      (Termination), Bütünlük (Integrity) ve Anlaşma (Agreement) kurallarını
+      sağlamalıdırlar
+
+
+      .
+
+      Peki kullanıcılar (clients) dağıtık bir sistemden veri okuduğunda ne
+      beklemeli? İşte bu Tutarlılık Modelleri (Consistency Models) ile
+      belirlenir
+
+      . Google Docs kullanan Alice ve Bob'u düşün: Alice yeni bir paragraf
+      ekledi, Bob ise başka birini değiştirdi
+
+      . Herkes bu değişiklikleri aynı sırayla mı görecek (Order)?
+       Bob, Alice'in değişimini anında mı görecek yoksa bir gecikme olacak mı (Visibility)?
+       Güçlü tutarlılık (Linearizability) herkesin her şeyi anında aynı sırayla görmesini sağlarken, Zayıf tutarlılık (Eventual Consistency) performansı artırır ama gecikmelere göz yumar
+
+      .
+
+      Bu bölümün özü: Dağıtık bir veritabanı tasarlarken veya seçerken hiçbir
+      sistem bize her şeyi aynı anda mükemmel şekilde veremez. Ağ kesintilerinde
+      tutarlılık ve erişilebilirlik arasında (CAP), normal şartlar altında ise
+      düşük gecikme ve tutarlılık arasında (PACELC) bilinçli bir takas yapmak
+      zorundayız.
+
+      6.8 - 6.10 İzolasyon Seviyeleri, Anomaliler ve Erişilebilirlik Modelleri
+
+      Gelelim veritabanlarındaki en tehlikeli, en gizinsi hataların
+      (anomalilerin) yaşandığı izolasyon dünyasına. Aynı veriye aynı anda
+      müdahale etmeye çalışan işlemler (transactions) arasına koyduğumuz
+      duvarların kalınlığına İzolasyon Seviyesi diyoruz
+
+      . Duvar ne kadar inceyse sistem o kadar hızlı çalışır, ama o kadar çok
+      mantıksal hata (anomali) yaşarız. Adım adım bu hataları ve hangi seviyede
+      çözüldüklerini inceleyelim.
+
+      1. Dirty Writes (Kirli Yazmalar) ve Read Uncommitted Seviyesi Bir işlem,
+      henüz tamamlanmamış (in-flight) başka bir işlemin yazdığı verinin üzerine
+      yazarsa Dirty Write oluşur
+
+      . Alice'in bakiyesi 0.T1i
+
+      s
+
+      \c
+      	​
+
+      lemibakiyeye100 ekler ama henüz commit etmemiştir
+
+      . O sırada T2 gelir, bakiyeye 200$ ekler ve commit eder
+
+      . Sonra T1 işlemi bir sebepten iptal olur (rollback)
+
+      . Bakiye ne olacak? İki işlemin yazdıkları birbirine karıştığı için sistem
+      çöküş yaşar
+
+      . En düşük izolasyon seviyesi olan Read Uncommitted dahil tüm seviyeler
+      veritabanlarında satırları kilitleyerek bu ölümcül hatayı önler
+
+      .
+
+      2. Dirty Reads (Kirli Okumalar) ve Read Committed Seviyesi Bir işlem,
+      henüz commit edilmemiş "havadaki" bir veriyi okuduğunda Dirty Read
+      gerçekleşir
+
+      . T1 Alice'e 100ekler
+
+      .TamoanT2gelirveAlice
+
+      ′
+
+      inbakiyesini"100" olarak okur
+
+      . Sonra T1 işlemi hata verir ve rollback yapar
+
+      . Alice'in gerçek bakiyesi 0
+
+      ′
+
+      ad
+
+      o
+
+      ¨
+
+      ner,amaT2kendii
+
+      c
+
+      \c
+      	​
+
+      indebakiyeyi100 sanarak yanlış işlemler yapmaya devam eder!
+       Read Committed izolasyon seviyesi, sadece onaylanmış verilerin okunmasına izin vererek bu anomalileri engeller
+      .
+
+      3. Fuzzy Reads (Bulanık Okumalar) ve Repeatable Reads Seviyesi Aynı işlem
+      (transaction) içinde aynı satırı iki kez okuyup, arada başkasının o satırı
+      değiştirmesi yüzünden iki farklı sonuç almaktır (Non-repeatable reads)
+
+
+      . T1 Alice'in bakiyesini okur: 0
+
+      .OsıradaT2arayagirer,100 ekler ve commit eder
+
+      . T1 aynı bakiyeyi aynı işlem içinde tekrar okur ve bu kez 100$ görür!
+
+       Mantıksal bir kırılmadır. Repeatable Reads seviyesi, okunan veriyi kitleyerek bu sorunu çözer
+      .
+
+      4. Snapshot Isolation (SI) ile Çözülenler: Lost Updates ve Read Skew SI
+      seviyesi, her işlemin veritabanının o anki "tutarlı bir fotoğrafı
+      (snapshot)" üzerinde çalışmasını sağlar
+
+      .
+
+      Lost Updates (Kayıp Güncellemeler): T1 ve T2 aynı anda Alice'in bakiyesini
+      0olarakokur
+
+      .
+
+      I
+
+      ˙
+
+      kisidebirbirindenhabersiz100 ve 200ekler
+
+      .T2
+
+      ′
+
+      nini
+
+      s
+
+      \c
+      	​
+
+      lemiensonyazılırvebakiye200 olur
+
+      . Beklenen 300
+
+      ′
+
+      dı!T1
+
+      ′
+
+      in100'ı buhar olup uçmuştur (Lost update)
+
+      .
+
+      Read Skew (Okuma Çarpıklığı): Alice'te 100,Bob
+
+      ′
+
+      da0 var (Toplam 100)
+
+      .T1Alice
+
+      ′
+
+      iokur:100
+
+      . O an T2 araya girer, Alice'ten Bob'a 100transferedervecommiteder
+
+      .T1kaldı
+
+      g
+
+      ˘
+      	​
+
+      ıyerdendevamedipBob
+
+      ′
+
+      uokurveyenibakiyeolan100'ı görür
+
+      . T1'in gözünde Alice'te 100,Bob
+
+      ′
+
+      da100 vardır, sistemde yoktan 100varedilmi
+
+      s
+
+      \c
+      	​
+
+      tir!(Toplam200)
+
+
+      . SI seviyesi "anlık fotoğraf" mantığıyla bu tutarsızlıkları yakalar ve
+      genelde işlemleri rollback ettirerek çözer
+
+
+      .
+
+      5. Write Skew (Yazma Çarpıklığı) ve Serializable Snapshot Isolation (SSI)
+      İki işlemin aynı veriyi okuyup, o veriye dayanarak farklı kararlar alması
+      ve ardından veriyi bozmasıdır
+
+      . Harika bir örnek: Bir hastanede "Her an en az 1 doktor nöbetçi
+      kalmalıdır" kuralı var
+
+      . Alice ve Bob nöbetçi, ikisi de hasta hissediyor
+
+      . T1 (Alice) sisteme sorar: "Kaç nöbetçi var?" Yanıt: 2
+
+      . T2 (Bob) sorar: "Kaç nöbetçi var?" Yanıt: 2
+
+      . İkisi de sistemde 2 kişi olduğunu gördüğü için "Ben çıksam da 1 kişi
+      kalır" diye düşünerek nöbetten çıkar ve commit eder
+
+      . Sonuç? Nöbetçi sayısı 0'a düşer ve kural ihlal edilir!
+
+      . SSI seviyesi commit aşamasında ekstra kontroller ekleyerek bu gizli
+      çarpıklığı önler
+
+      .
+
+      6. Phantom Reads (Hayalet Okumalar) ve Serializability Seviyesi Bir işlem
+      içindeki WHERE gibi koşullu (predicate) okumaların sonuç kümesinin, başka
+      bir işlemin yeni satır eklemesi/silmesi yüzünden değişmesidir
+
+      . T1, "Algo101 sınıfındaki en yaşlı öğrencinin" yaşını çeker
+
+      . T2 sisteme yeni (ve çok yaşlı) öğrenciler ekler
+
+      . T1 ardından aynı sınıfın "yaş ortalamasını" çeker
+
+      . T1'in elindeki ortalama yaş, az önce çektiği "en yüksek yaştan" daha
+      büyük çıkar!
+
+      . En katı seviye olan Serializability, her işlemin tamamen seri (arka
+      arkaya) çalışıyormuş gibi davranmasını sağlayarak bu hayalet okumaları
+      engeller, ancak performansı ciddi şekilde düşürür
+
+
+      .
+
+      Erişilebilirlik Modelleri (Availability Models) Beyaz kağıtları
+      (whitepapers) okurken şirketlerin "Yüksek Erişilebilirlik (High
+      Availability)" terimini kafalarına göre kullandıklarını görürüz
+
+      . Google Megastore ile Amazon Dynamo'nun "yüksek erişilebilirlik" tanımı
+      birbirinden tamamen farklıdır
+
+      . Antithesis'in tanımına göre bu kavram, "tek bir sunucudan daha sık
+      ayakta olan sistem" demektir
+
+      . Ancak daha net anlaşılması için üç modele bakmalıyız
+
+
+      :
+
+      Majority Available (Çoğunluk Erişilebilirliği): 5 düğümlü bir
+      veritabanında 2'si çökse bile, kalan 3'ü kendi arasında anlaşıp (çoğunluk
+      - majority) işlemlere devam ediyorsa sistem erişilebilirdir
+
+      . Google Megastore bu modeli kullanır, güçlü tutarlılığı korur
+
+      . Eğer 3 düğüm çökerse sistem durur
+
+      .
+
+      Totally Available (Tam Erişilebilirlik): 5 düğümün 3'ü çökse bile, ayakta
+      kalan tek bir düğüm diğerlerine sormadan kendi başına isteklere yanıt
+      verebiliyorsa sistem tam erişilebilirdir
+
+
+      . Amazon Dynamo bu modeli kullanır
+
+      . Gecikmeyi en aza indirir ancak tutarlılığı (consistency) feda eder
+
+      .
+
+      Sticky Available (Yapışkan Erişilebilirlik): Bir istemcinin (client) her
+      zaman kendi yaptığı işlemleri bilen (kendi geçmişini yansıtan) bir
+      sunucuya bağlanarak işlemlerine devam edebilmesidir
+
+      . Sistemde büyük ağ kesintileri olsa bile, Müşteri A kendi yaptığı
+      değişiklikleri her zaman görebilir
+
+
+      .
+
+      Bu bölümün özü: Veritabanlarındaki izolasyon seviyeleri, kirli okumalardan
+      hayalet okumalara kadar sistemin mantıksal bütünlüğünü tehdit eden
+      anomalileri engeller ancak seviye yükseldikçe sistem yavaşlar. Dağıtık
+      mimarilerde "yüksek erişilebilirlik" sihirli bir kelime değildir; sistemin
+      tasarımına göre çoğunluk, tam veya yapışkan erişilebilirlik (majority,
+      total, sticky) gibi farklı teknik sınırlara ve tutarlılık tavizlerine
+      dayanır.
+
+      6.11 - 6.14 Sistem Tasarımı: Ölçeklendirme, Gecikme, Bloom Filtreleri ve
+      Karmaşık Sistemler
+
+      Sistem tasarımında (System Design) mülakatlarda veya devasa ölçekli üretim
+      ortamlarında hayat kurtaran, sezgilere aykırı ama çok güçlü kavramlar
+      vardır.
+
+      Olasılıksal Artış (Probabilistic Increment) Yeni bir sosyal medya
+      uygulamasında "Beğeni (Like)" butonunu tasarladığını düşün
+
+      . Çok popüler bir paylaşıma saniyede binlerce beğeni gelirse, veritabanına
+      gidip sürekli +1 yapmak sistemi tıkayacaktır
+
+      . Eğer mutlak bir kesinlik gerekmiyorsa (yani 27.001 ile 27.003 beğeni
+      arasındaki fark kimsenin umurunda değilse) yazar çok zekice bir yöntem
+      öneriyor: Her beğeni isteğinde 0'dan 10'a kadar rastgele bir sayı üret
+      (randomInt(10))
+
+      . Eğer sayı 0 çıkarsa (yani %10 ihtimal) veritabanına git ve +10 ekle!
+
+      . Diğer durumlarda hiçbir şey yapma
+
+      . Büyük Sayılar Yasası (Law of large numbers - yazı tura örneği gibi)
+      sayesinde sistem milyonlarca işlemde kendini dengeleyecek ve sen
+      veritabanı yükünü anında onda birine düşürmüş olacaksın
+
+
+      .
+
+      Gecikme (Latency) ve Kullanıcı Deneyimi Gecikme sadece teknik bir metrik
+      değil, doğrudan ticari bir kayıptır
+
+
+      . Amazon'un verilerine göre yükleme süresindeki her 100 milisaniyelik
+      artış satışlarda %1'lik bir düşüşe yol açıyor
+
+      . Google ise arama sonuçlarındaki 500 milisaniyelik artışın trafiği %20
+      düşürdüğünü saptamış
+
+      . Kullanıcı tarafında bu gecikmeyi çözmenin 3 yolu vardır
+
+      :
+
+      Gerçekten hızlandır: Kodu optimize et, CDN kullan
+
+      .
+
+      Kullanıcıyı öngör: Kullanıcının tıklayacağı bağlantıları önceden tahmin
+      edip veriyi önceden yükle (prefetch)
+
+      .
+
+      Hız yanılsaması (Illusion of speed) yarat: Houston havalimanındaki bagaj
+      bekleme şikayetleri inanılmaz bir zekayla çözülmüştür
+
+      . Bagajların daha hızlı gelmesini sağlayamadıkları için, uçakları
+      terminalden daha uzağa park ettirmişlerdir
+
+      . Yolcular bagaj beklerken hareketsiz kalmak (ki bu bekleme süresini çok
+      uzun hissettirir) yerine o süreyi yürüyerek geçirmiş ve şikayetler sıfıra
+      inmiştir!
+       Benzer bir teknik Cool Maze uygulamasında var
+      . Uygulama QR kod taraması yapmadan saniyeler önce kamera lensini açıp
+      arka planda bağlantıyı kurduğu için kullanıcılara anında çalışıyormuş
+      hissi verir
+
+      .
+
+      Bloom Filtreleri Yüksek trafikli bir sistemde bir kullanıcının siteyi daha
+      önce ziyaret edip etmediğini hızlıca bilmen gerekiyor
+
+      . Tüm kullanıcıları bir Hashmap (sözlük) içinde tutmak devasa bellek (RAM)
+      israfıdır
+
+
+      . Her seferinde veritabanına sormak ise korkunç bir gecikme yaratır
+
+      .
+
+      Bloom Filtresi, veriyi tutmak yerine sadece "ayak izini" tutan, son derece
+      bellek dostu olasılıksal bir veri yapısıdır
+
+
+      . İçi sıfırlarla dolu bir bit dizisi (bitvector) ve MD5, Murmur gibi
+      birden fazla hash (kriptolama) fonksiyonundan oluşur
+
+
+      . Bir veriyi eklerken ("foo"), hash fonksiyonlarına sokar ve dizideki
+      ilgili indeksleri 1 yaparız
+
+
+      . Veriyi ararken ("baz"), yine hash'e sokarız. Eğer o indekslerden biri
+      bile 0 ise, verinin sistemde OLMADIĞINA %100 eminizdir (Asla False
+      Negative vermez)
+
+
+      . Ama tüm indeksler 1 ise, veri BÜYÜK İHTİMALLE sistemde vardır (False
+      Positive verebilir çünkü başka verilerin ayak izleriyle çakışmış olabilir)
+
+
+      . Yazar burada matematiğe de giriyor: Hatalı pozitif oranını (p)
+      belirlemek için formül kullanırız ve bu formül için sisteme girecek
+      "beklenen eleman sayısını (n)" doğru tahmin etmek hayati önem taşır
+
+
+      . Ancak Bloom filtrelerinin bir kusuru vardır: Rastgele erişim (random
+      access) yaptığı için CPU önbelleklerinde "cache miss" yaratır (dizilerdeki
+      gibi verileri blok halinde alamaz)
+
+      . Eğer işin nanosaniyelerle ölçülüyorsa, verilerin aynı CPU önbellek
+      satırına (cache line) düştüğü "Blocked Bloom Filters" alternatifini
+      kullanmak gerekir
+
+
+      .
+
+      Karışık (Complicated) ve Karmaşık (Complex) Sistemler Arasındaki Fark
+      Yazar kariyerindeki tecrübelerini kıyaslarken harika bir tespit yapıyor.
+      Eski şirketinde, Uber benzeri bir sistemde "yolcuya en yakın sürücüyü
+      bulma" problemi Karışık (Complicated) bir problemdi
+
+
+      . Karışık problemler zordur ama öngörülebilirdir ve geo-hashing gibi
+      bilinen yapısal çözümleri vardır (vergi dairesine beyanname vermek gibi)
+
+
+      . Şu an Google SRE (Site Reliability Engineer) ekibinde ML (Makine
+      Öğrenmesi) altyapısında çalışırken uğraştığı sorunlar ise Karmaşık
+      (Complex)
+
+      . İklim değişikliğiyle mücadele etmek gibi; ezberlenmiş yöntemler işe
+      yaramaz, sürekli değişen yenilikçi çözümler gerekir
+
+      .
+
+      Karmaşık sistemlerin 5 temel karakteristiği vardır
+
+
+      :
+
+      Emergent Behavior (Beliren Davranış): Parçaları tek tek incelesen bile
+      sistemin bütününün nasıl davranacağını öngöremezsin
+
+      . Gemini yapay zekasının hiç beklenmedik sonuçlar üretmesi bunun en iyi
+      örneğidir
+
+      .
+
+      Gecikmeli Sonuçlar (Delayed Consequences): Bugün canlıya aldığın bir
+      değişikliğin patlaması haftalar sonra ortaya çıkabilir, bu da kök neden
+      (root cause) analizini felç eder
+
+      .
+
+      Yerel vs Global Optimizasyon: Bir parçayı iyileştirmek, sürpriz bir
+      şekilde tüm sistemi kötüleştirebilir
+
+      . Bütün, parçaların toplamından fazlasıdır
+
+      .
+
+      Histeresis (Hysteresis): Sorunu çözsen bile sistemin kendine gelmesi
+      saatler sürebilir
+
+      . Trafik kazası kalkan bir yolda trafiğin hemen açılmaması gibi; yazılımda
+      da önbelleklerin (cache) tekrar dolması veya kuyruktaki bekleyen
+      isteklerin eritilmesi yüzünden sistemin yavaşlığı devam eder
+
+      .
+
+      Doğrusal Olmazlık (Nonlinearity): Ufak bir yük artışı, tepki süresini
+      doğrusal değil üstel (exponential) olarak artırıp sistemi anında
+      çökertebilir (Kuyruk teorisindeki doyum noktası)
+
+      .
+
+      Bu devasa kaosun içinde nasıl hayatta kalacağız? Yazarın stratejileri
+      şunlar
+
+
+      : Amazon'un taktiğiyle kararların çoğunu geri alınabilir (Reversibility -
+      two-way doors) yapıp deneme yanılmaya izin ver
+
+
+      . Sadece yerel metriklere kanma, sistemin bütünsel sağlığına (global
+      metrics) bak
+
+      . Kademeli yayılım (Feature flags, canary, shadow testing) ile patlama
+      yarıçapını (blast radius) sınırla
+
+
+      . Yeni kod yayınlamadan sistemin bilinmeyen herhangi bir durumunu
+      (novel/bizarre state) anlamanı sağlayacak kusursuz bir Gözlemlenebilirlik
+      (Observability) kur
+
+
+      . Olayları canlıya almadan önce geçmiş verilerle (replaying past events)
+      veya deterministik simülasyonlarla test et
+
+
+      . Ve en önemlisi; her senaryoyu manuel kurgulayamayacağın için Makine
+      Öğrenmesi (ML) gibi adaptif teknolojilere güven ve takımınla psikolojik
+      olarak güvenli bir ortamda varsayımları tartış
+
+
+      .
+
+      Bu bölümün özü: Yüksek trafikli sistemlerde kesinlik yerine olasılıklara
+      dayanarak ölçeklenebilirlik sağlamak (Probabilistic increment, Bloom
+      filtreleri) veya gecikmeyi psikolojik hilelerle örtbas etmek kritik
+      stratejilerdir. Karmaşık (Complex) sistemlerin kaosunu yönetmek ise
+      ezberlenmiş çözümlerle değil; geri alınabilir kararlar, kademeli yayılım
+      ve kusursuz bir gözlemlenebilirlik (observability) kültürü kurmakla
+      mümkündür.
+
+      7.1 - 7.5 Güvenilirliğin Temelleri: Zarifçe Hizmet Azaltma ve Bağımlılık
+      Yönetimi
+
+      Yazar, kariyerini tamamen değiştiren bir anısını paylaşıyor. Hava trafik
+      yönetimi gibi güvenlik açısından son derece kritik bir alanda çalışmaya
+      başladığı ilk gün, tüm yeni gelenlerle birlikte büyük bir konferans
+      salonunda eğitimdedir
+
+
+      . Eğitmen herkese sırayla geçmişini sorar ve yazarımız sigorta sektöründen
+      geldiğini söyler
+
+      . Herkes bitirdiğinde eğitmen o dondurucu cümleyi kurar: "Bize katılarak
+      anlamanız gereken çok önemli bir şey var: Eğer burada bir sorun yaşarsak
+      para kaybetmeyiz, müşteri kaybetmeyiz... İnsanların hayatlarını
+      kaybederiz."
+
+      Yazar yıllar sonra Google'a geçtiğinde şunu fark eder: Hava trafiği olmasa
+      bile, örneğin insanların yıllarca biriktirdiği paha biçilmez anılarını,
+      çocuklarının fotoğraflarını tutan bir bulut servisinin çöküp tüm veriyi
+      silmesi de inanılmaz derecede yıkıcıdır
+
+      . Uygulamanın ne kadar janjanlı özelliği olursa olsun, Güvenilirlik
+      (Reliability) diğer tüm özelliklerin var olabilmesi için temel şarttır
+
+      . Kullanıcı gözünden tanımı basittir: "Sadece çalışması" (it just works)
+
+      .
+
+      Peki bunu sistem tasarımı bağlamında nasıl sağlayacağız?
+
+      Zarifçe Hizmet Azaltma (Graceful Degradation) Sistemlerimiz her zaman
+      beklenmedik olaylarla, devasa trafik artışlarıyla karşılaşır
+
+      . Tüm sistemin çökmesini izlemektense, hizmet kalitesini bilinçli olarak
+      düşürmek çok daha zekicedir
+
+      . Yazar kendi tecrübesinden bir felaket senaryosu anlatıyor: Sistem aniden
+      yüksek trafik alıyor
+
+      . Veritabanına bağlanan 100 kapasiteli bağlantı havuzu (connection pool)
+      anında doluyor ve istekler kuyruğa birikiyor
+
+      . Bunu gören Kubernetes "Aha sistem zorlanıyor" deyip otomatik
+      ölçeklendirme (autoscaling) yapıyor ve yeni sunucular ayağa kaldırıyor
+
+      . Ama o yeni sunucular da veritabanından bağlantı (connection) istemeye
+      başlıyor!
+       Sonuç olarak veritabanı tamamen felç oluyor ve istisnasız HER kullanıcı hata (timeout) alıyor
+      . Oysa bu durum, Yük Atma (Load Shedding) yöntemiyle çözülebilirdi. Sistem
+      dar boğaza girdiğinde trafiğin bir kısmını bilinçli olarak reddetmek (hata
+      döndürmek), en azından geriye kalan kullanıcılar için servisin çalışmasını
+      sağlar
+
+      . Kusursuz hizmet yoksa, bir miktar hizmet her zaman sıfır hizmetten
+      iyidir
+
+      . Benzer şekilde, Google arama motorunun zor anlarında derin sonuçlar
+      yerine elindeki önbellekten daha az doğru ama hızlı sonuçlar dönmesi de
+      (availability over accuracy) zarifçe hizmet azaltmaya bir örnektir
+
+
+      .
+
+      Uyarlamalı LIFO (Adaptive LIFO) Yük atmanın farklı bir versiyonu olarak
+      Facebook'un bulduğu çok çarpıcı bir yöntem var
+
+      . Normalde HTTP sunucuları, işletim sistemi sınırlarına (SOMAXCONN gibi)
+      dayanana kadar istekleri bir kuyrukta İlk Giren İlk Çıkar (FIFO)
+      mantığıyla tutar
+
+
+      . Sistem felç olup kuyruk tıkandığında ise yavaş yavaş en eski işleri
+      eritmeye başlar
+
+      . Ama durup düşündüğümüzde, 2 dakikadır kuyrukta bekleyen bir kullanıcı
+      muhtemelen çoktan sekmeyi kapatmış veya sayfayı yenilemiş (retry) demektir
+
+      . O işleme CPU ayırmak tamamen israftır!
+
+      . İşte Adaptive LIFO, sistem ağır yük altındayken aniden mantığı tersine
+      çevirip Son Giren İlk Çıkar (LIFO) modeline geçer
+
+      . Taze gelen yepyeni isteklere anında yanıt vererek başarı oranını
+      maksimize eder
+
+      . Starbucks kuyruğunda 20 dakika bekleyip, yeni gelen adamın kahvesini
+      alıp çıkması gibi haksız (unfair) bir yöntemdir ama sistem genelinde
+      başarılı istek sayısını kurtarır
+
+      .
+
+      Resilient, Fault-Tolerant, Robust, Reliable Kavramları Geliştiriciler
+      genelde bu kelimeleri birbirinin yerine kullansa da farklıdırlar
+
+      :
+
+      Resilient (Esnek/Toparlanabilir): Bir yıkım olduktan sonra eski haline
+      dönebilme yeteneğidir
+
+      . Tıpkı çekip bıraktığın bir paket lastiği gibi
+
+      . Apache Cassandra'da çöken bir sunucu geri geldiğinde "hinted handoff"
+      özelliği sayesinde kaçırdığı verileri diğerlerinden alıp kendini toparlar
+
+      .
+
+      Fault-Tolerant (Hata Toleranslı): Bileşenler çökse bile sistemin aksamadan
+      çalışmaya devam etmesidir
+
+      . Uçuş sırasında ana pilot bayılırsa yardımcı pilotun uçağı güvenle
+      indirmesi gibidir
+
+      . Bir Load Balancer (Yük dengeleyici) çökünce trafiğin yedeğine kayması
+      bunun örneğidir
+
+      .
+
+      Robust (Sağlam): Ağır stres koşulları altında (fırtına, yoğun trafik) bile
+      kırılmadan işlevini yerine getirmektir
+
+      . Golden Gate köprüsünün inanılmaz fırtınalara dayanması gibi
+
+      . Az önce anlattığımız Zarifçe Hizmet Azaltma (Graceful degradation) tam
+      bir Robustness örneğidir
+
+      .
+
+      Reliable (Güvenilir): Tüm bu özelliklerin toplamıyla, "kullanıcıların
+      beklediği performansı, belirtilen süre boyunca" sunabilmektir
+
+      . -4 ile +6 saniye şaşma payıyla çalışan ve sertifika alan COSC bir saat
+      gibi veya %99.99 SLA garantisi veren bir veritabanı gibi
+
+      .
+
+      Fail Open (Açık Başarısızlık) vs. Fail Closed (Kapalı Başarısızlık) Sistem
+      hata verdiğinde kontrolü mü yoksa erişimi mi seçeceğiz?
+       Yazarın Google'daki ekibi "Safe Removal Service" adlı sistemi yönetiyor (VM Live Migration)
+      100
+
+      . Bu sistem makinelerin yeniden başlatılmasına güvenlik kontrolü yaparak
+      onay veriyor
+
+      . Eğer bu servisin bağlı olduğu iç sistemler çökerse, servis bilmeden onay
+      verip güvenliği riske atmaktansa tüm istekleri reddediyor
+
+      100
+
+      . Buna Fail Closed denir; çünkü sistem erişilebilirliği feda edip
+      güvenliği/kontrolü seçer
+
+      100
+
+      . Ancak Amazon gibi bir e-ticaret sitesindeyseniz, alışveriş sisteminin
+      ufak hatalarda bile devam etmesini (Fail Open) tercih edersiniz; çünkü
+      burada kontrol feda edilip erişilebilirlik seçilir
+
+      100
+
+      .
+
+      Soft (Yumuşak) ve Hard (Sert) Bağımlılıklar Sistemin parçaları birbirine
+      bağımlıdır. Bir video sitesinde "Öneri Motoru (Recommendation Service)"
+      çökerse kullanıcılar hala video izleyebilir, bu Yumuşak (Soft) bir
+      bağımlılıktır
+
+      101
+
+      102
+
+      . Ama "Giriş Yapma (Authentication)" çökerse kimse siteye giremez, bu Sert
+      (Hard) bir bağımlılıktır
+
+      101
+
+      102
+
+      .
+
+      Bunu bilmek ne işe yarar?
+
+      103
+       Hard bağımlılıklarda SLA hedeflerin çok katı olmalı, kod yayınlamaları (rollout) son derece dikkatli yapılmalı ve kusursuz izleme (observability) kurulmalıdır
+      103
+
+
+      . Ama en büyük tehlike, zamanla sessizce şekil değiştiren bağımlılıklardır
+
+      106
+
+      . Sistemin yavaşlığını çözmek için araya bir "Önbellek (Cache)" koydun
+      diyelim
+
+      106
+
+      . İlk başta bu soft'tur, çökerse sistem veritabanına gider ve yavaş da
+      olsa yanıt verir
+
+      106
+
+      . Ancak zamanla trafik büyüdüğünde ve önbellek çöktüğünde tüm yük
+      veritabanına binerse, veritabanı bu yükü kaldıramayıp patlar
+
+      106
+
+      . Tebrikler, zamanla test edilmediği için soft bağımlılığın sessizce hard
+      bağımlılığa dönüşmüş oldu
+
+      106
+
+      107
+
+      ! Mühendislikte güvenilirliği artırmanın en kesin yolu; "Hard"
+      bağımlılıkları, güçlü ve sürekli test edilen yedek stratejileri (fallback)
+      kullanarak "Soft" bağımlılıklara dönüştürmektir
+
+      107
+
+      108
+
+      .
+
+      Bu bölümün özü: Güvenilirlik; esneklik, hata toleransı ve sağlamlık
+      üzerine inşa edilen, sistemin kullanıcıya söz verilen süre boyunca "sadece
+      çalışması" durumudur. Ağır yük altında tam çöküş yaşamak yerine (Adaptive
+      LIFO veya Load Shedding ile) hizmet kalitesini düşürmek, bağımlılıkların
+      kırılganlığını izleyip yedek planlarla yumuşatmak ve güvenlik ile
+      erişilebilirlik arasında (Fail Open/Closed) doğru takası yapmak sistem
+      tasarımının belkemiğidir.
+
+      7.6 - 7.7 Arıza Analizi ve Bilişsel Yanılgılar: Post Hoc ve Gizli
+      Değişkenler
+
+      Sistemler ne kadar mükemmel tasarlanırsa tasarlansın çökecektir
+      (incident). Çöktüğünde ise kök nedeni (root cause) bulmaya çalışırken
+      insan beyni kendi mantık hatalarına ve zihinsel kısayollara (bias) kurban
+      gider.
+
+      Post Hoc Ergo Propter Hoc (Bunun Ardından, O Halde Bundan Dolayı) Bu
+      havalı Latince terim, en sık düştüğümüz mantık yanılgısını tanımlar:
+      Zamansallığı (olayların arka arkaya olmasını), Nedensellik (birbirinin
+      sebebi olması) ile karıştırmak
+
+      109
+
+      . Yazar bir Cumartesi sabahı kahvesini yudumlarken LinkedIn'de şu postu
+      görür: "TDD (Test-Driven Development) kullanmaya başladığımdan beri
+      hayatım çok daha güzel. Artık kodumu debug etmek için her yere
+      console.log() yazmak zorunda kalmıyorum!"
+
+      110
+
+      . Postu yazan kişinin zihnindeki şablon şudur: A) Eskiden her yere log
+      atıyordum
+
+      110
+
+      . B) Sonra TDD'ye geçtim
+
+      110
+
+      . C) TDD yaparken testler yazdım
+
+      110
+
+      . D) Artık loglara ihtiyacım kalmadı
+
+      110
+
+      . Çıkarım: "TDD yüzünden artık log atmıyorum."
+
+      109
+       Bu, koca bir mantık hatasıdır!
+      109
+       Evet, B olayı D'den önce olmuştur ama D'nin gerçek sebebi B (TDD yaklaşımı) değil, C (Test yazmış olmak) tır!
+      109
+
+      . Kişi, TDD olmadan da test yazsaydı yine log atmaktan kurtulacaktı
+
+      109
+
+      . İnsanlar, sevdikleri bir metodolojiyi veya aracı sırf o olaydan önce
+      kullandıkları için tüm başarının sebebi ilan etmeye bayılırlar
+
+      111
+
+      . Bir olay diğerinden sonra gerçekleşti diye, diğeri onun sebebi olmak
+      zorunda değildir
+
+      109
+
+      . Yazar bu analizle uğraşırken o güzelim Cumartesi kahvesi de soğuyup
+      gider...
+
+      112
+
+      Lurking Variables (Gizlenen / Pusuya Yatan Değişkenler) Kök neden
+      analizlerini en çok saptıran şey, grafikte görünmeyen ama sonuçları
+      manipüle eden "Gizli Değişkenlerdir (Lurking Variables)"
+
+      112
+
+      . Yazar bunu sanal bir bulut sağlayıcısı olan NebuloSky örneğiyle
+      açıklıyor
+
+      113
+
+      . NebuloSky, yıllardır stabil çalışan ve 9 milyon sanal makinesi (VM) olan
+      "Platform X" ile henüz yeni olan ve sadece 100 bin VM'i olan "Platform Y"
+      üzerinden hizmet veriyor
+
+      113
+
+      . Şirket, güvenlik için makinelerin Kernel (çekirdek) sürümlerini sürekli
+      güncelliyor
+
+      113
+
+      . Bir gün SRE (Site Reliability Engineer) olarak sana bildirim geliyor:
+      Sistemde "Kernel Panics (Çekirdek Çökmeleri)" sayısı aniden iki katına
+      çıkmış!
+
+      113
+       Metriklere bakıyorsun ve tam o gün "Yeni bir Kernel versiyonunun" dağıtıma çıktığını görüyorsun
+      113
+
+      . Sonuç çok net, değil mi? "Yeni sürüm hatalı, hemen geri al (rollback)!"
+
+      113
+
+      . Geri alıyorsun. Saatler geçiyor ama çökme sayısı asla düşmüyor!
+
+      114
+       Nerede hata yaptın?
+      114
+
+      Hata, Korelasyonu (İki şeyin aynı anda olması), Nedensellik (Causation)
+      zannetmekti
+
+      114
+
+      . Hareket eden bir metro vagonunu arkasından iten bir adamı düşün. Vagon
+      ilerliyor, adam da o sırada itiyor (Korelasyon var) ama vagon adam ittiği
+      için ilerlemiyor!
+
+      114
+
+      . Bizim kernel olayındaki "Pusuya Yatan Değişken" şuydu: Platform Dağılımı
+
+      115
+
+      . Yeni kernel sürümünün dağıtıldığı o gün, şirket aynı zamanda sorunlu
+      "Platform Y" üzerine tam 1 Milyon yeni sanal makine eklemişti!
+
+      115
+
+      . Çökmelerin sebebi yeni kernel sürümü (İncelenen Değişken) değil,
+      platformlardaki bu oransal değişimdi (Gizli Değişken)
+
+      115
+
+      116
+
+      . Biz Doğrulama Yanlılığına (Confirmation Bias) kurban gittik; yeni sürüm
+      dağıtımını görünce varsayımımızı anında doğru kabul ettik ve başka kanıt
+      aramadık
+
+      117
+
+      .
+
+      Gizli Değişkenleri Tespit Etmek: Veri Segmentasyonu (Data Segmentation)
+      Bunu önlemenin en iyi yolu veriyi farklı kırılımlarla (bölgeye göre,
+      platforma göre, kullanıcı tipine göre) segmente edip analiz etmektir
+
+      117
+
+      . Eğer kernel çökme grafiğini "Platform X ve Platform Y" diye iki ayrı
+      renk olarak verseydik, Platform X'teki çökmelerin sabit kaldığını, artışın
+      tamamen Platform Y'deki devasa yığılmadan kaynaklandığını ilk saniyede
+      görecektik
+
+      117
+
+
+      . Gözlemlenebilirlik (Observability) sistemlerimizde veriyi önceden bu
+      şekilde kırılabilecek (slicing and dicing) biçimde tasarlamak, sorun
+      anında zihinsel tuzaklara düşmemizi engeller
+
+      120
+
+      121
+
+      .
+
+      Bu bölümün özü: Arıza ve kök neden analizlerinde insan beyni en görünür
+      olana ve kendi varsayımlarına (Doğrulama yanlılığı) inanma eğilimindedir.
+      İki olayın arka arkaya olması (Post hoc) veya aynı anda yaşanması
+      (Korelasyon) aralarında kesin bir neden-sonuç ilişkisi olduğunu
+      kanıtlamaz. Bizi asıl yanıltan şey genellikle verilerde açıkça görünmeyen
+      gizli (lurking) değişkenlerdir ve bunlarla savaşmanın yolu, verileri
+      farklı boyutlarla kırmak (segmentasyon) ve her zaman kendi tezimizi
+      çürütecek kanıtlar aramaktır.
+  - baslik: Parça D · Donanım ve İşletim Sistemi (Bölüm 8)
+    icerik: >-
+      Harika bir noktadayız! Kahvelerimizi tazeleyelim, çünkü şimdi kodumuzun
+      "altında" yatan o gizemli ve devasa dünyaya, Parça D: Donanım ve İşletim
+      Sistemi (Bölüm 8: Systems) alanına giriyoruz.
+
+      Yazar Teiva Harsanyi'nin de harika bir şekilde ifade ettiği gibi, iyi bir
+      yazılım mühendisi olmak sadece temiz kod yazmakla bitmez; yazdığımız kodun
+      üzerinde çalıştığı donanımı ve işletim sistemini anlamak, onlarla bir tür
+      "Mekanik Sempati" (Mechanical Sympathy) kurmak zorundayız. Bu sempati,
+      sistemin doğasına aykırı savaşmak yerine, onunla uyum içinde, performanslı
+      ve sorunsuz çalışan yapılar kurmamızı sağlar.
+
+      Kurallarına harfiyen uyarak, yazarın argümanlarını adım adım, kitaptaki
+      tüm veriler, örnekler ve anekdotlarla birlikte, hiçbir detayı atlamadan
+      yeniden anlatıyorum. Her bir bölümün kendi içinde devasa bir derinliği
+      var, o yüzden kemerleri bağla!
+
+      8.1 Bilgisayar Mimarisi ve Komut Ardışık Düzeni (Computer Architecture &
+      Instruction Pipelining)
+
+      Yazdığımız o yüksek seviyeli, güzel, soyut kodlar (ister Go, ister Java,
+      ister Python olsun) eninde sonunda derlenip işlemcinin (CPU) anlayacağı o
+      soğuk ve acımasız makine diline dönüşür. İşlemcilerin talimatları nasıl
+      işlediğini anlamak, neden bazı kodların diğerlerinden fersah fersah daha
+      hızlı çalıştığını kavramanın tek yoludur.
+
+      Yazar, bu konuya sıkıcı ve soyut bir "Komut Ardışık Düzeni (Instruction
+      Pipelining)" tanımı vererek başlamıyor. Bunun yerine bizi problemin
+      kalbine, CPU'nun mutfağına götürüyor. Bir CPU'nun bir talimatı
+      işleyebilmesi için genellikle 4 temel aşamadan geçmesi gerekir:
+
+      Getirme (Fetch - FU): Talimatın kendisini bellekten (memory) alıp getirme
+      aşamasıdır. Bunu mutfaktaki aşama olarak düşün: Tarifin yazılı olduğu
+      kağıdı depodan alıp tezgaha getirmek.
+
+      Çözümleme (Decode - DU): Gelen o 0 ve 1'lerden oluşan talimatın tam olarak
+      ne anlama geldiğini, ne yapılacağını anlama aşamasıdır. Aşçının tarifi
+      okuyup "Haa, burada domates doğranacakmış" demesidir.
+
+      Çalıştırma/Yürütme (Execute - EU): Talimatın gerçek anlamda işlendiği
+      yerdir. Matematiksel işlemler veya mantıksal sorgular burada yapılır.
+      Aşçının bıçağı eline alıp domatesi doğramasıdır.
+
+      Yazma (Write - WU): Çıkan sonucun bir yazmaca (register) veya belleğe geri
+      yazılmasıdır. Doğranan domateslerin tabağa konulup servise hazır edilmesi
+      gibi düşünebilirsin.
+
+      Monolitik CPU ve Hızlandırma Yolları (Not: Bu 4 aşamalı yapı CPU mikro
+      mimarisinin (microarchitecture) basitleştirilmiş bir halidir, örneğin
+      Intel'in NetBurst mimarisinde bu aşamaların sayısı 20'yi aşar!) Diyelim ki
+      bu aşamaların her biri tam 1 döngü (cycle) sürüyor. Klasik (monolitik) bir
+      CPU'da, 1 numaralı talimat (i1) bu 4 aşamayı bitirene kadar, 2 numaralı
+      talimat (i2) beklemek zorundadır. Yani i1 için toplam 4 döngü geçer, i1
+      biter, ardından t0+5 anında i2 başlar. Bu, inanılmaz derecede verimsiz bir
+      yapıdır. Her an CPU'nun sadece %25'i çalışıyor, geri kalan %75'lik kısım
+      boşta yatıyordur.
+
+      Peki biz bir donanım tasarımcısı (CPU designer) olsaydık bu sistemi nasıl
+      hızlandırırdık?
+
+      1. Yöntem: Saat Frekansını (Clock Frequency) Artırmak: CPU'nun saat hızını
+      artırmak ilk akla gelen çözümdür. Örneğin CPU'muz 0.1 GHz hızında
+      çalışıyorsa, 8 döngüyü tamamlamak 80 nanosaniye sürer. Eğer hızı iki
+      katına, yani 0.2 GHz'e çıkarırsak, aynı 8 döngüyü 40 nanosaniyede
+      tamamlarız. Harika değil mi? Değil. Çünkü saat frekansını artırmanın çok
+      ağır fiziksel bedelleri vardır: Daha fazla güç tüketimi ve korkunç bir ısı
+      açığa çıkması. İşlemci çok ısındığında kendini korumak için hızını düşürür
+      (Thermal throttling). Yani bu yöntemin fiziksel bir sınırı vardır, sonsuza
+      kadar hızı artıramayız.
+
+      2. Yöntem: Komut Ardışık Düzeni (Instruction Pipelining): Madem frekansı
+      artıramıyoruz, o zaman içerideki işleyişi değiştirelim. Neden Fetch birimi
+      işini bitirip talimatı Decode birimine verdiğinde, boşta yatan Fetch
+      birimi hemen bir sonraki talimatı (i2) getirmeye başlamasın ki? Bir araba
+      fabrikasındaki montaj hattı gibi! i1 Execute aşamasındayken, i2 Decode
+      ediliyor, i3 ise Fetch ediliyor olabilir.
+
+      İşte bu donanımsal zekanın adı Komut Ardışık Düzeni (Instruction
+      Pipelining)'dir. Bu sistem sayesinde, boru hattı (pipeline) tamamen
+      dolduğunda, CPU her bir döngüde (cycle) 1 talimatı bitirme (retire)
+      kapasitesine ulaşır. 8 talimatı bitirmek monolitik CPU'da 32 döngü
+      sürerken, Pipelining ile sadece 11 döngü sürer!
+
+      Yazılımcı Olarak Neden Umrumuzda Olmalı? (Boru Hattı Tıkanıklıkları)
+      Hikayenin bizi ilgilendiren kısmına geldik. Bizim işimiz donanım üretmek
+      değil, ama bu "boru hattının (pipeline)" her zaman dolu ve akışkan
+      kalmasını sağlamak zorundayız. Eğer boru hattında bir birim boşta kalır ve
+      bir şeyin olmasını beklerse buna Boru Hattı Tıkanıklığı (Pipeline Stall
+      veya Bubble) denir.
+
+      Yazar çok çarpıcı bir kod örneği üzerinden bunu kanıtlıyor:
+
+      // Bir önceki kodlar...
+
+      if (a == 0) {
+          foo();
+      } else {
+          bar();
+      }
+
+      // Bir sonraki kodlar...
+
+
+      Bu kadar basit bir if/else bloğu CPU'nun gözünde neye benzer? Gelin bunu
+      kaba bir Assembly diline (pseudo-assembly) çevirelim:
+
+      i1: LOAD R1, a -> 'a' değişkeninin değerini R1 yazmacına (register) yükle.
+
+      i2: CMP R1, #0 -> R1'deki değeri 0 ile karşılaştır (Compare).
+
+      i3: BEQ ELSE -> (DİKKAT!) Eğer eşitse (Branch if EQual) ELSE etiketine
+      atla.
+
+      i4: CALL foo -> a == 0 ise foo() fonksiyonunu çağır.
+
+      i5: JMP END -> İşin bitince ELSE bloğunu atlamak için END etiketine zıpla.
+
+      ELSE: CALL bar -> i6: a != 0 ise bar() fonksiyonunu çağır.
+
+      Şimdi CPU'nun yerine kendini koy. i1'i getirdin. i2'yi getirdin. i3'ü (BEQ
+      ELSE koşullu dallanmasını) getirdin. Sırada i4'ü mü getireceksin yoksa
+      i6'yı mı? Bilmiyorsun! Çünkü i3 komutu, i2'nin (karşılaştırma işleminin)
+      sonucuna bağlıdır ve bu sonuç ancak i2 Execute (EU) aşamasını bitirdiğinde
+      belli olacaktır! Bu süre zarfında Fetch (Getirme) birimi ne yapacak?
+      Hiçbir şey! İki tam döngü boyunca sistem durur, bekler (Stall/Bubble
+      oluşur) ve performans yerle bir olur.
+
+      Şube Tahmini (Branch Prediction) Modern CPU'lar bu kilitlenmeyi önlemek
+      için muazzam bir büyü yaparlar: Şube Tahmini (Branch Prediction). CPU,
+      i3'ün sonucunu beklemek yerine bir tahminde bulunur (kumar oynar). Yazar
+      durumu basitleştirmek için CPU'nun her zaman "dalın alınmayacağını (assume
+      the branch will not be taken)" yani a'nın 0'a eşit OLDUĞUNU (i4'ün
+      çalışacağını) tahmin ettiğini varsayıyor. Eğer CPU'nun tahmini doğru
+      çıkarsa, boru hattı hiç tıkanmadan, araya sıfır gecikme girerek şakır
+      şakır çalışmaya devam eder (saved 2 cycles!). Ama ya tahmin yanlış
+      çıkarsa? İşte o zaman büyük bir yıkım olur. CPU boru hattına yanlışlıkla
+      getirdiği tüm talimatları çöpe atar (pipeline flush), sistemi temizler ve
+      doğru talimattan (i6) tekrar getirmeye başlar. Buna Şube Yanlış Tahmini
+      Cezası (Branch Misprediction Penalty) denir.
+
+      İşte tam da bu yüzden, yazılım mühendisleri olarak algoritmalarımızı
+      yazarken "Mekanik Sempati" göstermeli, döngülerin ve koşulların donanım
+      dostu olmasına dikkat etmeliyiz. Boru hattı tıkanıklıklarını azaltmanın
+      yolları şunlardır:
+
+      Branch Prediction-Friendly Code: Şube tahminini kolaylaştıran kodlar
+      yazmak (örneğin döngü içindeki if koşullarını azaltmak veya verileri
+      önceden sıralamak).
+
+      Veri Tehlikelerini (Data Hazards) Azaltmak: Bir talimatın anında bir
+      öncekinin sonucuna bağımlı olmasını (tight data dependency) engellemek.
+
+      Döngü Açma (Loop Unrolling): Çok kısa süren döngülerdeki jump (başa dön)
+      komutlarının yarattığı yükü azaltmak için döngünün içindeki işlemi kodu
+      kopyalayarak ardışık hale getirmek.
+
+      Bu bölümün özü: Modern işlemciler performansı artırmak için talimatları
+      parçalara bölerek üst üste çalıştıran Komut Ardışık Düzeni'ni (Pipelining)
+      kullanırlar. Bizim birer mühendis olarak görevimiz, yazdığımız koşullu
+      (if/else) ifadelerin CPU'nun Şube Tahmini (Branch Prediction)
+      mekanizmasını yanıltıp boru hattını çöpe atmasına (stall/flush) neden
+      olmasını engellemek, donanımın doğasına uygun, öngörülebilir kodlar
+      yazmaktır.
+
+      8.2 Eşzamanlı Çoklu Kullanım (Simultaneous Multithreading - SMT)
+
+      Performansı artırmak donanım üreticileri için bitmek bilmeyen bir savaştır
+      ve bu savaşta ortaya çıkan en büyük devrimlerden biri Eşzamanlı Çoklu
+      Kullanım (Simultaneous Multithreading - SMT) teknolojisidir. Onu daha
+      yakından tanımak için yazar bizi donanımın içine davet ediyor.
+
+      SMT Nedir ve Nasıl Doğdu? Önce SMT olmayan, klasik bir CPU hayal edelim. 4
+      fiziksel çekirdeği (physical core) var ve her çekirdeğin sadece 1 donanım
+      iş parçacığı (hardware thread - T1, T2, T3, T4) var. Bir donanım iş
+      parçacığı, CPU içindeki en küçük yürütme birimidir; talimatları getiren,
+      çözen ve çalıştıran ana yapıdır. Bu çekirdeklerin her birinin kendine özel
+      L1 ve L2 önbellekleri (cache) vardır, L3 önbelleği ise tüm çekirdekler
+      arasında ortaktır. (Not: L1, L2, L3 veriye hızlı ulaşmak için vardır.
+      Çekirdeğe ne kadar yakınsa o kadar hızlı ama küçüktür. En hızlısı L1, en
+      büyüğü ve yavaşı L3'tür).
+
+      Şimdi SMT teknolojisine sahip bir CPU'ya (örneğin efsanevi Intel
+      i7-7700K'ya) bakalım. Fiziksel çekirdek sayısı yine 4. Ancak SMT sayesinde
+      her bir çekirdeğin içinde iki ayrı donanım iş parçacığı (T1 ve T2 aynı
+      çekirdeğin içinde) çalışır! Yani sistemde toplam 8 donanım iş parçacığı
+      vardır. İşletim sistemi (OS) fiziksel olarak 4 çekirdek olduğunu bilmez, o
+      kendisine sunulan bu iş parçacıklarını Sanal CPU'lar (Virtual CPUs) olarak
+      görür. Yani OS'in gözünde makinede 8 ayrı işlemci vardır.
+
+      Peki Intel neden böyle bir şeye ihtiyaç duydu? Bunun tarihsel bağlamı
+      büyüleyicidir. 2002 yılında Intel, Pentium 4 işlemcisini piyasaya sürdü ve
+      "Hyper-Threading" (Intel'in SMT'ye verdiği ticari isim) devrimini
+      başlattı. O zamanlar en büyük pazarlama stratejisi saat frekansını (Clock
+      Frequency) yüksek tutmaktı (Pentium 4, tek çekirdekte 3.8 GHz gibi çılgın
+      bir hıza ulaşıyordu). Ancak yazarın bir önceki bölümde bahsettiği kuralı
+      hatırla: Daha yüksek saat hızı, daha uzun komut ardışık düzeni (longer
+      pipelines) gerektirir. Pentium 4'ün boru hattı 20 aşamadan fazlaydı! Bunun
+      faturası ne oldu? Şube Tahmini (Branch Prediction) başarısız olduğunda
+      sistem tam 20 döngü boyunca (korkunç bir ceza - penalty) duraklıyordu.
+      Intel mühendisleri şunu düşündü: "Bir iş parçacığı (thread) bellekten veri
+      beklerken veya şube tahmini cezası yüzünden boşta yatarken, aynı
+      çekirdeğin içindeki diğer iş parçacığı neden çalışmasın ki?" Böylece
+      kaynakların boşta kalmasını engellemek için SMT doğdu.
+
+      SMT Tam Olarak Nasıl Çalışır? (İllüzyonun Arkasındaki Gerçek) Burada çok
+      kritik bir yanlış anlamayı düzeltmemiz lazım: SMT, bir donanım çekirdeğini
+      fiziksel olarak klonlamak demek değildir. Normal şartlarda işletim
+      sistemi, yazılımın oluşturduğu thread'leri donanım thread'lerine dağıtır.
+      Aynı donanım thread'ini birden fazla yazılım thread'i kullanmak
+      istediğinde, OS aralarında adil bir paylaşım yapar ve birinden diğerine
+      geçer. Bu geçişe Bağlam Değişimi (Context Switching) denir. Bağlam
+      değişimi son derece pahalı bir işlemdir; çünkü mevcut thread'in CPU
+      yazmaçlarındaki (registers) ve program sayacındaki (program counter) tüm
+      anlık durumu (buna Mimari Durum - Architectural State denir) kaydedilmeli
+      ve diğerinin durumu yüklenmelidir.
+
+      İşte SMT'nin sihri buradadır: SMT'li bir çekirdekte İKİ ayrı Mimari Durum
+      (Architectural State) vardır. Çekirdeğin içinde işlemleri fiilen yapan
+      "Yürütme Birimleri (Execution Units - EU)" tektir ve ortaktır. Bunlar: Tam
+      sayı matematiği yapan ALU (Arithmetic Logic Unit), ondalıklı sayı
+      matematiği yapan FPU (Floating-Point Unit) ve bellekle konuşan LSU
+      (Load/Store Unit) gibi birimlerdir. Ancak Decode (Çözümleme) biriminin
+      altında, iki ayrı thread için iki ayrı "Komut Kuyruğu (Instruction Queue)"
+      bulunur. Bu kuyrukların tam altında da bir "Komut Zamanlayıcısı
+      (Instruction Scheduler)" trafik polisi gibi bekler.
+
+      Bu trafik polisi (Zamanlayıcı) her döngüde (cycle) şuna bakar:
+
+      Eğer Thread 1 bellekten veri beklediği için duraklamışsa (stalled), hemen
+      Thread 2'nin kuyruğundan talimat alır ve Yürütme Birimlerine (EU) yollar.
+
+      Eğer ikisi de aktifse, bir döngüde ondan, bir döngüde diğerinden alarak
+      adilce karıştırıp yollar.
+
+      Mimari durumlar zaten donanımda ayrı ayrı tutulduğu için, bu geçişler
+      sırasında hiçbir şekilde Bağlam Değişimi (Context Switch) cezası ödenmez!
+      Yürütme birimleri, kimin kodunu çalıştırdığını umursamadan sürekli meşgul
+      tutulur. Çekirdek adeta hiç uyumayan bir fabrikaya dönüşür.
+
+      Performans, Ölçeklenebilirlik ve SMT'nin Geleceği Peki SMT bize ne
+      kazandırır? Intel'in kendi verilerine göre, SMT (Hyper-Threading) tek bir
+      fiziksel çekirdekte %30'luk bir performans artışı sağlar. Ancak bunun
+      faturası güç tüketiminde %20'lik bir artıştır. Yazar burada harika bir
+      matematik yapıyor: i7-7700K işlemcisinde tek bir thread ile çalışan bir
+      uygulamayı, SMT sayesinde 8 thread'e paralel olarak böldüğünü düşün.
+      Performans %800 artar mı? Asla! Mükemmel bir senaryoda bile tek çekirdek
+      %130 verimle çalıştığı için, 4 çekirdek toplamda 130% * 4 = %520 (teorik
+      maksimum) verim sağlayacaktır. "Mükemmel doğrusal ölçeklenme (perfect
+      linear scaling)" diye bir şey yoktur. Ayrıca SMT her derde deva değildir.
+      Eğer uygulamanız CPU-Bound (işlemciyi zorlayan) bir sistemse SMT uçurur;
+      ama Memory-Bound (sürekli bellekten veri okuyan) bir sistemse, her iki
+      thread de belleği bekleyeceği için SMT performansı daha da düşürebilir! Bu
+      yüzden her zaman teorilere güvenmek yerine kendi uygulamanızı test etmeniz
+      (benchmark) gerekir.
+
+      Linux Kernel Zamanlaması (Scheduling) Burada çok güzel bir mülakat sorusu
+      var: İki tane thread'in var ve SMT açık. Linux çekirdeği bunları aynı
+      fiziksel çekirdeğin içindeki iki sanal CPU'ya mı koymayı tercih eder (yan
+      yana), yoksa tamamen farklı iki fiziksel çekirdeğe mi dağıtır (uzak
+      uzağa)? Cevap: Farklı fiziksel çekirdeklere dağıtır (A seçeneği). Çünkü
+      Linux çekirdeğinin asıl amacı tüm donanımı maksimize edip güç
+      verimliliğini artırmaktır. Çekirdekleri %50 / %50 doldurmak, birini %100
+      doldurup diğerini uyutmaktan daha verimlidir. (Ancak "Core Scheduling"
+      adlı özel bir özellikle, birbirinin verisine çok muhtaç olan iki thread'i
+      aynı L1/L2 önbelleğini kullansınlar diye aynı çekirdeğe zorlamak
+      mümkündür).
+
+      SMT Devrinin Sonu Mu? Eskiden tek pazarlama aracı Saat Hızı'ydı (GHz).
+      Bugün ise veri merkezlerinin milyarlarca dolarlık elektrik faturaları
+      yüzünden "Watt Başına Performans (Performance-per-watt)" en önemli ölçüt
+      haline geldi. Intel'in yeni nesil tasarımı "Lunar Lake" bu değişimin en
+      net kanıtıdır. Intel, güç verimliliği sağlamak için P-cores (Performans)
+      ve E-cores (Verimlilik) yapılarına geçerken, bu yeni tasarımında
+      Hyper-Threading'i tamamen kaldırmıştır! Ve işin garibi, Hyper-Threading
+      olmamasına rağmen yepyeni mimari iyileştirmeler ve verimlilik
+      çekirdekleriyle önceki nesilden %20 daha hızlı olduklarını iddia
+      ediyorlar. SMT tamamen ölmese de, o "altın çağının" geride kaldığını ve
+      endüstrinin artık akıllı zamanlama ve fiziksel çekirdek sayısını artırmaya
+      yöneldiğini söyleyebiliriz.
+
+      Bu bölümün özü: Eşzamanlı Çoklu Kullanım (SMT), sık sık yaşanan
+      duraklamalarda donanımın boşta kalmasını engellemek için tek bir fiziksel
+      çekirdeğin içine birden fazla Mimari Durum yerleştirerek işletim sistemine
+      ekstra "Sanal CPU'lar" sunan zekice bir yöntemdir. Bize %30'a varan
+      performans kazançları sunsa da, gerçek fiziksel çekirdeklerin yerini
+      tutamaz; üstelik günümüzün güç verimliliği (performance-per-watt)
+      trendleri karşısında endüstrideki popülaritesini yavaş yavaş
+      kaybetmektedir.
+
+      8.3 Linux: Yazılımsal ve Donanımsal Kilitlenmeler (Soft vs. Hard Lockup)
+
+      Eğer bir yazılım mühendisiysen veya sistem yöneticisiysen (SysAdmin/SRE),
+      gecenin bir yarısı üretim sunucularının (production servers) aniden yanıt
+      vermeyi kestiği o korkunç anları bilirsin. Linux dünyasında performans
+      sorunlarını ve çökmeleri teşhis edebilmek için "Kilitlenme (Lockup)"
+      kavramlarının mekaniğini bilmek hayati önem taşır.
+
+      Kernel.org'un resmi belgelerine göre kilitlenmeler ikiye ayrılır:
+
+      Soft Lockup (Yazılımsal Kilitlenme): Çekirdeğin (kernel), diğer görevlere
+      (tasks) çalışma şansı vermeden 20 saniyeden fazla boyunca çekirdek modunda
+      (kernel mode) bir döngüye (loop) takılıp kalmasına neden olan bir hatadır.
+
+      Hard Lockup (Donanımsal Kilitlenme): CPU'nun, diğer kesmelere (interrupts)
+      bile yanıt verme şansı tanımadan 10 saniyeden fazla boyunca çekirdek
+      modunda bir döngüye takılıp kalmasına neden olan çok daha ağır bir
+      hatadır.
+
+      Bu iki tanım kulağa biraz karmaşık gelebilir. Yazar, aralarındaki farkı ve
+      ciddiyeti tam olarak anlayabilmemiz için bir adım geri atıp bu tanımların
+      temelindeki kavramları (Mekanik Sempati'nin özünü) açıklıyor:
+
+      Görevler ve Çekirdek Modu (Tasks & Kernel Mode)
+
+      Görevler (Tasks): Modern işletim sistemleri (Linux, Windows) "Çoklu Görev
+      (Multitasking)" yeteneğine sahiptir. Aslında aynı nanosaniyede binlerce
+      işlem yapmazlar, ama her bir işleme, uygulamaya veya sürece (process)
+      minicik bir zaman dilimi (time slice) verirler ve aralarında çılgın bir
+      hızla bağlam değişimi (context switching) yaparlar. Böylece bize her şey
+      aynı anda çalışıyormuş illüzyonunu yaşatırlar.
+
+      Çekirdek Modu vs Kullanıcı Alanı (Kernel Space vs User Space): Güvenlik ve
+      stabilite için bellek (RAM) ve donanım yetkileri ikiye bölünmüştür. Bizim
+      yazdığımız uygulamalar, Node.js sunucuları, tarayıcılar "Kullanıcı
+      Alanında (User Space)" çalışır. Kendi bellekleri dışına çıkamaz, donanıma
+      doğrudan emir veremezler. Ancak İşletim Sistemi ve Aygıt Sürücüleri
+      (Device Drivers) "Çekirdek Alanında (Kernel Space)" yaşar. Onlar tanrıdır;
+      donanıma ve tüm belleğe sınırsız (privileged) erişimleri vardır. Bizim
+      uygulamalarımız donanımdan bir şey istediğinde (örneğin diske dosya
+      yazmak) "Sistem Çağrısı (System Call)" yaparak kısa süreliğine Çekirdek
+      Modu'na geçer ve iş bitince Kullanıcı Modu'na döner.
+
+      Kesmeler (Interrupts: Maskable vs Non-maskable) İşletim sisteminin
+      kalbinin attığı yer "Kesmeler (Interrupts)"dir. Bir donanım veya yazılım,
+      CPU'nun o an yaptığı işi derhal bırakıp kendisine odaklanması için bir
+      sinyal gönderir.
+
+      Donanım Kesmeleri: Fareyi oynattığında veya ağ kartına (NIC) bir veri
+      paketi geldiğinde CPU'ya giden sinyallerdir.
+
+      Yazılım Kesmeleri: Bir sistem çağrısı yapıldığında veya sıfıra bölme
+      (division by zero) gibi bir hata (exception) olduğunda oluşan
+      sinyallerdir.
+
+      Bizi kilitlenmeler (lockups) konusunda ilgilendiren asıl ayrım şudur:
+
+      Maskelenebilir Kesmeler (Maskable Interrupts - MI): CPU'nun "Şu an çok
+      kritik bir iş yapıyorum, beni rahatsız etme" diyerek geçici olarak devre
+      dışı bırakabildiği (susturabildiği/maskeleyebildiği) kesmelerdir.
+      Telefonunu "Rahatsız Etmeyin" moduna almak gibidir.
+
+      Maskelenemez Kesmeler (Non-Maskable Interrupts - NMI): CPU'nun asla
+      görmezden gelemeyeceği, donanımsal seviyede en yüksek önceliğe sahip
+      kesmelerdir. Evde çalan bir yangın alarmı gibidir; ne yapıyorsan yap,
+      bırakıp ona bakmak zorundasındır.
+
+      Kilitlenmelerin Gerçek Yüzü: Sistem Ne Tepki Verir? Şimdi tanımlara bu
+      bilgiler ışığında tekrar bakalım: Eğer sistem bir Soft Lockup (Yazılımsal
+      Kilitlenme) yaşıyorsa; hatalı bir sürücü veya işletim sistemi bug'ı
+      yüzünden işlemci "Çekirdek Modunda" sonsuz bir döngüye girmiştir.
+      Kullanıcı Alanı'ndaki (User Space) hiçbir programa (senin web sunucuna
+      veya Spotify'a) asla zaman dilimi (time slice) vermez. Sistem inanılmaz
+      yavaşlar. Ancak! Kesmeleri (interrupts) işlemeye devam edebilir. Bu yüzden
+      fareyi oynattığında imleç ekranda zar zor da olsa, takıla takıla hareket
+      eder ve ağdan gelen paketlere yavaş da olsa tepki verebilir. Eğer sistem
+      bir Hard Lockup (Donanımsal Kilitlenme) yaşıyorsa; durum tam bir
+      felakettir. Çekirdek sadece sonsuz döngüye girmekle kalmamış, aynı zamanda
+      tüm "Maskelenebilir Kesmeleri (MI)" de sağır etmiş (disable) durumdadır.
+      Artık klavye, fare, ağ kartı veya zamanlayıcı (scheduler) CPU'ya ulaşamaz.
+      Sistem tamamen donmuştur; fare imleci milim kıpırdamaz, sunucu ağdan
+      tamamen kopmuştur.
+
+      Bu Kilitlenmelere Ne Sebep Olur?
+
+      Çekirdek Hataları (Kernel bugs): Çekirdeğin kendi kodundaki veya hatalı
+      yazılmış bir donanım sürücüsündeki kusurlar.
+
+      Donanım Arızaları: Arızalı bir RAM modülü, aşırı ısınan ve sapıtan bir
+      CPU.
+
+      Sanallaştırma Ortamları (Virtualized environments - ÇOK KRİTİK!): AWS,
+      Google Cloud gibi yerlerde sanal makine (VM) kullanıyoruz. Eğer alt
+      taraftaki ana makine (Hypervisor) aşırı yük altındaysa (CPU starvation) ve
+      bizim VM'mize vaat ettiği CPU gücünü sağlayamayıp onu uzun süre dondurursa
+      (scheduling failures), bizim sanal makinemizin içindeki Linux OS bunu bir
+      "Soft Lockup" veya "Hard Lockup" olarak algılar ve çöker! Gerçekte
+      Linux'ta bir hata yoktur, sorun onu barındıran bulut altyapısındadır.
+
+      Linux Bu Durumu Nasıl Algılar ve Ne Yapar? (The Watchdog) İşletim sistemi
+      kendi içinde asılı kaldığını nasıl anlar? Linux'un içinde "Watchdog (Bekçi
+      Köpeği)" adında harika bir mekanizma vardır. Watchdog, periyodik
+      aralıklarla tüm CPU çekirdeklerine "Maskelenemez Kesme (NMI)" göndererek
+      "Hey, hayatta mısın?" diye yoklama çeker (Çünkü Hard Lockup durumunda bile
+      NMI'lar asla engellenemez!).
+
+      Biz sunucu yöneticileri olarak Linux'a bu durumlarda ne yapması
+      gerektiğini şu dosyalara yazarak söyleyebiliriz:
+
+      $ cat /proc/sys/kernel/watchdog_thresh 10 -> Bu eşik değeridir (varsayılan
+      10 saniye).
+
+      Bir CPU, bu değerin 2 katı (20 saniye) boyunca aynı görevde takılı kalırsa
+      -> Soft Lockup ilan edilir.
+
+      Bir CPU, bu değerin 1 katı (10 saniye) boyunca kesmelere (interrupts)
+      cevap vermezse -> Hard Lockup ilan edilir.
+
+      $ cat /proc/sys/kernel/softlockup_panic 1 -> Bunu 1 yaparsak Linux, Soft
+      Lockup hissettiği an sistemi komple çökertecek (Kernel Panic) ve yeniden
+      başlatacaktır.
+
+      $ cat /proc/sys/kernel/hardlockup_panic 1 -> Bunu 1 yaparsak Linux, Hard
+      Lockup anında sistemi paniğe sürükler.
+
+      Eğer sistem panik yapmayacak şekilde ayarlanmışsa (parametreler 0 ise),
+      Linux çekirdeği çaresizce /var/log/messages dosyasına (veya dmesg'e) şu
+      çığlığı yazar: BUG: soft lockup - CPU#13 stuck for 21s!. Sistem yöneticisi
+      loglarda bu mesajı gördüğünde bilir ki ya sistemde ağır bir sürücü hatası
+      var, ya da bulut sağlayıcısı ona yeterli CPU veremiyor.
+
+      Bu bölümün özü: Linux'taki kilitlenmeler (lockups), sistemin çekirdek
+      modunda takılı kalarak kontrolü kaybetmesi durumudur; Soft Lockup
+      kullanıcı uygulamalarını dondurup sadece donanım kesmelerine sürüne sürüne
+      cevap verebilirken, Hard Lockup kesmeleri de sağır ederek sistemi tamamen
+      felç eder (fare imlecinin donması gibi). Watchdog mekanizmaları ve NMI
+      (maskelenemez kesmeler) sayesinde bu kilitlenmeler tespit edilebilir; bu
+      hataların altında yatan gerçek neden genellikle çekirdek/sürücü hataları
+      veya sanal makinelerde (VM) bulut sağlayıcısından kaynaklanan CPU açlığı
+      (starvation) olabilmektedir.
+  - baslik: Parça E · Mühendislik Pratikleri ve Zihin Yapısı (Bölüm 9)
+    icerik: >-
+      Harika bir noktadayız! Kahvelerimizi tazeleyelim, çünkü şimdi kod
+      editörümüzü kapatıp, aslında bizi "iyi bir kod yazarı" olmaktan çıkarıp
+      "harika bir yazılım mühendisi" yapan o devasa, görünmez alana; Parça E:
+      Mühendislik Pratikleri ve Zihin Yapısı (Bölüm 9: Beyond Code) dünyasına
+      adım atıyoruz.
+
+      Yazar Teiva Harsanyi'nin de vurguladığı gibi, kariyerimizi asıl
+      şekillendiren şeyler yazdığımız kod satırları değil; nasıl iletişim
+      kurduğumuz, karar verirken zihnimizin bize oynadığı oyunları nasıl fark
+      ettiğimiz, bilgiyi nasıl yönettiğimiz ve en önemlisi zihinsel sağlığımızı
+      nasıl koruduğumuzdur
+
+      .
+
+      Kurallara harfiyen uyarak, hiçbir anekdotu, örneği veya veriyi atlamadan,
+      bu derin konuları sanki seninle karşılıklı kahve içiyormuşuz gibi samimi
+      ama teknik derinliğini koruyarak yeniden anlatıyorum. Hazırsan başlayalım!
+
+      9.1 İletişim ve Teknik Yazım (Communication & Technical Writing)
+
+      Yazılım mühendisliği, sanılanın aksine bilgisayarlarla değil, insanlarla
+      iletişim kurma sanatıdır. Bu bölümde yazar, yardım isterken veya teknik
+      bir metin yazarken düştüğümüz iletişim tuzaklarına ve bunlardan nasıl
+      kurtulacağımıza odaklanıyor
+
+      .
+
+      XY Problemi (The XY Problem) Günlük iş hayatında en sık karşılaştığımız
+      iletişim kazalarından biri "XY Problemi"dir
+
+      . Bu sorun, bir kişinin asıl çözmeye çalıştığı problemi (X) anlatmak
+      yerine, o problemi çözmek için kendi bulduğu ama çalışmayan "deneme
+      yanılma çözümünü" (Y) sormasıyla ortaya çıkar
+
+      . Bunu hastaneye giden bir hasta gibi düşün. Karnın inanılmaz ağrıyor
+      (Problem X). Ama sen doktora gidip "Karnım ağrıyor, neyim var?" demek
+      yerine, internetten okuduğun bilgilerle "Doktor bey, bana acil bir
+      apandisit ameliyatı (Çözüm Y) yapabilir misiniz?" diyorsun. Doktor senin
+      apandisitine odaklanıyor, tahliller yapıyor, her şey normal çıkıyor.
+      Saatler süren bir boğuşmadan sonra doktor sana "Senin apandisitin sağlam,
+      sen neden ameliyat olmak istiyorsun?" diye sorduğunda "Çünkü karnım
+      ağrıyor" diyorsun. Ve doktor "E senin mideni üşütmüşsün, al şu ilacı
+      geçsin" diyor. İşte iş hayatındaki XY problemi tam olarak budur! Yazar
+      bunu bir yazılım örneğiyle somutlaştırıyor: Bir geliştirici takıma gelip
+      "Şu RegEx ifadesinde (Düzenli İfade) bir hata alıyorum, şunu nasıl
+      düzeltirim? ^[^@]+@[^@]+.[^@" diye sorar
+
+      . Takımdakiler dakikalarca bu karmaşık RegEx (Y çözümü) üzerinde kafa
+      patlatır, çalışmayan yeri bulmaya çalışırlar
+
+      . Oysa soruyu soran kişi cümlenin sonuna şunu ekleseydi: "Bu arada, ben
+      müşterilerin e-posta adreslerini doğrulamaya çalışıyorum (X problemi)"
+
+      . O zaman yardım eden kişi anında "Neden RegEx ile uğraşıyorsun ki?
+      Sistemimizde zaten validateEmail() diye hazır bir fonksiyon var, onu
+      kullansana!" diyebilirdi
+
+      . Bu tuzağı önlemenin yolu açıktır: Yardım isteyen (Asker) kişi her zaman
+      asıl problemi (bağlamı) baştan vermelidir
+
+      . Yardım eden (Helper) kişi ise bağlamın eksik olduğunu hissettiğinde,
+      doğrudan çözüme atlamak yerine nazikçe "Tam olarak neyi başarmaya
+      çalışıyorsun?" diye sormalıdır
+
+      .
+
+      Teknik Yazım İçin 10 Altın Kural Yazar, kendi kitabı 100 Go Mistakes and
+      How to Avoid Them'i yazarken edindiği ve bizim tasarım dokümanları (design
+      docs) veya PR açıklamaları yazarken kullanabileceğimiz 10 kritik kuralı
+      paylaşıyor
+
+      :
+
+      Okuyucu Beklentilerini Yönetin: Okuyucular sadece okumaz, yorumlarlar
+
+      . Yazar olarak, okuyucunun çıkarımlarını şansa bırakmamalı,
+      belirsizlikleri ortadan kaldırmalıyız
+
+      .
+
+      Çıplak İddialardan (Naked Assertions) Kaçının: Asla altını doldurmadığınız
+      bir iddia ortaya atmayın
+
+      . "Bu kod yapısından kaçınılmalıdır" deyip bırakmayın; okuyucuya "Neden?
+      Bu yapıyı sorunlu yapan şey tam olarak nedir?" sorusunun cevabını verin ki
+      okuyucu kendi kafasında yanlış varsayımlar kurmasın
+
+      .
+
+      Sonuçları Netleştirin: "Ne yazık ki X, Y'ye neden olur" dediğinizde
+      durmayın
+
+      . "Peki Y'nin olması neden bir problem?" sorusunu da mutlaka cevaplayın
+
+      .
+
+      Basit Olduğunu Varsaymayın: "Bu çözüm çok basittir" gibi cümlelerden
+      kaçının
+
+      . O an bir konuyu anlamakta zorlanan bir okuyucuya "bu çok basit" demek,
+      empati yoksunluğudur ve okuyucuyu aptal hissettirir
+
+      . Sana basit gelen, başkası için basit olmayabilir
+
+      .
+
+      Belirsiz Zamirleri Netleştirin: "O", "Bu", "Şu" gibi zamirler çok
+      tehlikelidir
+
+      . Eğer "O" kelimesi bir önceki cümleye atıfta bulunuyorsa ve ufak bir
+      belirsizlik varsa, zamir kullanmak yerine doğrudan öznenin adını (örneğin
+      "Veritabanı bağlantısı") tekrar yazın
+
+      .
+
+      Kilit Kavramları Pekiştirin: Bir konunun zor olduğunu düşünüyorsanız, onu
+      tek bir şekilde anlatıp geçmeyin
+
+      . Aynı konuyu farklı bir açıdan veya farklı bir analojiyle tekrar
+      açıklayarak pekiştirin
+
+      .
+
+      Temel Prensipleri Tekrarlayın: Okuyucunun anlamasını garantilemek için
+      bazen aynı kilit noktaları farklı kelimelerle tekrar etmekten çekinmeyin
+
+      .
+
+      Düşündürücü Sorular Sorun: "Bu kodun nesi yanlış?" veya "Bu varsayımı
+      nasıl doğrularız?" gibi sorular sorarak okuyucunun pasif bir izleyici
+      olmaktan çıkıp, zihinsel olarak metne dahil olmasını sağlayın
+
+      .
+
+      Kod Bloklarını Açıklayın: Bir kod bloğunu asla kendi başına bırakmayın
+
+      . Koddan önce, o kodun "ne yapmayı amaçladığını" söyleyin; koddan sonra
+      ise, kodun "ne yaptığını" ve o kodda "neyin önemli olduğunu" açıkça
+      belirtin
+
+      .
+
+      JIC (Just-In-Case) Yerine JIT (Just-In-Time) Öğretimi Seçin: Okuyucuya
+      "Belki ileride lazım olur (Just-In-Case)" diyerek konuyla alakasız bir
+      yığın bilgi verip zihnini bulandırmayın
+
+
+      . Sadece o anki argümanı anlaması için "Tam Zamanında (Just-In-Time)"
+      gereken bilgiyi mantıksal bir sırayla verin
+
+
+      . Sonuç bölümlerinde ise sadece soyut bir bilgi vermek yerine, okuyucunun
+      kazandığı "beceriye (skills)" odaklanın
+
+      .
+
+      Bu bölümün özü: İletişimde XY problemine düşmemek için yardım isterken
+      sadece kendi bulduğumuz kusurlu çözümü değil, her zaman asıl problemi
+      (bağlamı) anlatmalıyız. Teknik yazılarımızda ise okuyucunun zihnini
+      okuyamayacağımızı kabul edip; "bu basittir" demekten kaçınmalı, çıplak
+      iddiaların altını doldurmalı ve kod bloklarını şansa bırakmadan net bir
+      şekilde açıklamalıyız.
+
+      9.2, 9.3 ve 9.4 Bilişsel Önyargılar: Zihnimizin Görünmez Tuzakları
+      (Cognitive Biases)
+
+      Neden bazen elimizde tüm gerçekler ve veriler olmasına rağmen tamamen
+      mantıksız (irrational) kararlar veririz? Yazar, bu sorunun cevabının
+      beynimizin kullandığı zihinsel kısayollarda, yani Bilişsel Önyargılarda
+      (Cognitive Biases) yattığını söylüyor
+
+      .
+
+      Bilişsel önyargıyı anlamak için önce ne olmadığını bilmeliyiz. Bir
+      Kültürel Önyargı, insanları kendi kültürel normlarımıza göre yargılamaktır
+
+      . Bir Mantıksal Safsata (Logical Fallacy), bir argümanın mantığındaki
+      çöküştür (kötü bir çıkarım yapmaktır)
+
+
+      . Ancak Bilişsel Önyargı, beynimizin bilgiyi işlerken normdan ve
+      rasyonaliteden sistematik olarak sapmasıdır
+
+      . Bunu bir okçuluk hedef tahtası (target) analojisiyle düşünelim. Eğer
+      sürekli tam 12'den veya merkezin çok yakınından vuruyorsak, doğru kararlar
+      veriyoruz demektir
+
+      . Ama eğer oklarımız sürekli, birbiri ardına hedef tahtasının "sol alt
+      köşesine" saplanıyorsa, ortada rastgele bir hata değil, sistematik bir
+      sapma (deviate) vardır
+
+
+      . Yani zihnimizde kararlarımızı hep aynı yanlış yöne çeken bir çekim
+      kuvveti, bir önyargı vardır
+
+      .
+
+      Aslında bu önyargılar doğuştan kötü değildir; beynimiz milyonlarca yıllık
+      evrim sürecinde hayatta kalmak ve hızlı (efficiency) karar verebilmek için
+      bu kısayolları geliştirmiştir
+
+      . John Manoogian ve Buster Benson'ın hazırladığı "Bilişsel Önyargı Kodeksi
+      (Cognitive Bias Codex)" bunu 4 ana nedene ayırır: Beynimizin aşırı bilgi
+      yüklenmesiyle başa çıkması (Too much information), karmaşık olayları
+      basitleştirip anlam arayışı (Not enough meaning), baskı altında çok hızlı
+      hareket etme zorunluluğu (Need to act fast) ve nelerin hatırlanıp nelerin
+      silineceği (What we should remember) seçimi
+
+
+      . Mühendisler olarak hedefimiz bu önyargıları tamamen yok etmek değil,
+      onların varlığını kabul edip sistem tasarlarken veya olayları çözerken
+      kendi kararlarımızı sorgulamaktır
+
+
+      .
+
+      İşte yazılım mühendisliğinde en çok düştüğümüz 3 büyük önyargı:
+
+      1. Doğrulama Yanlılığı (Confirmation Bias) Bu önyargı, sadece kendi
+      inancımızı veya varsayımımızı destekleyen bilgileri arama, bulma ve
+      lehimize yorumlama eğilimidir
+
+      . Bunu Düz Dünya'ya inanan (Flat-Earth) insanlarda çok net görürüz: Sadece
+      kendi teorilerini destekleyen videolar izlerler, aksini kanıtlayan devasa
+      bilimsel kanıtları reddederler ve ufkun düz görünmesi gibi muğlak
+      (ambiguous) bilgileri "İşte kanıt!" diye sunarlar
+
+      .
+
+      Peki yazılımda bu nasıl karşımıza çıkar? Yazar Google'da yaşadığı bir
+      "incident" (sistem çökmesi/arıza) anısını anlatıyor
+
+      . Bir sistem çöktüğünde yazar "Sanırım bu çökme kullanıcı trafiğindeki ani
+      artıştan (spike) kaynaklandı" diye bir varsayımda bulunuyor
+
+      . Buraya kadar sorun yok. Ama sorun şu ki; yazar sadece trafiği gösteren
+      dashboard'lara bakıp "Evet trafik artmış, sorun kesin bu" diyerek diğer
+      her şeyi (yeni atılan bir kodu veya altyapı sorununu) görmezden geliyor
+
+
+      . Sonuç? Yanlış teşhis ve boşa giden saatler
+
+      . Başka bir örnek: Eski şirketindeki bir Ürün Yöneticisi (PM), yeni
+      geliştirdiği bir özelliğin sistemi iyileştireceğine o kadar emindir ki,
+      A/B testi kurarken sadece kendi fikrini haklı çıkaracak metrikleri toplar,
+      fikrini çürütecek olanları analizden çıkarır
+
+      . Tüm şirket bu yeni özelliği canlıya alır ve aylar sonra sistem
+      verimliliğinin aslında yerle bir olduğunu fark edip her şeyi geri almak
+      (rollback) zorunda kalırlar!
+
+      . Nasıl Kurtuluruz? Kendi kendimize "Şeytanın Avukatlığını (Devil's
+      advocate)" yapmalıyız
+
+      . Bir varsayımda bulunduğumuz an, onu destekleyen değil, onu çürütecek
+      (contradictory) kanıtlar aramalıyız
+
+
+      . Yazarın harika bir taktiği var: Defterine "Varsayım: Uygulama trafikten
+      çöktü" yazar ve "Varsayım" kelimesinin altını kalınca çizer
+
+
+      . Bu ona "Şu an sadece varsayıyorsun, bu bir gerçek değil, yanılıyor
+      olabilirsin" sinyalini verir
+
+      .
+
+      2. Sokak Lambası Etkisi (Streetlight Effect) Çok karanlık bir sokakta, tek
+      bir sokak lambasının altında bir şeyler arayan sarhoş bir adamı düşün.
+      Yanına bir polis yaklaşır ve "Ne arıyorsun?" diye sorar
+
+      . Adam "Anahtarlarımı kaybettim" der. Beraber dakikalarca lambanın altında
+      ararlar. Sonunda polis dayanamaz "Anahtarlarını tam olarak burada
+      düşürdüğüne emin misin?" der
+
+      . Sarhoş adamın cevabı ibretliktir: "Hayır, ama burası ışığın olduğu tek
+      yer (where the light is best)."
+
+      . İşte Sokak Lambası etkisi; insanların bir sorunun asıl kaynağına veya en
+      önemli yere değil, bakması ve ölçmesi en kolay (easily visible) yere
+      odaklanmasıdır
+
+      .
+
+      Yazılımda bunun 5 yıkıcı örneği vardır
+
+      :
+
+      Gözlemlenebilirlik (Observability): Ekipler sadece mevcut dashboard'lara
+      bakar ve "Tüm grafikler yeşil, demek ki sistem harika" der
+
+      . Oysa müşteri tarafında (karanlıkta kalan yerde) sistem tamamen çökmüş
+      olabilir
+
+      .
+
+      Teknik Borç (Tech Debt): Geliştiriciler kod tabanında sadece kendi iyi
+      bildikleri ve kolay görünen yerlerdeki ufak tefek teknik borçları
+      temizlerler; ama sistemin asıl köklerinde yatan devasa ve tehlikeli mimari
+      borçları (karanlıkta kaldığı için) görmezden gelirler
+
+      .
+
+      A/B Testleri: Kullanıcının gerçek deneyimini (bütünsel) ölçmek çok zor
+      olduğu için, sadece tıklama oranı gibi "ölçülmesi en kolay" metriklere
+      bakarak bir özelliğin başarılı olduğuna karar verilir
+
+      .
+
+      Kod İncelemeleri (Code Reviews): PR inceleyen bir geliştiricinin, kodun
+      derinlerindeki karmaşık mimari hataları yakalamak yerine, gözüne ilk
+      çarpan "syntax (sözdizimi)" veya "boşluk" hatalarına yorum atıp PR'ı
+      onaylamasıdır
+
+      .
+
+      Optimizasyon: Sistemin genel darboğazını bulmak yerine, sadece ölçülmesi
+      kolay olan spesifik bir fonksiyonun gecikmesini (latency) optimize edip
+      sistemin hızlandığını sanmaktır
+
+      .
+
+      3. Hayatta Kalan Yanlılığı (Survivor Bias) İkinci Dünya Savaşı'ndasın.
+      Amacın, uçakların savaştan sağ salim dönmesi için zırhlarını güçlendirmek.
+      Önüne bir rapor geliyor: Savaştan üsse geri dönebilen uçakların
+      gövdelerinde ve kanat uçlarında devasa kurşun delikleri (kırmızı noktalar)
+      var
+
+
+      . Hemen "Uçaklar en çok buralardan vuruluyor, hemen gövdeyi ve kanat
+      uçlarını zırhla kaplayalım!" diyorsun
+
+      . Uyguluyorsun, ama düşen uçak sayısında hiçbir azalma olmuyor!
+       Neden mi? Çünkü sen sadece "Hayatta Kalan (Survivor)" uçaklara baktın!
+      . Kanadından veya gövdesinden vurulan uçaklar zaten bir şekilde üsse
+      dönebiliyorlardı
+
+      . Asıl zırhlanması gereken yerler, önündeki o kırmızı noktalı grafikte
+      "hiç mermi izi olmayan" yerlerdi (örneğin motor veya kokpit); çünkü
+      oralardan vurulan uçaklar hayatta kalamayıp okyanusun dibini boyluyor,
+      senin veri setine (dashboard'una) hiç giremiyorlardı!
+
+      .
+
+      Biz geliştiriciler de sadece "başarılı" olan örneklere bakıp, başarısız
+      olanları görmezden gelerek devasa hatalar yaparız
+
+      . Örneğin, "FAANG (Google, Amazon vs.) İdolizasyonu". Birçok şirket Google
+      kullanıyor diye tüm sistemlerini Monorepo (tek kod deposu) veya Kubernetes
+      yapısına taşır
+
+      . Ama bu yapıya geçip de batan, iflas eden, projesi çöken binlerce şirketi
+      (okyanusun dibindeki uçakları) görmezden gelirler
+
+      . Veya sadece "Açık kaynak projelere katkı yaptığı için" çok başarılı
+      olmuş bir Senior mühendise bakıp, yıllarını açık kaynağa verip kariyerinde
+      bir adım bile ileri gidememiş insanları hesaba katmayız
+
+      .
+
+      Bu bölümün özü: Zihnimiz, karmaşıklığı yönetmek için bize oyunlar oynar.
+      Kendi varsayımımıza aşık olup karşıt kanıtları reddetmemeli (Doğrulama
+      Yanlılığı), sorunu sadece ölçmesi en kolay yerde aramamalı (Sokak Lambası
+      Etkisi) ve bir teknolojiyi/yöntemi seçerken sadece onu kullanarak başarılı
+      olmuş şirketlere değil, onu kullanıp da batmış olan görünmez vakalara da
+      (Hayatta Kalan Yanlılığı) bakmalıyız.
+
+      9.3 Eleştirel Düşünce ve Hata Yönetimi (Critical Thinking & Mistake
+      Journal)
+
+      Eleştirel düşünce, ilk içgüdümüze teslim olmak yerine; varsayımları,
+      kanıtları ve alternatifleri masaya yatırıp sorgulama pratiğidir
+
+      . Yazar bu bölümde yaratıcılığımızı artıracak yanal düşünmeyi ve
+      hatalarımızdan ders çıkarma sanatını anlatıyor.
+
+      Yanal Düşünce (Lateral Thinking) Geleneksel problem çözme yöntemimiz Dikey
+      Düşüncedir (Vertical Thinking)
+
+      . Bu, adım adım, her adımın bir öncekine mantıksal olarak dayandığı
+      yapısal bir yaklaşımdır
+
+      . Matematik problemi çözer gibi; her aşamada haklı olmak zorundasındır
+
+
+      . Ancak bu yöntem bizi her zaman bildiğimiz, tanıdığımız aynı yollara
+      hapseder
+
+      . Beynimiz bir "örüntü oluşturma (pattern-making)" makinesi olduğu için,
+      daha önce bir sorunu A yöntemiyle çözdüysek, yeni ve farklı bir sorunda da
+      inatla A yöntemini kullanmaya (stick to that method) çalışır
+
+      .
+
+      İşte Yanal Düşünce (Lateral Thinking) bizi bu kısır döngüden kurtarır.
+      Yanal düşünce; birbirinden tamamen alakasız bilgileri (unlikely
+      information) bir araya getirip, soruna bambaşka ve beklenmedik bir açıdan
+      (fresh angle) bakabilmektir
+
+      . Yanal düşüncenin en muhteşem yanı şudur: Sürecin her adımında haklı
+      olmak zorunda değilsindir!
+       Bazen geçici olarak mantıksız, saçma veya tamamen yanlış bir argümanı kullanarak (invalid arrangements), günün sonunda tamamen geçerli ve harika bir çözüme (valid restructuring) ulaşabilirsin
+      . Düşünsene, bir toplantıdasın ve birisi çıkıp gerçekten tamamen yanlış,
+      uçuk bir fikir ortaya atıyor
+
+      . Çoğu takımda o kişi susturulur. Oysa o "yanlış" fikir, odadaki başka
+      birinin zihninde bir kıvılcım yaratıp, asıl harika çözümün doğmasını
+      sağlayabilir!
+       Yanlış olmaktan korkup hiç fikir üretmemektense, çalışmayan birkaç fikir üretmek bin kat daha iyidir
+
+      . "Biz bunu hep böyle yapardık" cümlesine karşı açılmış bir savaştır bu
+
+      .
+
+      Yanal düşünceyi tetiklemek için 4 eyleme geçirilebilir teknik vardır
+
+      :
+
+      Tersine Çevirme Tekniği (Reversal): Geleneksel bakış açısını tam tersine
+      çevir
+
+      . "Bu uygulamayı kullanıcı için nasıl daha kolay yaparım?" diye düşünmek
+      yerine, "Bu uygulamayı bir kullanıcı için nasıl cehenneme çeviririm, onu
+      nasıl delirtirim?" diye sor!
+
+      . Bunu sorduğunda, kullanıcının nerelerde acı çekebileceğini (pain points)
+      bulursun ve sonra o acı noktalarını yok edersin
+
+      .
+
+      SCAMPER Tekniği: Bir dizi tetikleyici sorudur. (Substitute-Yerine koy,
+      Combine-Birleştir, Adapt-Uyarla, Modify-Değiştir, Put to another use-Başka
+      amaçla kullan, Eliminate-Yok et, Reverse-Tersine çevir)
+
+      . "Şu özellikle şu özelliği birleştirsem ne olur?" veya "Bu fonksiyonun
+      yerine bambaşka bir şey koysam çalışır mı?" diye sormaktır
+
+      .
+
+      Varsayımlara Meydan Okuma (Challenging Assumptions): Bir sorunu çözerken
+      farkında bile olmadığımız varsayımlarımız vardır
+
+      . "Bu sorunu çözmek için kesinlikle X aracını kullanmalıyız" varsayımına
+      karşı çık: "Eğer dünyada X aracı hiç var olmasaydı, bu sorunu nasıl
+      çözerdim?" diye sor
+
+      .
+
+      Provokatif Teknik (Provocative Technique): Zihni sarsmak için kasıtlı
+      olarak absürt ve kışkırtıcı sorular sormaktır
+
+      . "Ya sistemimizde hiçbir veri saklamamız (store data) yasak olsaydı?"
+      veya "Ya uygulamadaki arayüzde (UI) hiçbir buton olmasaydı ne yapardık?"
+
+
+      . Bu çılgın (outrageous) senaryolar, bizi sınırlayıcı düşünce
+      kalıplarından koparıp inovasyona iter
+
+      .
+
+      Hata Günlüğü Tutmak (Keeping a Mistake Journal) Yazar kendi hatalarıyla
+      yüzleşmekten çekinmeyen biri (hatta "Hatalar" üzerine kitabı var)
+
+      . Hata yapmak kaçınılmazdır
+
+      . Ancak asıl felaket, aynı hatayı defalarca yapmaktır
+
+      . Bilişsel bilimci Janet Metcalfe'nin araştırmasına göre; hatalarımız
+      üzerinde bilinçli olarak düşünmek (reflecting on errors), öğrenmeyi
+      güçlendirmenin ve o hatayı zihnimizde yeniden şekillendirip bir daha
+      yapmamanın en etkili yoludur
+
+      .
+
+      Yazar, kendine kızdığı veya hayal kırıklığına uğradığı (frustrated)
+      hataları tekrar etmemek için Notion üzerinde bir "Hata Günlüğü" tutuyor ve
+      şu harika formatı kullanıyor
+
+
+      :
+
+      İsim: Hataya verilen kısa ad. (Örn: Dikkatlice okumak yerine göz gezdirmek
+      - Skimming)
+
+
+      .
+
+      Etiketler: Kategoriler (Eleştirel düşünce, detaya dikkat vb.)
+
+
+      .
+
+      Bağlam: Bu hata nerede oldu? (Örn: Bir PR'ı, e-postayı veya teknik
+      dokümanı incelerken)
+
+
+      .
+
+      Problem: Neydi bu hata? (Örn: Zaman kazanmak için uzun bir metni okumak
+      yerine sadece hızlıca göz gezdirdim)
+
+
+      .
+
+      Etkileri: Ne gibi sonuçlar doğurdu? (Örn: Konuyu eksik anladım, yanlış
+      kararlar verdim, gereksiz e-posta trafiği yarattım ve günün sonunda bir
+      "aptal" gibi göründüm)
+
+      .
+
+      Alınan Ders: Buradan ne öğrendim?
+
+      Düzeltme Planı: Gelecekte ne yapacağım? (Örn: Eğer bir konu tam
+      odaklanmamı gerektiriyorsa, o dokümanı yarım yamalak okumayacağıma kendime
+      söz veriyorum)
+
+      .
+
+      Son Oluşumu ve Tekrar Sayısı: Bu hatayı en son ne zaman yaptım ve bugüne
+      kadar kaç kere tekrarladım?
+
+      Bu basit sistemin 3 devasa faydası var: Aynı hataları daha az yapmak,
+      kendi hatalarındaki "örüntüleri (pattern)" keşfedip zihinsel önyargılarını
+      fark etmek ve potansiyel hataları henüz yapmadan önce yakalamak (Better
+      decision-making)
+
+      .
+
+      Bu bölümün özü: Yaratıcılık, sadece dikey (mantıksal) düşünmekle değil;
+      geçici olarak saçma veya mantıksız görünse de alakasız kavramları
+      birleştirip soruna bambaşka bir açıdan bakabilmekle (yanal düşünce)
+      gelişir. Hata yapmaktan korkmak yerine; hatalarımızı bir günlüğe kaydedip,
+      etkilerini ve düzeltme planımızı yazarak, hataları zihinsel bir gelişim ve
+      öğrenme aracına dönüştürebiliriz.
+
+      9.4 Bilgi Yönetimi ve İkinci Beyin (Knowledge Management & Second Brain)
+
+      Günde onlarca makale okuyor, podcast dinliyor, videolar izliyor ve harika
+      kitaplar bitiriyoruz. Peki 2 ay sonra o okuduğun harika kitaptan aklında
+      ne kalıyor? Neredeyse hiçbir şey! İşte yazar, 10 yıl boyunca yaşadığı bu
+      "bilgi kaybetme" acısını Tiago Forte'nin İkinci Beyin (Building a Second
+      Brain) felsefesiyle nasıl çözdüğünü anlatıyor
+
+      .
+
+      10 Yıllık Başarısızlık Yazar 10 yıl boyunca neden başarısız oldu? İki
+      sebebi vardı: Birincisi, notları darmadağınıktı. Birazı Notion'da, birazı
+      Apple Notes'ta, birazı fiziksel defterde, birazı Kindle altı çizmelerinde,
+      birazı Anki uygulamasındaydı (Centralized place yoktu)
+
+      . İkincisi, her şey için farklı bir formatı vardı; bir kitap özeti ile bir
+      kodlama notu tamamen farklı yapılardaydı (Generic değildi)
+
+      . Sonuç: Zihin sürekli bilgi tüketiyordu ama bu bilgiler kısa sürede uçup
+      gidiyordu
+
+      . Eğer okuduklarımızdan çalışan, kullanılabilir bir bilgi (working
+      knowledge) çıkarıp saklayamıyorsak, öğrenme sürecimiz tamamen verimsizdir
+
+      .
+
+      İkinci Beyin Felsefesi: Zihin Fikir Üretmek İçindir, Depolamak İçin Değil
+      Kitaptaki en çarpıcı cümle şudur: "Zihniniz (beyniniz) fikir üretmek
+      (having ideas) içindir, o fikirleri elinde tutmak (holding them) için
+      değil."
+
+      . Beynimiz bilgisayar hard diski gibi çalışmaz. Yeni ve o an işine yarayan
+      fikirlere yer açmak için, kullanmadığı eski bilgileri acımasızca budar ve
+      siler (Synaptic pruning)
+
+      . İşte İkinci Beyin, beynimizin bu unutma yükünü (offload notes) üzerinden
+      alıp güvende tuttuğumuz harici bir sistemdir
+
+      . Yazarın hayatını değiştiren ikinci aydınlanma ise "mükemmeliyetçiliği"
+      bırakmasıdır
+
+      . Bizler bir ansiklopedi veya kusursuz bir kütüphane inşa etmiyoruz; biz,
+      kusurlu (imperfect) da olsa günlük hayatımızda bizim için "çalışan ve işe
+      yarayan" (working system) bir destek sistemi kuruyoruz
+
+
+      .
+
+      Zihin Yapısı: Bilgiyi Projeye Dönüştürmek Normalde bir bilgi (Information)
+      alırız ve onu hemen bir projede/işte (Project) kullanırız
+
+      . Ama iş bittiğinde o bilgi uçar gider
+
+      . İkinci Beyin, bu düz çizginin arasına bir "Geri Bildirim Döngüsü
+      (Feedback loop)" ekler
+
+      . Aldığımız bilgi, sadece o anki proje için değil, gelecekte tekrar
+      kullanılabilecek kalıcı bir "Bilgiye (Knowledge)" dönüşür
+
+      . Notlara artık "okuyup sakladığım ölü metinler" olarak bakmamalıyız.
+      Notlar, gelecekteki yeni fikirlerimizi inşa edeceğimiz Yapı Taşlarıdır
+      (Building blocks)
+
+      . Nörobilimci Nancy C. Andreasen'in dediği gibi: "Yaratıcı insanlar;
+      ilişkileri tanıma, çağrışımlar yapma ve bağlantılar (connections) kurma
+      konusunda daha iyidirler."
+
+      . Tek bir merkezi yerde duran notlar, senin aylar sonra bambaşka iki
+      konuyu birleştirip devasa bir yaratıcılık (creativity) patlaması yaşamana
+      olanak tanır
+
+      . Yaratıcılık doğuştan gelen bir yetenek değil, bilgiyi işleme biçimidir
+      (way of operating)
+
+      .
+
+      Nasıl Not Almalıyız? İlerlemeli Özetleme (Progressive Summarization) Not,
+      sadece kopyala-yapıştır yapılmış bir metin değildir. Senin süzgecinden
+      geçmiş (curated), sana özel kelimelerle ifade edilmiş ve kendi yaşamından
+      beslenmiş bir içeriktir
+
+      . Karşımıza çıkan her şeyi not almak zorunda değiliz (ansiklopedi
+      yazmıyoruz). Kendimize 4 soru sormalıyız: Bana ilham veriyor mu?
+      Kullanışlı mı? Kişisel mi? Şaşırtıcı mı?
+
+      . Sende duygusal bir tepki uyandıran (resonates), sana "işte bu ilginç"
+      dedirten 30 saniyelik bir video, herkesin övdüğü ama sana hitap etmeyen
+      kalın bir kitaptan çok daha değerlidir
+
+
+      . Not alırken asıl soru şudur: "Bunu gelecekteki kendim (future self) için
+      nasıl en kullanışlı hale getiririm?"
+
+      . Gelecekteki senin zamanı kısıtlı. Ona yüzlerce satır okutamazsın. Metnin
+      "Özünü, kalbini (essence)" bulmalısın
+
+      . Çok yoğun ve teknik bir belge okuyorsak (Örneğin Google'ın F1 Dağıtık
+      Veritabanı makalesi), yazarın İlerlemeli Özetleme (Progressive
+      Summarization) dediği katmanlı (layering) yapıyı kullanmalıyız
+
+      :
+
+      Katman 1 (Yakalanan Notlar - Captured): Kendi cümlelerinle veya
+      kopyala-yapıştır ile aldığın ham metin
+
+
+      .
+
+      Katman 2 (Kalın Metinler - Bolded): Ham metni oku ve sadece en kilit
+      cümleleri kalın (bold) yap
+
+
+      .
+
+      Katman 3 (Vurgulanan Metinler - Highlighted): Kalın yaptığın yerleri bir
+      daha oku ve içlerindeki en can alıcı kelimelerin/cümlelerin üstünü sarı
+      kalemle (highlight) çiz
+
+
+      .
+
+      Katman 4 (Özet - Summary): Tüm bunlara bakarak, makalenin sana kattığı ana
+      fikirleri en tepeye 3-5 maddelik kısa bir özet olarak yaz
+
+
+      . Böylece aylar sonra bu nota geri döndüğünde sadece "Summary" kısmını
+      okuyup geçebilirsin. Eğer daha fazla detay lazımsa sadece "Sarı" yerlere,
+      o da yetmezse "Kalın" yerlere inebilirsin
+
+      . Zamanın sana kalır.
+
+      PARA ve CODE Sistemleri Notlarımızı türüne göre (kitaplar, podcastler)
+      değil, "Eyleme Dönüşebilirlik (Actionability)" seviyesine göre ayırmalıyız
+
+
+      . PARA sistemi 4 klasörden oluşur
+
+      :
+
+      Projects (Projeler): Bitiş tarihi ve net bir hedefi olan kısa vadeli
+      çabalar (Örn: İkinci beyin hakkında bir blog yazısı yayınlamak)
+
+      .
+
+      Areas (Alanlar): Sürekli dikkat gerektiren, bitiş tarihi olmayan,
+      hayatındaki sorumluluk standartları
+
+      . (Yazarın örneği: Fitness yapmak, sağlıklı beslenmek ve buna adanmış
+      olmak bir "Alan"dır)
+
+      .
+
+      Resources (Kaynaklar): Şu an bir projeye veya alana ait olmayan ama "ilgi
+      duyduğun" her türlü bilgi
+
+      . (Yazarın örneği: Tırmanış (climbing) yapmayı seviyor ama fitness gibi
+      buna kendini adamamış, ara sıra yapıyor. O halde tırmanış notları bir
+      "Kaynak" tır)
+
+      .
+
+      Archives (Arşivler): Artık aktif olmayan, bitmiş projeler veya eski
+      kaynakların atıldığı dondurucu
+
+      . Ve tüm bu süreç CODE döngüsüyle çalışır: Capture (Sadece sende yankı
+      uyandıranı yakala), Organize (PARA ile eyleme göre düzenle), Distill
+      (İlerlemeli özetlemeyle özünü damıt), Express (Öğrendiklerini kendi
+      işinde/projende dışa vurarak göster)
+
+      .
+
+      Bu bölümün özü: İnsan beyni bilgiyi depolamak için değil, bilgileri
+      birleştirip yeni fikirler üretmek (yaratıcılık) için tasarlanmıştır. Bu
+      yüzden okuduklarımızı unutmamak ve gelecekteki projelerimizde birer "yapı
+      taşı" olarak kullanabilmek için kusursuz olmak zorunda olmayan, bizi
+      hızlandıracak özetleme teknikleri (katmanlı özet) ve eylem odaklı
+      klasörleme (PARA) ile çalışan dijital bir "İkinci Beyin" inşa etmeliyiz.
+
+      9.5 Zihin Yapısı ve Psikolojik Sürdürülebilirlik (Mindset)
+
+      Yazılım mühendisliği, kodlarla boğuştuğumuz kadar kendi zihnimizle de
+      boğuştuğumuz bir meslektir. Belirsizlik, başarısızlık hissi ve sektörün
+      bitmek bilmeyen temposuyla başa çıkabilmek için sağlam bir psikoloji
+      (Mindset) inşa etmek zorundayız
+
+      .
+
+      "Bilmiyorum" Demekten Utanma Geçen ay yazar ve eşi, yeni doğacak bebekleri
+      için hastanedeydiler
+
+      . Eşi bir semptom yaşar ve bunu odadaki ebeyi (midwife) çağırıp sorarlar
+
+      . Ebe bir an duraklar, gözlerinde bir tereddüt belirir ama "sahte bir
+      özgüvenle" bir cevap uydurup verir. Yazar ve eşi onun aslında bilmediğini
+      anlarlar
+
+      . Sonra vardiya değişir, yeni gelen ebeye aynı soruyu sorarlar; o da
+      tereddüt eder ve bu kez "bambaşka" bir cevap uydurur
+
+      . En sonunda üçüncü bir ebe gelir. Aynı soruyu ona da sorarlar. Ebe durur,
+      düşünür ve o büyülü 3 kelimeyi söyler: "Bunu bilmiyorum (I don't know)."
+
+      . Yazar diyor ki: "Kulağa mantıksız gelebilir ama bu üç kelime, ona
+      diğerlerinden daha fazla güvenmemizi sağladı."
+
+      . İşin daha da güzeli, o ebe 20 dakika sonra odaya geri döner ve "Gidip
+      doktora sordum, sebebi şuymuş. Bana bu soruyu sorduğunuz için teşekkür
+      ederim, sayenizde yeni bir şey öğrendim" der
+
+      .
+
+      Biz yazılımcılar olarak çoğu zaman "Her şeyi bilen otorite" pozunu
+      (posture) takınırız
+
+      . O mimarinin, o kodun sahibi bizizdir. Ve o pozisyondayken "Bilmiyorum"
+      demek, sanki inşa ettiğimiz iskambil kartlarından (house of cards)
+      evimizin altındaki o kilit kartı çekmek ve her şeyin yıkılacağını
+      hissetmek gibidir
+
+      . Oysa gerçeği bilmeden "biliyormuş gibi yapmak", takımı yanlış
+      yönlendirir ve felaket kararlara yol açar
+
+      . "Bilmiyorum" demek bir zayıflık değil, güvenilirliğin (reliability) ta
+      kendisidir
+
+      . Otorite her şeyi bilmekle değil, dürüstlükle kurulur. Google'ın kendi
+      araştırmasına göre, takımların başarılı olmasındaki en büyük etken
+      "Psikolojik Güvenliktir (Psychological safety)"; yani insanların ceza veya
+      yargılanma korkusu olmadan belirsizliklerini ve bilmediklerini rahatça
+      söyleyebilmesidir
+
+      . Unutma: Merak + Alçakgönüllülük = Gerçek Öğrenme
+
+      .
+
+      Zamanı Değil, Enerjiyi Yönet (Manage Your Energy, Not Your Time)
+      Sektörümüzde sürekli "Daha çok kod yaz, daha hızlı teslim et, işten sonra
+      açık kaynak projelere katkı yap (constant hustle)" kültürü pompalanır
+
+      . Ruh sağlığımız (mental health) genelde en sona atılır
+
+      . Zaman sabittir; herkesin günde 24 saati vardır
+
+      . Ancak takvimindeki iki gün tamamen aynı saatlere sahip olsa bile, bir
+      gün kendini inanılmaz üretken hissederken diğer gün hiçbir şey yapmak
+      istemezsin
+
+
+      . Bunun sebebi zamanının değil, zihinsel enerjinin bitmiş olmasıdır
+
+      . Tükenmişlik (Burnout) mesaisi bittiği için değil, enerjisi bittiği halde
+      takviminde "boş vakti" var diye kendini zorlamaya devam eden insanları
+      vurur
+
+      . Enerjin düştüğünde sistemin sana "dur" diyordur. Dinlenmek, yürüyüşe
+      çıkmak veya video oyunu oynamak tembellik (laziness) değildir; enerjini
+      yeniden doldurmak için stratejik bir zorunluluktur
+
+      . Kariyer bir kısa mesafe koşusu (sprint) değil, bir maratondur
+
+      . Sürdürülebilir bir tempo için saatlerine değil, enerjine odaklan
+
+      .
+
+      Başkalarıyla Kıyaslama ve Zorlanmayı Kabul Etme Yazar bir gün Netflix'te
+      "Senior" mühendis olarak çalışan eski bir okul arkadaşını (classmate)
+      görür ve anında "Ben çok geride kaldım" diyerek kendini yetersiz hisseder
+
+      . Zihinsel sağlığına en büyük darbeyi, kendini başkalarıyla kıyasladığında
+      vurursun
+
+      . Hele ki sosyal medya (Social media) sadece başarıların, parlak
+      kısımların sergilendiği, reddedilmelerin ve başarısızlıkların ustaca
+      gizlendiği bir vitrinken, bu kıyaslama tam bir zehirdir
+
+
+      . Sosyal medya seni boğuyorsa ara ver
+
+      . Sen başkalarıyla aynı piste değilsin; kendi yolculuğunda, kendi hızında
+      (our own journey at our own pace) ilerliyorsun
+
+      .
+
+      Ve bazen sadece kötü bir gün değil; haftalar, aylar süren odaklanma
+      sorunları, tükenmişlik veya anksiyete yaşayabilirsin (It's okay to
+      struggle sometimes)
+
+      . Zorlanmak senin zayıf (weak) olduğunu değil, sadece bir insan (human)
+      olduğunu gösterir
+
+      . Böyle zamanlarda yapacağın en güçlü şey, bunu bir arkadaşına veya
+      profesyonele anlatarak içindeki o ağır yükü sesli olarak dışa vurmaktır
+
+
+      . Eğer çalıştığın şirket senin zihinsel sağlığını konuşmaktan bile
+      korktuğun bir yerse, sorun sende değil şirkettedir; orası senin için doğru
+      yer değildir
+
+      . Ruh sağlığı işin bir parçası değil, tam kalbidir
+
+      .
+
+      Bu bölümün özü: İtibarı kaybetme korkusuyla sahte cevaplar vermek yerine,
+      alçakgönüllülükle "Bilmiyorum" diyebilmek takım içindeki psikolojik
+      güvenliği ve gerçek öğrenmeyi tetikler. Başarılı ve uzun soluklu bir
+      kariyerin sırrı; başkalarının sosyal medyadaki sahte parlaklığıyla kendini
+      kıyaslamayı bırakmak, makine olmadığımızı (bazen zorlanabileceğimizi)
+      kabul etmek ve boş saatlerimizi değil zihinsel enerjimizi doğru
+      yönetmektir. Bizler önce insan, sonra mühendisisiz.
