@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import NotebookCard from "./NotebookCard.astro";
 import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
+import { KATEGORILER } from "@/lib/kategorize.ts";
+import LibraryGraph from "./LibraryGraph.astro";
 import { KUTUPHANEM_URL } from "@/lib/urls.ts";
 
 interface Props {
@@ -16,10 +18,14 @@ const notebooks = await getCollection("libraryNotebooks");
 const books = (await getCollection("books")).sort(
   (a, b) =>
     (a.data.order ?? 999) - (b.data.order ?? 999) ||
-    a.data.title.localeCompare(b.data.title, "tr"),
+    (b.data.titleTr ?? b.data.title).localeCompare(
+      a.data.titleTr ?? a.data.title,
+      "tr",
+    ) * -1,
 );
-const bookCategories = [...new Set(books.map((b) => b.data.category ?? "genel"))].sort(
-  (a, b) => a.localeCompare(b, "tr"),
+// KATEGORILER sırasına göre, yalnızca dolu kategoriler
+const bookCategories = KATEGORILER.filter((k) =>
+  books.some((b) => (b.data.category ?? "diger") === k.key),
 );
 
 const byCategory = new Map(
@@ -60,6 +66,8 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
     </p>
   </header>
 
+  {books.length > 0 && <LibraryGraph />}
+
   {
     books.length > 0 && (
       <section class="mt-10">
@@ -71,10 +79,10 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
         </h2>
         {bookCategories.map((cat, i) => {
           const catBooks = books.filter(
-            (b) => (b.data.category ?? "genel") === cat,
+            (b) => (b.data.category ?? "diger") === cat.key,
           );
           return (
-            <details open={i === 0} class="group mt-4">
+            <details open={i === 0} class="group mt-4" id={`kat-${cat.key}`}>
               <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-line bg-surface-raised px-4 py-3 font-display text-lg font-semibold text-ink hover:border-accent/50 [&::-webkit-details-marker]:hidden">
                 <svg
                   class="size-4 text-ink-muted transition-transform group-open:rotate-90"
@@ -87,7 +95,12 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
                 >
                   <path d="m9 6 6 6-6 6" />
                 </svg>
-                {cat}
+                <span
+                  class="size-3 rounded-full"
+                  style={`background-color:${cat.renk}`}
+                  aria-hidden="true"
+                />
+                {cat.ad}
                 <span class="text-sm font-normal text-ink-muted">
                   ({catBooks.length})
                 </span>
@@ -113,7 +126,7 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
                         </span>
                       )}
                       <span class="mt-2 block truncate text-sm font-medium text-ink group-hover/book:text-accent">
-                        {book.data.title}
+                        {book.data.titleTr ?? book.data.title}
                       </span>
                       {book.data.author && (
                         <span class="block truncate text-xs text-ink-muted">

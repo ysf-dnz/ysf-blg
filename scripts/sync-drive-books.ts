@@ -16,6 +16,7 @@ import { readFile, writeFile, access, unlink, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseBookFileName, titleMatchScore, dedupeKey } from "./lib/book-title.ts";
+import { kategorile } from "../src/lib/kategorize.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_PATH = join(ROOT, "src/data/books.json");
@@ -205,7 +206,8 @@ const books = await Promise.all(
       format: f.format,
       cover,
       driveUrl: `https://drive.google.com/file/d/${f.id}/view`,
-      category: f.category,
+      // Konu bazlı kategori (Drive klasör adı yerine başlıktan türetilir)
+      category: kategorile(title),
       notebookId,
     };
   }),

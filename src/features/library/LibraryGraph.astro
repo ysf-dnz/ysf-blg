@@ -1,0 +1,169 @@
+---
+/**
+ * Kitap rafı ağ grafiği — kutuphanem "Sinir Ağı" estetiğinde, platforma özgü.
+ * Merkez düğüm → kategori düğümleri → kitap noktaları; yumuşak yörünge
+ * salınımı, hover'da vurgu, kategoriye tıklayınca ilgili rafa kayar.
+ * Saf canvas, bağımlılık yok; veri data attribute ile SSR'lanır.
+ */
+import { getCollection } from "astro:content";
+import { KATEGORILER } from "@/lib/kategorize.ts";
+
+const books = await getCollection("books");
+const data = KATEGORILER.map((k) => ({
+  key: k.key,
+  ad: k.ad,
+  renk: k.renk,
+  n: books.filter((b) => (b.data.category ?? "diger") === k.key).length,
+})).filter((k) => k.n > 0);
+const toplam = books.length;
+---
+
+<div
+  id="lib-graph"
+  class="relative mt-8 overflow-hidden rounded-2xl border border-line"
+  style="background: radial-gradient(900px 420px at 75% -10%, #1b2330 0%, #0f1115 60%);"
+  data-graph={JSON.stringify({ toplam, kategoriler: data })}
+>
+  <canvas class="block h-[420px] w-full cursor-pointer sm:h-[480px]"></canvas>
+  <p class="pointer-events-none absolute left-4 top-3 font-display text-sm font-semibold text-white/80">
+    Kitap Ağı <span class="font-sans font-normal text-white/40">· kategoriye tıkla</span>
+  </p>
+</div>
+
+<script>
+  interface Kat { key: string; ad: string; renk: string; n: number }
+
+  const wrap = document.getElementById("lib-graph");
+  const canvas = wrap?.querySelector("canvas");
+  if (wrap && canvas) {
+    const { toplam, kategoriler } = JSON.parse(wrap.dataset.graph!) as {
+      toplam: number;
+      kategoriler: Kat[];
+    };
+    const ctx = canvas.getContext("2d")!;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let W = 0, H = 0, cx = 0, cy = 0;
+    let hover: number | null = null;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    interface Node { kat: Kat; angle: number; r: number; size: number; dots: { a: number; d: number; s: number; ph: number }[] }
+    let nodes: Node[] = [];
+
+    function layout() {
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx = W / 2; cy = H / 2;
+      const ring = Math.min(W, H) * 0.32;
+      nodes = kategoriler.map((kat, i) => {
+        const angle = (i / kategoriler.length) * Math.PI * 2 - Math.PI / 2;
+        const size = 8 + Math.sqrt(kat.n) * 1.6;
+        // kitap noktaları: kategori başına en fazla 42 nokta (temsili)
+        const dotCount = Math.min(kat.n, 42);
+        const dots = Array.from({ length: dotCount }, (_, j) => ({
+          a: (j / dotCount) * Math.PI * 2 + i, // deterministik dağılım
+          d: size + 14 + (j % 5) * 7 + ((j * 13) % 9),
+          s: 1.4 + ((j * 7) % 4) * 0.5,
+          ph: (j * 37) % 100,
+        }));
+        return { kat, angle, r: ring, size, dots };
+      });
+    }
+
+    function draw(tms: number) {
+      const t = reduced ? 0 : tms / 1000;
+      ctx.clearRect(0, 0, W, H);
+
+      const pos = nodes.map((n, i) => {
+        const wob = Math.sin(t * 0.4 + i * 1.7) * 6;
+        return {
+          x: cx + Math.cos(n.angle + Math.sin(t * 0.08 + i) * 0.02) * (n.r + wob),
+          y: cy + Math.sin(n.angle + Math.sin(t * 0.08 + i) * 0.02) * (n.r * 0.78 + wob),
+        };
+      });
+
+      // merkez bağlantıları
+      for (let i = 0; i < nodes.length; i++) {
+        ctx.strokeStyle = hover === i ? nodes[i]!.kat.renk + "aa" : "rgba(255,255,255,.10)";
+        ctx.lineWidth = hover === i ? 1.4 : 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(pos[i]!.x, pos[i]!.y);
+        ctx.stroke();
+      }
+
+      // kitap noktaları + kategori düğümleri
+      nodes.forEach((n, i) => {
+        const p = pos[i]!;
+        const active = hover === i;
+        for (const d of n.dots) {
+          const tw = 0.5 + 0.5 * Math.sin(t * 1.2 + d.ph);
+          const ang = d.a + t * 0.05;
+          ctx.globalAlpha = (active ? 0.9 : 0.45) * (0.5 + tw * 0.5);
+          ctx.fillStyle = n.kat.renk;
+          ctx.beginPath();
+          ctx.arc(p.x + Math.cos(ang) * d.d, p.y + Math.sin(ang) * d.d * 0.8, d.s, 0, 7);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = n.kat.renk;
+        ctx.shadowColor = n.kat.renk;
+        ctx.shadowBlur = active ? 22 : 10;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, n.size * (active ? 1.15 : 1), 0, 7);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = active ? "#ffffff" : "rgba(255,255,255,.82)";
+        ctx.font = `${active ? 700 : 500} 12px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(`${n.kat.ad}${active ? ` (${n.kat.n})` : ""}`, p.x, p.y + n.size + 16);
+      });
+
+      // merkez düğüm
+      ctx.fillStyle = "#d8d2f5";
+      ctx.shadowColor = "#a99df0";
+      ctx.shadowBlur = 24;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, 7);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.font = "600 13px Inter, sans-serif";
+      ctx.fillText("Kitap Rafı", cx, cy + 38);
+      ctx.fillText(String(toplam), cx, cy + 4);
+
+      return pos;
+    }
+
+    let lastPos: { x: number; y: number }[] = [];
+    function frame(tms: number) {
+      lastPos = draw(tms);
+      if (!reduced) requestAnimationFrame(frame);
+    }
+
+    layout();
+    requestAnimationFrame(frame);
+    if (reduced) draw(0);
+    addEventListener("resize", () => { layout(); if (reduced) draw(0); });
+
+    canvas.addEventListener("pointermove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      hover = null;
+      lastPos.forEach((p, i) => {
+        if (Math.hypot(mx - p.x, my - p.y) < nodes[i]!.size + 22) hover = i;
+      });
+      canvas.style.cursor = hover !== null ? "pointer" : "default";
+      if (reduced) draw(0);
+    });
+    canvas.addEventListener("click", () => {
+      if (hover === null) return;
+      const det = document.getElementById(`kat-${nodes[hover]!.kat.key}`) as HTMLDetailsElement | null;
+      if (det) {
+        det.open = true;
+        det.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+</script>

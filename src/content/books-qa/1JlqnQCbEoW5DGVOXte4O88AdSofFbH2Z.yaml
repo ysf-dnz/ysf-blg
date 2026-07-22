@@ -1,6 +1,6 @@
 # Mindset — Carol Dweck (NotebookLM defterinden sentezlendi)
 bookId: "1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z"
-guncellenme: 2026-07-21
+guncellenme: 2026-07-22
 bolumler:
   - baslik: "Hızlı Bakış"
     sorular:
@@ -9,7 +9,8 @@ bolumler:
           Yeteneklerin doğuştan sabit olduğu inancı (sabit zihniyet) hayatımızı sessizce
           şekillendirir; gelişim zihniyetine geçiş ise bir ilan değil, **ömür boyu süren ve
           farkındalık gerektiren bir yolculuktur** — herkes iki zihniyetin bir karışımını taşır.
-      - soru: "Yazar hangi yaygın inanışın yanlış olduğunu söylüyor? (Kitabın \"düşmanı\" kim?)"
+      - soru: "Yazar hangi yaygın inanışın yanlış olduğunu söylüyor? (Kitabın
+          \"düşmanı\" kim?)"
         cevap: |
           Kitabın düşmanı, iradenin ve yeteneğin *doğuştan gelen, ya olan ya olmayan* bir özellik
           olduğu inancıdır. Dweck ayrıca "artık tamamen gelişim zihniyetindeyim" yanılgısını
@@ -46,7 +47,8 @@ bolumler:
           bu zinciri günlük hayata bağlar. Tembellik değil, *yargı çerçevesi* asıl fren mekanizmasıdır.
   - baslik: "Uygulama"
     sorular:
-      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne olmalı?"
+      - soru: "Bu kitabı okuduktan sonra yarın sabah farklı yapacağım ilk şey ne
+          olmalı?"
         cevap: |
           Bugün seni en son tetikleyen anı yaz (eleştiri, kıyas, çıkmaz), o anda konuşan iç sese
           bir **isim** ver ve yarın için "ne zaman, nerede, nasıl" içeren tek cümlelik somut bir
@@ -65,3 +67,1891 @@ bolumler:
           bırakan herkes başlangıç noktasına döner. Zorlaşan yer de aynı: gelişim zihniyeti
           dili kurumsal bir slogana dönüşüp içi boşaldığında (sahte gelişim zihniyeti),
           kitabın kendi uyardığı tuzağa düşülür.
+ozet:
+  - baslik: Kitabın Yapısı ve Yol Haritası
+    icerik: >-
+      Carol Dweck'in "Mindset" (Zihniyet) kitabının tam yapısı ve bölüm
+      içerikleri aşağıda sırasıyla listelenmiştir
+
+      :
+
+      Bölüm 1: Zihniyetler (The Mindsets) Bu bölüm, insan doğasını ve
+      potansiyelini anlamada iki temel inanç sistemini, yani "sabit zihniyet" ve
+      "gelişim zihniyeti"ni tanıtır
+
+
+      . Özelliklerinizin ve zekanızın doğuştan taşa kazındığına inanmak ile
+      çabayla geliştirilebileceğine inanmak arasındaki basit farkın, hayatın tüm
+      yönlerini nasıl derinden etkilediği özetlenir
+
+
+      .
+
+      Bölüm 2: Zihniyetlerin İçyüzü (Inside the Mindsets) Bu iki zihniyetin
+      insanların dünyayı algılayış biçimini nasıl değiştirdiği derinlemesine
+      incelenir. Sabit zihniyetin sürekli olarak kişinin kendini kanıtlama
+      ihtiyacı yaratıp başarısızlığı bir "kimlik" olarak görmesine neden olduğu;
+      gelişim zihniyetinin ise başarıyı öğrenmekle, gayret göstermekle ve yeni
+      zorlukları kucaklamakla ilişkilendirdiği açıklanır
+
+
+      .
+
+      Bölüm 3: Yetenek ve Başarı Hakkındaki Gerçekler (The Truth About Ability
+      and Accomplishment) Toplumdaki "doğuştan gelen yalnız dahi" efsanesi
+      yıkılarak, Edison veya Darwin gibi tarihi figürlerin büyük başarılarının
+      arkasında aslında yıllar süren çalışma ve gelişim zihniyeti olduğu
+      kanıtlanır
+
+
+      . Ayrıca, öğrencileri sadece zekaları veya yetenekleri üzerinden övmenin,
+      onların zorluklarla başa çıkma direncini nasıl yok ettiği bilimsel
+      çalışmalarla ortaya konur
+
+
+      .
+
+      Bölüm 4: Spor: Bir Şampiyonun Zihniyeti (Sports: The Mindset of a
+      Champion) Spor dünyasındaki "doğal yetenek" yanılgısı ele alınarak, sadece
+      yeteneğe güvenen sporcuların kriz anlarında nasıl çöktüğü anlat
+  - baslik: Parça A · Zihniyetler ve İçyüzü (Bölüm 1-2)
+    icerik: >-
+      ### Bölüm 1: Zihniyetler (The Mindsets)
+
+      Carol Dweck, genç ve kariyerinin başlarında bir araştırmacıyken insanların
+      başarısızlıkla nasıl başa çıktığını anlamak gibi bir takıntıya sahipti.
+      Bunu anlamak için ilkokul çocuklarını tek tek bir odaya alıp onlara
+      giderek zorlaşan yapbozlar verdi. Dweck'in beklentisi basitti: İnsanlar
+      başarısızlıkla ya başa çıkabiliyordu ya da çıkamıyordu. Ancak o odada,
+      hayatını değiştirecek bir şeyle karşılaştı. On yaşındaki bir çocuk, zor
+      bir yapbozla karşılaşınca sandalyesini öne çekti, ellerini ovuşturdu ve
+      "Bir meydan okumaya bayılırım!" diye bağırdı. Ter içinde kalan bir başka
+      çocuk ise halinden gayet memnun bir şekilde, "Bunun öğretici olmasını
+      umuyordum!" dedi. Dweck şaşkına dönmüştü. Kimsenin başarısızlıktan keyif
+      alabileceğini düşünmemişti. Bu çocukların bildiği ama Dweck'in (ve
+      çoğimizin) bilmediği sır neydi? Onlar, insan zekasının ve becerilerinin
+      geliştirilebileceğine inanıyorlardı. Başarısız olduklarını değil, sadece
+      öğrendiklerini düşünüyorlardı.
+
+      İşte bu kırılma noktası, bizi tarihin en eski tartışmalarından birine
+      götürüyor: İnsanlar neden birbirlerinden farklıdır? Yüzyıllar boyunca
+      uzmanlar fiziksel farklılıklara odaklandılar. Kafatasındaki çıkıntılar
+      (frenoloji), kafatasının boyutu (kraniyoloji) ve günümüzde genler... Ancak
+      madalyonun bir de diğer yüzü var. Şaşırtıcı bir şekilde, ünlü IQ testinin
+      mucidi Fransız Alfred Binet, zekanın değiştirilemez bir kader olduğuna
+      inanmıyordu. Binet, bu testi Paris'teki devlet okullarında zorlanan
+      çocukları tespit edip onlara özel eğitim programları tasarlamak için
+      yaratmıştı. Modern Ideas About Children adlı kitabında, zekanın
+      artırılamayacak sabit bir miktar olduğunu iddia edenlere şiddetle karşı
+      çıkmış; pratik, eğitim ve doğru yöntemle insanların eskisinden çok daha
+      zeki hale gelebileceğini savunmuştur. Günümüzde, Gilbert Gottlieb gibi
+      önde gelen sinirbilimciler doğa ve yetiştirmenin (nature and nurture)
+      sürekli bir etkileşim içinde olduğunu, hatta genlerin düzgün çalışabilmesi
+      için çevreden gelecek girdilere ihtiyaç duyduğunu söylüyor. Zeka gurusu
+      Robert Sternberg'in deyişiyle, uzmanlığa ulaşmayı belirleyen şey sabit bir
+      ön yetenek değil, "amaca yönelik katılımdır".
+
+      Peki, tüm bu bilimsel tartışmaların sizinle ne ilgisi var? Dweck'in otuz
+      yıllık araştırması şunu kanıtlıyor: Kendiniz için benimsediğiniz o basit
+      inanç, hayatınızın rotasını kökten değiştirir. İşte burada iki temel
+      zihniyet devreye giriyor. Eğer niteliklerinizin taşa kazındığına
+      inanıyorsanız, yani sabit zihniyet (fixed mindset) taşıyorsanız, bu durum
+      sizde sürekli kendinizi kanıtlama ihtiyacı yaratır. Çünkü zekanız,
+      kişiliğiniz veya ahlaki karakteriniz belirli bir miktardaysa, o zaman
+      bunların yeterli olduğunu (ve asla eksik görünmediğinizi) her an
+      kanıtlamak zorundasınızdır. Dweck, bu zihniyetin kendisine ilkokul altıncı
+      sınıf öğretmeni Mrs. Wilson tarafından nasıl aşılandığını anlatır. Mrs.
+      Wilson, öğrencileri IQ puanlarına göre oturtur ve sadece en yüksek IQ'lu
+      çocukların bayrağı taşımasına veya silgileri çırpmasına izin verirdi. Bu
+      sınıftaki herkesin tek bir amacı vardı: Zeki görünmek ve asla aptal
+      durumuna düşmemek. Sınavlar bir öğrenme aracı değil, kişinin tüm varlığını
+      tehdit eden birer yargılamaydı.
+
+      Bunun karşısında ise gelişim zihniyeti (growth mindset) durur. Bu
+      zihniyet, size dağıtılan kartların sadece bir başlangıç noktası olduğuna
+      inanır. Temel nitelikleriniz; çabanız, stratejileriniz ve başkalarından
+      alacağınız yardımla geliştirilebilir. Bu, herkesin bir Einstein veya
+      Beethoven olabileceği anlamına gelmez. Ancak bir insanın gerçek
+      potansiyelinin bilinemeyeceğini ve yıllar süren tutku, emek ve eğitimle
+      neler başarılabileceğinin öngörülemeyeceğini söyler. Sıradan çocuklar
+      olarak görülen Charles Darwin ve Leo Tolstoy'u, çocukken son derece hantal
+      ve koordinasyonsuz olan efsanevi golfçü Ben Hogan'ı, ilk fotoğrafçılık
+      dersinden kalan 20. yüzyılın en büyük sanatçılarından Cindy Sherman'ı veya
+      yeteneksiz olduğu gerekçesiyle oyunculuğu bırakması söylenen aktris
+      Geraldine Page'i düşünün. Hepsi gelişim zihniyetinin birer ürünüydü.
+
+      Bu iki zihniyetin dünyayı nasıl farklı algıladığını somutlaştırmak için
+      günlük hayattan bir senaryo hayal edelim: Sizin için çok önemli olan bir
+      dersin vizesinden C+ aldınız. Hayal kırıklığıyla eve dönerken arabanıza
+      park cezası kesildiğini gördünüz. Sinirle en iyi arkadaşınızı aradınız ama
+      sizi pek umursamadan başından savdı. Sabit zihniyete sahip insanların bu
+      senaryoya tepkisi yıkıcıdır: "Ben bir kaybedenim," "Dünya benim peşimde,"
+      "Kimse beni sevmiyor, ben aptalım." Nasıl başa çıkacakları sorulduğunda
+      ise "Hiçbir şey yapmam," "Yatağa girerim," "İçerim," veya "Birine
+      bağırırım" derler. Dikkat edin; ortada ölüm veya yıkım yoktur, sadece kötü
+      bir not, bir bilet ve kötü bir telefon görüşmesi vardır. Ancak sabit
+      zihniyet, bu olayları doğrudan kişinin değerini ölçen kalıcı birer etiket
+      olarak görür. Aynı senaryo gelişim zihniyetine sahip kişilere sorulduğunda
+      ise tepkiler eylem odaklıdır: "Derste daha çok çalışmam lazım," "Park
+      ederken daha dikkatli olmalıyım," "Acaba arkadaşımın kötü bir günü müydü?"
+      Nasıl başa çıkacakları sorulduğunda ise "Bir sonraki sınava farklı bir
+      stratejiyle çalışırım, cezamı öderim ve arkadaşımla konuşup sorunu
+      çözerim" derler. Onlar da bu olaylara üzülürler ama kendilerini
+      etiketleyip havlu atmazlar; sorunlarla yüzleşirler.
+
+      Belki de "Zaten 'Risk almayan kazanamaz' gibi bir sürü atasözümüz var,
+      burada yeni olan ne?" diyebilirsiniz. Yeni olan şudur: Sabit zihniyetli
+      insanlar bu atasözlerine inanmazlar! Onlara göre, "Eğer ilk denemede
+      başaramıyorsan, muhtemelen yeteneğin yoktur." Risk ve çaba, sizin
+      eksikliklerinizi ortaya çıkaracağı için tehlikelidir. Kitapçılardaki
+      "Dünyanın En Başarılı İnsanlarının 10 Sırrı" gibi kitaplar size sadece
+      "Kendinize inanın" gibi kopuk tavsiyeler verir. Oysa zihniyet teorisi, her
+      şeyin birbirine nasıl bağlandığını gösteren o büyük "Aha!" anını yaşatır.
+      Zekanızın sabit olduğu inancının nasıl belirli düşünce ve eylemlere yol
+      açtığını, gelişebileceği inancının ise sizi nasıl tamamen farklı bir yola
+      soktuğunu açıklar.
+
+      Son olarak, sabit zihniyetin kişinin kendini kandırmasına nasıl yol
+      açtığına değinmeliyiz. Yeteneklerinizi abartma riskiniz hangi zihniyette
+      daha fazladır? Araştırmalar, kendi yeteneklerini ve performanslarını feci
+      şekilde yanlış tahmin edenlerin neredeyse tamamen sabit zihniyetli kişiler
+      olduğunu gösteriyor. Çünkü sabit zihniyette her bilgi ya egonuzu şişiren
+      bir müjde ya da sizi yıkan bir felakettir; bu yüzden gerçekler çarpıtılır.
+      Gelişim zihniyetinde olanlar ise şaşırtıcı derecede isabetli tahminler
+      yaparlar. Öğrenmeye odaklı oldukları için mevcut yetenekleri hakkındaki
+      gerçek ve acı verici bilgilere açıktırlar. Howard Gardner'ın da belirttiği
+      gibi, olağanüstü insanların en büyük ortak özelliği "kendi güçlü ve zayıf
+      yönlerini tespit etme yeteneğidir." Gelişim zihniyeti tam olarak bu
+      yeteneği besler.
+
+      Bu bölümün özü: Hayatınızı şekillendiren en temel şey, kendi
+      niteliklerinizin taşa kazındığına mı (sabit zihniyet) yoksa çabayla
+      geliştirilebileceğine mi (gelişim zihniyeti) inandığınızdır. Sabit
+      zihniyet her zorluğu bir yargılanma arenasına çevirip sizi çabadan
+      kaçırırken; gelişim zihniyeti zorlukları birer öğrenme fırsatı olarak
+      görüp potansiyelinizi açığa çıkarmanızı sağlar.
+
+      ### Bölüm 2: Zihniyetlerin İçyüzü (Inside the Mindsets)
+
+      Yazarımız Carol Dweck, genç bir kadınken her şeyin peri masallarındaki
+      gibi zahmetsiz olmasını istiyordu: Yakışıklı ve başarılı bir prens, risk
+      almasını gerektirmeyecek kadar şatafatlı bir kariyer ve tüm bunların ona
+      ne kadar mükemmel biri olduğunu kanıtlamak için altın tepside sunulması.
+      Yıllar sonra ise sürekli üzerinde çalışılması gereken bir evliliği ve
+      sürekli zorluklar çıkaran bir kariyeri vardı; ama inanılmaz derecede
+      mutluydu. Çünkü zihniyeti değişmişti. Doktora öğrencisi Mary Bandura ile
+      yetenek kavramının iki farklı anlamı olduğunu (kanıtlanması gereken sabit
+      yetenek vs. geliştirilmesi gereken esnek yetenek) keşfettiği an, kendi
+      zihniyetinin de ne kadar sabit olduğunu ve bir seçme şansı olduğunu fark
+      etmişti. Bir zihniyete girdiğinizde aslında yeni bir dünyaya adım
+      atarsınız. Sabit dünyada başarı, sizin ne kadar zeki olduğunuzu
+      kanıtlamaktır. Değişim dünyasında ise başarı, yeni bir şeyler öğrenmek
+      için kendini zorlamaktır (stretching).
+
+      Peki, insanları "öğrenenler" ve "öğrenmeyenler" (siyaset bilimci Benjamin
+      Barber'ın tanımıyla) olarak ikiye ayıran nedir? Bebekler doğal birer
+      öğrenicidir; düşerler, kalkarlar ve yürümeyi öğrenirken asla aptal
+      görünmekten korkmazlar. Ancak çocuklar kendilerini değerlendirmeye
+      başladıkları an, sabit zihniyet bu coşkulu öğrenmeyi baltalar. Dweck ve
+      ekibinin yaptığı bir deneyde, 4 yaşındaki çocuklara ya kolay bir yapbozu
+      tekrar çözmeleri ya da daha zor bir yapbozu denemeleri teklif edildi.
+      Sabit zihniyetli çocuklar güvenli olanı seçti, çünkü onlara göre "doğuştan
+      zeki çocuklar hata yapmazdı". Gelişim zihniyetli çocuklar ise bu soruya
+      anlam bile veremedi; "Neden aynı şeyi tekrar tekrar yapayım ki?" diyerek
+      zor yapbozlara saldırdılar ve "Bunları çözmek için ölüyorum!" dediler.
+      Yedinci sınıfa giden bir kız öğrencinin dediği gibi: "Eğer cevaptan emin
+      değilsem el kaldırırım, çünkü yanlışsam düzeltilirim. Zekamı ancak böyle
+      artırabilirim."
+
+      Öğrenme fırsatlarını kaçırma durumu üniversitede de kendini gösterir. Hong
+      Kong Üniversitesi'ne (eğitim dilinin tamamen İngilizce olduğu bir okul)
+      giren ve İngilizcesi yetersiz olan birinci sınıf öğrencilerine,
+      İngilizcelerini geliştirecek özel bir kurs teklif edildi. Gelişim
+      zihniyetine sahip öğrenciler bu fırsata coşkuyla "Evet" derken, sabit
+      zihniyetli öğrenciler "Hayır" dediler. Eksikliklerini ortaya çıkarmamak ve
+      kısa vadede zeki hissetmek adına tüm üniversite kariyerlerini riske atmaya
+      hazırlardı. Columbia Üniversitesi'ndeki beyin dalgası araştırmaları da bu
+      gerçeği fiziksel olarak kanıtlar. Sabit zihniyetli öğrencilerin beyin
+      dalgaları, yalnızca verdikleri cevabın "doğru mu yanlış mı" olduğu (yani
+      yeteneklerinin yargılandığı) anlarda hareketleniyor, ancak doğru cevabın
+      ne olduğunu öğrenecekleri anlarda beyin tamamen kapanıyordu. Gelişim
+      zihniyetli öğrenciler ise tamamen bilgiye ve öğrenmeye odaklanmışlardı.
+
+      Bu durum ilişkilerde de böyledir. Sabit zihniyetli insanlar, kendilerini
+      bir kaideye oturtacak ve kusursuz hissettirecek eşler ararlar. Gelişim
+      zihniyetli insanlar ise hatalarını görüp gelişmelerine yardımcı olacak
+      eşler ararlar. Dweck, sabit zihniyetli eşi olan gelişim zihniyetli bir
+      kadının hikayesini anlatır: Kadın "Neden daha çok dışarı çıkmıyoruz?"
+      dediğinde, adam tamamen yıkılıyor, annesini arayıp teselli arıyor ve
+      kadının onu yatıştırması saatler sürüyordu. Biri için iletişim olan şey,
+      diğeri için egosuna yapılmış bir saldırıydı.
+
+      İş dünyasında ise bu duruma CEO hastalığı (CEO disease) denir. Chrysler'ın
+      başındaki Lee Iacocca, başlangıçtaki harika başarısından sonra sabit
+      zihniyetine yenik düştü. Eksiklikleriyle yüzleşmek yerine etrafını
+      dalkavuklarla doldurdu ve kimsenin istemediği aynı model arabaları
+      piyasaya sürmeye devam etti (Japonlar pazarı ele geçirirken). Sunbeam'in
+      felaket getiren yöneticisi Albert Dunlap, Wall Street'in gözünde bir
+      "kahraman" olmak için uzun vadeli gelişimi çöpe atıp şirketi kısa vadede
+      şişirdi ve batırdı. Buna karşılık, Kimberly-Clark'ın CEO'su Darwin Smith
+      "İşime layık olmak için çabalamayı asla bırakmadım" diyordu. IBM'i
+      iflastan kurtaran Lou Gerstner ise "öğrenen" (growth mindset) bir lider
+      olarak, kısa vadeli eleştirilere göğüs gerip şirket kültürünü kökten
+      değiştirdi.
+
+      Gelişim zihniyeti insanları sınırlarını zorlamaya iter. Dünyanın en iyi
+      kadın futbolcusu Mia Hamm, her zaman kendisinden daha büyük ve yetenekli
+      erkeklerle oynayarak geliştiğini söyler. Tombul ve spora yatkın olmayan
+      lise öğrencisi Patricia Miranda, bir maçta fena halde dayak yiyip
+      kendisine "Sen bir şakasın" denmesine rağmen pes etmedi. Annesini 40
+      yaşında kaybeden Miranda, ölüm döşeğindeyken "Kendimi gerçekten keşfettim"
+      diyebilmek için zorluklardan kaçmadı, olimpiyatlarda güreşte bronz madalya
+      kazandı ve ardından Yale Hukuk Fakültesi'ne (yine en alttan başlamak
+      üzere) gitti. Aktör Christopher Reeve felç geçirdiğinde tıp dünyası "Bunu
+      kabullen" dedi. Ancak o, yoğun bir sinirsel uyarım programı talep etti ve
+      yıllar sonra vücudunun bazı bölgelerini hareket ettirerek bilimin sinir
+      sistemi hakkındaki dogmalarını yıktı.
+
+      Sabit zihniyetli insanlar ise yalnızca işler kolayken ve yetenekli
+      hissederken gelişirler. Tıp fakültesine girmek isteyen öğrencilerin kimya
+      derslerindeki performansını izleyen araştırmacılar şunu gördü: Sabit
+      zihniyetli öğrenciler ders zorlaştığı anda ilgilerini tamamen kaybettiler
+      ("Düşündükçe mideme ağrılar giriyor"). Gelişim zihniyetliler ise ders
+      zorlaştıkça daha da hırslandılar ("Zor olması beni daha kararlı yapıyor").
+      Ünlü Rus bale öğretmeni Marina Semyonova öğrencilerini seçerken, eleştiri
+      ve düzeltmeye verdikleri tepkiye bakardı. O da kolaydan zevk alanları
+      değil, zordan heyecan duyanları arıyordu. Dweck'in dediği gibi: "Bu zor.
+      Bu eğlenceli," dediğinizi duyduğunuz an, zihniyetinizin değiştiği andır.
+
+      Sabit zihniyetin bir diğer zehirli inancı, anında ve mükemmel bir yetenek
+      beklemesidir. Columbia'ya binlerce başvuru arasından seçilerek gelen o
+      kusursuz altı yüksek lisans öğrencisi, hocalarının yayınlarına bakıp
+      anında "Ben bir sahtekarım, bunu asla yapamam" hezeyanına kapılıyorlardı.
+      Çünkü öğrenmek (henüz yapamamak) onlara göre değildi; zaten en baştan
+      "tamamlanmış" olmalıydılar. Washington Post muhabiri Janet Cooke ve The
+      New Republic yazarı Stephen Glass, zorlu öğrenme sürecinden kaçıp anında
+      "harika çocuk" olmak istedikleri için yalan haberler üreterek
+      kariyerlerini yaktılar. Sabit zihniyet, bir değerlendirmenin sizi sonsuza
+      dek tanımladığına inanır. Beş yaşında Amerika'ya gelip "Eagles" (Kartallar
+      - elit sınıf) testini geçemeyen Loretta, lise sonuna kadar hep o sınıfta
+      okusa bile, o ilk testte seçilmediği için kendini hiçbir zaman "Gerçek bir
+      Kartal" olarak göremedi. 5. sınıf öğrencilerine içinde "Önemli bir
+      yeteneği ölçen test" olduğu söylenen bir karton kutu gösterildiğinde,
+      sabit zihniyetli çocuklar bu testin sadece şimdiki zekalarını değil,
+      büyüdüklerinde ne kadar zeki olacaklarını da ölçebileceğine inandılar.
+      Gelişim zihniyetliler ise "Yok artık! Hiçbir test bunu yapamaz" dediler.
+
+      Bir test veya uzmanın bir insanın gelecekteki potansiyelini öngörebilmesi
+      koca bir yalandır. Joseph P. Kennedy, sadece kırmızı çorap ve kahverengi
+      ayakkabı giydiği için Morton Downey Jr.'ın hayatta başarısız olacağını
+      söylemişti (Downey çok başarılı bir yazar/TV yüzü oldu). Jackson Pollock,
+      Marcel Proust, Elvis Presley, Charles Darwin... Hepsi döneminin uzmanları
+      tarafından "potansiyelsiz" bulunmuştu. Paul Cézanne'ın erken dönem
+      resimleri amatörce ve korkunçtu. Sabit zihniyet her zaman kendisinin
+      "özel" (special) ve diğerlerinden üstün olduğunu kanıtlama peşindedir.
+      John McEnroe, maç sırasında ellerine sürdüğü talaş tozunu beğenmediğinde
+      koca bir tenekeyi tekmelemiş, menajeri 20 dolar verip bir işçiye 2x4'lük
+      bir tahtayı rendeleterek yeni talaş getirmek zorunda kalmıştı. Veya
+      kendisini ağırlayan Japon bir kadının üzerine kusmuş, kadın ertesi gün
+      gelip McEnroe'dan özür dileyerek hediye vermişti. McEnroe bunu "İşte bir
+      numara olmak böyle bir şeydi" diye anlatır. Oysa gerçek efsane Michael
+      Jordan kendisine tapılmasından rahatsız olmuş ve "Ben de herkes gibi bir
+      insanım" demişti. Chuck Yeager, "Doğuştan yetenekli pilot diye bir şey
+      yoktur, çok çalışmak vardır" diyerek bu özel olma algısını yıkmıştır.
+
+      Bu zihniyetler başarısızlığın anlamını da kökten değiştirir. Üç yaşındaki
+      Robert, New York'un en iyi anaokuluna kabul edilmediğinde ailesi
+      tarafından bir anda "dahi çocuk" olmaktan çıkarılıp, aileyi utandıran bir
+      "kaybedene" dönüştürüldü. Golfçü Ernie Els, 5 yıllık bir kuraklığın
+      ardından zar zor kazandığı bir turnuva için "Eğer bunu da kaybetseydim,
+      farklı bir insan (bir kaybeden) olurdum" demiştir. Sabit zihniyette
+      başarısızlık bir eylem değil, bir kimliktir. Gelişim zihniyetinde ise,
+      ulusal televizyonda topu kapıp yanlış yöne koşarak rakip takıma (49ers)
+      sayı kazandıran Jim Marshall'ın yaptığı gibi, başarısızlık kontrol altına
+      alınması ve düzeltilmesi gereken bir olaydır. Marshall devre arasında
+      yıkılmak yerine "Hata yaptıysan düzeltmelisin" demiş, ikinci yarıda harika
+      oynamış ve sonrasında utanç verici anlarıyla başa çıkamayan insanlara
+      rehberlik etmiştir. Ancak Fransız şef Bernard Loiseau, üç Michelin
+      yıldızına sahipken, GaultMillau rehberinde puanı 19'dan 17'ye düştüğü için
+      intihar etti. Mükemmel bir restoranı ve harika yetenekleri varken, sadece
+      o iki puanlık düşüşün getirdiği "başarısızlık" kimliğine dayanamadı.
+      Yazarın kocasıyla sinek balıkçılığı yaptığı o gün, yazar balık tutmayı
+      başardığında kocası gurur duymuş, ancak etraftaki diğer erkekler kocasına
+      gizlice yaklaşıp "Bu durumla (karının senden başarılı olmasıyla) nasıl
+      başa çıkıyorsun?" diye sormuşlardı. Çünkü sabit zihniyet için başkasının
+      başarısı, sizin başarısızlığınız demektir.
+
+      Sabit zihniyet hata yaptığında suçu başkasına atar (Blame), kaçar (Shirk)
+      veya hile yapar (Cheat). Kötü bir not alan 7. sınıf öğrencileri, sabit
+      zihniyete sahiplerse bir dahaki sefere daha az çalışacaklarını veya kopya
+      çekeceklerini söylediler. Üniversite öğrencileri düşük not aldıklarında,
+      kendilerini iyi hissetmek için kendilerinden daha kötü not alanların
+      kağıtlarına bakmayı seçtiler. Şirketler de böyle yapar; Scott Paper
+      şirketi, Procter & Gamble karşısında pazar kaybedince savaşmak yerine
+      "Bizden daha kötü durumda olanlar da var" diyerek pes etmiştir. McEnroe
+      yenildiğinde havayı, sıcaklığı, soğukluğu, sırt ağrısını, hatta Lendl'a
+      karşı kaybettiği 1984 Fransa Açık finalinde bir kameramanın kulaklığından
+      gelen sesi suçlamıştır. Enron CEO'su Jeffrey Skilling, şirket
+      dolandırıcılıktan çöktüğünde "Dünya bizim ne yapmaya çalıştığımızı
+      anlamadı" diyerek suçu dünyaya atmıştır. Efsane koç John Wooden'ın dediği
+      gibi: "Suçlamaya başlayana kadar başarısız sayılmazsınız." Buna karşın
+      Jack Welch, GE'nin satın aldığı Kidder, Peabody şirketindeki devasa
+      dolandırıcılık patladığında, üst düzey yöneticilerini arayıp felaket için
+      bizzat kendisi özür dilemiştir. Sabit zihniyet depresyonu da felakete
+      çevirir. Şubat ve Mart aylarında öğrencilerin tuttuğu günlüklerde, sabit
+      zihniyetliler sorunları yüzünden kendilerini "aptal" olarak yaftalamış,
+      ders çalışmayı bırakmış ve odalarını temizlememişlerdir. Gelişim
+      zihniyetliler de aynı şekilde depresif ve perişan hissetmelerine rağmen,
+      kendilerini zorlayarak derslere girmiş ve ödevlerini yapmışlardır. Onlar
+      için kötü hissetmek, eylemsiz kalmak için bir bahane değildir.
+
+      Son olarak, çabanın anlamı zihniyetler arasında uçurum yaratır. Klasik
+      "Tavşan ve Kaplumbağa" masalı bile aslında çabaya kötü bir isim vermiştir;
+      çünkü hepimize çabanın sadece "yeteneksiz kaplumbağalar" için olduğu
+      mesajını aşılamıştır. Dweck, genç bir profesörken ofislerinde gece geç
+      saatlere kadar çalışan meslektaşlarını görünce "Demek ki benim kadar zeki
+      değiller" diye düşündüğünü itiraf eder. Malcolm Gladwell'in dediği gibi,
+      toplumumuz çabasız mükemmelliği (effortless perfection) yüceltir. Keman
+      virtüözü Midori'nin veya ressam Picasso'nun doğuştan mucize olduğuna
+      inanmak isteriz. Fransız yönetici Pierre Chevalier'in "Biz çaba gösteren
+      bir ulus değiliz. Eğer yeteneğin varsa her şeyi zahmetsizce yaparsın" sözü
+      bu zihniyetin özetidir. Oysa hasta ve sakat bir at olan Seabiscuit ile
+      onun hikayesini kronik yorgunluk sendromuyla boğuşarak yazan Laura
+      Hillenbrand'ın başarıları doğuştan gelen bir yeteneğin değil, saf çabanın
+      ürünüdür. On yaşındaki dahi kemancı Nadja Salerno-Sonnenberg, hocası
+      Dorothy DeLay onu okuldan atmakla tehdit edene kadar çaba göstermekten
+      ölümüne korkuyordu. Neden? Çünkü yetenekliyseniz çabaya ihtiyacınız
+      olmamalıdır ve eğer çaba gösterip yine de başarısız olursanız sığınacak
+      hiçbir mazeretiniz kalmaz ("Yo-Yo Ma olabilirdim" diyemezsiniz). Amanda
+      adındaki kadın da iyi bir adam olan Rob ile ilişkisinde işler ciddiye
+      bindiğinde "Ya elimden geleni yapar da başaramazsam?" korkusuyla ilişkiyi
+      sabote etmiştir. Oysa gelişim zihniyetinde asıl acı olan şey çabalayıp
+      kaybetmek değil, "Acaba yapsaydım ne olurdu?" (I could have been) diyerek
+      potansiyelini hiç kullanmamış olmaktır. Yazar/siyasetçi Clare Boothe
+      Luce'un tiyatro yazarlığı tutkusunu yarım bırakıp "Eğer bir otobiyografi
+      yazsaydım adını 'Bir Kaybeden'in Otobiyografisi' koyardım" demesi
+      bundandır.
+
+      Peki, zihniyetler değiştirilebilir mi? Elbette. Zihniyetlerin sadece birer
+      inanç olduğunu bilmek bile iç sesinizi değiştirmek için yeterlidir.
+      İnsanlar aynı anda iki zihniyeti birden (farklı konularda) barındırabilir.
+      Groundhog Day (Bugün Aslında Dündü) filminde Bill Murray'in canlandırdığı
+      kibirli ve sabit zihniyetli Phil karakterinin, aynı günü tekrar tekrar
+      yaşarken, diğer insanları küçümseyip üstünlüğünü kanıtlamaya çalışmaktan
+      vazgeçip, buzdan heykel yapmayı öğrenmeye, piyano çalmaya ve insanlara
+      yardım etmeye (gelişim zihniyeti) yönelmesi bu değişimin en güzel
+      analojisidir. Joseph Martocchio'nun bilgisayar kursu deneyinde, baştan
+      gelişim zihniyeti aşılanan çalışanların kurs sonunda hata yapsalar bile
+      özgüvenlerinin arttığı, sabit zihniyet aşılananların ise hata yaptıkça
+      yeteneklerine olan güvenlerini kaybettikleri kanıtlanmıştır. Benzer
+      şekilde, genç golfçü Michelle Wie, erkeklerin yarıştığı PGA turnuvasına
+      (Sony Open) katılıp kaybettiğinde uzmanlar özgüveninin yıkılacağını
+      söylemiş, o ise "Burada oynayabileceğimi öğrendim" diyerek süreci bir
+      öğrenme fırsatı olarak değerlendirmiştir. Rekabetçi bir yüzücü olan Mary
+      Williams'ın Dweck'e yazdığı mektupta dediği gibi: "Koçlarım hep kendime
+      yüzde yüz güvenmemi söyledi ama ben hatalarımın hep farkındaydım ve
+      mükemmel olduğuma inanmaya çalışmak işleri daha da kötüleştirdi. Ancak
+      sizin çalışmalarınızı okuyunca, hatalarımın üzerinde çalışabileceğim
+      şeyler olduğunu fark ettim ve asıl güveni böyle kazandım." Gelişim
+      zihniyetinde bir şeye atılmak için zaten onda harika olduğunuza inanmanıza
+      (körü körüne bir özgüvene) ihtiyacınız yoktur.
+
+      Bu bölümün özü: İki zihniyet, dünyayı tamamen farklı okumanıza neden olur;
+      sabit zihniyet başarıyı üstünlük kanıtlamak, başarısızlığı kalıcı bir
+      kusur ve çabayı ise yeteneksizlik işareti olarak görürken; gelişim
+      zihniyeti başarıyı sınırları zorlamak, başarısızlığı aydınlatıcı bir bilgi
+      ve çabayı ise ustalığa giden tek yol olarak kabul eder. İnsanlar
+      zihniyetlerinin farkına vararak, kendilerini sürekli yargılayan bu iç
+      sesten kurtulup, yaşam boyu öğrenen ve gelişen birine dönüşebilirler.
+  - baslik: Parça B · Yetenek ve Başarı Hakkındaki Gerçekler (Bölüm 3)
+    icerik: >-
+      ### Bölüm 3: Yetenek ve Başarı Hakkındaki Gerçekler
+
+      Şimdi gözlerini kapat ve Thomas Edison'ı olabildiğince canlı bir şekilde
+      hayal etmeye çalış
+
+      . Muhtemelen onu laboratuvarında tek başına, beyaz önlüğüyle bir ampulün
+      üzerine eğilmiş ve aniden beyninde bir şimşek çakarak "Buldum!" diye
+      bağıran yalnız bir dahi olarak gözünün önüne getirdin
+
+      . Ancak gerçek kayıtlar bize tamamen farklı bir adam ve tamamen farklı bir
+      çalışma biçimi gösteriyor
+
+      . Edison yalnız değildi; ampulün icadı için aralarında iyi eğitimli bilim
+      insanlarının da bulunduğu ve gece gündüz çalışan otuz asistanı olan,
+      şirket destekli son teknoloji bir laboratuvarı vardı
+
+      . Dahası, ampul tek bir "İlahi ilham" anıyla değil, her biri kimyagerler,
+      matematikçiler ve cam üfleyiciler gerektiren, zaman alan bütün bir icatlar
+      ağının sonucunda ortaya çıkmıştı
+
+      . "Menlo Park'ın Büyücüsü" aslında sadece bir mucit değil, icatlarının
+      ticari potansiyelinin tamamen farkında olan ve basını nasıl kendi lehine
+      kullanacağını çok iyi bilen kurnaz bir girişimciydi
+
+      . Biyografisini yazan Paul Israel'e göre Edison, döneminin sıradan
+      çocuklarından pek de farklı değildi; onu diğerlerinden ayıran şey doğuştan
+      gelen insanüstü bir zeka değil, onun gelişim zihniyeti (growth mindset) ve
+      bitmek bilmeyen merakıydı
+
+
+      .
+
+      Toplumumuzda "yalnız ve aniden parlayan dahi" miti o kadar güçlüdür ki,
+      büyük başarıların arkasındaki yıllar süren emeği görmezden gelmeye
+      bayılırız
+
+      . Charles Darwin'in başyapıtı Türlerin Kökeni, sahada yıllar süren ekip
+      çalışmasının, meslektaşlarla yapılan yüzlerce tartışmanın, sayısız
+      taslağın ve adanmış bir ömrün ürünüydü
+
+      . Keza Mozart, bugün hayranlık duyduğumuz eserlerini üretebilmek için on
+      yıldan fazla bir süre çalışmış, erken dönem besteleri genellikle diğer
+      bestecilerden yamalanmış parçalardan oluşmuştu
+
+      . Kısacası yazarın buradaki temel argümanı şudur: Bizi efsane yapan şey
+      doğuştan gelen yeteneklerimiz değil, zaman, çaba ve sürekli öğrenme
+      sürecimizdir
+
+      .
+
+      Okul Başarısı ve Düşük Çaba Sendromu
+
+      Zihniyetlerin gerçek hayatta başarıyı nasıl şekillendirdiğini görmek için
+      ortaokula geçiş dönemindeki öğrencilere bakmak yeterlidir
+
+
+      . Ortaokul, derslerin zorlaştığı, notlandırmanın sertleştiği ve
+      öğrencilerin ergenlik bedenleriyle başa çıkmaya çalıştığı büyük bir kriz
+      dönemidir
+
+      . Bu dönemde, sadece sabit zihniyete (fixed mindset) sahip öğrencilerin
+      notlarında dramatik bir düşüş görülürken, gelişim zihniyetine sahip
+      öğrencilerin notları artmaya devam etmiştir
+
+      . Sabit zihniyetli öğrenciler kötü notlarını "Ben aptalım" veya "Matematik
+      hocası şişman bir pislik" gibi yeteneklerini aşağılayan veya başkalarını
+      suçlayan şekillerde açıklarken, gelişim zihniyetli öğrenciler bu zorluklar
+      karşısında kaynaklarını seferber edip daha çok çalışmışlardır
+
+
+      .
+
+      Gelişim zihniyetinin zorlukları nasıl kucakladığına dair en güzel
+      örneklerden biri George Danzig'in hikayesidir
+
+      . Berkeley'de matematik yüksek lisans öğrencisi olan Danzig, bir gün derse
+      geç kalır ve tahtadaki iki problemi "ev ödevi" sanarak defterine geçirir
+
+      . Bu problemler o kadar zordur ki, çözmesi günlerini alır
+
+      . Sonradan ortaya çıkar ki, Danzig'in ev ödevi sanıp çözdüğü şeyler
+      aslında o güne kadar matematik dünyasında kimsenin çözemediği iki ünlü
+      problemdir!
+
+
+      . Eğer bunların "çözülemez" olduğunu bilseydi (yani zihniyeti baştan
+      kilitlenseydi), muhtemelen asla çözemeyecekti.
+
+      Sabit zihniyet, ergenliği "Ben akıllı mıyım, aptal mıyım? Kaybeden miyim,
+      kazanan mı?" testine dönüştürür
+
+      . Sabit zihniyette kaybeden olmak sonsuza dek sürecek bir etiket olduğu
+      için, bu gençler egolarını korumanın yolunu çaba göstermeyi bırakmakta
+      bulurlar
+
+      . Eğitimci John Holt'un dediği gibi, en kötü öğrenciler, zekalarını
+      okuldan tamamen "koparan" öğrencilerdir
+
+      . Sabit zihniyetli gençler "Okuldaki temel amacım işleri olabildiğince
+      kolay yoldan yapmak, böylece çok çalışmak zorunda kalmamak" derler
+
+
+      . Bu düşük çaba sendromu (low-effort syndrome), başarısızlıktan kaçınmak
+      için kendi potansiyelini sabote etmektir
+
+      .
+
+      Ancak bu çocuklara gelişim zihniyeti öğretildiğinde inanılmaz şeyler olur
+
+      . Dweck'in atölye çalışmasında, okula tamamen küsmüş olan Jimmy adındaki
+      bir öğrenci, beynin çalışıldıkça gelişen bir kas gibi olduğunu (nöron
+      bağlantılarının zenginleştiğini) öğrendiğinde gözyaşları içinde başını
+      kaldırıp, "Yani aptal olmak zorunda değil miyim?" diye sormuştur
+
+      . O günden sonra Jimmy geceleri geç saatlere kadar ödev yapmaya başlamış
+      ve hayatı değişmiştir
+
+      . Paul Wortman'ın bir şiirinde anlattığı gibi, ilkokul öğretmeni Mrs. Beer
+      onlara "Atınız sadece beyniniz kadar hızlıdır, yeni bir şey öğrendiğinizde
+      atınız öne geçer" dediğinde, yavaş öğrenen bir çocuk bile sürekli
+      çalışarak sınıfın "dahilerini" (Hank ve Billy) bir burun farkıyla nasıl
+      geçtiğini fark etmiştir
+
+
+      .
+
+      Üniversiteye geçişte de (özellikle tıp öncesi kimya gibi eleyici
+      derslerde) aynı zihniyet farkı yaşanır
+
+
+      . Sabit zihniyetli öğrenciler kitabı bir elektrik süpürgesi gibi körü
+      körüne ezberlemeye çalışıp düşük not alınca "Elimden geleni yaptım, demek
+      ki yeteneğim yok" derken; gelişim zihniyetli öğrenciler hatalarının
+      üzerinden geçen, temaları anlamaya çalışan ve motivasyonlarını bilinçli
+      olarak yüksek tutan stratejiler izlemişlerdir
+
+
+      . Dweck'in öğrencisi June, gelişim zihniyetini öğrendikten sonra
+      stratejilerini değiştirmiş ve zar zor geçmeyi beklediği sınavda harika bir
+      not alarak Dweck'e minnettar bir e-posta atmıştır
+
+
+      .
+
+      Harika Çocuklar, Doğuştan mı Eşitler?
+
+      Peki ya "harika çocuklar"? Ellen Winner'ın Gifted Children adlı kitabında
+      bahsettiği 10 aylıkken okuyan, 3 yaşında cebir çözen Michael gibi çocuklar
+      sadece doğuştan mı yeteneklidir?
+
+
+      . Aslında Michael'ın en çarpıcı özelliği inanılmaz bir öğrenme ve zorluk
+      aşkına sahip olmasıdır; ebeveynleri onu bu zorlayıcı aktivitelerden
+      koparamıyordu bile
+
+      . Dweck'in bizzat kendisi de çocukken yetişkinlerin nasıl çalıştığını
+      anlamaya çok meraklıydı (hatta 5 yaşındayken kuzenine "Yetişkinler
+      kontrolün kendilerinde olmasını sever, sadece evet de ve sonra şekerini
+      istediğin zaman ye" tavsiyesini vermiş, bu tavsiye yıllarca işe yaramış ve
+      kuzeni daha sonra diş hekimi olmuştur)
+
+
+      . Yani yetenek dediğimiz şey, o bitmek bilmeyen merakın ve gelişme
+      arzusunun bir sonucu olarak yeşeriyor olabilir
+
+      .
+
+      Tüm Öğrenciler Öğrenebilir mi?
+
+      İçinde bulunduğumuz toplumda zekanın sadece bazı seçilmiş kişilere ait
+      olduğu yanılgısını yıkan muazzam eğitimciler vardır
+
+      . Jaime Escalante, Los Angeles'ın en kötü ve suç oranının en yüksek olduğu
+      liselerinden biri olan Garfield Lisesi'ndeki dışlanmış Hispanik
+      öğrencilere üniversite seviyesinde kalkülüs (calculus) öğretmiş ve ulusal
+      sınavlarda onları ülkenin en elit okullarıyla (Stuyvesant gibi) yarışır
+      hale getirmiştir
+
+      . O, "Bu çocuklara öğretebilir miyim?" diye sormadı, "Nasıl en iyi şekilde
+      öğretirim?" diye sordu
+
+      .
+
+      Benzer şekilde Marva Collins, Chicago'da devlet okullarının "öğrenme
+      güçlüğü çekiyor", "duygusal sorunlu" veya "geri zekalı" diye çöpe attığı
+      çocukları almış ve onlara birer dahi gibi davranmıştır
+
+
+      . İkinci sınıf çocuklarına Shakespeare, Tolstoy ve Poe okutmuş; 4
+      yaşındaki çocuklara "Aesop masallar yazdı" gibi cümleler kurdurmuştur
+
+
+      . Hatta okuluna gelen gazeteci Zay Smith'e bir öğrenci, "Biz burada zor
+      şeyler yapıyoruz, bunlar beynimizi dolduruyor" demiştir
+
+      . Başka bir gün dört yaşındaki bir çocuk, Daedalus ve Icarus hakkında
+      okurken, "Mrs. Collins, eğer öğrenmez ve çok çalışmazsak, biz de hiçbir
+      yere varmayan bir Icarus uçuşu yapacağız" demiştir
+
+      .
+
+      Benjamin Bloom'un konser piyanistlerinden yüzücülere kadar 120 dünya
+      çapında başarılı insanı incelediği araştırmasının sonucu da aynıdır: Erken
+      çocukluk dönemindeki becerilerine bakarak onların gelecekteki olağanüstü
+      başarılarını tahmin etmek imkansızdı; onları zirveye taşıyan şey destek
+      ağları, motivasyonları ve bağlılıklarıydı
+
+      . Bloom'un dediği gibi, "Dünyadaki herhangi bir insanın öğrenebileceği bir
+      şeyi, uygun koşullar sağlandığında hemen hemen herkes öğrenebilir"
+
+      . Almanya'dan Falko Rheinberg'in öğretmenler üzerindeki araştırması da
+      bunu kanıtlar: Öğrencilerin zekasının sabit olduğuna inanan öğretmenlerin
+      sınıflarında, yılın başında düşük seviyede olan çocuklar yılı düşük
+      seviyede bitirirken; öğrencilerin gelişebileceğine inanan öğretmenlerin
+      sınıflarında düşük seviyeli çocuklar da yüksek seviyeli çocuklar kadar
+      harika sonuçlara ulaşmıştır
+
+
+      .
+
+      Sanat Doğal Bir Yetenek midir?
+
+      Peki ya sanat? Zekanın gelişebileceğine inananlar bile çizim yapmanın veya
+      müziğin sadece "Tanrı vergisi" bir hediye olduğunu düşünür
+
+      . Dweck de çocukluğunda iyi çizim yapamadığı için sanat yeteneği
+      olmadığına inanırdı
+
+      . Bir akşam, Holokost'tan kurtulan ve İngiltere'ye yürüyerek sığınan
+      yaşlı, büyüleyici bir psikiyatristin evinde misafirken, adamın "baykuş"
+      çizimleriyle dolu ziyaretçi defterinin son sayfasına iğrenç ve ilkel bir
+      baykuş çizmek zorunda kaldığında duyduğu utanç çok büyüktür
+
+
+      . Ancak daha sonra Betty Edwards'ın Sağ Beyinle Çizim (Drawing on the
+      Right Side of the Brain) kitabındaki öncesi-sonrası çizimlerini görünce
+      şok olur
+
+      . Kursa katılan ve başta çok kötü çizen insanlar sadece 5 gün içinde
+      ustalıkla portre çizer hale gelmişlerdir
+
+      . Edwards'a göre çizim yapmak sihirli bir yetenek değil, görme
+      becerilerinin (kenarları, boşlukları, ışığı ve gölgeyi algılamanın)
+      öğrenilmesidir
+
+      .
+
+      Jackson Pollock bugün 20. yüzyılın en büyük ressamlarından biri kabul
+      ediliyor, ancak sanat uzmanları onun ilk dönem çizimlerinin tamamen
+      yeteneksizce olduğu konusunda hemfikirdir
+
+      . Onu A noktasından B noktasına götüren şey, sanata olan vahşi tutkusu ve
+      adanmışlığıydı
+
+
+      . Ünlü koreograf Twyla Tharp da Yaratıcı Alışkanlık (The Creative Habit)
+      kitabında Mozart'ın kolayca başyapıtlar ürettiği efsanesini (Amadeus
+      filmi) sertçe eleştirir ve "Doğuştan gelen dahi diye bir şey yoktur" der
+
+      .
+
+      Övgünün Tehlikesi ve Negatif Etiketler
+
+      Madem herkesin böyle bir potansiyeli var, o zaman çocuklara "Sen doğuştan
+      yeteneklisin" diyerek onlara özgüven mi aşılamalıyız? Ebeveynlerin
+      %80'inden fazlası buna inanıyor
+
+      . Ancak bu çok tehlikelidir
+
+      . Yazar bunu kanıtlamak için yüzlerce erken ergenlik dönemindeki çocukla
+      unutulmaz bir IQ testi deneyi yapmıştır
+
+      . Çocukların yarısına "Zekisin" (yetenek övgüsü), diğer yarısına "Çok sıkı
+      çalıştın" (çaba övgüsü) denmiştir
+
+
+      . Ardından daha zor problemler verildiğinde, zekası övülen çocuklar yeni
+      ve öğretici zorlukları reddetmiş, sabit zihniyetin tuzağına düşerek "Eğer
+      başarısız olursam aptal olduğum ortaya çıkar" korkusu yaşamışlardır
+
+
+      . Çabası övülenlerin ise %90'ı yeni zorlukları sevinçle kabul etmiştir
+
+      . Zekası övülenler zorluklarla karşılaştıktan sonra ilk başladıkları kolay
+      testlerde bile çok kötü performans sergilerken, çabası övülenler daha da
+      iyi performans göstermiştir
+
+      . En dehşet verici olanı ise şudur: Çocuklara puanlarını başka okuldaki
+      çocuklara yazmaları istendiğinde, zekası övülen çocukların %40'ı puanları
+      hakkında yalan söylemiş (notlarını yüksek göstermiş) iken, çabası
+      övülenlerde böyle bir şey yaşanmamıştır
+
+
+      . Yani çocuklara "Sen zekisin" demek, onları yalancı ve başarısızlıktan
+      ölesiye korkan kırılgan bireyler yapmıştır
+
+
+      .
+
+      Richard Rodgers'ın torunu ve müzikal tiyatronun "dahisi" olarak görülen
+      Adam Guettel, bu "yetenek ve potansiyel" övgülerinin altında nasıl
+      ezildiğini çok iyi özetler
+
+      . Parmaklarını kanayana kadar ısıran, uyuşturucu sorunlarıyla boğuşan
+      Guettel şöyle diyor: "Benim ailemde iyi olmak, başarısız olmak demektir...
+      Başarısızlık olmayan tek şey muhteşem olmaktır"
+
+      . Potansiyelinin ağırlığı altında bir "Büyük Adam" olmak zorunda hissetmek
+      onun sanattan aldığı zevki öldürmüştür
+
+      . Bu tuzağı fark eden 49 yaşındaki Üstün Zekalı Çocuklar Derneği üyesi
+      Seth Abrams da Dweck'e yazdığı mektupta, bir ömür boyu "potansiyelini"
+      kanıtlama baskısı yüzünden nasıl çaba harcamaktan kaçındığını itiraf
+      etmiştir
+
+      .
+
+      Negatif Etiketlerin Yıkıcı Gücü
+
+      Peki ya negatif etiketler? Dweck lisedeyken cebir ve geometride 99 alan,
+      hatta Hava Kuvvetleri'nin görsel-uzamsal yetenek testlerinde erkekleri
+      bile geride bırakıp askere alma broşürleri alan bir matematik dahisiydi
+
+      . Taa ki Bay Hellman adında kızların matematik yapamayacağına inanan bir
+      öğretmene denk gelene kadar
+
+      . Bay Hellman'ın bu negatif inancı Dweck'e işlemiş ve Dweck matematiği bir
+      daha dönmemek üzere bırakmıştır
+
+
+      .
+
+      Claude Steele ve Joshua Aronson'ın araştırmaları, sadece cinsiyetinizi
+      veya ırkınızı belirten bir kutucuğu işaretlemenin bile zihninizde bir
+      klişeyi (stereotype) tetikleyerek sınav notunuzu dramatik şekilde
+      düşürebileceğini kanıtlamıştır
+
+      . Zihniniz bilinçdışı bir şekilde o klişeyi onaylama korkusuyla dolar ve
+      sınav için gereken zihinsel enerjiyi tüketir
+
+      . Ancak bu klişe tehdidi (stereotype threat) en çok sabit zihniyetli
+      insanları vurur, çünkü onlar niteliklerin kalıcı olduğuna ve klişelerin
+      onların kaderi olduğuna inanırlar
+
+
+      . Gelişim zihniyeti ise "Geri kalmışsam daha çok çalışırım" diyerek
+      stereotipin zehrini akıtır
+
+      .
+
+      Bunu Afrikalı Amerikalı öğrencilerin Harvard eğitimli (ve kibirli) beyaz
+      profesör Edward Caldwell III'ten kompozisyonları için aldıkları
+      eleştirilerde çok net görebiliriz
+
+
+      . Sabit zihniyetli öğrenciler eleştiriyi tamamen kişisel ve ırksal bir
+      saldırı ("kibirli bir pislik", "kasıtlı olarak beni karalıyor") olarak
+      algılayıp öğrenmeyi reddederken; gelişim zihniyetli öğrenciler adamın
+      kibirli olduğunu fark etseler bile "Onun eleştirileri adil, ondan çok şey
+      öğreneceğim" diyerek bu profesörü kendi eğitim hedefleri için bir araç
+      olarak kullanmışlardır
+
+
+      . Gelişim zihniyeti, kadınların matematik sınıflarında "Acaba buraya ait
+      miyim?" hissini bile korumalarını sağlarken, sabit zihniyetli kadınlar
+      hocalarının ufacık bir küçümsemesiyle ("iyi tahmindi") bile yıkılıp o
+      alandan kaçarlar
+
+
+      .
+
+      Başkalarının Fikrine Fazla Güvenmek
+
+      Kadınların başkalarının fikirlerine olan bu aşırı güveni toplumumuzun bir
+      ürünüdür
+
+      . Kız çocukları küçükken hep mükemmel, şirin ve uslu oldukları için
+      sürekli övülürler ve bu yüzden dışarıdan gelen yargılara %100 güvenirler
+
+      . Dweck, Hawaii'de bir eczane sırasında yanlışlıkla birilerinin önüne
+      geçtiği için iki kadının yüzüne karşı "Sen terbiyesiz bir insansın!" diye
+      bağırmasını haftalarca atlatamadığını anlatır
+
+
+      . Oysa erkek çocuklar yaramazlıkları yüzünden kızlardan sekiz kat daha
+      fazla eleştiri alır, birbirlerine sürekli "moron, pasaklı" derler ve bu
+      yüzden eleştiriyi çok takmazlar
+
+      . Dünyanın en saygın nörocerrahlarından Frances Conley bile ameliyatta
+      erkek meslektaşlarından birinin ona küçümseyerek "tatlım (honey)" demesi
+      üzerine, "Acaba gerçekten bu ameliyatı yapacak kadar yetenekli miyim?"
+      diyerek kendi potansiyelinden şüphe etmiştir
+
+      . Julie Lynch adlı teknoloji dahisi genç bir kız da, sadece öğretmeni
+      kodlamadaki kısayolunu beğenmediği için bilişim sektörünü tamamen
+      bırakmıştır
+
+
+      . Bütün bu örnekler, zihniyetin bizi çevremizdeki etiketlere karşı ne
+      kadar kırılgan (veya dirençli) yaptığını gösterir
+
+
+      .
+
+      Ama işler yolunda gittiğinde neler başarabileceğimizi bir düşünelim.
+      Polgar ailesi, "doğuştan yetenek" kavramına inanmayan ve satranç
+      başarısının %99'unun sıkı çalışmak olduğuna inanan babaları sayesinde,
+      tarihin en büyük üç kadın satranç oyuncusunu (aralarında tarihin en iyisi
+      kabul edilen Judit Polgar da vardır) yetiştirmiştir
+
+      . Dweck'in matematik dahisi iki kızı olan bir meslektaşı da gelişim
+      zihniyetini hayatının her alanına öyle uygulamıştı ki, Dweck bekarken ona
+      "Partner bulmak için planın ne?" diye sormuş, "Sadece bekle" yanıtını
+      alınca da şok içinde "İşlerinin kendi kendine hallolmasını beklemiyorsan
+      bunu neden bekliyorsun?" demiştir
+
+      .
+
+      Kısacası bu kaynaklar gösteriyor ki, ister akademik alanda ister sanatta,
+      gelişim zihniyeti insanların kafalarındaki o sınırlayıcı duvarları yıkar
+      ve kendilerini başkalarının yargılarına teslim etmelerini engeller
+
+      .
+
+      Bu bölümün özü: İnsanların okuldaki, sanattaki ve hayattaki olağanüstü
+      başarıları, "doğuştan gelen sihirli bir yeteneğin" değil; gelişim
+      zihniyetinin beslediği inanılmaz bir çabanın, motivasyonun ve doğru
+      stratejilerin ürünüdür. Eğer çocuklarımızın başarılı ve dayanıklı olmasını
+      istiyorsak, onların zekalarını ("Sen ne kadar zekisin") övmek yerine,
+      zorluklar karşısındaki süreçlerini ve çabalarını övmeliyiz; aksi takdirde
+      onları başkalarının negatif etiketlerine ve onaylarına bağımlı,
+      başarısızlıktan ölesiye korkan bireylere dönüştürürüz.
+  - baslik: Parça C · Spor ve İş Dünyası (Bölüm 4-5)
+    icerik: >-
+      Harika! Şimdi kitabın en çarpıcı ve gerçek hayattaki etkilerini en net
+      gördüğümüz iki alanına, spor ve iş dünyasına derinlemesine bir dalış
+      yapıyoruz. Görevimiz bu iki bölümün ruhunu, hikayelerini ve yazarın
+      argüman zincirini hiçbir fikri atlamadan, seninle kahve içip sohbet
+      ediyormuşuz gibi akıcı ama bir o kadar da ciddiyetle yeniden inşa etmek.
+      Hazırsan başlayalım.
+
+      ### Bölüm 4: Spor: Bir Şampiyonun Zihniyeti
+
+      Spor dünyasında herkes yeteneğe tapar, özellikle de uzmanlar. Hatta
+      "doğuştan yetenekli" (a natural) kavramı tam olarak buradan, spordan
+      gelir. Hiç çaba sarf etmeden bir sporcu gibi görünen, öyle hareket eden ve
+      öyle olan insanlardan bahsederiz. İzci (scout) denen yetenek avcıları ve
+      koçlar sadece bu "doğuştan yetenekleri" ararlar ve takımlar onları kapmak
+      için akıl almaz paralar dökerler.
+
+      Peki bu inanç ne kadar doğru? Al sana Billy Beane'in hikayesi. Herkes onun
+      bir sonraki Babe Ruth olduğunda hemfikirdi. Lisedeyken basketbol takımının
+      en skorer oyuncusu, futbol takımının oyun kurucusu (quarterback) ve
+      beyzbol takımının en iyi vurucusuydu. Yeteneği o kadar gerçekti ki, kimse
+      ondan şüphe etmiyordu. Ancak Billy Beane'de eksik olan tek bir şey vardı:
+      Bir şampiyonun zihniyeti. İşler ters gittiğinde, Beane bir şeyleri kırmak
+      için aranmaya başlardı. Başarısız olmayı sevmiyordu demek hafif kalır; o,
+      başarısızlığın nasıl bir şey olduğunu bile bilmiyordu. Minor liglerden
+      majör liglere çıkarken işler sarpa sardı. Sopayı her eline alışında
+      (at-bat) bu onun için bir kabusa, bir aşağılanma fırsatına dönüştü. "Sıfır
+      hata" ile oynaması gerektiğine öylesine inanmıştı ki, bu sabit zihniyet
+      (fixed mindset) onu devasa yeteneğinin içine hapsetti. "Doğuştan
+      yetenekli" biri neden çaba harcasındı ki? Çaba, yeteneksizler içindi!
+      Neyse ki Beane, yıllar sonra bir yönetici olarak zihniyeti değiştiğinde,
+      oyunculuğunda yapamadığı sıçramayı Oakland Athletics takımının efsanevi
+      genel menajeri olarak (Moneyball hikayesi) yaptı ve yeteneği değil, süreci
+      ve zihniyeti satın alarak tarih yazdı.
+
+      Fiziksel Özellikler ve "Doğuştan Yetenek" Yanılgısı
+
+      Spor fizikseldir. Boy, yapı, çeviklik gözle görülür şeylerdir. Bu yüzden
+      fiziksel mükemmelliğin doğuştan geldiğine inanmak çok kolaydır. Ama tarihe
+      şöyle bir bak; 1.60 boyundaki NBA oyuncusu Muggsy Bogues, tek kollu
+      beyzbolcu Pete Gray, zarafetten tamamen yoksun ama gelmiş geçmiş en büyük
+      golfçülerden Ben Hogan veya bacakları fena halde yanmış büyük koşucu Glenn
+      Cunningham. Tüm bu efsaneler o "mükemmel" fiziksel kalıba uymuyordu.
+
+      Muhammed Ali'yi ele alalım. Ali, boks uzmanlarının boksörleri tartmak için
+      kullandığı o fiziksel ölçümlerin (yumruk büyüklüğü, göğüs genişliği vb.)
+      hiçbirini geçememişti. O, "doğuştan yetenekli" değildi. Boksu da tamamen
+      yanlış bir tarzda yapardı; çenesini açıkta bırakır, bir amatör gibi
+      dövüşürdü. Karşısındaki Sonny Liston ise tam bir "doğuştan yetenek"ti.
+      Boy, güç, tecrübe; hepsi Liston'daydı. İkisi maça çıkacağında Ali'nin
+      kazanması o kadar imkansız görünüyordu ki, arena ancak yarı yarıya
+      dolmuştu. Ama Ali'nin parlaklığı kaslarında değil, beynindeydi. Rakibini
+      analiz etti. Liston'ın maç dışındaki röportajlarını okudu, onun zihninin
+      nasıl çalıştığını çözdü ve onu yendi. Ali, Liston'ın kendisinin deli
+      olduğuna inanmasını istedi ve bunu başardı. Ünlü bir boks menajerinin
+      dediği gibi, "O bize tüm zaferlerin buradan (kafasına vurarak) geldiğini
+      gösterdi, buradan (yumruklarını göstererek) değil." Ama biz ne yapıyoruz?
+      Geriye dönüp baktığımızda Ali'nin harika bir fiziği olduğunu söyleyip onu
+      da "doğuştan yetenekli" kategorisine tıkıştırıveriyoruz.
+
+      Sıradan İnsanların Olağanüstüye Dönüşümü
+
+      Hepimizin ezbere bildiği bir hikaye vardır: Michael Jordan lise takımından
+      kesilmişti. Peki Jordan doğuştan bir deha mıydı? Hayır. O, spor
+      tarihindeki en çalışkan atletti. Sabahın altısında okula gitmeden önce
+      antrenman yapardı. Üniversitede savunmasını ve şutunu geliştirmek için
+      durmaksızın çalıştı. Maç kaybettiklerinde saatlerce şut çalışırdı. Eski
+      yardımcı koçu John Bach onu "dehasını sürekli olarak yükseltmek isteyen
+      bir dahi" olarak tanımlar. Jordan'ın kendisi de şöyle der: "Zihinsel
+      dayanıklılık ve yürek, sahip olabileceğiniz bazı fiziksel avantajlardan
+      çok daha güçlüdür."
+
+      Ya Babe Ruth? O koca göbekli, gece hayatını seven adamın sadece sahaya
+      çıkıp zahmetsizce ev koşusu (home run) vurduğunu düşünürüz. Aslında
+      kariyerinin başlarında oldukça tutarsız bir vurucuydu. Ancak kışları
+      formda kalmak için spor salonunda inanılmaz bir disiplinle çalıştı ve
+      atıcı (pitcher) olarak geçirdiği dönemde vuruş denemeleri yaparak büyük
+      vuruşunu nasıl kontrol edeceğini öğrendi.
+
+      Gelelim "dünyanın en hızlı kadını" Wilma Rudolph'a. Erken doğmuş, sürekli
+      hasta bir çocuktu. Çocuk felci geçirmişti ve sol bacağı felçliydi. Sekiz
+      yıl boyunca fizik tedavi gördü. Peki bu mucizevi fiziksel bir yetenek mi?
+      Asla. O sadece "çok çalışan bir hanımefendi" olarak hatırlanmak istiyordu.
+      Gelmiş geçmiş en büyük kadın atlet sayılan Jackie Joyner-Kersee de
+      başlangıçta girdiği her yarışı sonuncu bitiriyordu. Sonra çalıştı, kazandı
+      ve astım krizlerine, ağır diz sakatlıklarına rağmen rekorlar kırdı.
+
+      Gördüğün gibi, şampiyonlar gökten zembille inmiş doğaüstü varlıklar
+      değiller. Onlar, sınırlarını gelişim zihniyetiyle (growth mindset) aşan
+      sıradan insanlar.
+
+      Karakter ve Zihinsel Dayanıklılık
+
+      Spor dünyasında yetenekten daha önemli bir kelime varsa o da
+      "karakter"dir. Karakter, işler ters gittiğinde bile derinlere inip o gücü
+      bulabilme yeteneğidir. 2003 Amerikan Ligi play-off'larında Boston Red
+      Sox'ın dahi ama şımarık atıcısı Pedro Martinez'in başına gelenleri
+      hatırla. Boston 85 yıllık laneti kırmak üzereydi, maçta öndelerdi. Ama
+      Martinez üstünlüğünü kaybetmeye başlayınca ne yaptı? Zihinsel olarak
+      çöktü. Rakip oyuncuya topla vurdu, antrenörü yere fırlattı. Billy Beane
+      gibi, o da hayal kırıklığını tolere edemedi; zira sabit zihniyet, işler
+      kötü gittiğinde bunu karakterine bir saldırı olarak görür ve savunmaya
+      geçer. Bir yıl sonra Boston takımı bu "yıldız tribi" yapan oyuncuları
+      gönderip, gerçekten takım olan karakterli oyuncularla şampiyon oldu.
+
+      Buna karşılık Pete Sampras'ın Wimbledon'da geriye düştüğü anı veya Billie
+      Jean King'in "Bir şampiyon işler kötü gittiğinde bile maçı çevirebilendir"
+      diyerek kendi seviyesini yükseltmesini düşün. Şampiyonun aklı, kötü
+      anlarda "Ben bittim" demek yerine, "Bunu nasıl çözerim?" diye sormaktır.
+
+      Başarı, Başarısızlık ve Sürecin Kontrolü
+
+      İki zihniyet için başarının ve başarısızlığın anlamı taban tabana zıttır.
+      Gelişim zihniyeti için başarı, en iyisini yapmak ve öğrenmektir. Jackie
+      Joyner-Kersee, "Benim için atletizmin neşesi hiçbir zaman kazanmakta
+      yatmadı... Sonuçlardan ne kadar mutluysam, süreçten de o kadar mutluluk
+      duyuyorum" der. Tiger Woods ve Mia Hamm için de aslolan, kazanmasalar bile
+      ellerinden gelenin en iyisini yapmış olmanın gururudur.
+
+      Ancak sabit zihniyet için başarı, başkalarından üstün olduğunu
+      kanıtlamaktır. John McEnroe gibiler için sadece "bir numara olmak"
+      önemlidir. McEnroe o kadar büyük bir egoya sahipti ki, kaybettiği her maç
+      için bir bahane bulurdu: "Ateşim vardı, sırtım ağrıyordu, kameramanın
+      kulaklığından ses geldi, çok sıcak, çok soğuk..." Suçu her zaman dışarıya
+      atardı çünkü yenilgi, onun "özel" bir insan olduğu inancına vurulmuş bir
+      darbeydi.
+
+      Aynı McEnroe gibi sabit zihniyetli olan Sergio Garcia da işler kötü
+      gittiğinde ayakkabısını suçlamış, sinirle onu fırlatmış ve tekmelemişti.
+      Sabit zihniyetli sporcular sürecin kontrolünü almazlar. Kötü gittiklerinde
+      sığınacakları bir mazeret ararlar. Oysa Michael Jordan ve Tiger Woods gibi
+      gelişim zihniyetli sporcular, kariyerleri boyunca yaşlandıkça veya
+      oyunları bozuldukça kendi oyunlarının kontrolünü ellerine alıp,
+      stratejilerini tamamen baştan yaratmışlardır.
+
+      Takım Oyunu ve "Yıldız" Hastalığı
+
+      Basketbol efsanesi Michael Jordan'a göre, bir süperstarın yeteneği maçları
+      kazanabilir, ancak şampiyonlukları takım çalışması kazanır. Oysa sabit
+      zihniyetli atletler sadece yeteneklerini doğrulatmak isterler. Patrick
+      Ewing gibi dev bir yetenek, takımın ihtiyacı olan rolde (power forward)
+      oynamayı reddedip sadece "yıldız pozisyonu" (center) istediği için o
+      muhteşem takım hiçbir zaman şampiyon olamadı. Ya da Keyshawn Johnson...
+      Kendisini yıldız, takım arkadaşlarını ise "el feneri" olarak gören, "Topu
+      alacak 1 numaralı adam değilsem size bir faydam dokunmaz" diyen bu oyuncu,
+      elbette takımdan gönderildi.
+
+      Kısacası, genç sporcuları dinlediğinizde onların zihniyetini
+      duyabilirsiniz. Iciss Tillis gibi, babası gibi bir "hiç kimse" olmaktan
+      korktuğu için stres altında ezilen ve potansiyelini gösteremeyenleri de
+      duyarsınız; Candace Parker gibi, babasının "Ne kadar ekmek, o kadar köfte"
+      (çaba eşittir sonuç) felsefesini benimseyip eksiklerini tek tek kapatan ve
+      sonunda erkekleri bile yenen şampiyonları da.
+
+      Bu bölümün özü: Spor dünyasındaki "doğuştan yetenek" inancı, sporcuların
+      kriz anlarında zihinsel olarak çökmesine neden olan kocaman bir yalandır.
+      Gerçek şampiyonlar, fiziksel üstünlükle değil; başarısızlıkları birer
+      bilgi kaynağı olarak gören, süreci kontrol eden ve takım oyununu egosunun
+      önünde tutan gelişim zihniyetli "karakterleri" sayesinde zirveye ulaşır ve
+      orada kalırlar.
+
+      ### Bölüm 5: İş Dünyası: Zihniyet ve Liderlik
+
+      Gelelim iş dünyasına. 2001 yılında Enron'un iflası tüm dünyayı şoke
+      ettiğinde herkes sordu: Bu muhteşem gelecek vaat eden şirket nasıl çöktü?
+      Yolsuzluk muydu, beceriksizlik mi? Yazarımızın buna cevabı çok net:
+      Zihniyetti. Malcolm Gladwell'in belirttiği gibi, Amerikan şirketleri
+      "yetenek" kavramına takıntılı hale gelmişti. McKinsey gibi dev danışmanlık
+      firmaları, "yetenek zihniyetinin" (talent mind-set) başarı için şart
+      olduğunu, tıpkı sporda olduğu gibi iş dünyasında da "doğuştan
+      yeteneklerin" büyük paralarla işe alınması gerektiğini savunuyordu.
+
+      Enron da tam olarak bunu yaptı. Harika diplomalara sahip zeki insanları
+      işe aldılar ve onlara devasa paralar ödediler. Peki sorun neydi? Sorun,
+      yeteneğe bu kadar tapınmanın şirket içinde tam bir sabit zihniyet (fixed
+      mindset) kültürü yaratmış olmasıydı. Enron çalışanları, "Ben bir dâhiyim"
+      imajını korumak zorundaydılar. Hatalarını kabul edip düzeltebilecekleri
+      bir ortam yoktu. Eğer bir yerde eksikseniz, bunu gidermek için kursa falan
+      gitmezdiniz; çünkü bu yeteneksiz olduğunuzun ilanı olurdu. Gladwell'in
+      dediği gibi, "Yatırımcıların önüne çıkıp yanlış yaptıklarını itiraf
+      etmeyeceklerdi. Onun yerine yalan söylemeyi tercih ettiler."
+
+      Büyüyen Organizasyonlar (Good to Great)
+
+      Peki, başarısızlıkları yalanlarla örten sabit zihniyet şirketleri
+      batırıyorsa, büyüyen şirketlerin sırrı ne? Jim Collins ve ekibi, sıradan
+      şirketleri olağanüstü şirketlere dönüştüren liderleri araştırdıklarında,
+      bu liderlerin hiçbirinin egosu tavan yapmış, karizmatik "dâhi" tipler
+      olmadığını gördüler. Tam tersine, onlar; sürekli sorular soran, en
+      acımasız gerçeklerle (hatalarla) yüzleşebilen ama sonunda başaracaklarına
+      inanan, kendini geri planda tutan insanlardı. Örneğin Circuit City'yi
+      ipten alıp zirveye taşıyan Alan Wurtzel, kendine "saban atı" diyor ve
+      yönetim kurulunu etkilemek yerine onları öğrenmek için bir tartışma ortamı
+      olarak (bir buldog gibi sorular sorarak) kullanıyordu.
+
+      Bunu bilimsel olarak da test ettiler. Robert Wood ve Albert Bandura,
+      yüksek lisans öğrencilerine sanal bir mobilya şirketi yönettirdiler. Bir
+      gruba "Bu sizin doğuştan gelen yönetim yeteneğinizi ölçüyor" (sabit
+      zihniyet) dediler. Diğer gruba ise "Bu beceriler pratikle gelişir"
+      (gelişim zihniyeti) dediler. Tahmin et ne oldu? Sabit zihniyetli
+      yöneticiler, işler zorlaştığında hatalarından ders alamayıp çöktüler.
+      Gelişim zihniyeti olanlar ise stratejilerini değiştirip giderek daha
+      üretken oldular.
+
+      Büyük Egolu CEO'lar (CEO Hastalığı)
+
+      Sabit zihniyetli liderler, diğer insanlardan üstün olduklarını sürekli
+      kanıtlama ihtiyacı duyarlar. Jim Collins'in kitabındaki vasat kalan
+      şirketlerin çoğunda, şirketin ölümünü hızlandıran "devasa bir kişisel ego"
+      vardı. Bu liderler, harika bir yönetim ekibi kurmak yerine "bin yardımcısı
+      olan bir dâhi" modelini benimsiyorlardı. Çünkü yanlarında kendileri kadar
+      parlak kimseyi istemiyorlardı!
+
+      Bu "süperstar CEO" kavramının öncülerinden biri Lee Iacocca'ydı. Iacocca,
+      Ford'da çalışırken krallık fantezileri kuruyordu. "Kral Henry Ford ise,
+      ben veliaht prenstim" diyordu. Ancak Henry Ford onu kovduğunda büyük bir
+      şok yaşadı ve sırf ona kendini kanıtlamak, intikam almak ve itibarını
+      kurtarmak için ölmekte olan Chrysler'ın başına geçti. Şirketi kurtardı ve
+      "Ben bir kahramanım" dedi. Fakat sonra ne oldu? Sabit zihniyet devreye
+      girdi. Şirketin geleceğine yatırım yapmak yerine (örneğin Japonların
+      çıkardığı daha iyi arabalarla rekabet etmek yerine), Wall Street'i
+      etkileyecek vitrin yatırımları yaptı. Onu eleştirenleri kovdu,
+      Waldorf'taki lüks süitine milyonlar harcadı ve şirket tekrar batmanın
+      eşiğine geldiğinde bahaneler üretip Japonları suçladı.
+
+      Scott Paper ve Sunbeam şirketlerini "kurtaran" (!) Albert Dunlap (Nam-ı
+      diğer Elektrikli Testere Al) da benzerdi. Binlerce çalışanı işten çıkarıp
+      şirketleri kısa vadeli kârla satarak milyonlar kazandı ve "Ben bir
+      süperstarım" diyerek övündü. Onun için çalışan memnuniyeti veya toplumsal
+      sorumluluk diye bir şey yoktu. Ona göre iş demek, sadece para kazanmaktı;
+      çünkü kendi değerini ölçeceği tek birim (hisse senedi fiyatı) buydu.
+      Sunbeam'i satamadığında ve şirketi gerçekten "yönetmek" zorunda kaldığında
+      ise, öğrenmek yerine yalan söylemeyi ve gelirleri şişirmeyi seçti ve
+      sonunda kovuldu.
+
+      Enron'un efsanevi liderleri Ken Lay ve Jeff Skilling de aynı sabit
+      zihniyetin kurbanlarıydı. Ken Lay, kendini kral sanıyor ve şirketin asıl
+      yükünü çekenlere tepeden bakıyordu. Jeff Skilling ise o kadar zeki
+      olduğuna inanıyordu ki, bir fikri aklına getirmesinin bile şirkete kâr
+      olarak yazılması gerektiğini düşünüyordu! Yanlış duymadın, "Benim deham
+      kârdır" diyordu. İnsanları aşağılıyor, kimseyi dinlemiyor ve "kurşun
+      geçirmez" olduklarına inanıyorlardı. AOL Time Warner fiyaskosunda da Steve
+      Case ve Jerry Levin, batan bir şirketi birleşerek kurtarmak yerine, "Kredi
+      kime gidecek?" diye kişisel güç savaşına girip şirketlerine 100 milyar
+      dolar kaybettirdiler.
+
+      Tüm bu sabit zihniyetli liderlerin ortak özelliği; eleştiriyi
+      reddetmeleri, çalışanlarını kendi egolarını tatmin etmek için ezmeleri
+      (örneğin uçan bir portakal suyu kutusunu çalışanının kafasına fırlatan
+      Sunbeam-Oster CEO'su Paul Kazarian gibi) ve şirketin çıkarlarından çok
+      kendi kusursuzluk imajlarını korumalarıydı. Bu durum, şirketlerde Grup
+      Düşüncesi'ni (Groupthink) doğurur. Yani kimse kralın çıplak olduğunu
+      söyleyemez; herkes onaylar, kimse eleştirmez.
+
+      Gelişim Zihniyetli Liderler İş Başında
+
+      Şimdi pencereleri açıp biraz temiz hava alalım. Gelişim zihniyetli
+      liderlerin dünyasına girdiğinizde, şirket bir krallık değil, bir "büyüme
+      motoru" haline gelir.
+
+      General Electric'i (GE) dünyanın en değerli şirketi yapan Jack Welch'i ele
+      alalım. Welch bir dâhi veya karizma abidesi gibi davranmadı. Fabrikalara
+      inip işçileri dinledi. Otobiyografisinde "Ben" kelimesini kullanmaktan
+      nefret ettiğini, her şeyin "Biz" olduğunu yazdı. Kendi içindeki sabit
+      zihniyetle de savaştı. Genç bir mühendisken çatıyı uçuran bir kimyasal
+      patlamaya neden olduğunda patronundan gördüğü anlayışlı tutum, ona
+      yöneticiliğin "yargılamak değil, rehberlik etmek" olduğunu öğretti.
+      Elitizmi yok etti; yöneticilerin hava attığı özel kulübü bir gönüllülük
+      projesine dönüştürdü ve sadece "rakamları tutturan" ama takım
+      arkadaşlarına eziyet eden acımasız yöneticileri kovdu.
+
+      IBM'i uçurumun kenarından alan Lou Gerstner de aynı yoldan yürüdü. IBM,
+      tam bir "biz kraliyet ailesiyiz" kibrine sahipti. Gerstner geldiğinde
+      şirket içi politikaları bitirdi, şatafatlı yönetim komitesini dağıttı ve
+      odağı tamamen "müşteriye hizmet etmeye" ve "takım çalışmasına" çevirdi.
+      Keza Xerox'u kurtaran Anne Mulcahy, şirketin başına geçtiğinde işi
+      bilmiyordu. Egosunu bir kenara bıraktı, eve koca koca klasörler götürüp
+      her hafta sonu deli gibi ders çalıştı (Balance Sheet 101). Çalışanlara acı
+      gerçekleri söyledi ama bunu şefkatle yaptı, onlarla omuz omuza çalıştı.
+
+      Bu liderlerin hiçbiri "Ben dâhiyim" demedi. Çalışanlarının potansiyeline
+      inandılar. "Bu bir yolculuk" dediler.
+
+      Peki Ya Çalışanlar ve Kurum Kültürü?
+
+      Bugün iş dünyası büyük bir tehlikeyle karşı karşıya. Sürekli zekâsı ve
+      yeteneği övülerek büyütülmüş, her küçük adımında "harikasın" denmesine
+      alışmış, eleştiri kaldıramayan bir nesil iş gücüne katıldı (The Praised
+      Generation). Şirketler bu insanları motive etmek için sürekli günlük veya
+      aylık primler vermek zorunda kalıyor. Çözüm, kurumların da gelişim
+      zihniyetini benimsemesidir; yani çalışanları sırf zeki veya yetenekli
+      oldukları için değil, inisiyatif aldıkları, zorluklarla mücadele ettikleri
+      ve yeni şeyler öğrendikleri için övmek.
+
+      Kurumsal eğitimler bile zihniyete bağlıdır. Heslin, VandeWalle ve
+      Latham'ın çalışmasına göre, sabit zihniyetli yöneticiler çalışanlarına
+      koçluk yapmazlar, çünkü insanların değişebileceğine inanmazlar. Ancak
+      onlara gelişim zihniyeti (beynin nasıl değiştiği) öğretildiğinde,
+      çalışanlarına çok daha fazla koçluk yapmaya ve gelişimi fark etmeye
+      başlarlar.
+
+      Son olarak, dev şirketlerde (Fortune 500) yapılan bir araştırma, bir
+      şirketin tamamının zihniyeti olabileceğini gösterdi. "Dâhi kültürü"ne
+      (sabit zihniyet) sahip şirketlerde çalışanlar birbirine güvenmiyor, hile
+      yapıyor, sır saklıyor ve şirketten ayrılmak istiyordu. Ancak "Gelişim
+      kültürü"ne sahip şirketlerde çalışanlar kuruma daha çok güveniyor, risk
+      almaktan (yenilikçilikten) korkmuyor ve işi sahipleniyordu. Üstelik
+      yöneticiler de bu çalışanlarda "geleceğin liderlerini" görüyordu!
+
+      Bu bölümün özü: İş dünyasında sadece zekâya ve "doğuştan yeteneğe"
+      tapınmak, liderleri hatalarını örtbas etmeye iten, şirketleri yalanlara ve
+      iflasa sürükleyen (Enron gibi) yıkıcı bir sabit zihniyet yaratır. Gerçek
+      ve kalıcı kurumsal başarı; şirketini kendi egosunun tatmin aracı olarak
+      görmeyen, herkesin potansiyeline inanan, ekip çalışmasını teşvik edip
+      eleştiriye açık olan gelişim zihniyetli liderlerin elinde yeşerir.
+  - baslik: Parça D · İlişkiler, Ebeveynler, Öğretmenler (Bölüm 6-7)
+    icerik: >-
+      Harika, şimdi kitabın en hassas ve hayatımıza doğrudan dokunan iki büyük
+      alanına, ilişkilerimize ve çocuklarımızı/öğrencilerimizi nasıl
+      yetiştirdiğimize derinlemesine bir yolculuk yapıyoruz. Görevimiz, bu iki
+      bölümü atlanmış hiçbir fikir, vaka veya anekdot bırakmadan, yazarın
+      argüman zincirini takip ederek ve seninle karşılıklı oturup sohbet
+      ediyormuşuz gibi samimi bir dille yeniden anlatmak. Çayını veya kahveni
+      al, çünkü insan doğasının en derinlerine iniyoruz.
+
+      ### Bölüm 6: İlişkiler: Aşkta Zihniyetler (Relationships: Mindsets in Love
+      (or Not))
+
+      Aşkın yolunun hiçbir zaman düz bir çizgi olmadığını hepimiz biliriz. Bu
+      yol genellikle hayal kırıklıkları ve kalp kırıklıklarıyla doludur. Bazı
+      insanlar bu deneyimlerin kendilerini yaralamasına ve gelecekteki
+      ilişkilerini zehirlemesine izin verirken, diğerleri iyileşip yollarına
+      devam edebilirler. Peki onları ayıran şey nedir? Carol Dweck bunu bulmak
+      için yüzden fazla insandan yaşadıkları korkunç bir reddedilme hikayesini
+      anlatmalarını ister.
+
+      New York'a yeni taşınmış, çok yalnız hisseden Lydia'nın hikayesini
+      dinleyelim. Lydia, Jack ile tanıştığında aralarında anında bir bağ oluşur,
+      birlikte yaşamaya başlarlar. Lydia tüm hayatını onunla geçireceğini
+      düşünürken, harika geçen iki yılın ardından bir gün eve gelir ve bir not
+      bulur: "Ayrılmam lazım, beni bulmaya çalışma." Altında bir "sevgiler" bile
+      yazmıyordur. Lydia yıllarca telefon her çaldığında o sanıp bekler. Her iki
+      zihniyetten insanlar da buna benzer acı hikayeler anlattılar. Herkes
+      reddedilebilir. Ancak farklı olan, bununla nasıl başa çıktıklarıydı.
+
+      Sabit zihniyet (fixed mindset) taşıyan insanlar için reddedilmek,
+      alınlarına basılmış kalıcı bir damgaydı: "SEVİLMEZ!" Ve buna
+      verebilecekleri tek bir tepki vardı: İntikam. Acılarını iyileştirmek için
+      bir formülleri olmadığı için, onlara acı vereni yaralamak istediler.
+      Lydia, "Eğer elime bir fırsat geçerse ondan intikam alırım," diyordu.
+      Çalışmadaki bir adam, "Giderken benim değerimi de yanında götürdü. Ona
+      bunu nasıl ödeteceğimi düşünmediğim tek bir gün bile yok," demişti. Hatta
+      Dweck'in sabit zihniyetli bir arkadaşı boşanması hakkında şöyle demişti:
+      "Eğer benim mutlu olmamla onun sefil olması arasında bir seçim yapsaydım,
+      kesinlikle onun sefil olmasını seçerdim." İntikamın tatlı olduğu
+      efsanesini kesinlikle sabit zihniyetli biri uydurmuş olmalı!
+
+      Ancak gelişim zihniyeti (growth mindset) taşıyan insanlar intikamla
+      ilgilenmiyorlardı. Onlar için asıl amaç anlamak, affetmek ve yola devam
+      etmekti. Acı çekmelerine rağmen bu olaydan bir şeyler öğrenmek istediler.
+      Çalışmadaki bir adam, "Aşkın her şeyi fethedeceğini sanırdım ama artık
+      iletişimin ne kadar önemli olduğunu biliyorum," diyerek gelecekteki
+      ilişkileri için bir ders çıkarmıştı. Fransızların o meşhur sözünü
+      hatırlayalım: Tout comprendre c'est tout pardonner (Her şeyi anlamak, her
+      şeyi affetmektir). Gelişim zihniyetli bir kadının dediği gibi, "O beni
+      incitti ama önümde yaşanacak koca bir hayat var ve geçmişte yaşayarak bunu
+      mahvetmeyeceğim. Ona da iyi şanslar, bana da."
+
+      Kuzen Cathy tam bir gelişim zihniyeti örneğidir. 23 yıllık evliliğinin
+      ardından kocası onu terk eder, üstüne bir de kaza geçirip bacağını
+      incitir. Bir cumartesi akşamı evde tek başına otururken kendine şöyle der:
+      "Burada oturup kendime acıyarak kahrolmayacağım!" Bacağına rağmen kalkıp
+      bir dansa gider ve orada gelecekteki kocasıyla tanışır. Veya muhteşem
+      gelinliğiyle kiliseye gelip, yüzlerce davetlinin önünde damadın
+      gelmeyeceğini öğrenen Nicole Contos'u düşünün. Sabit zihniyette olsa
+      "aşağılanmış" hissedip saklanırdı. Ama o, küçük siyah bir elbise giyip
+      kendi düğün partisine katıldı ve tek başına "I Will Survive" (Hayatta
+      Kalacağım) şarkısında dans etti! O olayın onu "başarısız" olarak
+      etiketlemesine izin vermedi. Birkaç yıl sonra aynı kilisede harika bir
+      adamla evlendi. "Korkmadın mı?" diye sorulduğunda, "Hayır, onun orada
+      olacağını biliyordum" dedi.
+
+      Aşık Olan Zihniyetler ve "Sihir" Beklentisi
+
+      Benjamin Bloom dünyaca ünlü piyanistleri, yüzücüleri, matematikçileri
+      incelerken "ilişki becerisi yüksek" insanları inceleyememiştir, çünkü
+      toplum olarak biz sosyal beceriyi ölçülebilir bir "yetenek" olarak
+      görmeyiz. Biri ilişkilerde iyiyse ona "harika insan" veya "aralarında
+      kimya var" der geçeriz. Daniel Goleman Duygusal Zeka (Emotional
+      Intelligence) kitabıyla bunun öğrenilebilir bir beceri olduğunu gösterene
+      kadar bu böyleydi.
+
+      İlişkiler söz konusu olduğunda zihniyet oyununa üç yeni faktör girer: Siz,
+      partneriniz ve ilişkinin kendisi. Sabit zihniyette bu üçünün de değişmez
+      olduğuna inanılır. İdeal ilişki anında, mükemmel ve sonsuza dek süren bir
+      uyumdur. Uyuyan Güzel'in bir öpücükle hayata dönmesi gibi sihirli
+      olmalıdır. Peki bu inancın neresi kötü? İki büyük sorunu vardır:
+
+      1. Hata: Eğer Üzerinde Çalışmamız Gerekiyorsa, O İlişki "Kader" Değildir
+      Sabit zihniyet, iyi şeylerin kendiliğinden olması gerektiğine inanır.
+      Charlene, senfoni orkestrası çellisti Max ile tanıştığında her şey rüya
+      gibiydi. Aynı yemekleri seviyor, insanları aynı şekilde analiz
+      ediyorlardı. Ama zamanla Max'in huysuz tarafları ortaya çıktı.
+      Sessizleşiyor, Charlene konuşmak istediğinde "Beni yalnız bırak" diyordu.
+      İkisi de bu sorun üzerinde çalışmayı reddettiler çünkü eğer doğru ilişki
+      olsaydı, bu kadar çabalamaları gerekmezdi. Ayrıldılar. Ünlü psikiyatrist
+      Aaron Beck, bir ilişki için en yıkıcı inancın "Üzerinde çalışmamız
+      gerekiyorsa, ilişkimizde ciddi bir sorun var demektir" inancı olduğunu
+      söyler. Tıpkı dahi bir öğrencinin "çalışmayı" yeteneksizlik sayması gibi,
+      sabit zihniyetli çiftler de "çabalamayı" uyumsuzluk sayarlar.
+
+      Bunun bir parçası da Zihin Okuma (Mind Reading) yanılgısıdır. Sabit
+      zihniyet "Biz bir bütünüz, o benim neye ihtiyacım olduğunu bilmeli" der.
+      Terapist Elayne Savage'ın danışanları Tom ve Lucy'yi ele alalım. Tom bir
+      gün Lucy'ye "İlişkimizde bir dengesizlik var" der. Lucy hemen zihnini okur
+      (!) ve "Demek ki beni daha az seviyor" diyerek ayrılmayı düşünür. Neyse ki
+      terapide bunu sorar ve Tom'un aslında ilişkiyi bir sonraki "seviyeye"
+      (daha ciddi bir aşamaya) taşımak için müzikal bir terim (dengesizlik/akor)
+      kullandığı ortaya çıkar! Dweck de kocasıyla ilk zamanlarında kanepede
+      otururken kocasının "Biraz daha boşluğa (space) ihtiyacım var" demesiyle
+      dehşete düşmüştür. "Ayrılmak mı istiyor?" diye düşünürken korkarak "Ne
+      demek istiyorsun?" diye sorar. Kocası, "Biraz yana kayar mısın,
+      sığamıyorum" der!
+
+      Aynı zamanda Her Konuda Anlaşma (Agreeing on Everything) yanılgısı da
+      vardır. Raymond Knee'nin araştırması, sabit zihniyetli çiftlerin ufacık
+      bir fikir ayrılığında bile düşmanlaştıklarını gösterir. Üniversiteden yeni
+      mezun Michael ve Robin evlenecektir. Michael, bohem bir "aşk yuvası" olan
+      o harabe Greenwich Village dairesini tuttuğunda Robin deliye döner. Çünkü
+      Robin tüm hayatını o döküntü evlerde geçirmiştir ve evliliğin banliyöde
+      güzel bir ev ve araba demek olduğuna inanıyordur. Veya Janet ile Phil'i
+      düşünün. Phil yeni evinde arkadaşlarına bir parti vermek ister, Janet (us)
+      "birlikte yapalım" diyerek yemekleri hazırlar. Ama parti başlayınca Phil
+      bir "misafir" gibi davranıp tüm işi Janet'e bırakır. Janet onun
+      "erkek/koca" hakları varsayımına o kadar sinirlenir ki, onunla konuşmak
+      yerine o da işi bırakıp partide misafir gibi takılarak ona bir "ders"
+      verir. Oysa gelişim zihniyeti, hiçbir ilişkinin sorunsuz olmayacağını ve
+      beklentilerin açıkça konuşularak "sonsuza dek mutlu çalıştılar" (worked
+      happily ever after) noktasına gelinebileceğini bilir.
+
+      2. Hata: Sorunlar, Partnerin "Karakter Kusuru"dur Sabit zihniyet, sorun
+      çıktığında suçu partnerin derin ve değişmez bir karakter kusuruna atar. Ve
+      bu kusuru bir kez gördüklerinde ondan tiksinirler. Yvonne'un kocası
+      Charlie, karısının gizemli telefonlarını ve kız kıza çıkılan gecelerini
+      bir "aşama" olarak görmezden geliyordu. Çünkü gerçekle (aldatılmayla)
+      yüzleşirse sabit zihniyeti ona üç seçenek sunacaktı: Ya karısı kötü
+      biriydi, ya kendisi kötü biriydi ve onu kaçırmıştı, ya da ilişkileri
+      temelden kusurluydu. Buna dayanamazdı. Oysa gelişim zihniyeti "Beni
+      çantada keklik sanma, ilgiye ihtiyacım var" mesajını duyar ve ilişkiyi
+      tamir etmeye (veya sağlıklı bitirmeye) çalışırdı.
+
+      Penelope'nin "mükemmel" adamları bulup sonra onları çöpe atması da
+      bundandır. Biri ucuz bir hediye aldı, diğeri yemeğe ketçap sıktı (ve beyaz
+      ayakkabı giydi!), bir diğeri telefonda çok konuştu diye onları terk eder.
+      Dweck, kendi evliliğinde ucuz hediye kuralını şöyle çözmüştür: "Ben
+      paragöz değilim ama hediye önemlidir. Yılda bir günümüz var, ben sana
+      hediye seçmek için çok uğraşacağım ve senden de aynısını bekliyorum."
+      Penelope ise kusursuz adamı arıyordu. Oysa uzman Daniel Wile'ın dediği
+      gibi: Bir partner seçmek, bir dizi sorun seçmektir. Sorunsuz aday yoktur.
+
+      Bir de "Kusurlar Havada Uçuşuyor" (The Flaws Fly) durumu vardır. Wile'ın
+      danışanları Brenda ve Jack eve döner. Brenda ofisteki bir detayı anlata
+      anlata bitiremez. Amacı böbürlenmemek için işin detayına girmektir. Jack
+      sıkıntıdan patlar ama kibar olmak için susar. Brenda sıkıldığını anlayıp
+      daha da detay anlatır. İkisi de zihinlerinde etiketleri yapıştırır:
+      "Brenda çok sıkıcı!" "Jack çok bencil!" Oysa Jack sadece "Hayatım çok
+      detaya girdin, ana fikri kaçırdım, neden bu kadar heyecanlısın onu
+      anlatsana" diyebilirdi. Veya Aaron Beck'in hastaları Ted ve Karen. Ted
+      (ciddi adam) ve Karen (neşe dolu kadın) zıt kutuplar olarak birbirini
+      çeker. Sonra sorunlar başlar. Ted, Karen'i "sorumsuz bir havaifişek",
+      Karen ise Ted'i "yargılayıcı bir tiran" olarak etiketler. Neyse ki Ted bir
+      gün eve gelip dağınık evi gördüğünde "Olgun bir insan ne yapardı?" diye
+      sorup evi temizlemeye başlayarak yargılamayı bırakır ve evliliği kurtarır.
+      Hatta Bill ve Hillary Clinton'ı düşünün. Bill yalan söylediğinde Hillary
+      eğer onu "değişmez bir yalancı" (sabit zihniyet) olarak görseydi onu asla
+      affedemezdi. Ancak Bill haftada bir tam gün danışmanlık alıp, alkolik bir
+      ailenin çocuğu olarak geliştirdiği o "çifte yaşam" (dual life) savunma
+      mekanizmasını çözmeye çalıştığında (gelişim zihniyeti), Hillary onu
+      çabalayan biri olarak görüp affedebilmiştir.
+
+      Partneri Düşman İlan Etmek ve İlişkilerde Rekabet Neden sorun çıkınca
+      partneri suçlarız? Çünkü başarısızlığı kendi karakterimize yediremeyiz.
+      Dweck ve kocası suçlama ihtiyacını aşmak için "Maurice" adında hayali bir
+      üçüncü kişi yaratmış ve ne zaman bir tartışma çıksa suçu zavallı Maurice'e
+      atarak (sabit zihniyet refleksini) ehlileştirmişlerdir. Dweck'in annesiyle
+      olan ilişkisi de böyledir. Annesi ona sevgi göstermemiştir. Dweck yıllarca
+      onu suçlayarak kendini korumuştur. Ama sonra "İlişkinin yarısı benim"
+      diyerek adım atar. O adım, yıllar sonra felç geçiren annesinin "Bizim ne
+      olduğunu bilmediğimiz sevgiyi sen bize öğrettin" itirafına ve aralarında
+      harika bir bağın oluşmasına yol açar.
+
+      Ayrıca partnerle rekabet de sabit zihniyetin zehridir. Susan'ın sevgilisi
+      Martin, bir konferansta taksicinin ve otel personelinin Susan'ı övmesine
+      dayanamayıp surat asmıştır. Veya Cynthia; aktör kocası varken oyunculuğa
+      soyunup ondan daha iyi oynamış, müzisyen/aşçı kocası varken ondan daha iyi
+      piyano çalıp harika yemekler yaparak her iki adamı da ilişkiden
+      kaçırtmıştır. Gelişim zihniyetinde amaç, partnerini gölgede bırakmak
+      değil, onun gelişimini (James'in şirketi kurması, Laura'nın kitap yazması
+      gibi) desteklemektir. Evlilik bir "Extreme Makeover" (baştan yaratma)
+      programı değil, potansiyel geliştirme ortaklığıdır.
+
+      Arkadaşlık: Sen Alttaysan Ben İyi Hissederim Arkadaşlıklar da bizi
+      geliştirmelidir. Ancak Sheri Levy'nin araştırması, sabit zihniyetli ergen
+      erkeklerin "Kızlar matematikte kötüdür" gibi klişelere katıldıkça
+      özgüvenlerinin (self-esteem) arttığını göstermiştir. Yani "Başkası ne
+      kadar düşükse, ben o kadar yüksekteyim." Dweck'in bilge bir arkadaşı şöyle
+      der: "Herkesin kusuru vardır, ama bana kendimi kötü hissettiren insanlara
+      asla tahammül etmem." Dweck'in 50. yaş gününde, arkadaşının kız kardeşi
+      çıkıp sözde onu övmek için "Cinsel iştahı o kadar büyüktür ki neyse ki
+      genç bir adamla evlendi de adam bunu kaldırabiliyor" diyerek onu herkesin
+      önünde küçültmüştür. Dweck bir gece rüyasında, evine girip en değerli
+      eşyalarını çalan bir hırsız görür. Uyandığında hırsızın kim olduğunu
+      anlar: Ondan sürekli iş yardımı isteyen ama "Sen asla benim kadar yaratıcı
+      olamazsın" diyerek onu aşağılayan bir "arkadaş"tır. Dweck rüyadan sonra
+      ona sınır çizer. Kendisi de geçmişte trende tanıştığı harika bir iş
+      adamını, sırf "Benimle bu kadar ilgileniyor, demek ki ben harikayım"
+      hissini yaşamak için bir "ayna" olarak kullandığını itiraf eder.
+      Unutmayın, gerçek dostlar sadece kötü gününüzde değil, iyi bir şey (terfi,
+      güzel bir aşk) başardığınızda da yanınızda olup bunu kutlayabilenlerdir.
+
+      Utangaçlık (Shyness): Yargılanma Korkusu Jennifer Beer'in yüzlerce utangaç
+      insanla yaptığı çalışma inanılmazdır. Sabit zihniyetli insanlar utangaç
+      olmaya çok daha yatkındır çünkü sürekli yargılanmaktan korkarlar. Deneyde,
+      birbirini tanımayan insanlar bir araya getirilir. İlk beş dakika her iki
+      zihniyetin utangaçları da gergindir. Ancak beş dakika sonra gelişim
+      zihniyetli utangaçlar bu durumu bir "öğrenme ve tanışma fırsatı" olarak
+      görüp açılırlar ve utangaç olmayan insanlar kadar harika bir sohbet
+      çıkarırlar. Sabit zihniyetli utangaçlar ise hata yapma korkusuyla göz
+      temasından kaçınmaya ve donup kalmaya devam ederler. Psikiyatrist Scott
+      Wetzler'in hastası George gibi... George kafede çok beğendiği Jean onunla
+      flört ettiğinde o kadar panikler ki (cool görünememe korkusuyla), "Buraya
+      oturman benim için fark etmez" diyerek kızı kaçırır. Ancak gelişim
+      zihniyetini öğrenince Jean'den özür diler ve onu yemeğe çıkararak
+      duvarlarını yıkar.
+
+      Zorbalar ve Kurbanlar: Yeniden İntikam Gelelim okullardaki zorbalığa.
+      Zorbalık (bullying) tamamen "yargılamak" ve "statü kazanmak"la ilgilidir.
+      Zorba (sabit zihniyet), başkalarını ezerek kendi değerini yükseltir.
+      Columbine lisesi katliamcılarından Eric Harris, göğüs deformitesi olan
+      kısa boylu bir inek (geek) öğrenci olarak zorbaların (sporcuların vs.) en
+      büyük hedefiydi. Yemekleri yere dökülür, kilitli dolaplara itilirdi.
+      Dweck'in 8. sınıf öğrencileriyle yaptığı deney, zorbalığa uğrayan sabit
+      zihniyetli çocukların bunu bir "hiçkimse" (nobody) olmak şeklinde kişisel
+      algıladıklarını ve tek amaçlarının yüzlerini parçalamak veya onları ezmek
+      gibi "şiddetli bir intikam" olduğunu gösterdi. Columbine'da olan da buydu.
+      Oysa gelişim zihniyetli kurbanlar zorbalığı kendi kusurları olarak değil,
+      zorbanın kendi psikolojik veya ev problemleri olarak görüyor ve onları
+      eğitmeyi, hatta affetmeyi amaçlıyorlardı.
+
+      Eric Harris'in okul arkadaşı Brooks Brown da zorbalığa uğramıştı ama o
+      intikamı seçmedi. Gelişim zihniyetine sahipti. Hatta yıllar önce
+      tartıştığı Eric'e son sene "Ben çok değiştim, umarım sen de
+      değişmişsindir, barışalım" diyecek kadar büyüktü. Katliamdan sonra Michael
+      Moore'un Bowling for Columbine belgeselinde çalıştı ve zorbalığa uğrayan
+      çocuklara intikamın değil, aklın çözüm olduğunu öğreten bir web sitesi
+      kurdu.
+
+      Peki okul ne yapabilir? Stan Davis (Dan Olweus'un çalışmalarına dayanarak)
+      okullarda zorbalığı %93 oranında azaltan bir program kurdu. Kilolu ve
+      "sulu göz" Darla o kadar dışlanıyordu ki, program sayesinde yıllar sonra
+      ortaokula geçtiğinde eski zorbaları bile onu koruyan arkadaşlarına
+      dönüştü! Davis bunu yaparken zorbanın karakterini asla yargılamadı. "Sen
+      kötü bir çocuksun" demek yerine, "Bugün kavgaya karışmadığını fark ettim,
+      insanlarla iyi geçinmek için çabalıyorsun" diyerek "süreci ve çabayı"
+      övdü. Efsanevi çocuk psikoloğu Haim Ginott da 8 yaşındaki bir zorbaya,
+      "Andy'nin sınıfımızda dışlandığını görüyorum. Senin liderlik vasıfların
+      var, bana Andy'ye yardım etmek için tavsiyeler yazar mısın?" diyerek
+      zorbaya yepyeni, gelişim odaklı bir rol biçmişti.
+
+      Bu bölümün özü: İlişkilerde sabit zihniyet, partnerinizi veya ilişkinizi
+      değişmez bir şekilde yargılayarak sizi rekabete, suçlamaya ve intikama
+      sürükler. Gelişim zihniyeti ise çatışmaları, iletişim hatalarını ve
+      utangaçlığı kişisel birer etiket değil, aşılması gereken engeller olarak
+      görür ve hem sizin hem de partnerinizin potansiyeline ulaşmasını
+      sağlayacak bir "öğrenme ve yardım etme" ortaklığı kurar.
+
+      Bölüm 7: Ebeveynler, Öğretmenler ve Koçlar: Zihniyetler Nereden Gelir?
+      (Parents, Teachers, and Coaches: Where Do Mindsets Come From?)
+
+      Hiçbir ebeveyn sabah kalkıp "Bugün çocuğumun motivasyonunu nasıl yok
+      edebilirim, çabasını nasıl baltalayabilirim?" demez. Her ebeveyn çocuğunun
+      en başarılı, en harika olmasını ister. Ancak ağzımızdan çıkan her kelime
+      ve davranış çocuklarımıza bir mesaj gönderir. Bu mesaj ya "Senin kalıcı
+      özelliklerin var ve ben bunları yargılıyorum" (sabit zihniyet) ya da "Sen
+      gelişen bir insansın ve ben senin gelişimine destek oluyorum" (gelişim
+      zihniyeti) şeklindedir. Çocuklar bu mesajlara karşı inanılmaz derecede
+      hassastır.
+
+      1950'lerin dahi çocuk eğitimcisi Haim Ginott'un 5 yaşındaki Bruce
+      hikayesini düşünün. Bruce yeni anaokuluna annesiyle gelir. Duvardaki
+      resimlere bakıp "Bu çirkin resimleri kim yaptı?" der. Annesi hemen
+      savunmaya geçer: "Resimlere çirkin demek hiç hoş değil!" Ama öğretmen
+      Bruce'un ne sorduğunu anlamıştır: Burada kötü resim yapan çocuklara ne
+      olur? Yargılanırlar mı? Öğretmen, "Burada güzel resim yapmak zorunda
+      değilsin, istersen kızgın resimler de yapabilirsin" der. Bruce rahatlar.
+      Sonra kırık bir itfaiye arabası bulur: "Bunu kim kırdı?" Anne yine atılır:
+      "Kim kırarsa kırsın, sen kimseyi tanımıyorsun ki!" Öğretmen yine araya
+      girer: Burada oyuncak kıran çocuklara ne olur? "Oyuncaklar oynamak
+      içindir, bazen kırılabilirler, olur böyle şeyler." Bruce annesine el
+      sallar ve içeri girer. Burası yargılanacağı bir yer değildir. Dweck bunu,
+      Fransa tatilinde insanların onlara iyi davranmasını bir "sınavı geçmiş
+      olmak" gibi hissederken, İtalya'ya geçtiklerinde "Burada sınav yok!"
+      diyerek rahatlayıp ağlamasına benzetir.
+
+      Başarı ve Başarısızlık Mesajları: Zekayı Övmenin Tehlikesi
+
+      "Bunu ne çabuk öğrendin, çok zekisin!" "Bu çizime bak, yeni Picasso musun
+      nesin!" "Hiç çalışmadan A aldın, harikasın!" Ebeveynlerin %80'i çocukların
+      özgüvenini artırmak için bu tür övgülerin şart olduğuna inanır. Ama
+      çocukların duyduğu gizli mesaj şudur: Eğer çabuk öğrenemezsem demek ki
+      zeki değilim. Zor bir şey çizersem Picasso olmadığım anlaşılır. Çalışırsam
+      benim harika olduğumu düşünmezler. Dweck bunu yüzlerce çocukla yaptığı 7
+      farklı deneyle kanıtlamıştır: Çocukların zekasını övmek onların
+      motivasyonunu ve performansını yok eder! Çocuklar zekalarının övülmesini
+      severler ama ufacık bir zorlukla karşılaştıklarında özgüvenleri darmadağın
+      olur. Columbia Üniversitesindeki bir öğrencisinin itiraf ettiği gibi:
+      "Zekam yüzünden övüldükçe zor görevlerden kaçar oldum. En ufak bir
+      başarısızlık karakterime bir saldırı gibi hissettirdi." Hatta Dweck bile
+      kocası David çok zor bir soruyu çözdüğünde ağzından "Sen bir dahisin!"
+      sözünü kaçırmış, sonra dehşetle ağzını kapatınca kocası gülerek "Yani
+      farklı stratejiler arayıp pes etmediğim için beni övüyorsun biliyorum"
+      diyerek onu kurtarmıştır!
+
+      Bunun yerine Süreci ve Büyümeyi (Process and Growth) övmeliyiz. "Bu sınava
+      çok iyi çalışmışsın, notlarını tekrar etmişsin ve sonuç kendini
+      gösteriyor!" veya "Bu matematik probleminde farklı yollar denemeni ve
+      sonunda doğru olanı bulmanı çok sevdim!" Peki ya çocuk çok kolay bir şeyi
+      şipşak yaparsa? "Vay canına, çok hızlı yaptın" demek "hızı ve
+      mükemmelliği" (öğrenmenin düşmanlarını) yüceltmektir. Bunun yerine, "Hata
+      ettim, bu senin için çok kolaymış ve zamanını boşa harcadım. Özür dilerim.
+      Hadi şimdi senden gerçekten bir şeyler öğrenebileceğin zor bir görev
+      bulalım!" demeliyiz. Lütfen çocuklara "zekisin" dediğiniz deneyin sonucunu
+      hatırlayın: Zekası övülen çocukların %40'ı kendi test puanları hakkında
+      YALAN söylemişti (puanlarını yüksek göstermişlerdi). Zeka övgüsü sıradan
+      çocukları başarısızlıktan ölesiye korkan yalancılara dönüştürmüştü.
+
+      Peki ya çocuklar sınav öncesi gerginse? Kristina'nın ailesi "Senin ne
+      kadar zeki olduğunu biliyoruz, yaparsın!" diyerek stresi daha da
+      artırıyor, kızı paniğe sokuyordu. Bunun yerine, "Sınavlar insanın
+      bilgisini gösteremediği garip şeylerdir. Biz senin notunla değil,
+      öğrenmenle ilgileniyoruz ve bu konuda ne kadar çabaladığını çok iyi
+      biliyoruz" demek onu rahatlatırdı.
+
+      Ya başarısızlık anında ne yapacağız? 9 yaşındaki Elizabeth ilk jimnastik
+      yarışmasında dereceye giremez ve perişan olur. Ebeveynler ne yapmalıdır?
+
+      "Bence en iyisi sendin" (Sahte ve yalan).
+
+      "Hakkını yediler" (Suçu başkasına atmak).
+
+      "Jimnastik o kadar da önemli değil" (Değerini düşürmek).
+
+      "Yeteneklisin, bir dahakine kesin kazanırsın" (Tehlikeli! Yetenek tek
+      başına nasıl kazandırsın?).
+
+      "Kazanmayı henüz hak etmedin." (İşte doğru olan bu!)
+
+      Babası tam olarak bunu yapmıştır: "Hayal kırıklığını anlıyorum ama henüz
+      kazanmayı hak etmedin. Oradaki kızlar senden çok daha uzun süredir ve çok
+      daha fazla çalışıyorlar. Eğer gerçekten istiyorsan, sen de onlar kadar
+      çalışmalısın." Elizabeth o gün antrenmanlarına sarılır ve bir sonraki
+      yarışmada 80 kız arasından şampiyon olup 5 kurdele ve dev bir kupa
+      kazanır. Gerçekçi ve gelişim odaklı eleştiri (constructive criticism)
+      çocuğun eksiğini yüzüne vurmak değil, ona bir çözüm yolu (process)
+      sunmaktır. Çocuğun ödevini baştan savma yaptığını gören bir baba "Sen
+      aptal mısın yoksa sorumsuz musun?" demek yerine "Bu ödevi böyle eksik
+      bırakman beni üzüyor. Sence bunu daha iyi öğrenmenin bir yolu var mı?"
+      demelidir. Tıpkı Ginott'un hikayesinde çivileri yere döktüğünde "Çok
+      sakarım" diyen Philip'e babasının "Çiviler dökülünce öyle demeyiz,
+      'Çiviler döküldü, hadi toplayalım' deriz" demesi gibi.
+
+      Çocuklar bu mesajları çok erken kaparlar ve aktarırlar (Children pass on
+      the messages). İkinci sınıf çocuklarına matematikte zorlanan birine ne
+      tavsiye verecekleri sorulduğunda, gelişim zihniyetli olan "Tekrar oku,
+      düşün, öğretmene sor" derken sabit zihniyetli olan "Senin için üzgünüm"
+      der. Hatta bebekler bile bunu kapar. Mary Main ve Carol George'un
+      çalışmasında istismara uğrayan (ağladığı için ailesi tarafından yargılanan
+      ve dövülen) bebeklerin kreşte ağlayan diğer bebeklere sempati duymak
+      yerine gidip onlara saldırdığı (çünkü ağlamanın yargılanacak bir suç
+      olduğunu öğrendikleri) görülmüştür!
+
+      Disiplin bir yargılama mı yoksa öğretme midir? 16 yaşındaki Alyssa eve
+      gelip ailesine "Arkadaşlarımla alkolü denemek için evde bir 'kokteyl
+      partisi' verebilir miyim?" der. Ebeveynleri öfkeyle bağırıp "Sen nasıl bir
+      kızsın!" diyerek onu yargılamazlar. Alyssa'nın aslında güvenli bir
+      ortamda, arabaya alkollü binmek zorunda kalmadan bu merakını gidermek
+      istediğini anlarlar ve konuyu tartışırlar. Disiplin, çocuğu karakterinden
+      ötürü yargılamak değil, ona kendi etik kararlarını almayı öğretmektir.
+
+      Ölüm Kalım Meselesi Olarak Zihniyetler ve Ebeveyn İdealleri Bazen
+      ebeveynler "en iyisini" o kadar kötü bir yolla isterler ki çocuklarını
+      ezerler. Columbia'daki öğrenci Sandy, ailesi onu sadece "Harvard'a
+      girerse" değerli göreceği (ve böylece kendi zekalarını onaylatacakları)
+      için depresyona girmiş, A+ ve F notları arasında gidip gelmiştir. Veya
+      Mark'ın ebeveynleri, çocukları muhteşem bir matematik-fen lisesi olan
+      Stuyvesant'ı kazanmasına rağmen "Oradan Harvard'a girmek zormuş" diyerek
+      onu sıradan bir okula gönderip çocuğun tutkusunu öldürmüşlerdir. "Seni
+      Seviyoruz - Ama Kendi Şartlarımızla" (We love you - on our terms). John
+      McEnroe'nun babası gibi. Oğlu şampiyon olduğunda onu sevdi, McEnroe tenis
+      oynamaktan nefret ettiğini söylese de babası onu zorladı. Oysa Tiger
+      Woods'un babası "Oğlum iyi bir tesisatçı olmak isteseydi, harika bir
+      tesisatçı olduğu sürece hiç umrumda olmazdı" diyerek onu yeteneği için
+      değil çabası için sevdiğini göstermiştir. Kemancı Dorothy DeLay'in yanına
+      gelen ebeveynleri düşünün. 8 yaşındaki çocuğu bir robot gibi Beethoven
+      keman konçertosu çalmaya zorlayarak sırf "Benim 8 yaşındaki oğlum
+      Beethoven çalıyor, seninki ne yapıyor?" diyerek kendi egolarını tatmin
+      ediyorlardı. Oysa Yura Lee'nin annesi arkada mutlu mutlu sallanarak sadece
+      kızının müziğinden keyif alıyordu ve Yura "Çalarken her zaman çok
+      mutluyum" diyordu.
+
+      Sabit zihniyetli ebeveynlerin çocuklarına biçtiği ideal "doğuştan gelen,
+      harika deha" kalıbıdır. Bu kalıba uymayan çocuk Ginott'un hastası 17
+      yaşındaki Nicholas gibi kalbinde "Ben babamın ideal oğlu değilim, hayal
+      kırıklığıyım" yarasıyla büyür.
+
+      Öğretmenler (Teachers): Harika Bir Öğretmen Ne Yapar? Peki öğretmenler?
+      Bazıları "Çocukların özgüveni düşmesin diye standartları düşürelim" der.
+      Sonuç? Sheila Schwartz'ın öğretmenlik bölümündeki öğrencileri! Yazıları
+      imla hatalarıyla dolu bir öğrenci sırf Schwartz onu uyardı diye West Point
+      üniformalı kocasıyla ofisi basar. Veya başka bir öğrenci Bülbülü Öldürmek
+      (ırkçılıkla savaşan bir kitabın) ana fikrini "herkes temelde iyidir" diye
+      yorumladığında, Schwartz "Yanlış" deyince gidip onu dekanlığa şikayet
+      eder. Standartları düşürmek aptallık yaratır. Ama standartları yüksek
+      tutup öğrencilere oraya nasıl ulaşacaklarını göstermemek de onları uçuruma
+      itmektir.
+
+      İşte harika öğretmenlerin (Marva Collins, Rafe Esquith, Dorothy DeLay)
+      sırrı: Hem çıtayı çok yükseğe koyarlar hem de öğrencilere oraya ulaşmaları
+      için inanılmaz bir şefkatle eşlik ederler. Marva Collins (Chicago):
+      Sınıfına atılmış, kavgacı, bıçaklı, "geri zekalı" denen çocukları alır.
+      Sınıfa girdiği ilk gün, "Belki size okul ihanet etmiştir ama ben
+      etmeyeceğim. Burada başarısızlık yok, hoş geldiniz. Sizi seviyorum, siz
+      kendinizi sevmeseniz bile sizi seveceğim" der. Sonra ne mi olur? 3-4
+      yaşındaki çocuklar liselilerin kelime kitabından kelimeler öğrenir, 7
+      yaşındakiler Wall Street Journal okur, kavgacı çocuklar Macbeth ve
+      Shakespeare tartışır. 60 Minutes muhabiri çocuklara "Okul çok zor, neden
+      seviyorsunuz?" dediğinde çocuk "Çünkü beynimizi büyütüyor!" der. Gary
+      adındaki çocuk ödevini yırtıp tahtaya kalkmadığında Collins "Ben senden
+      vazgeçmeyeceğim, hayatını ziyan etmene izin vermeyeceğim" der ve Gary
+      sonunda harika bir yazar olup ödevinde Sokrates'ten alıntılar yapar!
+
+      Rafe Esquith (Los Angeles): Suçun, uyuşturucunun ortasındaki 2. sınıf
+      öğrencilerini alır. Onlara "Ben sizden zeki değilim, sadece tecrübeliyim.
+      Kısayol yok!" diyerek her gün sabah erken, akşam geç vakte kadar onlarla
+      çalışır. Sonuçta o 5. sınıf çocukları Fareler ve İnsanlar, Bülbülü
+      Öldürmek gibi klasikleri okur, 6. sınıfta lise cebiri çözerler. Planı en
+      utangaç çocuğa bile zor okuma parçalarını sevdirecek şekilde ince ince
+      yapar.
+
+      Dorothy DeLay (Juilliard): Juilliard, sadece yetenekli "dahilerin"
+      geldiği, öğretmenlerin "şunun kulağı yok, zamanını boşa harcama" dediği
+      elitist bir yerdir. (Kendi hocası Galamian böyle derdi). Ama DeLay "Hiçbir
+      şey için zaman kaybı demem, nasıl yapacağımı (how can I do it) bulurum"
+      diyerek herkese eşit zaman ayırır. Itzhak Perlman da onun öğrencisiydi.
+      Bir keresinde bir öğrenci Perlman'ın hızından korkup "Asla onun gibi
+      çalamam" dediğinde, öğrenci o hıza çıkana kadar metronomun ekranını
+      kapatır ve öğrencinin kendi sınırını aşmasını sağlar.
+
+      Koçlar (Coaches): Zihniyet Yoluyla Kazanmak Koçlar da öğretmendir. Fakat
+      başarıları gazetelerde, tüm ülkenin önünde test edilir. Sabit Zihniyetli
+      Koç Bobby Knight (Indiana): Çok "karmaşık" (complicated) bir adamdır.
+      Çünkü takımı kaybettiğinde bu onun "koçluk dehasına" ve "kimliğine"
+      yapılmış bir hakarettir. Hata kabul etmez (Holy Grail: mistake-free game).
+      Oyuncularını acımasızca yargılar ve ezer. Harika fiziksel yeteneklere
+      sahip Daryl Thomas'a "Sen bu okula gelmiş geçmiş en kötü p.çsin (pussy)"
+      diyerek hakaret eder, dolabına tampon koyar. Hatta sahada sandalye
+      fırlatır, oyuncusunun boğazını sıkar. Steve Alford gibi bazıları bunu
+      görmezden gelip başarılı olsa da, takım "zihinsel olarak" çöker. İsiah
+      Thomas (onun en büyük oyuncusu), "Bazen onu vurmak isterdim, bazen
+      sarılmak" der. Dweck'in dediği gibi, "En iyi öğrencim beni vurmayı
+      düşünseydi kendimi başarılı saymazdım."
+
+      Gelişim Zihniyetli Koç John Wooden (UCLA): Dünyanın gelmiş geçmiş en büyük
+      şampiyonluk rekorunu (10 şampiyonluk) kıran adam! UCLA'ya geldiğinde ne
+      doğru düzgün bir salonları vardı (karanlık, havasız B.O. Barn), ne de
+      oyuncuları harikaydı. İlk idmanda "Kaçabilseydim kaçardım" demişti. Ama
+      onlara "Temel beceriler, kondisyon ve ZİHNİYET" verdi. Holy Grail (Kutsal
+      Kase) "Kusursuz Oyun" değil, "Tam Hazırlık ve Tam Çaba" idi. Maçtan sonra
+      "Kazandık mı, kaybettik mi? Bu yanlış soru. Doğru soru: En iyi çabamı
+      gösterdim mi? Eğer gösterdiysen skor tabelasında geride kalsan bile
+      kaybetmiş sayılmazsın" derdi. Yıldızlarını şımartıp diğerlerini ezmedi
+      (Equal treatment). Bill Walton gibi bir yıldız varken bile yedeğindeki
+      Fred'e "Sana söz veriyorum profesyonel olacaksın" dedi ve Fred mezun
+      olunca yılın çaylağı oldu! İlk şampiyonluklarını kazandıklarında, kötü
+      oynadığı için maçtan aldığı yedeği Fred'in odasına endişeyle girdiğinde
+      Fred, "Koç anlıyorum, kazanmamız için bunu yapmalıydın, Doug adına çok
+      mutluyum" dedi. Knight'ın boğazını sıktığı oyuncuyla Wooden'ın oyuncusunun
+      erdemini karşılaştırın!
+
+      Başarı Düşman Mı? (Pat Summitt): Tennessee Kadın Basketbol takımının 8
+      şampiyonluk kazanan koçu Summitt (Lady Vols), başarının nasıl insanı
+      uyutarak sabit zihniyete soktuğunu (Pat Riley buna "ben hastalığı/disease
+      of me" der) gösterir. 1996'da şampiyon olan takımı bir sonraki yıl
+      rehavete kapılır, yeni gelenler "Biz zaten şampiyon takımız" der. Üst üste
+      feci şekilde kaybederler. Summitt onlarla 5 saat toplantı yapar, sonraki
+      maçta canlarını dişlerine takarlar ama yine kaybederler! Kızlar nefes
+      alamayacak kadar ağlarken Summitt onlara, "Başınızı kaldırın, eğer her
+      zaman böyle çabalarsanız size söz veriyorum Mart ayında o şampiyonluk
+      finalinde olacağız!" der. Ve olurlar! Başarı sizi "Yetenekliyim o yüzden
+      kazanıyorum" körlüğüne itebilir. Gerçek şampiyonlar hep daha iyisini
+      öğrenmek için çabalar.
+
+      Sahte Gelişim Zihniyeti (False Growth Mindset) Peki, bunca harika şeyin
+      ardından yazarın Avustralyalı meslektaşı Susan Mackie "Sahte Gelişim
+      Zihniyeti salgını var!" dediğinde Dweck neden irkildi? Çünkü insanlar bu
+      kavramı çok yanlış anlamıştı:
+
+      Sadece "açık fikirli/esnek" olmak gelişim zihniyeti değildir.
+
+      Sadece "çabayı övmek" değildir! Çaba işe yaramıyorsa sadece çabayı övmek
+      teselli ikramiyesidir. Çocuk yeni stratejiler bulmalı, yardım istemeli
+      (process) ve bu süreç öğrenmeyle (outcome) ilişkilendirilmelidir!
+
+      Çocuğa sadece "Sen her şeyi yapabilirsin" demek değildir. Ona o becerileri
+      kazandırmak için kaynak ve strateji sağlamadan bunu demek, onu
+      başarısızlıkla yalnız bırakmaktır. En fenası da, "Bu çocuğa öğretemiyorum
+      çünkü onun sabit zihniyeti var" diyerek kendi başarısızlığını çocuğa atan
+      öğretmenlerdi!
+
+      Bu bölümün özü: Ebeveynlerin, öğretmenlerin ve koçların görevi çocuklara
+      ne kadar "yetenekli" olduklarını kanıtlayacak etiketler yapıştırmak değil;
+      onlara hatalardan korkmamayı, doğru stratejilerle çabalamayı ve
+      kendilerini sürekli geliştirmeyi sevecekleri güvenli ve şefkatli bir alan
+      (gelişim zihniyeti ortamı) sunmaktır. Çocukların beyni bir kas gibidir ve
+      doğru mesajlar (ve eylemler) verildiğinde, en "umutsuz" görünen çocuk bile
+      harikalar yaratabilir.
+  - baslik: Parça E · Zihniyetleri Değiştirmek (Bölüm 8)
+    icerik: >-
+      Parça E: Bölüm 8 — Zihniyetleri Değiştirmek
+
+      Eminim şu ana kadar okuduklarımızdan sonra aklında tek bir soru var:
+      "Peki, bu zihniyeti nasıl değiştireceğiz?" Carol Dweck kitabının bu son ve
+      belki de en vurucu bölümünde, değişimin doğasını, zorluklarını ve o
+      karanlık, yargılayıcı iç sesimizi nasıl ehlileştirebileceğimizi anlatıyor.
+      Kahveni aldıysan, insan zihninin arka odalarına doğru rehberli bir
+      yolculuğa çıkıyoruz.
+
+      Değişimin Doğası ve Felç Edici İnançlar Dweck, değişimin doğasını
+      anlatmaya kendi çocukluğundan çok samimi iki anıyla başlıyor. Birinci
+      sınıftayken ailesi taşınır ve küçük Carol kendini yeni bir okulda bulur.
+      Sınıftaki herkes onun henüz öğrenmediği harfleri yazabilmektedir.
+      Öğretmeni Bayan Kahn, "İsminizi kağıdın doğru yerine yazın," dediğinde
+      Carol ne yapacağını bilemez ve yardım istemek yerine sadece oturup ağlar.
+      Başka bir gün, bir yetişkin ve bir grup çocukla sinemaya gitmek için
+      buluşma noktasına köşeyi dönerken, grubun onsuz yürüyüp uzaklaştığını
+      görür. Arkalarından "Beni bekleyin!" diye bağırmak ve koşmak yerine,
+      elindeki bozuk paralara sıkıca tutunup onların gidişini donakalmış bir
+      şekilde izler. Rüyalarında kendi diktiği peleriniyle dünyayı kurtaran o
+      "Süpermen" kız, gerçek hayatta neden bu kadar basit taktikleri bile
+      kullanamayıp peşinen yenilgiyi kabul etmiştir?
+
+      Çünkü, sabit zihniyet (fixed mindset) kişiyi çaresizliğe mahkum eder.
+      İşler ters gittiğinde kendini yetersiz hissedip donakalmana sebep olur.
+      Değişim dediğimiz şey de bir ameliyat gibi değildir; eski inançlar (kötü
+      bir diz kapağı gibi) sökülüp atılmaz. Yeni inançlar eskilerin yanına
+      yerleşir ve güçlendikçe size yeni bir düşünme ve eyleme geçme yolu
+      sunarlar.
+
+      1960'larda psikiyatrist Aaron Beck, danışanlarının anksiyete veya
+      depresyon krizlerinden hemen önce zihinlerinden hızla geçen yargılayıcı
+      inançları (Örn: "Doktor benim beceriksiz olduğumu düşünüyor") keşfetti. Bu
+      keşif, Bilişsel Terapinin doğuşuydu. Bilişsel terapi, insanların bu aşırı
+      uçlardaki yorumlarını dizginlemeyi öğretir. Ancak Dweck, zihniyet
+      teorisinin bir adım daha ileri gittiğini söylüyor: Bilişsel terapi kişiyi
+      rahatlatır ama onu yargılama dünyasından çıkarıp gelişim dünyasına sokmaz.
+      Gelişim zihniyeti (growth mindset) ise o iç monoloğu "Bu benim ezik
+      olduğumu gösterir" çizgisinden çıkarıp, "Bundan ne öğrenebilirim?"
+      çizgisine taşır.
+
+      Zihniyet Dersleri: İç Monoloğun Değişimi Dweck, üniversitedeki
+      öğrencilerine zihniyetleri anlattığında, bu bilginin tek başına bile
+      insanların hayatını nasıl dönüştürdüğünü görüyor. Mesela yazar olmak
+      isteyen ama "doğuştan yetenekli (natural)" olmadığı ortaya çıkar diye
+      eleştiriden ölesiye korkan Maggie, bu derslerden sonra cesaretini toplayıp
+      yaratıcı yazarlık kursuna yazılmış. Sadece kazanmaya odaklı sporcu Jason,
+      maçlar sırasında artık "öğrenmeye" odaklanarak kendini nasıl
+      geliştireceğini keşfetmiş. Lisede hiç uyumadan ve çalışmadan sadece
+      "doğuştan zeki" olarak yüksek notlar alan ama üniversitede duvara toslayıp
+      "Artık üstün değil miyim?" krizine giren "dahi" Tony ise, o yıkıcı
+      döngüden çıkıp uyumaya ve çalışmaya başlamış.
+
+      Zihniyet Atölyesi ve Brainology (Beyinbilimi) Biliyorsun, ergenlik dönemi
+      çocukların okuldan koşarak uzaklaşmak istedikleri, zorlukların arttığı bir
+      dönemdir. Dweck ve ekibi, bu dönemdeki düşük notlu öğrencilere sadece 8
+      seanslık bir atölye düzenliyor. Onlara beynin bir kas gibi olduğunu,
+      öğrendikçe yeni nöron bağlantılarının oluştuğunu ve zekanın geliştiğini
+      bilimsel olarak anlatıyorlar. Atölyedeki çocuklardan, daha önce hiç çaba
+      göstermeyen ve sisteme küsmüş olan Jimmy'nin gözleri dolarak "Yani aptal
+      olmak zorunda değil miyim?" diye sorması tüyler ürperticidir. Jimmy o
+      günden sonra ödevleri için sabahlamaya başlamış. Atölyeye katılan
+      öğrencilerin matematik notlarında inanılmaz bir sıçrama yaşanırken, sadece
+      "çalışma becerileri" (study skills) öğretilen kontrol grubunda hiçbir
+      gelişme olmamıştır. Neden mi? Çünkü zihniyet değişmeden, tekniklerin bir
+      anlamı yoktur!
+
+      Dweck daha sonra bu programı "Brainology" adıyla bilgisayar ortamına
+      taşıyor. Programdaki Chris ve Dahlia karakterleri, çılgın bilim insanı Dr.
+      Cerebrus'tan beynin nasıl çalıştığını öğreniyorlar. Programı kullanan
+      çocuklar, "Artık çalışırken beynimdeki nöronların büyüdüğünü hayal
+      edebiliyorum," diyor. Hatta öğretmenler, çocukların "Bunu uzun süreli
+      belleğime (long-term memory) atmam lazım" diyerek kendi öğrenme
+      süreçlerinin sorumluluğunu aldıklarını raporluyor.
+
+      Değişim Neden Zordur? Horney ve Rogers'ın Tespiti Peki madem bu kadar işe
+      yarıyor, değişim neden zordur? Çünkü sabit zihniyet, zamanında bizi
+      koruyan bir kalkan olmuştur. Psikolog Karen Horney ve Carl Rogers'ın
+      belirttiği gibi; çocuklar ebeveynlerinin sevgisini veya onayını kazanmak
+      için ebeveynlerinin istediği o "mükemmel, güçlü ve yetenekli" kimliği
+      (sabit zihniyet) yaratırlar. Bu onlara bir özgüven ve güvenlik formülü
+      sunar. Değişmek demek, yıllarca sizi hayatta tutan bu formülü çöpe atmak
+      demektir! Dweck de gelişim zihniyetine geçerken, günün sonunda
+      başarılarını saydığı o "zihinsel sayacının" sıfırlandığını görünce büyük
+      bir boşluğa düştüğünü, "sıradan" biri olmaktan korktuğunu itiraf eder.
+      Oysa büyümeye açılmak insanı sıradanlaştırmaz, onu potansiyelinin en üst
+      noktasına taşır.
+
+      Büyümeye Açılmak: İkilemlerle Yüzleşmek Dweck, karşımıza çıkabilecek bazı
+      ikilemler (dilemmas) sunuyor:
+
+      1. İkilem (Reddedilme): Hayalindeki tek yüksek lisans programından ret
+      mektubu aldın. Sabit zihniyetin sana önce "Zaten çok rekabetçiydi" diye
+      bahane buldurur, sonra da "Çalışmalarım sıradan, ben yetersizim" diyerek
+      seni ezer. Gelişim zihniyeti ise "Amacım ne? Ne öğrenebilirim?" der.
+      Gerçek hayatta bu durumu yaşayan bir öğrenci, okulu arayıp "Kararınızı
+      tartışmak için değil, seneye tekrar başvurursam eksiğimi nasıl
+      kapatabilirim diye aradım," diyerek dürüstçe geri bildirim istemiştir. Bu
+      inisiyatif okulun o kadar hoşuna gitmiştir ki, boşalan bir kontenjana o
+      kızı almışlardır! Dweck burada Peter Gollwitzer'in araştırmasına atıf
+      yapar: Sadece "değişeceğim" diye yemin etmek işe yaramaz. Neyin, ne zaman,
+      nerede ve nasıl (when, where, how) yapılacağına dair somut planlar yapmak
+      gerekir. Kendinizi kötü hissetseniz bile (Dweck'in reddedildikten sonra
+      saçlarının ve dişlerinin döküldüğü kabuslar görmesi gibi), kötü hissederek
+      de olsa o somut adımı atabilirsiniz.
+
+      2. İkilem (Devlerin Arasındaki Çaylak): Profesyonel lige seçilen 1
+      numaralı oyun kurucusun ama sahada üzerine koşan 600 kiloluk dev adamları
+      görünce panikliyorsun. Sabit zihniyet seni soyunma odasına saklar,
+      "Liderlik vasfın yok" dedirtir. Gelişim zihniyeti ise bunun bir "öğrenme
+      eğrisi" olduğunu kabul eder; tecrübeli oyuncularla kaset izler, onlara
+      zayıflıklarını ve korkularını itiraf eder ve yardım alırsın.
+
+      Değişmek İstemeyenler: Hak İddiası ve İnkar Bazıları ise değişmesi
+      gerekenin kendisi değil, dünya olduğuna inanır.
+
+      Hak İddiası (Entitlement): Küçük bir pozisyondasın ama "Ben bu yeteneğimle
+      en tepede olmalıyım" diyorsun. Patron sana iş vermediğinde, "Benden
+      korkuyor" diyorsun. Oysa gelişim zihniyetine geçsen, o alt kademede
+      şirketin en temel dinamiklerini öğrenebilir ve üst yönetime donanımlı
+      çıkabilirdin. Groundhog Day (Bugün Aslında Dündü) filmindeki Bill Murray
+      gibi, kibrini bırakıp başkalarına yardım etmeye başladığında dünyanın sana
+      düşman değil, müttefik olduğunu görürsün.
+
+      İnkar (Denial): Evliliğin mükemmel sanıyordun ama eşin ayrılmak istiyor.
+      Sabit zihniyet "Terk edildim, o zaten kötü biriydi, yeni tanışacağım
+      herkes potansiyel bir hain" der. Gelişim zihniyeti ise "Onun yakınlık ve
+      iletişim çağrılarını kendi yetersizliğim yüzünden duymaktan korktum"
+      diyerek kendi rolünü inceler ve bir sonraki ilişkisi için iletişim
+      becerilerini geliştirir.
+
+      Çocuğunuzun Zihniyetini Değiştirmek Çocuklardaki sabit zihniyet bazen
+      ürkütücü boyuttadır. Oğlunuz okuldan gelip "Bazılarının beyni kötü, onlar
+      aptal, ben dâhiyim" diyebilir. Searching for Bobby Fischer filmini izleyip
+      yenilme ihtimalini gördüğü an satrancı bırakabilir ve zekasını korumak
+      için kutu oyunlarında hile yapabilir. Dweck'e göre ona "Hayır, öyle
+      değilsin" demek yetmez; evdeki kültürü değiştirmelisiniz. Akşam
+      yemeklerinde "Bugün ne öğrendiniz? Hangi zorluğun üstesinden geldiniz?"
+      diye sormalısınız. Çocuğunuz "Bu ödev çok kolay" dediğinde, ona soya sosu
+      veya inci (soy, pirl) gibi kelimelerle kafiyeli cümleler kurdurarak ödevi
+      bir mücadeleye dönüştürebilirsiniz. Sonunda çocuğunuz "zihniyet bekçisi"
+      olacak ve siz hata yaptığınızda sizi uyaracaktır! Bazen sorun az çaba
+      değil, yanlış amaçlı aşırı çabadır (Effort Gone Awry). Kızı mükemmel
+      notlar alan, flüt çalan ama gizli bir ülser geliştirip her sabah kusan bir
+      aileyi düşünün. Sabit zihniyetli anne-baba "Tamam kızım, biraz daha erken
+      uyu" diyerek (rekabetten kopmasını göze alamadan) durumu daha da
+      kötüleştirir. Oysa danışmanın rehberliğiyle gelişim zihniyetine
+      geçtiklerinde; kız sadece zevk için flüt çalar, ezberlemek yerine
+      "anlamak" için çalışır ve ebeveynler çocuklarının "başarılı bir etiket"
+      olma baskısını üzerinden alırlar.
+
+      İrade ve Zihniyet Kilo vermek veya öfke kontrolü gibi konularda insanlar
+      iradeyi, ya sahip olduğunuz ya da olmadığınız sihirli bir güç sanır.
+      Dweck'in liseden arkadaşı Nathan, 25. yıl mezuniyet buluşmasına zayıf
+      gitmek için rejime girer. Dweck ona porsiyonları ayırmak, sebzeyle
+      doldurmak gibi "stratejiler" önerdiğinde, Nathan "Hayır, güçlü olmalıyım"
+      diyerek bunları reddeder. Ancak her seferinde iradesi kırılıp yemeği silip
+      süpürür ve "Ben başarısızım" diyerek tatlıya gömülür. Sonra şok bir
+      diyetle kilo verip, buluşmadan sonra fazlasıyla geri alır. Öfke de
+      böyledir. Eşin çöpü atmayı unuttuğunda sabit zihniyetinle ona "Beceriksiz,
+      sorumsuz!" diye karakter suikastı yaparsın. Sonra pişman olup "Bir daha
+      yapmayacağım" dersin ama stratejin yoktur. Gelişim zihniyetinde olanlar
+      ise plan yapar. Öfkeleneceğini anladığında odadan çıkar, en iğrenç
+      hislerini kağıda döker, sakinleşip döner ve eşine "Bunu yaptığında kendimi
+      önemsiz hissediyorum" der. İrade (willpower) kendi kendine yetmez,
+      stratejiyle desteklenmesi şarttır!
+
+      Değişimi Sürdürmek ve Sahte Gelişim Zihniyeti (False Growth Mindset)
+      Sadece bir kez kilo vermek veya eşinle iletişim kurmak yetmez. Wes,
+      gürültücü oğlu Mickey'e karşı bağırmak yerine onun çabalarını överek
+      harika sonuçlar almış ama "Tamam, artık düzeldi" diyerek stratejiyi
+      bırakınca çocuk eskisinden beter olmuştur. Aynı şekilde Marlene ve Scott
+      (Bickersons/Sürekli didişenler) sevgi geri dönünce çabalamayı bırakmış ve
+      eskisinden şiddetli kavgalara geri dönmüşlerdir. Değişim sürekli bir
+      bakımdır.
+
+      Avustralyalı meslektaşı Susan Mackie "Sahte Gelişim Zihniyeti salgını
+      var!" dediğinde Dweck irkilir. İnsanlar bu kavramı çok yanlış anlamıştır:
+
+      Sadece "Açık fikirli ve esnek" olmak gelişim zihniyeti değildir.
+
+      Sadece "çabayı" (effort) övmek demek değildir. Hele ki çocuk hiçbir şey
+      öğrenmiyorsa ve stratejisi işe yaramıyorsa, çabayı övmek ona sadece bir
+      teselli ikramiyesi vermektir. Çabayı mutlaka öğrenme "sonucuyla" (outcome)
+      ve "süreciyle" (process) bağdaştırmak gerekir.
+
+      Çocuğa, ona gerekli kaynakları sağlamadan sadece "Her şeyi yapabilirsin"
+      demek boş bir laftır. En kötüsü de, bazı öğretmenlerin "Bu çocuk
+      öğrenemiyor çünkü sabit zihniyeti var" diyerek kendi başarısızlıklarının
+      suçunu çocuklara atmasıdır!
+
+      Gerçek Bir Gelişim Zihniyetine Yolculuğun 4 Adımı:
+
+      Sabit Zihniyetinizi Kabullenin: Hepimizde iki zihniyet de vardır. Bunu
+      inkar etmenin manası yoktur.
+
+      Tetikleyicilerinizi Fark Edin: Sabit zihniyetli "personanız" ne zaman
+      ortaya çıkıyor? Büyük bir zorlukta mı? Çuvalladığınızda mı? Yoksa sizden
+      çok daha başarılı birini gördüğünüzde mi?
+
+      Personanıza Bir İsim Verin: Finans yöneticileri bile bu yöntemi uyguluyor.
+      Biri "Baskı altındayken içimdeki Duane ortaya çıkıp herkese bağırıyor"
+      diyor. Stanford'daki öğrencileri bu personalara; her hata yaptığında
+      "aptal!" diye bağıran Z, konfor alanından çıkmayan Sugardaddy, acımasız ve
+      yargılayıcı Henrietta, şüpheci Dale Denton gibi isimler vermişler. Bir
+      öğretmen, sınıfta sürekli "Ben hiçbir şeyi beceremem, herkes beni eziyor"
+      diye hiçbir iş yapmayan öğrencisine, bu iç sesin adını sormuş; çocuk
+      "Aşağılayıcı Dan" (Dumping Dan) demiş. Öğretmen Dan ile çocuğun arasını
+      bularak onun çalışmasını sağlamış.
+
+      Onu Eğitin ve Yanınıza Alın: O persona aslında sizi (kendi yanlış
+      yöntemiyle) başarısızlık ve acıdan korumak için var. Onu bastırmayın.
+      Geldiğinde ona teşekkür edin ve "Biliyorum korkuyorsun ama bu adımı atmak
+      istiyorum, benimle gel" diyerek onu gelişim yolculuğunuza dahil edin.
+
+      Öğren ve Öğrenmeye Yardım Et Dweck bölümü harika bir tavsiyeyle bitiriyor.
+      Nigel Holmes'un çizdiği o meşhur iki zihniyet şemasını aynanıza asın. Her
+      sabah kendinize şu soruları sorun: Bugün benim ve çevremdekiler için
+      öğrenme ve büyüme fırsatları neler? Planımı ne zaman, nerede ve nasıl
+      uygulayacağım? Başarılı olduğumda bu gelişimi sürdürmek için ne
+      yapmalıyım?
+
+      Bu bölümün özü: Değişim, sabit zihniyetinizi bir ameliyatla söküp atmak
+      değil; onun tetikleyicilerini tanıyıp, o yargılayıcı "personanızla"
+      barışarak onu sürekli bir öğrenme ve gelişim yolculuğuna ikna etmektir.
+      İrade tek başına yetmez; somut planlar (ne zaman, nerede, nasıl), doğru
+      stratejiler ve (çocuğunuzda veya kendinizde) "sahte gelişim zihniyetinin"
+      tuzaklarına düşmeden, süreci gerçek bir öğrenme eylemiyle birleştiren
+      şefkatli bir sebat gerekir.

@@ -3,6 +3,7 @@ import { glob, file } from "astro/loaders";
 import { CATEGORIES, KAYNAK_TURLERI } from "./lib/types.ts";
 import kutuphanem from "./data/kutuphanem.json";
 import booksOverrides from "./data/books-overrides.json";
+import bookTitlesTr from "./data/book-titles-tr.json";
 
 const notebookIds = new Set(kutuphanem.notebooks.map((n) => n.id));
 
@@ -154,14 +155,16 @@ const books = defineCollection({
         notebookId?: string;
       }[];
       const overrides = new Map(overrideList.map((o) => [o.id, o] as const));
+      const titlesTr = bookTitlesTr as Record<string, string>;
       return raw
-        .map((b) => ({ ...b, ...overrides.get(b.id) }))
+        .map((b) => ({ ...b, titleTr: titlesTr[b.id], ...overrides.get(b.id) }))
         .filter((b) => !("hidden" in b && b.hidden));
     },
   }),
   schema: z.object({
     id: z.string(),
     title: z.string(),
+    titleTr: z.string().optional(),
     author: z.string().optional(),
     format: z.enum(["pdf", "epub"]),
     // public/book-covers altında önceden küçültülmüş jpeg (sync üretir)
