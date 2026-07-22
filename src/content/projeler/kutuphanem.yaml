@@ -1,0 +1,16 @@
+ad: Kütüphanem — Zihin Haritası
+aciklama: 438 NotebookLM defterini kategorilere ayırıp animasyonlu bir sinir ağı grafiğiyle sunan statik site.
+etiketler:
+  - notebooklm
+  - görselleştirme
+  - javascript
+url: https://ysf-dnz.github.io/kutuphanem/
+durum: aktif
+tarih: 2026-06-01
+order: 1
+oneCikan: true
+icerik: |
+  Okuduğum her kitap ve konu bir NotebookLM defterine dönüşüyor; bu proje o
+  defterleri **kategori kategori** haritalayıp canlı bir ağ grafiği olarak
+  çiziyor. Bu blogdaki Kütüphane sayfası da aynı veriden besleniyor.
+moduller: []

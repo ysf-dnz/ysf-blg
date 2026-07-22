@@ -1,0 +1,24 @@
+---
+/**
+ * Yalnızca platform içi okuma için Drive önizleme iframe'i.
+ * sandbox popup/yeni sekme açılmasını engeller; sağ üstteki köşe kapağı
+ * Google'ın "yeni pencerede aç" butonuna tıklamayı yutar.
+ */
+interface Props {
+  fileId: string;
+  title: string;
+}
+
+const { fileId, title } = Astro.props;
+---
+
+<div class="relative overflow-hidden rounded-2xl border border-line bg-surface-raised">
+  <iframe
+    src={`https://drive.google.com/file/d/${fileId}/preview`}
+    title={title}
+    loading="lazy"
+    sandbox="allow-scripts allow-same-origin allow-forms"
+    class="aspect-[4/3] w-full"></iframe>
+  <div class="absolute right-0 top-0 z-10 h-16 w-16" aria-hidden="true" title="">
+  </div>
+</div>

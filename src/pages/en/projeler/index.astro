@@ -1,0 +1,31 @@
+---
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import ProjectCard from "@/features/projects/ProjectCard.astro";
+import { useTranslations } from "@/lib/i18n/index.ts";
+
+const t = useTranslations("en");
+const projeler = (await getCollection("projeler")).sort(
+  (a, b) =>
+    a.data.order - b.data.order ||
+    b.data.tarih.getTime() - a.data.tarih.getTime(),
+);
+---
+
+<Base title={t("proje.baslik")} description={t("proje.aciklama")}>
+  <header class="girih-texture -mx-4 px-4 py-12">
+    <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">
+      {t("proje.baslik")}
+    </h1>
+    <p class="mt-3 max-w-xl text-ink-muted">{t("proje.aciklama")}</p>
+  </header>
+  <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+    {
+      projeler.map((proje) => (
+        <li>
+          <ProjectCard proje={proje} lang="en" />
+        </li>
+      ))
+    }
+  </ul>
+</Base>

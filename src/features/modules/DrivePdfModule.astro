@@ -1,0 +1,25 @@
+---
+import DriveEmbed from "@/features/library/DriveEmbed.astro";
+import { driveFileId } from "./parse.ts";
+
+interface Props {
+  baslik?: string;
+  dosyaId: string;
+}
+
+const { baslik, dosyaId } = Astro.props;
+const id = driveFileId(dosyaId);
+---
+
+{
+  id && (
+    <section>
+      {baslik && (
+        <h2 class="font-display mb-3 text-xl font-semibold text-ink">
+          {baslik}
+        </h2>
+      )}
+      <DriveEmbed fileId={id} title={baslik ?? "PDF"} />
+    </section>
+  )
+}

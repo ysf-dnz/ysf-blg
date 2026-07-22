@@ -1,11 +1,16 @@
 ---
-import { getEntry, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import Base from "@/layouts/Base.astro";
+import ProjectCard from "@/features/projects/ProjectCard.astro";
+import { localizePath, useTranslations } from "@/lib/i18n/index.ts";
 
 const entry = await getEntry("singletons", "hakkimda.en");
 if (!entry) throw new Error("singletons/hakkimda.en.mdx bulunamadı");
 const { Content } = await render(entry);
-const projeler = entry.data.projeler ?? [];
+const t = useTranslations("en");
+const projeler = (await getCollection("projeler"))
+  .filter((p) => p.data.oneCikan)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base title={entry.data.title}>
@@ -18,18 +23,21 @@ const projeler = entry.data.projeler ?? [];
     {
       projeler.length > 0 && (
         <section class="mt-10">
-          <h2 class="font-display text-xl font-semibold text-ink">Projects</h2>
+          <div class="flex items-baseline justify-between">
+            <h2 class="font-display text-xl font-semibold text-ink">
+              {t("proje.baslik")}
+            </h2>
+            <a
+              href={localizePath("/projeler", "en")}
+              class="text-sm font-medium text-accent hover:underline"
+            >
+              {t("proje.tumProjeler")} →
+            </a>
+          </div>
           <ul class="mt-4 grid gap-4 sm:grid-cols-2">
             {projeler.map((proje) => (
-              <li class="rounded-xl border border-line bg-surface-raised p-4">
-                {proje.url ? (
-                  <a href={proje.url} target="_blank" rel="noopener noreferrer" class="font-semibold text-accent hover:underline">
-                    {proje.ad} ↗
-                  </a>
-                ) : (
-                  <span class="font-semibold text-ink">{proje.ad}</span>
-                )}
-                <p class="mt-1 text-sm text-ink-muted">{proje.aciklama}</p>
+              <li>
+                <ProjectCard proje={proje} lang="en" />
               </li>
             ))}
           </ul>

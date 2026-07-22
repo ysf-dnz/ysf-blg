@@ -1,0 +1,32 @@
+---
+import { spotifyEmbedUrl } from "./parse.ts";
+
+interface Props {
+  baslik?: string;
+  url: string;
+}
+
+const { baslik, url } = Astro.props;
+const embed = spotifyEmbedUrl(url);
+// track/episode kısa oynatıcı, album/playlist/show liste görünümü alır
+const yukseklik = embed && /\/(track|episode)\//.test(embed) ? 152 : 352;
+---
+
+{
+  embed && (
+    <section>
+      {baslik && (
+        <h2 class="font-display mb-3 text-xl font-semibold text-ink">
+          {baslik}
+        </h2>
+      )}
+      <iframe
+        src={embed}
+        title={baslik ?? "Spotify"}
+        loading="lazy"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        style={`height:${yukseklik}px`}
+        class="w-full rounded-2xl border-0"></iframe>
+    </section>
+  )
+}

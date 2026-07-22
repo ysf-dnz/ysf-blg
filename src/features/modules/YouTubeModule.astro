@@ -1,0 +1,65 @@
+---
+/**
+ * Tıkla-yükle YouTube penceresi: sayfa yüklenirken yalnızca thumbnail iner,
+ * iframe tıklamada enjekte edilir (Lighthouse korunur, nocookie alan adı).
+ */
+import { youtubeId } from "./parse.ts";
+
+interface Props {
+  baslik?: string;
+  url: string;
+}
+
+const { baslik, url } = Astro.props;
+const id = youtubeId(url);
+---
+
+{
+  id && (
+    <section>
+      {baslik && (
+        <h2 class="font-display mb-3 text-xl font-semibold text-ink">
+          {baslik}
+        </h2>
+      )}
+      <button
+        type="button"
+        data-youtube-lite={id}
+        class="group relative block aspect-video w-full cursor-pointer overflow-hidden rounded-2xl border border-line bg-black"
+        aria-label={`${baslik ?? "Video"} — oynat`}
+      >
+        <img
+          src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+          alt=""
+          loading="lazy"
+          class="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+        />
+        <span class="absolute inset-0 flex items-center justify-center">
+          <span class="flex h-14 w-20 items-center justify-center rounded-2xl bg-red-600 transition-transform group-hover:scale-110">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </span>
+        </span>
+      </button>
+    </section>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-youtube-lite]").forEach(
+    (btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.youtubeLite;
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+        iframe.title = btn.getAttribute("aria-label") ?? "YouTube";
+        iframe.allow =
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+        iframe.className = "h-full w-full";
+        btn.replaceChildren(iframe);
+      });
+    },
+  );
+</script>

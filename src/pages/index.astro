@@ -3,11 +3,15 @@ import Base from "@/layouts/Base.astro";
 import StoryRing from "@/features/stories/StoryRing.astro";
 import PostCard from "@/features/posts/PostCard.astro";
 import MindMapMini from "@/features/library/MindMapMini.astro";
+import ModuleList from "@/features/modules/ModuleList.astro";
+import { getEntry } from "astro:content";
 import { getPublishedPosts } from "@/lib/posts.ts";
 import { useTranslations, localizePath } from "@/lib/i18n/index.ts";
 
 const t = useTranslations("tr");
 const posts = (await getPublishedPosts("tr")).slice(0, 6);
+const anaSayfa = await getEntry("siteConfig", "ana-sayfa");
+const moduller = anaSayfa?.data.moduller ?? [];
 ---
 
 <Base>
@@ -44,6 +48,14 @@ const posts = (await getPublishedPosts("tr")).slice(0, 6);
       }
     </ul>
   </section>
+
+  {
+    moduller.length > 0 && (
+      <section class="py-10">
+        <ModuleList moduller={moduller} />
+      </section>
+    )
+  }
 
   <section class="py-10">
     <MindMapMini />

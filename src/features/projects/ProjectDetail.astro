@@ -1,0 +1,105 @@
+---
+/**
+ * Proje detay sayfası: künye kartı + markdown gövde + admin panelinden
+ * sıralanan modüler pencereler (halka, Drive PDF/JPEG, YouTube, Spotify).
+ */
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { marked } from "marked";
+import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
+import ModuleList from "@/features/modules/ModuleList.astro";
+
+interface Props {
+  proje: CollectionEntry<"projeler">;
+  lang: Lang;
+}
+
+const { proje, lang } = Astro.props;
+const t = useTranslations(lang);
+const { data } = proje;
+const durumEtiket = {
+  aktif: t("proje.durumAktif"),
+  tamamlandi: t("proje.durumTamamlandi"),
+  arsiv: t("proje.durumArsiv"),
+} as const;
+---
+
+<article class="mx-auto max-w-xl">
+  <a
+    href={localizePath("/projeler", lang)}
+    class="text-sm text-ink-muted hover:text-accent"
+  >
+    ← {t("proje.geri")}
+  </a>
+
+  <header class="mt-4 overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-lg">
+    {
+      data.kapak && (
+        <Image
+          src={data.kapak}
+          alt={data.ad}
+          width={1280}
+          class="w-full object-cover"
+        />
+      )
+    }
+    <div class="p-5">
+      <h1 class="font-display text-2xl font-semibold leading-snug text-ink">
+        {data.ad}
+      </h1>
+      <p class="mt-2 text-ink-muted">{data.aciklama}</p>
+      <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
+        <span class="rounded bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
+          {durumEtiket[data.durum]}
+        </span>
+        <span>{data.tarih.toISOString().slice(0, 10)}</span>
+        {
+          data.etiketler.map((etiket) => (
+            <span class="rounded-full border border-line px-2 py-0.5 text-xs">
+              {etiket}
+            </span>
+          ))
+        }
+      </p>
+      {
+        (data.url || data.repoUrl) && (
+          <p class="mt-4 flex flex-wrap gap-3">
+            {data.url && (
+              <a
+                href={data.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              >
+                {t("proje.site")} ↗
+              </a>
+            )}
+            {data.repoUrl && (
+              <a
+                href={data.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-white"
+              >
+                {t("proje.repo")} ↗
+              </a>
+            )}
+          </p>
+        )
+      }
+    </div>
+  </header>
+
+  {
+    data.icerik && (
+      <section
+        class="prose mt-8 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent"
+        set:html={marked.parse(data.icerik)}
+      />
+    )
+  }
+
+  <div class="mt-8">
+    <ModuleList moduller={data.moduller} />
+  </div>
+</article>

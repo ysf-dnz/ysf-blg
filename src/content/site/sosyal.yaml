@@ -1,0 +1,5 @@
+linkler:
+  - platform: mail
+    url: mailto:sn.yusufdeniz@gmail.com
+  - platform: rss
+    url: /rss.xml

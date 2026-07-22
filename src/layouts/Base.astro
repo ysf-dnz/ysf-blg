@@ -5,6 +5,7 @@ import ThemeToggle from "@/features/theme/ThemeToggle.astro";
 import SearchModal from "@/features/search/SearchModal.astro";
 import Seo from "@/features/seo/Seo.astro";
 import JsonLd from "@/features/seo/JsonLd.astro";
+import SocialLinks from "@/features/site/SocialLinks.astro";
 import type { SeoProps } from "@/features/seo/Seo.astro";
 
 interface Props {
@@ -24,6 +25,7 @@ const pageTitle = title ? `${title} · ${t("site.title")}` : t("site.title");
 const nav = [
   { href: localizePath("/yazilar", lang), label: t("nav.yazilar") },
   { href: localizePath("/kutuphane", lang), label: t("nav.kutuphane") },
+  { href: localizePath("/projeler", lang), label: t("nav.projeler") },
   { href: localizePath("/hakkimda", lang), label: t("nav.hakkimda") },
 ];
 ---
@@ -94,9 +96,12 @@ const nav = [
     </main>
 
     <footer class="girih-texture border-t border-line">
-      <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-6 text-sm text-ink-muted">
-        <p>© {new Date().getFullYear()} {t("site.title")}</p>
-        <a href="/rss.xml" class="hover:text-accent">{t("footer.rss")}</a>
+      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-ink-muted">
+        <SocialLinks />
+        <div class="mt-3 flex items-center justify-between">
+          <p>© {new Date().getFullYear()} {t("site.title")}</p>
+          <a href="/rss.xml" class="hover:text-accent">{t("footer.rss")}</a>
+        </div>
       </div>
     </footer>
   </body>

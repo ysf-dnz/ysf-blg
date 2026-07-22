@@ -1,0 +1,16 @@
+ad: Bu Blog
+aciklama: Astro 5 + Tailwind v4 ile iki dilli, aranabilir, NotebookLM destekli kişisel yayın platformu.
+etiketler:
+  - astro
+  - tailwind
+  - seo
+repoUrl: https://github.com/ysf-dnz
+durum: aktif
+tarih: 2026-07-01
+order: 2
+oneCikan: true
+icerik: |
+  Yazılar, Instagram tarzı hikâye halkaları, 884 kitaplık raf, kitap başına
+  NotebookLM soru-cevapları ve Türkçe bölüm bölüm özetler — hepsi statik,
+  hepsi sürüm kontrolünde. İçerik yönetimi Keystatic admin paneliyle.
+moduller: []

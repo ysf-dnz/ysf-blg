@@ -1,0 +1,50 @@
+---
+/**
+ * Ana sayfadaki hikâye halkası görünümünde yuvarlak pencere: conic-gradient
+ * halka + kapak. Tıklayınca hedefe gider (site içi ya da dış platform).
+ */
+import { langFromUrl, localizePath } from "@/lib/i18n/index.ts";
+
+interface Props {
+  baslik: string;
+  kapak: string;
+  ringColor?: string;
+  hedefUrl: string;
+  hedefTip: "internal" | "medium" | "youtube" | "instagram" | "external";
+}
+
+const { baslik, kapak, ringColor, hedefUrl, hedefTip } = Astro.props;
+const lang = langFromUrl(Astro.url.pathname);
+const renk = ringColor ?? "var(--accent)";
+const href =
+  hedefTip === "internal" ? localizePath(hedefUrl, lang) : hedefUrl;
+const dis = hedefTip !== "internal";
+---
+
+<section class="rounded-2xl border border-line bg-surface-raised p-5">
+  <a
+    href={href}
+    {...dis ? { target: "_blank", rel: "noopener noreferrer" } : {}}
+    class="group flex items-center gap-4"
+  >
+    <span
+      class="shrink-0 rounded-full p-[3px] transition-transform group-hover:scale-105"
+      style={`background: conic-gradient(from 210deg, ${renk}, ${renk}66, ${renk})`}
+    >
+      <img
+        src={kapak}
+        alt=""
+        width="80"
+        height="80"
+        loading="lazy"
+        class="size-20 rounded-full border-2 border-surface bg-surface-raised object-cover"
+      />
+    </span>
+    <span class="min-w-0">
+      <span class="font-display block truncate text-lg font-semibold text-ink group-hover:text-accent">
+        {baslik}
+      </span>
+      <span class="text-sm text-ink-muted">{dis ? `${hedefTip} ↗` : "→"}</span>
+    </span>
+  </a>
+</section>

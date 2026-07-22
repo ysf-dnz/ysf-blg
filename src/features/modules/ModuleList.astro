@@ -1,0 +1,44 @@
+---
+/**
+ * Modüler pencereler: admin panelde sürüklenerek belirlenen sırayla render.
+ * Her modül kitap-detay kart stilinde bir bölümdür; bilinmeyen tip sessizce
+ * atlanmaz — şema zaten build'de yakalar.
+ */
+import type { Modul } from "./schema.ts";
+import HalkaModule from "./HalkaModule.astro";
+import DrivePdfModule from "./DrivePdfModule.astro";
+import DriveJpegModule from "./DriveJpegModule.astro";
+import YouTubeModule from "./YouTubeModule.astro";
+import SpotifyModule from "./SpotifyModule.astro";
+
+interface Props {
+  moduller: Modul[];
+}
+
+const { moduller } = Astro.props;
+const bilesen = {
+  halka: HalkaModule,
+  drivePdf: DrivePdfModule,
+  driveJpeg: DriveJpegModule,
+  youtube: YouTubeModule,
+  spotify: SpotifyModule,
+} as const;
+
+// Union üyesi ilgili bileşenin Props'uyla eşleşir; TS bileşen union'ından
+// kesişim türetemediği için ikisi de gevşetilir
+const asProps = (m: Modul): Record<string, unknown> =>
+  m as unknown as Record<string, unknown>;
+const bilesenFor = (m: Modul) =>
+  bilesen[m.tip] as unknown as (props: Record<string, unknown>) => unknown;
+---
+
+{
+  moduller.length > 0 && (
+    <div class="space-y-8">
+      {moduller.map((modul) => {
+        const Bilesen = bilesenFor(modul);
+        return <Bilesen {...asProps(modul)} />;
+      })}
+    </div>
+  )
+}

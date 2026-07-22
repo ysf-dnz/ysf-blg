@@ -8,20 +8,23 @@ import type { CollectionEntry } from "astro:content";
 import { marked } from "marked";
 import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
+import DriveEmbed from "./DriveEmbed.astro";
+import ModuleList from "@/features/modules/ModuleList.astro";
+import type { Modul } from "@/features/modules/schema.ts";
 
 interface Props {
   book: CollectionEntry<"books">["data"];
   qa?: CollectionEntry<"booksQa">["data"];
+  /** Panelden eklenen ek pencereler (bookExtras) */
+  moduller?: Modul[];
   lang: Lang;
 }
 
-const { book, qa, lang } = Astro.props;
+const { book, qa, moduller = [], lang } = Astro.props;
 const t = useTranslations(lang);
 const notebookUrl = book.notebookId
   ? `https://notebooklm.google.com/notebook/${book.notebookId}`
   : undefined;
-const previewUrl = `https://drive.google.com/file/d/${book.id}/preview`;
-
 // İndirme erişimi e-postayla istenir; limitler Drive tarafında uygulanır
 const requestMail =
   `mailto:sn.yusufdeniz@gmail.com` +
@@ -174,26 +177,22 @@ const planlar = [
     )
   }
 
-  <!-- Drive önizleme: yalnızca platform içi okuma.
-       sandbox popup/yeni sekme açılmasını engeller; sağ üstteki köşe kapağı
-       Google'ın "yeni pencerede aç" butonuna tıklamayı yutar. -->
+  <!-- Drive önizleme: yalnızca platform içi okuma -->
   <section class="mt-8">
     <h2 class="font-display text-xl font-semibold text-ink">{t("kitap.oku")}</h2>
-    <div class="relative mt-3 overflow-hidden rounded-2xl border border-line bg-surface-raised">
-      <iframe
-        src={previewUrl}
-        title={book.title}
-        loading="lazy"
-        sandbox="allow-scripts allow-same-origin allow-forms"
-        class="aspect-[4/3] w-full"></iframe>
-      <div
-        class="absolute right-0 top-0 z-10 h-16 w-16"
-        aria-hidden="true"
-        title=""
-      >
-      </div>
+    <div class="mt-3">
+      <DriveEmbed fileId={book.id} title={book.title} />
     </div>
   </section>
+
+  <!-- Panelden eklenen ek pencereler -->
+  {
+    moduller.length > 0 && (
+      <div class="mt-8">
+        <ModuleList moduller={moduller} />
+      </div>
+    )
+  }
 
   <!-- İndirme planları + e-postayla erişim isteği -->
   <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-6">

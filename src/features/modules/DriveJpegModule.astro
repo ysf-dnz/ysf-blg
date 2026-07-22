@@ -1,0 +1,34 @@
+---
+/**
+ * Drive'daki link-paylaşımlı bir görseli thumbnail endpoint'i üzerinden basar;
+ * dosya indirilmez, auth gerekmez.
+ */
+import { driveFileId } from "./parse.ts";
+
+interface Props {
+  baslik?: string;
+  dosyaId: string;
+  genislik: number;
+}
+
+const { baslik, dosyaId, genislik } = Astro.props;
+const id = driveFileId(dosyaId);
+---
+
+{
+  id && (
+    <section>
+      {baslik && (
+        <h2 class="font-display mb-3 text-xl font-semibold text-ink">
+          {baslik}
+        </h2>
+      )}
+      <img
+        src={`https://drive.google.com/thumbnail?id=${id}&sz=w${genislik}`}
+        alt={baslik ?? ""}
+        loading="lazy"
+        class="w-full rounded-2xl border border-line bg-surface-raised object-cover"
+      />
+    </section>
+  )
+}

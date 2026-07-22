@@ -34,8 +34,9 @@ const toplam = books.length;
   interface Kat { key: string; ad: string; renk: string; n: number }
 
   const wrap = document.getElementById("lib-graph");
-  const canvas = wrap?.querySelector("canvas");
-  if (wrap && canvas) {
+  const canvasEl = wrap?.querySelector("canvas");
+  if (wrap && canvasEl) {
+    const canvas = canvasEl;
     const { toplam, kategoriler } = JSON.parse(wrap.dataset.graph!) as {
       toplam: number;
       kategoriler: Kat[];

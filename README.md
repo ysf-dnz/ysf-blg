@@ -77,6 +77,22 @@ geçmiş hikâyeler görünmez; görülenler soluk halkaya döner (localStorage)
 
 - **Local mode (varsayılan):** `npm run admin`. Admin yalnızca
   `ASTRO_KEYSTATIC=1` iken yüklenir; üretim build'inde admin'e ait tek bayt yoktur.
+
+Paneldeki bölümler:
+
+| Bölüm | Ne yapar |
+| --- | --- |
+| İçerik | Yazılar (TR/EN), hikâye halkaları |
+| Projeler | Proje CRUD: künye, markdown gövde, **modüler pencereler** |
+| Sayfalar | Hakkımda (TR/EN), Ana Sayfa Modülleri |
+| Kütüphane | Küratörlük (gizle/sıra/TR başlık/defter), **Elle Kitap Ekle**, **Kitap Ek Pencereleri**, **Kitap Kategorileri** (anahtar kelime kuralları dahil) |
+| Ayarlar | Sosyal medya linkleri (footer, opsiyonel) |
+
+**Modüler pencereler:** yuvarlak halka, Drive PDF, Drive JPEG, YouTube
+(tıkla-yükle), Spotify. Sıralama panelde sürükle-bırak ile değişir; site
+tarafında ekstra JS yoktur. Drive dosyaları link-paylaşımlı olmalıdır.
+Aynı blok seti proje detaylarında, kitap detaylarında (bookExtras) ve ana
+sayfada kullanılır (`src/features/modules/`).
 - **GitHub mode (opsiyonel):** Tarayıcıdan her yerden düzenleme istenirse
   `keystatic.config.tsx` içinde `storage: { kind: "github", repo: "kullanici/repo" }`
   yapın, [Keystatic GitHub App](https://keystatic.com/docs/github-mode) kurun ve

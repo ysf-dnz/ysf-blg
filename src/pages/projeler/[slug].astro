@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import ProjectDetail from "@/features/projects/ProjectDetail.astro";
+
+export async function getStaticPaths() {
+  const projeler = await getCollection("projeler");
+  return projeler.map((proje) => ({
+    params: { slug: proje.id },
+    props: { proje },
+  }));
+}
+
+const { proje } = Astro.props;
+---
+
+<Base title={proje.data.ad} description={proje.data.aciklama}>
+  <ProjectDetail proje={proje} lang="tr" />
+</Base>

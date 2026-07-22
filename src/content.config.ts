@@ -1,9 +1,11 @@
 import { defineCollection, z } from "astro:content";
 import { glob, file } from "astro/loaders";
 import { CATEGORIES, KAYNAK_TURLERI } from "./lib/types.ts";
+import { modulSchema } from "./features/modules/schema.ts";
 import kutuphanem from "./data/kutuphanem.json";
 import booksOverrides from "./data/books-overrides.json";
 import bookTitlesTr from "./data/book-titles-tr.json";
+import booksManual from "./data/books-manual.json";
 
 const notebookIds = new Set(kutuphanem.notebooks.map((n) => n.id));
 
@@ -62,15 +64,6 @@ const singletons = defineCollection({
   schema: z.object({
     title: z.string(),
     lang: z.enum(["tr", "en"]),
-    projeler: z
-      .array(
-        z.object({
-          ad: z.string(),
-          aciklama: z.string(),
-          url: z.string().url().optional(),
-        }),
-      )
-      .optional(),
   }),
 });
 
@@ -145,19 +138,32 @@ const libraryNotebooks = defineCollection({
 
 const books = defineCollection({
   loader: file("src/data/books.json", {
-    // Küratörlük katmanı: books-overrides.json aynı id'li kaydı ezer
+    // Katmanlar: Drive sync + elle eklenenler → küratörlük ezmesi → TR başlık
     parser: (text) => {
       const raw = JSON.parse(text).books as { id: string }[];
+      const manual = booksManual.books as { id: string }[];
       const overrideList = booksOverrides.overrides as {
         id: string;
         hidden?: boolean;
         order?: number;
         notebookId?: string;
+        titleTr?: string;
       }[];
       const overrides = new Map(overrideList.map((o) => [o.id, o] as const));
       const titlesTr = bookTitlesTr as Record<string, string>;
-      return raw
-        .map((b) => ({ ...b, titleTr: titlesTr[b.id], ...overrides.get(b.id) }))
+      return [...raw, ...manual]
+        .map((b) => {
+          const o = overrides.get(b.id) ?? {};
+          // Keystatic boş select/text'i "" yazar; boş değerler ezmesin
+          const temiz = Object.fromEntries(
+            Object.entries(o).filter(([, v]) => v !== "" && v !== undefined),
+          );
+          return {
+            ...b,
+            titleTr: titlesTr[b.id] ?? (b as { titleTr?: string }).titleTr,
+            ...temiz,
+          };
+        })
         .filter((b) => !("hidden" in b && b.hidden));
     },
   }),
@@ -211,6 +217,73 @@ const booksQa = defineCollection({
   }),
 });
 
+const projeler = defineCollection({
+  loader: glob({
+    pattern: "*.yaml",
+    base: "./src/content/projeler",
+    generateId: ({ entry }) => entry.replace(/\.yaml$/, ""),
+  }),
+  schema: ({ image }) =>
+    z.object({
+      ad: z.string().min(1),
+      aciklama: z.string().min(1),
+      kapak: image().optional(),
+      etiketler: z.array(z.string()).default([]),
+      url: z.string().url().optional(),
+      repoUrl: z.string().url().optional(),
+      durum: z.enum(["aktif", "tamamlandi", "arsiv"]).default("aktif"),
+      tarih: z.coerce.date(),
+      order: z.number().default(0),
+      oneCikan: z.boolean().default(false),
+      icerik: z.string().optional(), // markdown gövde
+      moduller: modulSchema,
+    }),
+});
+
+// Kitap detay sayfasına panelden eklenen ek pencereler (id = Drive dosya id'si)
+const bookExtras = defineCollection({
+  loader: glob({
+    pattern: "*.yaml",
+    base: "./src/content/book-extras",
+    generateId: ({ entry }) => entry.replace(/\.yaml$/, ""),
+  }),
+  schema: z.object({
+    bookId: z.string(),
+    moduller: modulSchema,
+  }),
+});
+
+// Ana sayfa modülleri + footer sosyal linkleri (panelden yönetilir)
+const siteConfig = defineCollection({
+  loader: glob({
+    pattern: "*.yaml",
+    base: "./src/content/site",
+    generateId: ({ entry }) => entry.replace(/\.yaml$/, ""),
+  }),
+  schema: z.object({
+    moduller: modulSchema.optional(),
+    linkler: z
+      .array(
+        z.object({
+          platform: z.enum([
+            "github",
+            "x",
+            "linkedin",
+            "instagram",
+            "youtube",
+            "medium",
+            "mail",
+            "rss",
+            "website",
+          ]),
+          url: z.string().min(1),
+          etiket: z.string().optional(),
+        }),
+      )
+      .optional(),
+  }),
+});
+
 export const collections = {
   posts,
   singletons,
@@ -219,4 +292,7 @@ export const collections = {
   libraryNotebooks,
   books,
   booksQa,
+  projeler,
+  bookExtras,
+  siteConfig,
 };
