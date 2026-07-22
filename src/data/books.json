@@ -1,7 +1,16 @@
 {
-  "syncedAt": "2026-07-21T15:20:21.272Z",
+  "syncedAt": "2026-07-22T04:37:20.901Z",
   "source": "google-drive:1WVA5lPQDIWy-bNZvGGyNT6hifjpTDocF",
   "books": [
+    {
+      "id": "1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY",
+      "title": "2 (Kandiller Bülent, Velioğlu Aysun.) (z-library.sk, 1lib.sk, z-lib.sk)",
+      "author": "Reader at Work",
+      "format": "pdf",
+      "cover": "/book-covers/1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY/view",
+      "category": "2026 kitaplar"
+    },
     {
       "id": "1sa0oV3BG42u6cTd8gnVgs7jfgsd1NSwl",
       "title": "3D Web Development with Three.js and Next.js",
@@ -63,14 +72,6 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1Pnoc0QM2banXjMv8LAVst7ja96j-XPPJ",
-      "title": "Agentic AI Data Architectures How Distributed SQL Unifies Enterprise Scale and AI-Native Application Design",
-      "author": "Blaize Stewart  Ed Huang",
-      "format": "epub",
-      "driveUrl": "https://drive.google.com/file/d/1Pnoc0QM2banXjMv8LAVst7ja96j-XPPJ/view",
-      "category": "2026 kitaplar"
-    },
-    {
       "id": "1c5il5e2NPhBc22YrdaBKKHNId-aP-ZVU",
       "title": "Agentic AI in Enterprise Harnessing Agentic AI for Business Transformation",
       "author": "Sumit Ranjan, Divya Chembachere etc.",
@@ -103,14 +104,6 @@
       "author": "Kevlin Henney",
       "format": "epub",
       "driveUrl": "https://drive.google.com/file/d/1QnuF5tFB4kqKv6JeYKo0f352M26HuBnr/view",
-      "category": "2026 kitaplar"
-    },
-    {
-      "id": "1aOXy1GaHWY2f8_ALWfZjmYBvrOkoxGVK",
-      "title": "AI Agents and Applications (MEAP Version 8)",
-      "author": "Roberto Infante",
-      "format": "epub",
-      "driveUrl": "https://drive.google.com/file/d/1aOXy1GaHWY2f8_ALWfZjmYBvrOkoxGVK/view",
       "category": "2026 kitaplar"
     },
     {
@@ -169,7 +162,7 @@
     },
     {
       "id": "1TOgEDEwn8Kr8bUnlanytRfU7NJ5SaCNZ",
-      "title": "AI Strategy 2025 for Marketing Teams ChatGPT, GPT4, Claude, SEO f LLMs, AI-agents, Prompts much more_ How AI is Transforming…",
+      "title": "AI Strategy 2025 for Marketing Teams ChatGPT, GPT4, Claude, SEO f LLMs, AI-agents, Prompts much more How AI is Transforming…",
       "author": "Henrik Roth",
       "format": "pdf",
       "cover": "/book-covers/1TOgEDEwn8Kr8bUnlanytRfU7NJ5SaCNZ.jpg",
@@ -352,15 +345,6 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1W4ba-Hh_rxmXDu3qhBE5DBG9nwTIVli4",
-      "title": "Build a Reasoning Model (From Scratch) MEAP V01",
-      "author": "Sebastian Raschka",
-      "format": "pdf",
-      "cover": "/book-covers/1W4ba-Hh_rxmXDu3qhBE5DBG9nwTIVli4.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1W4ba-Hh_rxmXDu3qhBE5DBG9nwTIVli4/view",
-      "category": "2026 kitaplar"
-    },
-    {
       "id": "1s-cx_EQuAgGGN8uPUBJx3MEZHCJu1auT",
       "title": "Build a Text-to-Image Generator (from Scratch) With transformers and diffusions",
       "author": "Mark Liu",
@@ -428,15 +412,6 @@
       "format": "pdf",
       "cover": "/book-covers/1Ynq2W3Jya8-H-b4ngvL6mpuKZZcEaldE.jpg",
       "driveUrl": "https://drive.google.com/file/d/1Ynq2W3Jya8-H-b4ngvL6mpuKZZcEaldE/view",
-      "category": "2026 kitaplar"
-    },
-    {
-      "id": "1vuuNLmmkAiHLioTkrr0BFrKSxgBeYQFV",
-      "title": "Building Generative AI Services with FastAPI A Practical Approach to Developing Context-Rich Generative AI Applications",
-      "author": "Alireza Parandeh",
-      "format": "pdf",
-      "cover": "/book-covers/1vuuNLmmkAiHLioTkrr0BFrKSxgBeYQFV.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1vuuNLmmkAiHLioTkrr0BFrKSxgBeYQFV/view",
       "category": "2026 kitaplar"
     },
     {
@@ -685,7 +660,7 @@
     },
     {
       "id": "1rF0PVgD3mNChZxfOG8RBRL1BgHaljhJH",
-      "title": "EPUB to PDF _ CloudConvert",
+      "title": "EPUB to PDF CloudConvert",
       "format": "pdf",
       "driveUrl": "https://drive.google.com/file/d/1rF0PVgD3mNChZxfOG8RBRL1BgHaljhJH/view",
       "category": "2026 kitaplar"
@@ -790,8 +765,7 @@
     },
     {
       "id": "1DVtf2A2ej609nPGNm_bOW0Zp839oKUZ9",
-      "title": "Gamification by Design Implementing Game Mechanics in Web and Mobile Apps",
-      "author": "Gabe Zichermann, Christopher Cunningham",
+      "title": "Gamification by Design Implementing Game Mechanics in Web and Mobile Apps (Gabe Zichermann, Christopher Cunningham) (z-library.sk, 1lib.sk, z-lib.sk)",
       "format": "pdf",
       "cover": "/book-covers/1DVtf2A2ej609nPGNm_bOW0Zp839oKUZ9.jpg",
       "driveUrl": "https://drive.google.com/file/d/1DVtf2A2ej609nPGNm_bOW0Zp839oKUZ9/view",
@@ -807,8 +781,7 @@
     },
     {
       "id": "1rAiat5eI-UuJ9SGWn0fO2BZ1lHwmsy-9",
-      "title": "Generative AI for 90 More Efficient RFP Planning and Generation",
-      "author": "Anthony Brown",
+      "title": "Generative AI for 90 More Efficient RFP Planning and Generation (Anthony Brown) (z-library.sk, 1lib.sk, z-lib.sk)",
       "format": "pdf",
       "cover": "/book-covers/1rAiat5eI-UuJ9SGWn0fO2BZ1lHwmsy-9.jpg",
       "driveUrl": "https://drive.google.com/file/d/1rAiat5eI-UuJ9SGWn0fO2BZ1lHwmsy-9/view",
@@ -1024,7 +997,7 @@
     },
     {
       "id": "1Z5Rgm4K1uo-rsRwclOFDs5U_IpH1PreW",
-      "title": "Learn AI Data Engineering in a Month of Lunches (MEAP Version 6)",
+      "title": "Learn AI Data Engineering in a Month of Lunches",
       "author": "David Melillo",
       "format": "pdf",
       "cover": "/book-covers/1Z5Rgm4K1uo-rsRwclOFDs5U_IpH1PreW.jpg",
@@ -1112,11 +1085,12 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1SBL7iRd9tSlLcY0uu1JR0zPmNbu4klzS",
+      "id": "1i8aP6rWMAt599KOtqEnn_C85picewgCc",
       "title": "Mastering Drone Technology with AI A comprehensive guide to drone operations and techniques",
       "author": "Dr. Subash K. Shide, Dr. Jyoti Sunil More etc.",
-      "format": "epub",
-      "driveUrl": "https://drive.google.com/file/d/1SBL7iRd9tSlLcY0uu1JR0zPmNbu4klzS/view",
+      "format": "pdf",
+      "cover": "/book-covers/1i8aP6rWMAt599KOtqEnn_C85picewgCc.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1i8aP6rWMAt599KOtqEnn_C85picewgCc/view",
       "category": "2026 kitaplar"
     },
     {
@@ -1209,7 +1183,8 @@
     },
     {
       "id": "1SXLX8093jwzgv3isl7-A5tmZ7kcSYKwO",
-      "title": "Microservices Patterns, Second Edition MEAP V02 (Chris Richardson) (1)",
+      "title": "Microservices Patterns, Second Edition MEAP V02",
+      "author": "Chris Richardson",
       "format": "pdf",
       "cover": "/book-covers/1SXLX8093jwzgv3isl7-A5tmZ7kcSYKwO.jpg",
       "driveUrl": "https://drive.google.com/file/d/1SXLX8093jwzgv3isl7-A5tmZ7kcSYKwO/view",
@@ -1320,7 +1295,7 @@
     },
     {
       "id": "1sCyLP7UHkjVmmSsgDkzhZd3SLtpYxy08",
-      "title": "PDF Converter _ CloudConvert",
+      "title": "PDF Converter CloudConvert",
       "format": "pdf",
       "cover": "/book-covers/1sCyLP7UHkjVmmSsgDkzhZd3SLtpYxy08.jpg",
       "driveUrl": "https://drive.google.com/file/d/1sCyLP7UHkjVmmSsgDkzhZd3SLtpYxy08/view",
@@ -1507,20 +1482,19 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY",
-      "title": "Reader at Work - 2",
-      "author": "Kandiller Bülent, Velioğlu Aysun.",
-      "format": "pdf",
-      "cover": "/book-covers/1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1BTVLMrnmN-XKmthHBZlFDra8rW0mAHmY/view",
-      "category": "2026 kitaplar"
-    },
-    {
       "id": "1MIit2DRFMhtA2E6PvdjeH6wv_-MbXprU",
       "title": "Reader at Work 1",
       "format": "pdf",
       "cover": "/book-covers/1MIit2DRFMhtA2E6PvdjeH6wv_-MbXprU.jpg",
       "driveUrl": "https://drive.google.com/file/d/1MIit2DRFMhtA2E6PvdjeH6wv_-MbXprU/view",
+      "category": "2026 kitaplar"
+    },
+    {
+      "id": "1N5L8mxjWIxlKmYfj8Bm9DD1mSOQ-ojEc",
+      "title": "Reader at Work 2",
+      "format": "pdf",
+      "cover": "/book-covers/1N5L8mxjWIxlKmYfj8Bm9DD1mSOQ-ojEc.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1N5L8mxjWIxlKmYfj8Bm9DD1mSOQ-ojEc/view",
       "category": "2026 kitaplar"
     },
     {
@@ -1633,14 +1607,6 @@
       "format": "pdf",
       "cover": "/book-covers/1afpxYVmHctjbZv99ctVb40rhjuZLaAht.jpg",
       "driveUrl": "https://drive.google.com/file/d/1afpxYVmHctjbZv99ctVb40rhjuZLaAht/view",
-      "category": "2026 kitaplar"
-    },
-    {
-      "id": "1sn3bRKVYEY8i5aM2xG3f_4Amt3-rxPxW",
-      "title": "Startup technical guide AI agents(final)",
-      "author": "Google Cloud",
-      "format": "pdf",
-      "driveUrl": "https://drive.google.com/file/d/1sn3bRKVYEY8i5aM2xG3f_4Amt3-rxPxW/view",
       "category": "2026 kitaplar"
     },
     {
@@ -1893,14 +1859,6 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1oNAgOzyLXQnM3KcAyeMt80fp5B1b8YKL",
-      "title": "UAV Swarm Cooperation A Networking Perspective (Haipeng Yao, Tianle Mai) (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1oNAgOzyLXQnM3KcAyeMt80fp5B1b8YKL.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1oNAgOzyLXQnM3KcAyeMt80fp5B1b8YKL/view",
-      "category": "2026 kitaplar"
-    },
-    {
       "id": "1U4qEeG7lWBKx3SveZBcxirrxXGZtkPhj",
       "title": "UAV Swarm Networks Models, Protocols, and Systems (Fei Hu (editor), Xin-Lin Huang (editor) etc.)",
       "format": "pdf",
@@ -2029,15 +1987,6 @@
       "category": "2026 kitaplar"
     },
     {
-      "id": "1HqlZx0G9W0yHefAw9RDZMGYC6YCc5cZo",
-      "title": "Vibe Engineering MEAP V01",
-      "author": "Tomasz Lelek, Artur Skowroński",
-      "format": "pdf",
-      "cover": "/book-covers/1HqlZx0G9W0yHefAw9RDZMGYC6YCc5cZo.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1HqlZx0G9W0yHefAw9RDZMGYC6YCc5cZo/view",
-      "category": "2026 kitaplar"
-    },
-    {
       "id": "1W0IBnzZwJavy72utR8KsuPGgECE5QL7S",
       "title": "Video Editing Made Easy with DaVinci Resolve",
       "format": "pdf",
@@ -2067,14 +2016,6 @@
       "format": "pdf",
       "cover": "/book-covers/1snqw6HcxoemIUZSflyi2E34mVEzJrsDD.jpg",
       "driveUrl": "https://drive.google.com/file/d/1snqw6HcxoemIUZSflyi2E34mVEzJrsDD/view",
-      "category": "2026 kitaplar"
-    },
-    {
-      "id": "1VEk98uMSI4g4gzcZu6Vx5rkO4EIXFI5R",
-      "title": "YZ_Senin_Yardımcı_Pilotun (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1VEk98uMSI4g4gzcZu6Vx5rkO4EIXFI5R.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1VEk98uMSI4g4gzcZu6Vx5rkO4EIXFI5R/view",
       "category": "2026 kitaplar"
     },
     {
@@ -2158,7 +2099,8 @@
     },
     {
       "id": "1OTV6OgnlISxMg5aEbFmOXe5I177zDMHY",
-      "title": "Flash Cards Are Awesome Learn 9000 New English Words through Creative and Informative Posters and Challenging Word Puzzle… (Robinson, Janette) (1)",
+      "title": "Flash Cards Are Awesome Learn 9000 New English Words through Creative and Informative Posters and Challenging Word Puzzle…",
+      "author": "Robinson, Janette",
       "format": "pdf",
       "cover": "/book-covers/1OTV6OgnlISxMg5aEbFmOXe5I177zDMHY.jpg",
       "driveUrl": "https://drive.google.com/file/d/1OTV6OgnlISxMg5aEbFmOXe5I177zDMHY/view",
@@ -3174,7 +3116,7 @@
     },
     {
       "id": "165XqhumOZv9Y-yPo4IPjmAOBWOiz-kAf",
-      "title": "Data-Driven_SEO___Python (1)",
+      "title": "Data-Driven SEO Python (1)",
       "format": "pdf",
       "cover": "/book-covers/165XqhumOZv9Y-yPo4IPjmAOBWOiz-kAf.jpg",
       "driveUrl": "https://drive.google.com/file/d/165XqhumOZv9Y-yPo4IPjmAOBWOiz-kAf/view",
@@ -3342,7 +3284,7 @@
     },
     {
       "id": "1DlgtFAcsmHnpK0OvLGqqqDkl5c99FuES",
-      "title": "Designing and Prototyping Interfaces with Figma (SafefilekUcom) (1)",
+      "title": "Designing and Prototyping Interfaces with Figma (1)",
       "format": "pdf",
       "cover": "/book-covers/1DlgtFAcsmHnpK0OvLGqqqDkl5c99FuES.jpg",
       "driveUrl": "https://drive.google.com/file/d/1DlgtFAcsmHnpK0OvLGqqqDkl5c99FuES/view",
@@ -3566,19 +3508,19 @@
       "category": "genel"
     },
     {
+      "id": "1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA",
+      "title": "Fluent C 2",
+      "format": "pdf",
+      "cover": "/book-covers/1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA/view",
+      "category": "genel"
+    },
+    {
       "id": "1WVPyg_eihhYrRVie8X_WplSzz-H3KmOs",
       "title": "Fluent React",
       "format": "pdf",
       "cover": "/book-covers/1WVPyg_eihhYrRVie8X_WplSzz-H3KmOs.jpg",
       "driveUrl": "https://drive.google.com/file/d/1WVPyg_eihhYrRVie8X_WplSzz-H3KmOs/view",
-      "category": "genel"
-    },
-    {
-      "id": "1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA",
-      "title": "Fluent_C 2",
-      "format": "pdf",
-      "cover": "/book-covers/1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1eeGNWI_B1cbCmdYcGr8yV9wW8OVXL8nA/view",
       "category": "genel"
     },
     {
@@ -3958,7 +3900,7 @@
     },
     {
       "id": "15oBUxR4ZK0AKvFOqkrj0NWaJyPgEubfL",
-      "title": "Intelligence-Driven Incident Response (SafefilekUcom)",
+      "title": "Intelligence-Driven Incident Response",
       "format": "pdf",
       "cover": "/book-covers/15oBUxR4ZK0AKvFOqkrj0NWaJyPgEubfL.jpg",
       "driveUrl": "https://drive.google.com/file/d/15oBUxR4ZK0AKvFOqkrj0NWaJyPgEubfL/view",
@@ -4158,7 +4100,7 @@
     },
     {
       "id": "153_L5hxuAJpYUNOIWpPfBnE9vzSffF6-",
-      "title": "Kafka Connect (SafefilekUcom) (2)",
+      "title": "Kafka Connect (2)",
       "format": "pdf",
       "cover": "/book-covers/153_L5hxuAJpYUNOIWpPfBnE9vzSffF6-.jpg",
       "driveUrl": "https://drive.google.com/file/d/153_L5hxuAJpYUNOIWpPfBnE9vzSffF6-/view",
@@ -4337,14 +4279,6 @@
       "format": "pdf",
       "cover": "/book-covers/1qu2ZF1f8MpqcwCswH7zWoLeZIJ3TgCsA.jpg",
       "driveUrl": "https://drive.google.com/file/d/1qu2ZF1f8MpqcwCswH7zWoLeZIJ3TgCsA/view",
-      "category": "genel"
-    },
-    {
-      "id": "13EwEMoUyKA10ucQCpUxaj-1HZREmkIeq",
-      "title": "Learning GitHub Actions (SafefilekUcom)",
-      "format": "pdf",
-      "cover": "/book-covers/13EwEMoUyKA10ucQCpUxaj-1HZREmkIeq.jpg",
-      "driveUrl": "https://drive.google.com/file/d/13EwEMoUyKA10ucQCpUxaj-1HZREmkIeq/view",
       "category": "genel"
     },
     {
@@ -4715,10 +4649,26 @@
       "category": "genel"
     },
     {
+      "id": "1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5",
+      "title": "Mastering Blockchain",
+      "format": "pdf",
+      "cover": "/book-covers/1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5/view",
+      "category": "genel"
+    },
+    {
       "id": "1LYcEGM1W7Xl-rqQG99BgPecG7lyA--ZS",
       "title": "Mastering Deep Learning",
       "format": "pdf",
       "driveUrl": "https://drive.google.com/file/d/1LYcEGM1W7Xl-rqQG99BgPecG7lyA--ZS/view",
+      "category": "genel"
+    },
+    {
+      "id": "1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c",
+      "title": "Mastering Financial Pattern Recognition 40 2022 41",
+      "format": "pdf",
+      "cover": "/book-covers/1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c/view",
       "category": "genel"
     },
     {
@@ -4783,30 +4733,6 @@
       "format": "pdf",
       "cover": "/book-covers/149fWghheF3_qY_05B76Ca3jYZMRLQt0K.jpg",
       "driveUrl": "https://drive.google.com/file/d/149fWghheF3_qY_05B76Ca3jYZMRLQt0K/view",
-      "category": "genel"
-    },
-    {
-      "id": "1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5",
-      "title": "Mastering_Blockchain (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1ieKBnUpeNrPZfguQc5GxGM1mvC_1d9W5/view",
-      "category": "genel"
-    },
-    {
-      "id": "12RKLu401PC7fPWznS6updvpjo9Phea6x",
-      "title": "Mastering_Blockchain (2)",
-      "format": "pdf",
-      "cover": "/book-covers/12RKLu401PC7fPWznS6updvpjo9Phea6x.jpg",
-      "driveUrl": "https://drive.google.com/file/d/12RKLu401PC7fPWznS6updvpjo9Phea6x/view",
-      "category": "genel"
-    },
-    {
-      "id": "1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c",
-      "title": "Mastering_Financial_Pattern_Recognition___40_2022__41_ (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1WNB1p7AHLHlK1OHBfN9q6FNjotzpkt7c/view",
       "category": "genel"
     },
     {
@@ -5122,14 +5048,6 @@
       "category": "genel"
     },
     {
-      "id": "1gRdwBbfBs0Inr7VF7UfMFVceWfhWrTY8",
-      "title": "Practical_20Machine_20Learning_20for_20Computer_20Vision_20_282021_29 (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1gRdwBbfBs0Inr7VF7UfMFVceWfhWrTY8.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1gRdwBbfBs0Inr7VF7UfMFVceWfhWrTY8/view",
-      "category": "genel"
-    },
-    {
       "id": "1ud3kMIxg9annvzSrmomW_yzCvs2b3t2u",
       "title": "Practicing Trustworthy",
       "format": "pdf",
@@ -5155,7 +5073,7 @@
     },
     {
       "id": "155RJAngWZ_l9JTEuveOvNOC0r6QnjDhQ",
-      "title": "Probabilistic Machine Learning for Finance and Investing (SafefilekUcom) (1)",
+      "title": "Probabilistic Machine Learning for Finance and Investing (1)",
       "format": "pdf",
       "cover": "/book-covers/155RJAngWZ_l9JTEuveOvNOC0r6QnjDhQ.jpg",
       "driveUrl": "https://drive.google.com/file/d/155RJAngWZ_l9JTEuveOvNOC0r6QnjDhQ/view",
@@ -5481,14 +5399,6 @@
       "title": "Python Trader",
       "format": "pdf",
       "driveUrl": "https://drive.google.com/file/d/1HXh1BOD5le7MK_lTXIfanvawQtRcnwUM/view",
-      "category": "genel"
-    },
-    {
-      "id": "1Y5QGzWbb2jVW2f266w024dU5RW01S6FX",
-      "title": "Python_20Machine_20Learning_20Projects (1)",
-      "format": "pdf",
-      "cover": "/book-covers/1Y5QGzWbb2jVW2f266w024dU5RW01S6FX.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1Y5QGzWbb2jVW2f266w024dU5RW01S6FX/view",
       "category": "genel"
     },
     {
@@ -5991,11 +5901,11 @@
       "category": "genel"
     },
     {
-      "id": "10_ffaFmMgtT4FUHEOrUvXGhVrKqbot6k",
+      "id": "1W-9FvVIUQL9W-t5YzS00Q5-dzmaeC2bN",
       "title": "The Kaggle Workbook",
-      "author": "Konrad Banachewicz, Luca Massaron",
-      "format": "epub",
-      "driveUrl": "https://drive.google.com/file/d/10_ffaFmMgtT4FUHEOrUvXGhVrKqbot6k/view",
+      "format": "pdf",
+      "cover": "/book-covers/1W-9FvVIUQL9W-t5YzS00Q5-dzmaeC2bN.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1W-9FvVIUQL9W-t5YzS00Q5-dzmaeC2bN/view",
       "category": "genel"
     },
     {
@@ -6274,6 +6184,15 @@
       "category": "güncel"
     },
     {
+      "id": "1-LncWr8tJg4AmEJPEidky7myypZM2Y9p",
+      "title": "Agentic AI Data Architectures How Distributed SQL Unifies Enterprise Scale and AI-Native Application Design",
+      "author": "Blaize Stewart  Ed Huang",
+      "format": "pdf",
+      "cover": "/book-covers/1-LncWr8tJg4AmEJPEidky7myypZM2Y9p.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1-LncWr8tJg4AmEJPEidky7myypZM2Y9p/view",
+      "category": "güncel"
+    },
+    {
       "id": "101WcQ7jAgi1t3640_RJ4tRVeO8Iye68_",
       "title": "Agile Processes in Software Engineering and Extreme Programming – Workshops XP 2025 Workshops, Brugg-Windisch, Switzerland,…",
       "author": "Sibylle Peter, Martin Kropp, Torgeir Dingsøyr etc.",
@@ -6372,7 +6291,8 @@
     },
     {
       "id": "1NPPpmHNEivHEd69MtR0x55jhvVSnbz5_",
-      "title": "AI-Powered Search (Trey Grainger, Doug Turnbull, Max Irwin) (1)",
+      "title": "AI-Powered Search",
+      "author": "Trey Grainger, Doug Turnbull, Max Irwin",
       "format": "pdf",
       "cover": "/book-covers/1NPPpmHNEivHEd69MtR0x55jhvVSnbz5_.jpg",
       "driveUrl": "https://drive.google.com/file/d/1NPPpmHNEivHEd69MtR0x55jhvVSnbz5_/view",
@@ -6473,6 +6393,15 @@
       "category": "güncel"
     },
     {
+      "id": "1PNF8dDZ9MEUohzLZnZh8vD7a2Jd1LoUs",
+      "title": "Building Generative AI Services with FastAPI A Practical Approach to Developing Context-Rich Generative AI Applications",
+      "author": "Alireza Parandeh",
+      "format": "pdf",
+      "cover": "/book-covers/1PNF8dDZ9MEUohzLZnZh8vD7a2Jd1LoUs.jpg",
+      "driveUrl": "https://drive.google.com/file/d/1PNF8dDZ9MEUohzLZnZh8vD7a2Jd1LoUs/view",
+      "category": "güncel"
+    },
+    {
       "id": "10luDxUldU9hUR_3N3H7u7bBHXZ-wbHZl",
       "title": "Causal AI",
       "author": "Robert Osazuwa Ness",
@@ -6563,7 +6492,7 @@
     },
     {
       "id": "1pASwcWSHzwO55U2Lv-v4giPCoZBmdy-l",
-      "title": "Effective Go Elegant, Efficient, and Testable Code (MEAP V04)",
+      "title": "Effective Go Elegant, Efficient, and Testable Code",
       "author": "Inanc Gumus",
       "format": "pdf",
       "cover": "/book-covers/1pASwcWSHzwO55U2Lv-v4giPCoZBmdy-l.jpg",
@@ -6572,7 +6501,7 @@
     },
     {
       "id": "1VTc9TgS-aaLfYjst9Bh9XscuRQ1LHFY0",
-      "title": "Effective Platform Engineering (MEAP V05)",
+      "title": "Effective Platform Engineering",
       "author": "Ajay Chankramath, Nic Cheneweth, Bryan Oliver etc.",
       "format": "pdf",
       "cover": "/book-covers/1VTc9TgS-aaLfYjst9Bh9XscuRQ1LHFY0.jpg",
@@ -6677,7 +6606,7 @@
     },
     {
       "id": "11wxiUGPeVjpIHL62rXrgMUJHozWgFr0V",
-      "title": "Generative AI with LangChain_Second Edition",
+      "title": "Generative AI with LangChain Second Edition",
       "author": "Ben Auffarth  Leonid Kuligin",
       "format": "pdf",
       "cover": "/book-covers/11wxiUGPeVjpIHL62rXrgMUJHozWgFr0V.jpg",
@@ -6686,7 +6615,7 @@
     },
     {
       "id": "16FP23edw0-fEd_rZ2VOtDYAiQ1sKsWCt",
-      "title": "GeoAI Artificial Intelligence in GIS (Ismael Chivite, Nicolas Giner, Matt Artz (eds.)) (1)",
+      "title": "GeoAI Artificial Intelligence in GIS (Ismael Chivite, Nicolas Giner, Matt Artz (eds.))",
       "format": "pdf",
       "cover": "/book-covers/16FP23edw0-fEd_rZ2VOtDYAiQ1sKsWCt.jpg",
       "driveUrl": "https://drive.google.com/file/d/16FP23edw0-fEd_rZ2VOtDYAiQ1sKsWCt/view",
@@ -6721,7 +6650,7 @@
     },
     {
       "id": "1y4rbsZ1z1ZZSwXm6nL_XutuqtMT4nDYA",
-      "title": "Go in Action - Second Edition (MEAP V03)",
+      "title": "Go in Action - Second Edition",
       "author": "Andrew Walker, William Kennedy",
       "format": "pdf",
       "cover": "/book-covers/1y4rbsZ1z1ZZSwXm6nL_XutuqtMT4nDYA.jpg",
@@ -6753,15 +6682,6 @@
       "format": "pdf",
       "cover": "/book-covers/1XVJ-wgoVQDYwRl_iaNRaoba9h1Jd719U.jpg",
       "driveUrl": "https://drive.google.com/file/d/1XVJ-wgoVQDYwRl_iaNRaoba9h1Jd719U/view",
-      "category": "güncel"
-    },
-    {
-      "id": "1yc9IJ9OF1NI791TlO69ypgiBmTLpy1wd",
-      "title": "gRPC Microservices in Go (MEAP V08)",
-      "author": "Hüseyin Babal",
-      "format": "pdf",
-      "cover": "/book-covers/1yc9IJ9OF1NI791TlO69ypgiBmTLpy1wd.jpg",
-      "driveUrl": "https://drive.google.com/file/d/1yc9IJ9OF1NI791TlO69ypgiBmTLpy1wd/view",
       "category": "güncel"
     },
     {
@@ -6819,7 +6739,7 @@
     },
     {
       "id": "1gNycongw5u8phQw7LKJO4qUdylf3_IIz",
-      "title": "Introduction to Generative AI, Second Edition (MEAP)",
+      "title": "Introduction to Generative AI, Second Edition",
       "author": "Numa Dhamani, Maggie Engler",
       "format": "pdf",
       "cover": "/book-covers/1gNycongw5u8phQw7LKJO4qUdylf3_IIz.jpg",
@@ -7064,17 +6984,10 @@
     },
     {
       "id": "1os88IDYyzFeo6Jv-I30kP2RPsefRU4e8",
-      "title": "Prompt Engineering in Action (MEAP v04)",
+      "title": "Prompt Engineering in Action",
       "author": "Shivendra Srivastava, Naresh Vurukonda",
       "format": "epub",
       "driveUrl": "https://drive.google.com/file/d/1os88IDYyzFeo6Jv-I30kP2RPsefRU4e8/view",
-      "category": "güncel"
-    },
-    {
-      "id": "1C5rO-x5rYd_pj5IwKnoefTrbRYa4Tf8G",
-      "title": "Prompt Engineering in Action (MEAP v04) (Shivendra Srivastava, Naresh Vurukonda) (1)",
-      "format": "epub",
-      "driveUrl": "https://drive.google.com/file/d/1C5rO-x5rYd_pj5IwKnoefTrbRYa4Tf8G/view",
       "category": "güncel"
     },
     {
@@ -7187,7 +7100,8 @@
     },
     {
       "id": "1_C2wEHnt2STPiwNqLU4kXIs2w67jGeEh",
-      "title": "scikit-learn Cookbook, Third Edition Over 80 recipes for machine learning in Python with scikit-learn (John Sukup) (1)",
+      "title": "scikit-learn Cookbook, Third Edition Over 80 recipes for machine learning in Python with scikit-learn",
+      "author": "John Sukup",
       "format": "pdf",
       "cover": "/book-covers/1_C2wEHnt2STPiwNqLU4kXIs2w67jGeEh.jpg",
       "driveUrl": "https://drive.google.com/file/d/1_C2wEHnt2STPiwNqLU4kXIs2w67jGeEh/view",
@@ -7208,6 +7122,14 @@
       "author": "Paula Moraga",
       "format": "pdf",
       "driveUrl": "https://drive.google.com/file/d/1Sy9lSGFOucuKJG_HH_gTilb6Zv_jvrDS/view",
+      "category": "güncel"
+    },
+    {
+      "id": "1YG2E1zUEMf6AWFZIHGT8rb-15ORcg6w9",
+      "title": "Startup technical guide AI agents(final)",
+      "author": "Google Cloud",
+      "format": "pdf",
+      "driveUrl": "https://drive.google.com/file/d/1YG2E1zUEMf6AWFZIHGT8rb-15ORcg6w9/view",
       "category": "güncel"
     },
     {

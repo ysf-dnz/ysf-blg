@@ -15,7 +15,7 @@
 import { readFile, writeFile, access, unlink, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseBookFileName, titleMatchScore, normalizeForMatch } from "./lib/book-title.ts";
+import { parseBookFileName, titleMatchScore, dedupeKey } from "./lib/book-title.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_PATH = join(ROOT, "src/data/books.json");
@@ -120,16 +120,44 @@ while (queue.length > 0) {
   console.log(`  ${folder.name}: ${files.length} kitap, ${folders.length} alt klasör`);
 }
 
-// 2. Kopya temizliği (normalize başlığa göre; ilk görülen kalır)
+// 2. Kopya temizliği — MEAP/Vxx/kopya-no gürültüsü ayıklanmış anahtara göre.
+// Kopyalardan tutulacak olan: (a) defter eşleşmesi (overrides) olan id,
+// (b) yoksa daha temiz dosya adı, (c) eşitse ilk görülen.
+const overrideIds = new Set(
+  (
+    JSON.parse(
+      await readFile(join(ROOT, "src/data/books-overrides.json"), "utf8"),
+    ).overrides as { id: string }[]
+  ).map((o) => o.id),
+);
+
+function noiseScore(fileName: string): number {
+  let s = 0;
+  if (/meap/i.test(fileName)) s += 2;
+  if (/\(\d\)/.test(fileName)) s += 2;
+  if (/safefile|z-?library/i.test(fileName)) s += 1;
+  if (/_\d{6}_/.test(fileName)) s += 1;
+  s += (fileName.match(/_/g)?.length ?? 0) * 0.1;
+  return s;
+}
+
 const byTitle = new Map<string, DriveFile>();
 let dupes = 0;
 for (const f of allFiles) {
-  const key = normalizeForMatch(parseBookFileName(f.fileName).title);
-  if (byTitle.has(key)) {
-    dupes++;
+  const key = dedupeKey(parseBookFileName(f.fileName).title);
+  const kept = byTitle.get(key);
+  if (!kept) {
+    byTitle.set(key, f);
     continue;
   }
-  byTitle.set(key, f);
+  dupes++;
+  const keepNew =
+    overrideIds.has(f.id) && !overrideIds.has(kept.id)
+      ? true
+      : overrideIds.has(kept.id) && !overrideIds.has(f.id)
+        ? false
+        : noiseScore(f.fileName) < noiseScore(kept.fileName);
+  if (keepNew) byTitle.set(key, f);
 }
 const uniqueFiles = [...byTitle.values()];
 console.log(`Toplam ${allFiles.length} dosya, ${dupes} kopya atıldı → ${uniqueFiles.length} kitap`);

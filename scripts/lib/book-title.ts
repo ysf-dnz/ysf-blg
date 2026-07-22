@@ -12,13 +12,18 @@ export interface BookTitle {
   author?: string;
 }
 
-const NOISE_PARENS = /\((z-?library|annas.?archive|libgen)[^)]*\)/gi;
+const NOISE_PARENS =
+  /\((z-?library|annas.?archive|libgen|safefile[^)]*|meap[^)]*)\)/gi;
 const YEAR_PARENS = /\((19|20)\d{2}\)/g;
+const COPY_SUFFIX = /\s*\(\d\)\s*$/; // "Ad (1).pdf" kopya numarası
 const TRAILING_TIMESTAMP = /_\d{6}_\d{6}$/;
 
 export function parseBookFileName(fileName: string): BookTitle {
-  // uzantıyı at
-  let name = fileName.replace(/\.(pdf|epub)$/i, "").trim();
+  // uzantı, kopya numarası ve zaman damgası ekleri
+  let name = fileName
+    .replace(/\.(pdf|epub)$/i, "")
+    .replace(COPY_SUFFIX, "")
+    .trim();
 
   let author: string | undefined;
 
@@ -59,6 +64,8 @@ export function parseBookFileName(fileName: string): BookTitle {
       .trim()
       .replace(/\b\p{L}/gu, (ch) => ch.toLocaleUpperCase("tr"));
   }
+  // kalan alt çizgiler her durumda boşluk olur ("YZ_Senin_Yardımcı_Pilotun (1)")
+  name = name.replace(/_+/g, " ");
 
   name = name.replace(/\s{2,}/g, " ").replace(/[-_\s]+$/g, "").trim();
 
@@ -75,6 +82,20 @@ export function normalizeForMatch(input: string): string {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Kopya tespiti anahtarı: baskı/sürüm gürültüsü (meap, v08, edition eki
+ * DEĞİL — yalnızca yayın süreci gürültüsü) atılarak aynı kitabın
+ * varyantları tek anahtara iner.
+ */
+const DEDUPE_NOISE = new Set(["meap", "final", "version", "release"]);
+
+export function dedupeKey(title: string): string {
+  return normalizeForMatch(title)
+    .split(" ")
+    .filter((w) => !DEDUPE_NOISE.has(w) && !/^v\d+$/.test(w))
+    .join(" ");
 }
 
 /**
