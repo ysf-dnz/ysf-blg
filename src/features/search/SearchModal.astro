@@ -69,6 +69,18 @@ const t = useTranslations(lang);
       new PagefindUI({
         element: "#search-container",
         showSubResults: true,
+        // dist'te sayfalar dizin (…/index.html) olarak üretilir; Pagefind da
+        // linkleri "…/" ile verir. trailingSlash: "never" 404'lememesi için
+        // sondaki eğik çizgi kırpılır (alt sonuç linkleri dahil).
+        processResult: (result) => {
+          const kirp = (u) =>
+            u.replace(/\/index\.html$/, "").replace(/(.+)\/$/, "$1");
+          if (result?.url) result.url = kirp(result.url);
+          for (const alt of result?.sub_results ?? []) {
+            if (alt.url) alt.url = kirp(alt.url);
+          }
+          return result;
+        },
         translations:
           container.dataset.lang === "tr"
             ? {

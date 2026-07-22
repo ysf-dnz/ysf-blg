@@ -33,9 +33,18 @@ test.describe("arama (Pagefind)", () => {
     ).toBeVisible({ timeout: 10_000 });
 
     await input.fill("Mindset");
+    const sonuc = dialog
+      .locator(".pagefind-ui__result", { hasText: /Zihniyet \(Mindset\)/ })
+      .first();
+    await expect(sonuc).toBeVisible({ timeout: 10_000 });
+
+    // link trailingSlash:never ile uyumlu ve tıklanınca sayfa açılıyor
+    const link = sonuc.locator(".pagefind-ui__result-link").first();
+    await expect(link).toHaveAttribute("href", /kitap\/[\w-]+$/);
+    await link.click();
     await expect(
-      dialog.locator(".pagefind-ui__result", { hasText: /Zihniyet \(Mindset\)/ }).first(),
-    ).toBeVisible({ timeout: 10_000 });
+      page.getByRole("heading", { name: /Mindset/, level: 1 }),
+    ).toBeVisible();
   });
 
   test("Cmd+K kısayolu aramayı açar", async ({ page }) => {
