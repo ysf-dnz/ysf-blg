@@ -29,7 +29,7 @@ export const tr = {
   "kategori.kisisel": "Kişisel",
   "arsiv.baslik": "Yazılar",
   "arsiv.tumKategoriler": "Tümü",
-  "arama.placeholder": "Yazılarda ara…",
+  "arama.placeholder": "Yazılarda ve kitaplarda ara…",
   "arama.devUyari": "Arama indeksi yalnızca üretim build'inde oluşur.",
   "kutuphane.baslik": "Kütüphane",
   "kutuphane.aciklama": "NotebookLM defterlerim ve kitaplığım.",

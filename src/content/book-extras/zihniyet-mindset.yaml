@@ -1,11 +1,12 @@
 not: Zihniyet (Mindset)
 bookId: 1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z
 moduller:
-  - discriminant: drivePdf
+  - discriminant: driveJpeg
     value:
-      baslik: MINDSET-SLAYT
+      baslik: Infografik
       dosyaId: >-
-        https://drive.google.com/file/d/123J3Yy_BLplQF7bj3v5TczHrBDgLFnM1/view?usp=drive_link
+        https://drive.google.com/file/d/11J_4t_3vBrSqzuaJsRygduq4eDJxqfPE/view?usp=sharing
+      genislik: 1600
   - discriminant: spotify
     value:
       baslik: >-
@@ -16,9 +17,14 @@ moduller:
   - discriminant: youtube
     value:
       url: https://youtu.be/uiWje5-HfeE
-  - discriminant: driveJpeg
+  - discriminant: drivePdf
     value:
-      baslik: Infografik
+      baslik: MINDSET-SLAYT
       dosyaId: >-
-        https://drive.google.com/file/d/11J_4t_3vBrSqzuaJsRygduq4eDJxqfPE/view?usp=sharing
-      genislik: 1600
+        https://drive.google.com/file/d/123J3Yy_BLplQF7bj3v5TczHrBDgLFnM1/view?usp=drive_link
+  - discriminant: halka
+    value:
+      baslik: Bazı kitaplar düşünce biçimini değiştirir..
+      kapak: /moduller/zihniyet-mindset/moduller/4/value/kapak.jpg
+      hedefUrl: https://www.instagram.com/reel/DS5ElpgiOPf/?igsh=aDh5czlqdm1uOHNs
+      hedefTip: instagram

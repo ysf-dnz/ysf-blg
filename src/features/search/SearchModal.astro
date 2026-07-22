@@ -71,8 +71,11 @@ const t = useTranslations(lang);
         showSubResults: true,
         translations:
           container.dataset.lang === "tr"
-            ? { placeholder: "Yazılarda ara…", zero_results: "Sonuç yok: [SEARCH_TERM]" }
-            : undefined,
+            ? {
+                placeholder: "Yazılarda ve kitaplarda ara…",
+                zero_results: "Sonuç yok: [SEARCH_TERM]",
+              }
+            : { placeholder: "Search posts & books…" },
       });
       dialog.querySelector<HTMLInputElement>("input")?.focus();
     } catch {

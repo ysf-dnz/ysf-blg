@@ -8,14 +8,34 @@ test.describe("arama (Pagefind)", () => {
     const dialog = page.locator("#search-dialog");
     await expect(dialog).toBeVisible();
 
-    const input = dialog.locator("input");
+    const input = dialog.locator("input[type='text']");
     await input.fill("öğrenme");
     await expect(dialog.locator(".pagefind-ui__result").first()).toBeVisible({
       timeout: 10_000,
     });
-    await expect(dialog.locator(".pagefind-ui__result").first()).toContainText(
-      /NotebookLM/i,
-    );
+
+    // yazı da hâlâ bulunuyor (kitaplarla aynı indekste)
+    await input.fill("katmanlı öğrenme");
+    await expect(
+      dialog.locator(".pagefind-ui__result", { hasText: /NotebookLM/i }).first(),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("kitap TR ve EN adıyla bulunur", async ({ page }) => {
+    await page.goto("/");
+    await page.keyboard.press("ControlOrMeta+k");
+    const dialog = page.locator("#search-dialog");
+    const input = dialog.locator("input[type='text']");
+
+    await input.fill("Zihniyet");
+    await expect(
+      dialog.locator(".pagefind-ui__result", { hasText: /Zihniyet \(Mindset\)/ }).first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await input.fill("Mindset");
+    await expect(
+      dialog.locator(".pagefind-ui__result", { hasText: /Zihniyet \(Mindset\)/ }).first(),
+    ).toBeVisible({ timeout: 10_000 });
   });
 
   test("Cmd+K kısayolu aramayı açar", async ({ page }) => {

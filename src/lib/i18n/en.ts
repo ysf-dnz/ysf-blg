@@ -31,7 +31,7 @@ export const en: Record<UiKey, string> = {
   "kategori.kisisel": "Personal",
   "arsiv.baslik": "Posts",
   "arsiv.tumKategoriler": "All",
-  "arama.placeholder": "Search posts…",
+  "arama.placeholder": "Search posts & books…",
   "arama.devUyari": "The search index is only built in production builds.",
   "kutuphane.baslik": "Library",
   "kutuphane.aciklama": "My NotebookLM notebooks and bookshelf.",
