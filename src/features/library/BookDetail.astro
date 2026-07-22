@@ -159,25 +159,24 @@ const planlar = [
     )
   }
 
-  <!-- Drive önizleme (tıkla-yükle) -->
+  <!-- Drive önizleme: yalnızca platform içi okuma.
+       sandbox popup/yeni sekme açılmasını engeller; sağ üstteki köşe kapağı
+       Google'ın "yeni pencerede aç" butonuna tıklamayı yutar. -->
   <section class="mt-8">
     <h2 class="font-display text-xl font-semibold text-ink">{t("kitap.oku")}</h2>
-    <div
-      id="book-embed"
-      class="mt-3 overflow-hidden rounded-2xl border border-line"
-      data-preview-url={previewUrl}
-    >
-      <button
-        type="button"
-        id="book-embed-load"
-        class="flex aspect-[4/3] w-full flex-col items-center justify-center gap-3 bg-surface-raised text-ink-muted transition-colors hover:text-accent"
+    <div class="relative mt-3 overflow-hidden rounded-2xl border border-line bg-surface-raised">
+      <iframe
+        src={previewUrl}
+        title={book.title}
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        class="aspect-[4/3] w-full"></iframe>
+      <div
+        class="absolute right-0 top-0 z-10 h-16 w-16"
+        aria-hidden="true"
+        title=""
       >
-        <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5v15Z"></path>
-          <path d="M20 17v5H6.5a2.5 2.5 0 0 1 0-5"></path>
-        </svg>
-        <span class="text-sm font-medium">{t("kitap.okuYukle")}</span>
-      </button>
+      </div>
     </div>
   </section>
 
@@ -235,16 +234,3 @@ const planlar = [
   </section>
 </article>
 
-<script>
-  // Drive iframe'i yalnızca istek üzerine yüklenir (perf + üçüncü taraf izolasyonu)
-  const wrap = document.getElementById("book-embed");
-  document.getElementById("book-embed-load")?.addEventListener("click", () => {
-    if (!wrap) return;
-    const iframe = document.createElement("iframe");
-    iframe.src = wrap.dataset.previewUrl!;
-    iframe.className = "aspect-[4/3] w-full";
-    iframe.allow = "autoplay";
-    iframe.setAttribute("loading", "lazy");
-    wrap.replaceChildren(iframe);
-  });
-</script>

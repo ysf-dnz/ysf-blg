@@ -27,16 +27,19 @@ test.describe("kitap rafı", () => {
     await expect(answer).toContainText(/zihniyet/i);
   });
 
-  test("Drive önizlemesi tıklanmadan iframe yüklemez, tıklayınca yükler", async ({
+  test("Drive önizlemesi gömülü ve indirme kaçışları kapalı", async ({
     page,
   }) => {
     await page.goto(MINDSET);
-    await expect(page.locator("#book-embed iframe")).toHaveCount(0);
-    await page.locator("#book-embed-load").click();
-    await expect(page.locator("#book-embed iframe")).toHaveAttribute(
-      "src",
-      /drive\.google\.com.*preview/,
-    );
+    const iframe = page.locator("iframe[src*='drive.google.com']");
+    await expect(iframe).toHaveAttribute("src", /preview/);
+    // sandbox popup açılmasını engeller (allow-popups YOK)
+    const sandbox = await iframe.getAttribute("sandbox");
+    expect(sandbox).not.toContain("allow-popups");
+    // sayfada doğrudan Drive görüntüleme/indirme linki kalmadı
+    await expect(
+      page.locator("a[href*='drive.google.com/file']"),
+    ).toHaveCount(0);
   });
 
   test("sohbet butonu NotebookLM defterine işaret eder", async ({ page }) => {
