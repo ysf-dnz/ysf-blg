@@ -21,7 +21,9 @@ const adminIntegrations = keystaticEnabled
 export default defineConfig({
   site: SITE,
   output: "static",
-  adapter: vercel(),
+  // webAnalytics: Vercel'e deploy edilince ziyaretçi istatistikleri otomatik
+  // toplanır (vercel.com → proje → Analytics); lokalde etkisizdir
+  adapter: vercel({ webAnalytics: { enabled: true } }),
   trailingSlash: "never",
   i18n: {
     defaultLocale: "tr",

@@ -1,10 +1,13 @@
 ---
 /**
  * Kitap detay sayfası: büyük kapak, çekmece (accordion) soru-cevaplar,
- * tıkla-yükle Drive önizlemesi, NotebookLM sohbet köprüsü.
- * Akordeon native <details> — sıfır JS; embed tek küçük inline script.
+ * Drive önizlemesi, ek pencereler, indirme planları, NotebookLM sohbeti.
+ * Bölüm SIRASI panelden yönetilir (Keystatic → Kütüphane → Kitap Sayfası
+ * Düzeni → src/content/site/kitap-sayfa.yaml); listeden çıkarılan bölüm
+ * render edilmez. Akordeon native <details> — sıfır JS.
  */
 import type { CollectionEntry } from "astro:content";
+import { getEntry } from "astro:content";
 import { marked } from "marked";
 import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
@@ -22,6 +25,18 @@ interface Props {
 
 const { book, qa, moduller = [], lang } = Astro.props;
 const t = useTranslations(lang);
+
+const VARSAYILAN_SIRA = [
+  "sorular",
+  "ozet",
+  "oku",
+  "moduller",
+  "planlar",
+  "sohbet",
+] as const;
+const duzen = await getEntry("siteConfig", "kitap-sayfa");
+const sira = duzen?.data.sira?.length ? duzen.data.sira : [...VARSAYILAN_SIRA];
+
 const notebookUrl = book.notebookId
   ? `https://notebooklm.google.com/notebook/${book.notebookId}`
   : undefined;
@@ -95,156 +110,167 @@ const planlar = [
     </div>
   </header>
 
-  <!-- Çekmeceler -->
   {
-    qa && qa.bolumler.length > 0 && (
-      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
-        <h2 class="font-display text-xl font-semibold text-ink">
-          {t("kitap.sorular")}
-        </h2>
-        <p class="mt-1 text-xs text-ink-muted">
-          {t("kitap.guncelleme")}: {qa.guncellenme.toISOString().slice(0, 10)} ·
-          NotebookLM
-        </p>
-        {qa.bolumler.map((bolum) => (
-          <div class="mt-5">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-accent">
-              {bolum.baslik}
-            </h3>
-            <div class="mt-1 divide-y divide-line">
-              {bolum.sorular.map((s) => (
-                <details class="group py-3">
-                  <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-medium text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
-                    {s.soru}
-                    <svg
-                      class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </summary>
-                  <div
-                    class="prose prose-sm mt-2 max-w-none text-ink-muted dark:prose-invert prose-a:text-accent"
-                    set:html={marked.parse(s.cevap)}
-                  />
-                </details>
+    sira.map((bolum) => {
+      if (bolum === "sorular")
+        return (
+          qa &&
+          qa.bolumler.length > 0 && (
+            <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
+              <h2 class="font-display text-xl font-semibold text-ink">
+                {t("kitap.sorular")}
+              </h2>
+              <p class="mt-1 text-xs text-ink-muted">
+                {t("kitap.guncelleme")}: {qa.guncellenme.toISOString().slice(0, 10)} ·
+                NotebookLM
+              </p>
+              {qa.bolumler.map((qaBolum) => (
+                <div class="mt-5">
+                  <h3 class="text-xs font-semibold uppercase tracking-wider text-accent">
+                    {qaBolum.baslik}
+                  </h3>
+                  <div class="mt-1 divide-y divide-line">
+                    {qaBolum.sorular.map((s) => (
+                      <details class="group py-3">
+                        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-medium text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
+                          {s.soru}
+                          <svg
+                            class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            aria-hidden="true"
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </summary>
+                        <div
+                          class="prose prose-sm mt-2 max-w-none text-ink-muted dark:prose-invert prose-a:text-accent"
+                          set:html={marked.parse(s.cevap)}
+                        />
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+          )
+        );
+
+      if (bolum === "ozet")
+        return (
+          qa?.ozet &&
+          qa.ozet.length > 0 && (
+            <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
+              <h2 class="font-display text-xl font-semibold text-ink">
+                {t("kitap.ozet")}
+              </h2>
+              <p class="mt-1 text-xs text-ink-muted">{t("kitap.ozetAciklama")}</p>
+              <div class="mt-3 divide-y divide-line">
+                {qa.ozet.map((parca) => (
+                  <details class="group py-3">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-[16px] font-semibold text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
+                      {parca.baslik}
+                      <svg
+                        class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </summary>
+                    <div
+                      class="prose prose-sm mt-3 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent"
+                      set:html={marked.parse(parca.icerik)}
+                    />
+                  </details>
+                ))}
+              </div>
+            </section>
+          )
+        );
+
+      if (bolum === "oku")
+        return (
+          <section class="mt-8">
+            <h2 class="font-display text-xl font-semibold text-ink">
+              {t("kitap.oku")}
+            </h2>
+            <div class="mt-3">
+              <DriveEmbed fileId={book.id} title={book.title} />
+            </div>
+          </section>
+        );
+
+      if (bolum === "moduller")
+        return (
+          moduller.length > 0 && (
+            <div class="mt-8">
+              <ModuleList moduller={moduller} />
+            </div>
+          )
+        );
+
+      if (bolum === "planlar")
+        return (
+          <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-6">
+            <h2 class="font-display text-xl font-semibold text-ink">
+              {t("kitap.planBaslik")}
+            </h2>
+            <p class="mt-1 text-sm text-ink-muted">{t("kitap.indirAciklama")}</p>
+            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+              {planlar.map((plan) => (
+                <div
+                  class:list={[
+                    "rounded-xl border p-4 text-center",
+                    plan.one ? "border-accent bg-accent-soft" : "border-line",
+                  ]}
+                >
+                  <p class="font-display text-lg font-semibold text-ink">
+                    {plan.ad}
+                  </p>
+                  <p class="mt-1 text-sm text-ink-muted">{plan.limit}</p>
+                </div>
               ))}
             </div>
-          </div>
-        ))}
-      </section>
-    )
+            <div class="mt-5 text-center">
+              <a
+                href={requestMail}
+                class="inline-flex items-center gap-2 rounded-full border border-accent px-6 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white"
+              >
+                ✉️ {t("kitap.indir")}
+              </a>
+              <p class="mt-2 text-xs text-ink-muted">{t("kitap.planNot")}</p>
+            </div>
+          </section>
+        );
+
+      // sohbet
+      return (
+        <section class="mt-8 rounded-2xl border border-accent/30 bg-accent-soft p-6 text-center">
+          {notebookUrl ? (
+            <>
+              <a
+                href={notebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
+              >
+                📔 {t("kitap.sohbet")}
+              </a>
+              <p class="mt-3 text-sm text-ink-muted">{t("kitap.sohbetAciklama")}</p>
+            </>
+          ) : (
+            <p class="text-sm text-ink-muted">{t("kitap.sohbetYok")}</p>
+          )}
+        </section>
+      );
+    })
   }
-
-  <!-- Türkçe özet: bölüm bölüm yeniden anlatım -->
-  {
-    qa?.ozet && qa.ozet.length > 0 && (
-      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
-        <h2 class="font-display text-xl font-semibold text-ink">
-          {t("kitap.ozet")}
-        </h2>
-        <p class="mt-1 text-xs text-ink-muted">{t("kitap.ozetAciklama")}</p>
-        <div class="mt-3 divide-y divide-line">
-          {qa.ozet.map((parca) => (
-            <details class="group py-3">
-              <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-[16px] font-semibold text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
-                {parca.baslik}
-                <svg
-                  class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  aria-hidden="true"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </summary>
-              <div
-                class="prose prose-sm mt-3 max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent"
-                set:html={marked.parse(parca.icerik)}
-              />
-            </details>
-          ))}
-        </div>
-      </section>
-    )
-  }
-
-  <!-- Drive önizleme: yalnızca platform içi okuma -->
-  <section class="mt-8">
-    <h2 class="font-display text-xl font-semibold text-ink">{t("kitap.oku")}</h2>
-    <div class="mt-3">
-      <DriveEmbed fileId={book.id} title={book.title} />
-    </div>
-  </section>
-
-  <!-- Panelden eklenen ek pencereler -->
-  {
-    moduller.length > 0 && (
-      <div class="mt-8">
-        <ModuleList moduller={moduller} />
-      </div>
-    )
-  }
-
-  <!-- İndirme planları + e-postayla erişim isteği -->
-  <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-6">
-    <h2 class="font-display text-xl font-semibold text-ink">
-      {t("kitap.planBaslik")}
-    </h2>
-    <p class="mt-1 text-sm text-ink-muted">{t("kitap.indirAciklama")}</p>
-    <div class="mt-4 grid gap-3 sm:grid-cols-3">
-      {
-        planlar.map((plan) => (
-          <div
-            class:list={[
-              "rounded-xl border p-4 text-center",
-              plan.one ? "border-accent bg-accent-soft" : "border-line",
-            ]}
-          >
-            <p class="font-display text-lg font-semibold text-ink">{plan.ad}</p>
-            <p class="mt-1 text-sm text-ink-muted">{plan.limit}</p>
-          </div>
-        ))
-      }
-    </div>
-    <div class="mt-5 text-center">
-      <a
-        href={requestMail}
-        class="inline-flex items-center gap-2 rounded-full border border-accent px-6 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white"
-      >
-        ✉️ {t("kitap.indir")}
-      </a>
-      <p class="mt-2 text-xs text-ink-muted">{t("kitap.planNot")}</p>
-    </div>
-  </section>
-
-  <!-- Sohbet köprüsü -->
-  <section class="mt-8 rounded-2xl border border-accent/30 bg-accent-soft p-6 text-center">
-    {
-      notebookUrl ? (
-        <>
-          <a
-            href={notebookUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
-          >
-            📔 {t("kitap.sohbet")}
-          </a>
-          <p class="mt-3 text-sm text-ink-muted">{t("kitap.sohbetAciklama")}</p>
-        </>
-      ) : (
-        <p class="text-sm text-ink-muted">{t("kitap.sohbetYok")}</p>
-      )
-    }
-  </section>
 </article>
-

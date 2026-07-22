@@ -1,7 +1,24 @@
 not: Zihniyet (Mindset)
 bookId: 1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z
 moduller:
+  - discriminant: drivePdf
+    value:
+      baslik: MINDSET-SLAYT
+      dosyaId: >-
+        https://drive.google.com/file/d/123J3Yy_BLplQF7bj3v5TczHrBDgLFnM1/view?usp=drive_link
+  - discriminant: spotify
+    value:
+      baslik: >-
+        Sabit zihniyetin “kendini kanıtlama” baskısından çıkıp, gelişim
+        zihniyetinin çaba–strateji–öğrenme yoluna geçmeyi konuşacağız. 
+      url: >-
+        https://open.spotify.com/episode/1za4hfzXqvAtHbSBtiXcuI?si=bP8dTT6QQyi7B2Vkfy06AA
   - discriminant: youtube
     value:
-      baslik: Carol Dweck — Gelişebileceğine inanmanın gücü (TED)
-      url: https://www.youtube.com/watch?v=_X0mgOOSpLU
+      url: https://youtu.be/uiWje5-HfeE
+  - discriminant: driveJpeg
+    value:
+      baslik: Infografik
+      dosyaId: >-
+        https://drive.google.com/file/d/11J_4t_3vBrSqzuaJsRygduq4eDJxqfPE/view?usp=sharing
+      genislik: 1600

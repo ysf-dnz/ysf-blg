@@ -274,6 +274,7 @@ export default config({
         "booksManual",
         "bookExtras",
         "bookCategories",
+        "kitapSayfa",
       ],
       Ayarlar: ["sosyal"],
     },
@@ -553,6 +554,32 @@ export default config({
           {
             label: "Kategoriler (dizi sırası = rafta görünüm sırası)",
             itemLabel: (item) => item.fields.ad.value || "kategori",
+          },
+        ),
+      },
+    }),
+    kitapSayfa: singleton({
+      label: "Kitap Sayfası Düzeni",
+      path: "src/content/site/kitap-sayfa",
+      format: { data: "yaml" },
+      schema: {
+        sira: fields.array(
+          fields.select({
+            label: "Bölüm",
+            options: [
+              { label: "Sorularla Bu Kitap (çekmeceler)", value: "sorular" },
+              { label: "Türkçe Özet", value: "ozet" },
+              { label: "Kitabı Oku (Drive)", value: "oku" },
+              { label: "Ek pencereler (modüller)", value: "moduller" },
+              { label: "İndirme Planları", value: "planlar" },
+              { label: "Kitapla Sohbet", value: "sohbet" },
+            ],
+            defaultValue: "sorular",
+          }),
+          {
+            label:
+              "Bölüm sırası — sürükleyerek değiştirin; listeden çıkarılan bölüm sayfada görünmez",
+            itemLabel: (item) => item.value,
           },
         ),
       },

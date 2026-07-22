@@ -6,6 +6,7 @@ import SearchModal from "@/features/search/SearchModal.astro";
 import Seo from "@/features/seo/Seo.astro";
 import JsonLd from "@/features/seo/JsonLd.astro";
 import SocialLinks from "@/features/site/SocialLinks.astro";
+import Analytics from "@/features/site/Analytics.astro";
 import type { SeoProps } from "@/features/seo/Seo.astro";
 
 interface Props {
@@ -48,6 +49,7 @@ const nav = [
       noindex={seo?.noindex}
     />
     {!ownJsonLd && <JsonLd />}
+    <Analytics />
     <slot name="head" />
     <script is:inline>
       // No-flash tema: render'dan önce data-theme çözülür

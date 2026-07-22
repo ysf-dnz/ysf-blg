@@ -1,7 +1,8 @@
 ---
 /**
- * Drive'daki link-paylaşımlı bir görseli thumbnail endpoint'i üzerinden basar;
- * dosya indirilmez, auth gerekmez.
+ * Drive'daki link-paylaşımlı bir görseli basar; dosya indirilmez, auth
+ * gerekmez. drive.google.com/thumbnail KULLANILMAZ: lh3'e yönlendirmesi
+ * tarayıcının ORB korumasına takılıyor — doğrudan lh3 + no-referrer gerekli.
  */
 import { driveFileId } from "./parse.ts";
 
@@ -24,10 +25,11 @@ const id = driveFileId(dosyaId);
         </h2>
       )}
       <img
-        src={`https://drive.google.com/thumbnail?id=${id}&sz=w${genislik}`}
+        src={`https://lh3.googleusercontent.com/d/${id}=w${genislik}`}
         alt={baslik ?? ""}
         loading="lazy"
-        class="w-full rounded-2xl border border-line bg-surface-raised object-cover"
+        referrerpolicy="no-referrer"
+        class="h-auto w-full rounded-2xl border border-line bg-surface-raised"
       />
     </section>
   )

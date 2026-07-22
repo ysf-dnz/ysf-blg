@@ -17,7 +17,9 @@ test.describe("kitap rafı", () => {
 
   test("kitap detayında çekmeceler açılıp kapanır", async ({ page }) => {
     await page.goto(MINDSET);
-    await expect(page.getByRole("heading", { name: "Mindset" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Mindset/, level: 1 }),
+    ).toBeVisible();
 
     const drawer = page.locator("details").first();
     const answer = drawer.locator(".prose");
@@ -31,11 +33,15 @@ test.describe("kitap rafı", () => {
     page,
   }) => {
     await page.goto(MINDSET);
-    const iframe = page.locator("iframe[src*='drive.google.com']");
-    await expect(iframe).toHaveAttribute("src", /preview/);
-    // sandbox popup açılmasını engeller (allow-popups YOK)
-    const sandbox = await iframe.getAttribute("sandbox");
-    expect(sandbox).not.toContain("allow-popups");
+    // Modüller ek Drive iframe'leri ekleyebilir; HEPSİ kilitli olmalı
+    const iframes = page.locator("iframe[src*='drive.google.com']");
+    expect(await iframes.count()).toBeGreaterThan(0);
+    for (const iframe of await iframes.all()) {
+      await expect(iframe).toHaveAttribute("src", /preview/);
+      // sandbox popup açılmasını engeller (allow-popups YOK)
+      const sandbox = await iframe.getAttribute("sandbox");
+      expect(sandbox).not.toContain("allow-popups");
+    }
     // sayfada doğrudan Drive görüntüleme/indirme linki kalmadı
     await expect(
       page.locator("a[href*='drive.google.com/file']"),

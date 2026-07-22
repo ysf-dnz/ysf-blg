@@ -262,6 +262,11 @@ const siteConfig = defineCollection({
   }),
   schema: z.object({
     moduller: modulSchema.optional(),
+    // Kitap detay sayfası bölüm sırası (kitap-sayfa.yaml); listede olmayan
+    // bölüm sayfada hiç görünmez
+    sira: z
+      .array(z.enum(["sorular", "ozet", "oku", "moduller", "planlar", "sohbet"]))
+      .optional(),
     linkler: z
       .array(
         z.object({
