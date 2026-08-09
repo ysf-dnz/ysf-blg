@@ -63,7 +63,7 @@
 - **Plan dosyası**: `~/.claude/plans/macbook-macbook-pro-ysf-blog-i-in-ux-sprightly-llama.md` (sıradaki adımların ayrıntısı).
 - **Kalıcı hafıza**: `~/.claude/projects/-Users-macbook-Downloads-ysf-blog/memory/` (otomatik yüklenir).
 - **`.env.local` kaybolursa**: git'te YOK (bilinçli). Kurtarma: `vercel link --yes` (proje zaten bağlı) → `vercel env pull` → Clerk+Neon env'leri entegrasyonlardan otomatik gelir. NotebookLM MCP oturumu düşerse: `nlm login`.
-- **Tüm iş yerel git'te commit'li** (remote YOK — GitHub repo'su açılıp push edilmesi Kalan İşler'dedir). Neon'daki DB şeması ve seed verisi buluttadır, kayıp riski yok.
+- **Remote**: `git@github.com:ysf-dnz/ysf-blg.git` (origin/main push'lu, takipli). Neon'daki DB şeması ve seed verisi buluttadır, kayıp riski yok.
 
 ## Bilinen dev tuzakları
 - Uzun dev oturumu: EMFILE / `504 Outdated Optimize Dep` → restart + `rm -rf node_modules/.vite`.
