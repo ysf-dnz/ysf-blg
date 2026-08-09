@@ -1,137 +1,53 @@
-# ysf-blog
+# ysf-blog — "Bilgi Ödüldür" 📚
 
-Yusuf Deniz'in kişisel blogu — Astro 5, Tailwind v4, MDX. Türkçe ana dil,
-İngilizce seçmeli. Instagram tarzı hikâye halkaları, NotebookLM kütüphane
-entegrasyonu (438 defter) ve Keystatic admin paneli ile.
+> Kitaplar burada satılmaz — **emekle açılır**. Oku → üret → paylaş → puan kazan → yeni bilgi hazinesinin kilidini aç.
+
+Yusuf Deniz'in kişisel blogu + üyelikli **öğrenme topluluğu platformu**. Medium'un editörü, Skool'un topluluk mekanikleri, Kahoot'un quiz enerjisi ve Jira'nın görev panosu — tek çatıda, Türkçe.
+
+## Ne var?
+
+| Alan | Özellik |
+|---|---|
+| 📖 **Kütüphane** | 884 kitap (statik, aranabilir); erişim kapısı server island'da. Kitap sayfasında NotebookLM'den üretilen 💎 değer notu, sorularla analiz, bölüm bölüm Türkçe özet |
+| 🗝️ **Bilgi Hazinesi** | Kayıtta 5 kitap seç: ilki hediye, kalanları yazdıkça kazandığın puanla aç (konfeti dahil) |
+| ✍️ **Topluluk** | Medium tarzı editör (seçimde biçim çubuğu, otosave, herkese açık/üyelere özel), admin onaylı yayın, takip, beğeni (+1 puan yazara), Skool tarzı feed |
+| 🏛️ **Kulüpler** | Üniversite/lise/şehir toplulukları; ortak kitaplık, kampanya + Kanban görev panosu (backlog→üstlenildi→incelemede→tamamlandı), haftalık ödül bütçesi |
+| 🧠 **Quiz** | Kahoot tarzı süre sayaçlı sorular; doğru cevap istemciye gitmez, puan = doğruluk × hız |
+| 🎓 **Dersler** | YouTube videosu + üye yazısı + quiz **karışık müfredat**; video barındırılmaz |
+| 🗺️ **Harita** | 81 il, kulüp pinleri + üye kümeleri (sıfır bağımlılık SVG) |
+| 🏆 **Oyunlaştırma** | points_ledger tek gerçek kaynak; Skool seviye eşikleri (1-9), liderlik (7g/30g/tüm), rozetler, flair mağazası, kitap hediye etme, davet zinciri (ref kodu + canvas davet kartı) |
+
+## Stack
+
+**Astro 5** (server-mode, Vercel) · **Tailwind v4** · **Clerk** (Google girişi) · **Neon Postgres + Drizzle** · Keystatic (yerel admin) · Pagefind · NotebookLM MCP (değer notu üretimi)
+
+## Kurulum
+
+```bash
+npm install
+vercel link && vercel env pull   # Clerk + Neon env'leri (entegrasyonlar Vercel'de kurulu)
+npm run dev
+```
 
 ## Komutlar
 
 | Komut | Ne yapar |
 |---|---|
-| `npm run dev` | Geliştirme sunucusu (arama dev'de boş — Pagefind postbuild'de üretilir) |
-| `npm run admin` | Dev sunucu + **Keystatic admin** → http://localhost:4321/keystatic |
-| `npm run build` | Üretim build + Pagefind indeksi + llms.txt |
-| `npm run preview` | Build çıktısını yerelde sun |
-| `npm test` | Vitest (unit + component) |
-| `npm run test:e2e` | Playwright (build + preview'a karşı) |
-| `npx lhci autorun` | Lighthouse CI (perf/a11y ≥ 95 kapısı) |
-| `npm run sync:kutuphanem` | kutuphanem verisini çek → `src/data/kutuphanem.json` |
-| `npm run sync:kitaplik` | Drive kitap listesini doğrula → `src/data/books.json` |
+| `npm run dev` | Geliştirme sunucusu |
+| `npm run qa` | Kalite kapısı: type-check + 90 birim test + build + çıktı bekçisi + e2e |
+| `npm run seed:demo` | 5 demo üye + kulüp + kampanya + quiz + kurs + etkinlik (idempotent) |
+| `npm run admin` | Keystatic admin → /keystatic |
+| `npm run build` | Üretim build + Pagefind + llms.txt |
+| `npm test` / `npm run test:e2e` | Vitest / Playwright (e2e dev server'a koşar) |
+| `node --env-file=.env.local node_modules/.bin/drizzle-kit push` | Şema → Neon |
 
-## Yeni yazı nasıl eklenir?
+## Belgeler
 
-**Yol 1 — Admin paneli:** `npm run admin` → http://localhost:4321/keystatic →
-"Yazılar (TR)" → New. Tüm frontmatter alanları (kategori, etiketler, kaynaklar,
-NotebookLM defteri dropdown'ı) formdan doldurulur. Kaydet = dosya
-`src/content/posts/tr/` altına yazılır; commit + push ile yayınlanır.
+- **[CLAUDE.md](CLAUDE.md)** — mimari anayasa: kritik kararlar, sayfa haritası, tuzaklar
+- **[PROGRESS.md](PROGRESS.md)** — durum, QStash kararı, risk kaydı, operasyon runbook'u
 
-**Yol 2 — Elle:** `src/content/posts/tr/<slug>.mdx` oluştur:
+## Mimari özet
 
-```yaml
----
-title: "Yazı başlığı"
-description: "2-3 cümlelik özet — SEO ve AI alıntılanabilirliği için önemli."
-pubDate: 2026-07-21
-category: "ai"            # ai | yazilim | girisimcilik | egitim | kisisel
-tags: ["etiket1", "etiket2"]
-draft: true               # yayınlarken false yapın
-lang: "tr"
-translationOf: "english-slug"        # (ops.) diğer dildeki karşılık
-kutuphaneNode: "<defter-uuid>"       # (ops.) kutuphanem defter id'si
-kaynaklar:                           # (ops.) yazı sonunda listelenir
-  - baslik: "Kaynak adı"
-    url: "https://..."
-    tur: "notebooklm"     # notebooklm | kitap | makale | video
----
-```
-
-Gövdede kullanılabilen MDX bileşenleri: `<YouTube id="..." />`,
-`<Callout type="bilgi|uyari|ipucu">`, `<D3Chart type="line" data={[...]} />`.
-Kod bloklarında `title="dosya.ts"` başlık, `// [!code highlight]` satır vurgusu.
-
-**Yol 3 — Claude Code:** "şu defterden yazı taslağı çıkar" →
-`.claude/skills/yazi-taslagi` skill'i NotebookLM defterini sorgulayıp
-kaynakları hazır bir taslak üretir.
-
-## Hikâyeler (story halkaları)
-
-`src/content/stories/*.yaml` — admin panelindeki "Hikâyeler" bölümünden veya
-elle yönetilir. `slides` doluysa site içi story viewer'da açılır; boşsa
-tıklama doğrudan `targetUrl`'e (Medium/YouTube/Instagram) gider. `expiresAt`
-geçmiş hikâyeler görünmez; görülenler soluk halkaya döner (localStorage).
-
-## Kütüphane entegrasyonu
-
-- **kutuphanem senkronu:** `npm run sync:kutuphanem` —
-  [kutuphanem](https://ysf-dnz.github.io/kutuphanem) sayfasındaki gömülü veriyi
-  çekip `src/data/kutuphanem.json`'a yazar (17 kategori, 438 defter) ve diff
-  raporu basar. `/kutuphane` bu veriyle build edilir; her defterin kendi
-  sayfası vardır. Yazıdaki `kutuphaneNode` geçersizse **build kırılır**.
-- **Kitap rafı (Drive):** Vercel'in Drive erişimi yoktur. Claude Code'da
-  "kitaplığı senkronla" deyin (`.claude/skills/kitaplik-sync`) → MCP ile
-  `src/data/books-raw.json` üretilir → `npm run sync:kitaplik` doğrulayıp
-  `books.json`'a yazar. Küratörlük (gizle/sırala/kapak) admin panelindeki
-  "Kitap Rafı Küratörlüğü" singleton'ından (`books-overrides.json`).
-
-## Admin (Keystatic)
-
-- **Local mode (varsayılan):** `npm run admin`. Admin yalnızca
-  `ASTRO_KEYSTATIC=1` iken yüklenir; üretim build'inde admin'e ait tek bayt yoktur.
-
-Paneldeki bölümler:
-
-| Bölüm | Ne yapar |
-| --- | --- |
-| İçerik | Yazılar (TR/EN), hikâye halkaları |
-| Projeler | Proje CRUD: künye, markdown gövde, **modüler pencereler** |
-| Sayfalar | Hakkımda (TR/EN), Ana Sayfa Modülleri |
-| Kütüphane | Küratörlük (gizle/sıra/TR başlık/defter), **Elle Kitap Ekle**, **Kitap Ek Pencereleri**, **Kitap Kategorileri** (anahtar kelime kuralları dahil) |
-| Ayarlar | Sosyal medya linkleri (footer, opsiyonel) |
-
-**Modüler pencereler:** yuvarlak halka, Drive PDF, Drive JPEG, YouTube
-(tıkla-yükle), Spotify. Sıralama panelde sürükle-bırak ile değişir; site
-tarafında ekstra JS yoktur. Drive dosyaları link-paylaşımlı olmalıdır.
-Aynı blok seti proje detaylarında, kitap detaylarında (bookExtras) ve ana
-sayfada kullanılır (`src/features/modules/`).
-- **GitHub mode (opsiyonel):** Tarayıcıdan her yerden düzenleme istenirse
-  `keystatic.config.tsx` içinde `storage: { kind: "github", repo: "kullanici/repo" }`
-  yapın, [Keystatic GitHub App](https://keystatic.com/docs/github-mode) kurun ve
-  `/keystatic` + `/api/keystatic` route'larını `prerender=false` ile Vercel
-  function olarak açın. Erişim = repo yazma yetkisi; her kayıt bir commit olur
-  ve Vercel otomatik yeniden build eder.
-
-## Giscus (yorumlar)
-
-1. Repo'yu GitHub'a push'layın, repo ayarlarından **Discussions**'ı açın.
-2. [giscus.app](https://giscus.app) üzerinde repo'yu seçin ("Announcements"
-   kategorisi önerilir), üretilen `data-repo-id` ve `data-category-id`
-   değerlerini alın.
-3. `.env` (ve Vercel env ayarları) içine yazın:
-   `PUBLIC_GISCUS_REPO`, `PUBLIC_GISCUS_REPO_ID`, `PUBLIC_GISCUS_CATEGORY_ID`.
-   Env boşken yorum bloğu hiç render edilmez.
-
-## SEO / GEO
-
-- canonical + hreflang (tr/en/x-default), OG/Twitter meta, satori ile
-  yazı başına OG görseli (`/og/<slug>.png`), JSON-LD `@graph`
-  (Person + WebSite + BlogPosting + BreadcrumbList).
-- **GEO:** `llms.txt` + `llms-full.txt` (postbuild), her yazının ham
-  markdown'ı `/yazilar/<slug>.md`, robots.txt'te GPTBot/ClaudeBot/
-  PerplexityBot açıkça izinli.
-
-## Deploy (Vercel)
-
-Repo'yu Vercel'e bağlayın; adapter `@astrojs/vercel`, çıktı statik.
-Env: `SITE_URL` + Giscus değişkenleri. Domain alındığında `SITE_URL`,
-`public/robots.txt` içindeki mutlak URL'ler ve `keystatic` dokümanı güncellenmeli.
-
-## Mimari notları
-
-- `src/features/<ad>/` — her özellik kendi bileşen+util'ini taşır; feature'lar
-  arası paylaşım yalnızca `src/lib` üzerinden.
-- Veri akışı tek yön: dış kaynak → `scripts/sync-*` → `src/data/*.json`
-  (commit edilir) → content collections → sayfalar. Build hiçbir dış servise
-  bağımlı değildir.
-- Client JS bütçesi: yazı sayfasında D3 island dışında sıfır harici script
-  (e2e `js-budget.spec.ts` bunu zorlar); story viewer ~8K tek dosya;
-  d3 yalnızca grafik görünür olunca iner.
+- Kitap sayfaları **statik** (SEO + hız); erişim kapısı/dinamik her şey `OkumaKapisi` **server island**'ında. Misafir DOM'unda Drive linki bulunmaz (e2e bekçili).
+- **Puan tek gerçek kaynak**: `points_ledger` (harcamalar negatif). Ekonomi korumaları `src/lib/economy.ts`: beğeni çiftliği freni, kulüp haftalık görev tavanı.
+- Üye markdown'ı HTML-escape'li (XSS), quiz puanlama sunucuda, tüm API'ler form-POST + redirect deseni.
