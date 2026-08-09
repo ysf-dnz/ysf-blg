@@ -1,32 +1,52 @@
 ---
 import type { Page } from "astro";
+import { langFromUrl, useTranslations } from "@/lib/i18n/index.ts";
 
 interface Props {
   page: Page<unknown>;
 }
 
 const { page } = Astro.props;
+const t = useTranslations(langFromUrl(Astro.url.pathname));
 ---
 
 {
   page.lastPage > 1 && (
-    <nav class="mt-10 flex items-center justify-center gap-3 text-sm" aria-label="Sayfalama">
+    <nav class="mt-10 flex items-center justify-center gap-3 text-sm" aria-label={t("sayfalama.etiket")}>
       {page.url.prev ? (
-        <a href={page.url.prev} class="rounded-md border border-line px-3 py-1.5 hover:border-accent hover:text-accent">
-          ←
+        <a
+          href={page.url.prev}
+          aria-label={t("sayfalama.onceki")}
+          class="flex min-h-11 items-center rounded-md border border-line px-3 py-1.5 transition-colors hover:border-accent hover:text-accent"
+        >
+          <span aria-hidden="true" class="arrow-slide-l">←</span>
         </a>
       ) : (
-        <span class="rounded-md border border-line px-3 py-1.5 opacity-40">←</span>
+        <span
+          class="flex min-h-11 items-center rounded-md border border-line px-3 py-1.5 text-ink-muted opacity-60"
+          aria-hidden="true"
+        >
+          ←
+        </span>
       )}
       <span class="text-ink-muted">
-        {page.currentPage} / {page.lastPage}
+        {t("sayfalama.sayfa")} {page.currentPage} / {page.lastPage}
       </span>
       {page.url.next ? (
-        <a href={page.url.next} class="rounded-md border border-line px-3 py-1.5 hover:border-accent hover:text-accent">
-          →
+        <a
+          href={page.url.next}
+          aria-label={t("sayfalama.sonraki")}
+          class="flex min-h-11 items-center rounded-md border border-line px-3 py-1.5 transition-colors hover:border-accent hover:text-accent"
+        >
+          <span aria-hidden="true" class="arrow-slide">→</span>
         </a>
       ) : (
-        <span class="rounded-md border border-line px-3 py-1.5 opacity-40">→</span>
+        <span
+          class="flex min-h-11 items-center rounded-md border border-line px-3 py-1.5 text-ink-muted opacity-60"
+          aria-hidden="true"
+        >
+          →
+        </span>
       )}
     </nav>
   )

@@ -3,6 +3,13 @@ import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
+import clerk from "@clerk/astro";
+import { trTR } from "@clerk/localizations";
+import { loadEnv } from "vite";
+
+// Clerk env'leri Vercel entegrasyonundan NEXT_PUBLIC_* adıyla gelir;
+// astro.config process.env'e .env dosyalarını yüklemez → loadEnv gerekir.
+const env = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 import tailwindcss from "@tailwindcss/vite";
 import { transformerNotationHighlight } from "@shikijs/transformers";
 
@@ -33,6 +40,14 @@ export default defineConfig({
     },
   },
   integrations: [
+    // Clerk env adları Vercel entegrasyonundan NEXT_PUBLIC_* olarak gelir
+    clerk({
+      localization: trTR,
+      publishableKey:
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+        env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+      secretKey: process.env.CLERK_SECRET_KEY ?? env.CLERK_SECRET_KEY,
+    }),
     mdx(),
     sitemap({
       i18n: {

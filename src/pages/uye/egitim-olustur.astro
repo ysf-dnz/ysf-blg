@@ -1,0 +1,121 @@
+---
+/**
+ * Eğitim oluşturucu: YouTube videoları + kendi yayınlanmış yazıların +
+ * kitap quiz'leri tek müfredat sırasında. Video barındırılmaz.
+ */
+import { and, eq } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+
+const clubIdParam = Number(Astro.url.searchParams.get("kulup") ?? 0) || null;
+
+const myPosts = await db.query.memberPosts.findMany({
+  where: and(
+    eq(schema.memberPosts.userId, member.id),
+    eq(schema.memberPosts.status, "published"),
+  ),
+});
+const quizzes = await db.query.quizzes.findMany({
+  where: eq(schema.quizzes.status, "published"),
+});
+const access = await db.query.bookAccess.findMany({
+  where: eq(schema.bookAccess.userId, member.id),
+});
+const books = await getCollection("books");
+const myBooks = access
+  .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
+  .filter(Boolean);
+---
+
+<Base title="Eğitim oluştur">
+  <div class="mx-auto max-w-2xl">
+    <h1 class="font-display text-3xl font-semibold text-ink">🎓 Eğitim oluştur</h1>
+    <p class="mt-2 text-ink-muted">
+      YouTube videolarını, kendi yazılarını ve quiz'leri tek müfredatta sırala.
+      Yayınlanan eğitim üreticisine <strong class="text-accent">kitap ödülü</strong> kazandırır.
+    </p>
+
+    <form method="post" action="/api/uye/egitim" class="mt-6 grid gap-4">
+      <input type="hidden" name="clubId" value={clubIdParam ?? ""} />
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Eğitim başlığı</span>
+        <input name="title" required maxlength="90" placeholder='Örn. "Sıfırdan Go: Learning Go yol haritası"' class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+      </label>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Bağlı kitap <span class="text-ink-muted">(opsiyonel)</span></span>
+          <select name="bookId" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+            <option value="">— Kitapsız —</option>
+            {myBooks.map((b) => <option value={b!.id}>{b!.titleTr ?? b!.title}</option>)}
+          </select>
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Kısa açıklama</span>
+          <input name="description" maxlength="200" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+        </label>
+      </div>
+
+      <div id="items" class="grid gap-3"></div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" data-add="youtube" class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">+ 🎬 YouTube videosu</button>
+        <button type="button" data-add="yazi" class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">+ ✍️ Yazın</button>
+        <button type="button" data-add="quiz" class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">+ 🧠 Quiz</button>
+      </div>
+
+      <template id="tpl-youtube">
+        <div class="item rounded-xl border border-line bg-surface-raised p-3 grid gap-2">
+          <input type="hidden" name="i_KIND" value="youtube" />
+          <input name="i_TITLE" required placeholder="Bölüm başlığı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+          <input name="i_URL" required placeholder="YouTube linki veya video ID" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        </div>
+      </template>
+      <template id="tpl-yazi">
+        <div class="item rounded-xl border border-line bg-surface-raised p-3 grid gap-2">
+          <input type="hidden" name="i_KIND" value="yazi" />
+          <select name="i_REF" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+            {myPosts.map((p) => <option value={p.id}>{p.title}</option>)}
+          </select>
+        </div>
+      </template>
+      <template id="tpl-quiz">
+        <div class="item rounded-xl border border-line bg-surface-raised p-3 grid gap-2">
+          <input type="hidden" name="i_KIND" value="quiz" />
+          <select name="i_REF" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+            {quizzes.map((q) => <option value={q.id}>{q.title}</option>)}
+          </select>
+        </div>
+      </template>
+
+      <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105">
+        Yayınla
+      </button>
+    </form>
+  </div>
+</Base>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const items = document.getElementById("items");
+    if (!items || items.dataset.init) return;
+    items.dataset.init = "1";
+    let n = 0;
+    for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-add]")) {
+      btn.addEventListener("click", () => {
+        const tpl = document.getElementById(`tpl-${btn.dataset.add}`) as HTMLTemplateElement;
+        const node = tpl.content.cloneNode(true) as DocumentFragment;
+        const i = n++;
+        for (const input of node.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[name]")) {
+          input.name = input.name.replace("i_", `i_${i}_`).toLowerCase();
+        }
+        items.appendChild(node);
+      });
+    }
+  });
+</script>

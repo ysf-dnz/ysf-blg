@@ -1,0 +1,81 @@
+---
+/** Etkinlik takvimi: RSVP (+10 puan, ilk katılımda). Rep/admin etkinlik açar. */
+import { asc, gte, inArray } from "drizzle-orm";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { formatDate } from "@/lib/dates.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+const events = await db.query.events.findMany({
+  where: gte(schema.events.startsAt, new Date(Date.now() - 864e5)),
+  orderBy: asc(schema.events.startsAt),
+  limit: 30,
+});
+const eventIds = events.map((e) => e.id);
+const myRsvps = new Set<number>();
+const counts = new Map<number, number>();
+if (eventIds.length) {
+  const rows = await db.query.eventRsvps.findMany({
+    where: inArray(schema.eventRsvps.eventId, eventIds),
+  });
+  for (const r of rows) {
+    counts.set(r.eventId, (counts.get(r.eventId) ?? 0) + 1);
+    if (member && r.userId === member.id) myRsvps.add(r.eventId);
+  }
+}
+const canCreate = member && member.role !== "member";
+---
+
+<ToplulukLayout title="Etkinlikler" description="Okuma maratonları, canlı quiz geceleri, buluşmalar.">
+  <section class="girih-texture -mx-4 px-4 py-10">
+    <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">📅 Etkinlikler</h1>
+    <p class="mt-2 text-ink-muted">Katıl, birlikte oku; katılım +10 puan.</p>
+  </section>
+
+  {
+    canCreate && (
+      <form method="post" action="/api/uye/etkinlik" class="mt-6 grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-2">
+        <input name="title" required maxlength="80" placeholder="Etkinlik başlığı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <input name="startsAt" required type="datetime-local" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <input name="location" placeholder="Yer / bağlantı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <input name="description" placeholder="Kısa açıklama" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2 text-sm font-medium text-surface sm:col-span-2">Etkinlik aç</button>
+      </form>
+    )
+  }
+
+  <ul class="mt-8 space-y-4" data-stagger>
+    {events.length === 0 && <p class="text-ink-muted">Yaklaşan etkinlik yok{canCreate ? " — ilkini sen aç." : "."}</p>}
+    {
+      events.map((e) => (
+        <li>
+          <article class="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface-raised p-5">
+            <div class="min-w-0 flex-1">
+              <h2 class="font-display text-lg font-semibold text-ink">{e.title}</h2>
+              <p class="mt-1 text-sm text-ink-muted">
+                🕐 {formatDate(e.startsAt, "tr")} {e.startsAt.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                {e.location && ` · 📍 ${e.location}`}
+              </p>
+              {e.description && <p class="mt-1 text-sm text-ink-muted">{e.description}</p>}
+            </div>
+            <div class="text-center">
+              <p class="text-sm text-ink-muted">{counts.get(e.id) ?? 0} katılımcı</p>
+              {member && !myRsvps.has(e.id) ? (
+                <form method="post" action="/api/uye/etkinlik">
+                  <input type="hidden" name="action" value="rsvp" />
+                  <input type="hidden" name="eventId" value={e.id} />
+                  <button class="mt-1 cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105">Katılıyorum</button>
+                </form>
+              ) : myRsvps.has(e.id) ? (
+                <p class="mt-1 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-medium text-accent">Katılıyorsun ✓</p>
+              ) : null}
+            </div>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+</ToplulukLayout>

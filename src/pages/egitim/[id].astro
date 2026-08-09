@@ -1,0 +1,160 @@
+---
+/**
+ * Eğitim oynatıcı — Skool classroom düzeni: solda müfredat + ilerleme,
+ * sağda aktif öğe (YouTube embed / yazı / quiz bağlantısı).
+ */
+import { and, eq } from "drizzle-orm";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { renderMemberMarkdown } from "@/lib/markdown.ts";
+
+export const prerender = false;
+
+const id = Number(Astro.params.id ?? 0);
+const course = await db.query.courses.findFirst({
+  where: eq(schema.courses.id, id),
+});
+if (!course || course.status === "draft") return Astro.redirect("/dersler");
+
+const member = await getOrCreateMember(Astro);
+const items = await db.query.courseItems.findMany({
+  where: eq(schema.courseItems.courseId, course.id),
+  orderBy: schema.courseItems.order,
+});
+const doneIds = new Set(
+  member
+    ? (
+        await db.query.courseProgress.findMany({
+          where: and(
+            eq(schema.courseProgress.courseId, course.id),
+            eq(schema.courseProgress.userId, member.id),
+          ),
+        })
+      ).map((p) => p.itemId)
+    : [],
+);
+const pct = items.length ? Math.round((doneIds.size / items.length) * 100) : 0;
+
+const aktifIndex = Math.min(
+  Math.max(Number(Astro.url.searchParams.get("b") ?? 0), 0),
+  Math.max(items.length - 1, 0),
+);
+const aktif = items[aktifIndex];
+
+const aktifPost =
+  aktif?.kind === "yazi" && aktif.memberPostId
+    ? await db.query.memberPosts.findFirst({
+        where: eq(schema.memberPosts.id, aktif.memberPostId),
+      })
+    : null;
+const aktifQuiz =
+  aktif?.kind === "quiz" && aktif.quizId
+    ? await db.query.quizzes.findFirst({
+        where: eq(schema.quizzes.id, aktif.quizId),
+      })
+    : null;
+
+const IKON = { youtube: "🎬", yazi: "✍️", quiz: "🧠" } as const;
+---
+
+<Base title={course.title} description={course.description ?? "Eğitim"}>
+  <header class="girih-texture -mx-4 px-4 py-8">
+    <h1 class="font-display text-3xl font-semibold text-ink">🎓 {course.title}</h1>
+    {course.description && <p class="mt-1 text-ink-muted">{course.description}</p>}
+    <div class="mt-3 h-2 max-w-sm overflow-hidden rounded-full bg-accent-soft">
+      <div class="h-full bg-accent transition-all" style={`width:${pct}%`}></div>
+    </div>
+    <p class="mt-1 text-sm text-ink-muted">%{pct} tamamlandı · {doneIds.size}/{items.length} bölüm</p>
+  </header>
+
+  <div class="mt-6 grid gap-8 lg:grid-cols-[300px_1fr]">
+    <aside>
+      <ol class="space-y-1.5">
+        {
+          items.map((it, i) => (
+            <li>
+              <a
+                href={`/egitim/${course.id}?b=${i}`}
+                aria-current={i === aktifIndex ? "page" : undefined}
+                class:list={[
+                  "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors",
+                  i === aktifIndex
+                    ? "border-accent bg-accent-soft font-medium text-accent"
+                    : "border-line bg-surface-raised text-ink-muted hover:border-accent/50 hover:text-ink",
+                ]}
+              >
+                <span>{doneIds.has(it.id) ? "✅" : IKON[it.kind]}</span>
+                <span class="min-w-0 flex-1 truncate">{i + 1}. {it.title}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </aside>
+
+    <section class="min-w-0">
+      {!aktif && <p class="text-ink-muted">Bu eğitimde henüz içerik yok.</p>}
+      {
+        aktif?.kind === "youtube" && aktif.youtubeId && (
+          <div class="overflow-hidden rounded-2xl border border-line">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${aktif.youtubeId}`}
+              title={aktif.title}
+              loading="lazy"
+              allowfullscreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              class="aspect-video w-full"
+            />
+          </div>
+        )
+      }
+      {
+        aktifPost && (
+          <article
+            class="prose prose-lg max-w-none rounded-2xl border border-line bg-surface-raised p-6 dark:prose-invert prose-headings:font-display prose-a:text-accent"
+            set:html={renderMemberMarkdown(aktifPost.markdown)}
+          />
+        )
+      }
+      {
+        aktifQuiz && (
+          <div class="rounded-2xl border border-line bg-surface-raised p-8 text-center">
+            <p class="font-display text-xl font-semibold text-ink">🧠 {aktifQuiz.title}</p>
+            <a href={`/kitap/${aktifQuiz.bookId}/quiz`} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+              Quiz'i çöz <span class="arrow-slide">→</span>
+            </a>
+          </div>
+        )
+      }
+
+      {
+        aktif && member && (
+          <div class="mt-4 flex items-center justify-between">
+            {!doneIds.has(aktif.id) ? (
+              <form method="post" action="/api/uye/egitim">
+                <input type="hidden" name="action" value="complete" />
+                <input type="hidden" name="itemId" value={aktif.id} />
+                <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105">
+                  Tamamlandı işaretle ✓
+                </button>
+              </form>
+            ) : (
+              <span class="text-sm font-medium text-accent">Tamamlandı ✅</span>
+            )}
+            {aktifIndex < items.length - 1 && (
+              <a href={`/egitim/${course.id}?b=${aktifIndex + 1}`} class="text-sm font-medium text-accent hover:underline">
+                Sonraki bölüm <span class="arrow-slide">→</span>
+              </a>
+            )}
+          </div>
+        )
+      }
+      {!member && aktif && (
+        <p class="mt-4 rounded-xl border border-line bg-surface-raised px-4 py-3 text-sm text-ink-muted">
+          İlerlemeni kaydetmek ve puan kazanmak için üye ol — sağ üstten <strong class="text-accent">Katıl</strong>.
+        </p>
+      )}
+    </section>
+  </div>
+</Base>

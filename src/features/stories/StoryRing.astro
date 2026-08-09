@@ -7,10 +7,8 @@
  */
 import { getImage } from "astro:assets";
 import { getActiveStories, hasSlides } from "./stories.ts";
-import { langFromUrl, localizePath } from "@/lib/i18n/index.ts";
 
 const stories = await getActiveStories();
-const lang = langFromUrl(Astro.url.pathname);
 
 const rings = await Promise.all(
   stories.map(async (story) => {
@@ -40,13 +38,15 @@ const rings = await Promise.all(
   rings.length > 0 && (
     <div class="border-b border-line" data-stories>
       <ul class="mx-auto flex max-w-5xl gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none]">
-        {rings.map(({ story, cover, slidePayload }) => {
+        {rings.map(({ story, cover, slidePayload }, i) => {
           const interactive = hasSlides(story);
+          // Hikâye sayfaları yalnızca TR'de üretilir (src/pages/hikaye/);
+          // EN ana sayfadan da TR yoluna gidilir, 404 olmaz.
           const href = interactive
-            ? localizePath(`/hikaye/${story.id}`, lang)
+            ? `/hikaye/${story.id}`
             : story.data.targetUrl;
           return (
-            <li class="shrink-0">
+            <li class="shrink-0" style={`--i:${i}; animation: ysf-fade-up 0.6s var(--ease-out-expo) both; animation-delay: calc(var(--i) * 80ms)`}>
               <a
                 href={href}
                 data-story-id={story.id}
@@ -63,7 +63,7 @@ const rings = await Promise.all(
               >
                 <span
                   class="rounded-full p-[3px] transition-transform group-hover:scale-105"
-                  style={`background: conic-gradient(from 210deg, ${story.data.ringColor ?? "var(--accent)"}, ${story.data.ringColor ?? "var(--accent)"}66, ${story.data.ringColor ?? "var(--accent)"})`}
+                  style={`background: conic-gradient(from var(--ysf-ring-angle, 210deg), ${story.data.ringColor ?? "var(--accent)"}, ${story.data.ringColor ?? "var(--accent)"}66, ${story.data.ringColor ?? "var(--accent)"})`}
                 >
                   <img
                     src={cover.src}
@@ -98,5 +98,6 @@ const rings = await Promise.all(
 
 <script>
   import { initStories } from "./story-viewer.ts";
-  initStories();
+  // View Transitions: halkalar her gezinmede yeniden render edilir
+  document.addEventListener("astro:page-load", initStories);
 </script>

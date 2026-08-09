@@ -11,51 +11,40 @@ import { getEntry } from "astro:content";
 import { marked } from "marked";
 import { localizePath, useTranslations, type Lang } from "@/lib/i18n/index.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
-import DriveEmbed from "./DriveEmbed.astro";
-import ModuleList from "@/features/modules/ModuleList.astro";
+import OkumaKapisi from "./OkumaKapisi.astro";
 import type { Modul } from "@/features/modules/schema.ts";
 
 interface Props {
   book: CollectionEntry<"books">["data"];
   qa?: CollectionEntry<"booksQa">["data"];
-  /** Panelden eklenen ek pencereler (bookExtras) */
+  /** Panelden eklenen ek pencereler (bookExtras) — Okuma Kapısı adasında,
+   *  yalnızca erişimi olana render edilir */
   moduller?: Modul[];
   lang: Lang;
 }
 
+// Sayfa STATİK ve Pagefind'de aranabilir; üyelik/erişim/puan dinamikleri
+// OkumaKapisi server island'ında istek anında çözülür.
 const { book, qa, moduller = [], lang } = Astro.props;
+const yazYolu = `/uye/yaz?kitap=${encodeURIComponent(book.id)}`;
 const t = useTranslations(lang);
 
-const VARSAYILAN_SIRA = [
-  "sorular",
-  "ozet",
-  "oku",
-  "moduller",
-  "planlar",
-  "sohbet",
-] as const;
+// "planlar" (abonelik) kaldırıldı — erişim yalnızca emekle kazanılır.
+const VARSAYILAN_SIRA = ["sorular", "ozet", "oku", "moduller", "sohbet"] as const;
 const duzen = await getEntry("siteConfig", "kitap-sayfa");
 const sira = duzen?.data.sira?.length ? duzen.data.sira : [...VARSAYILAN_SIRA];
 
 const notebookUrl = book.notebookId
   ? `https://notebooklm.google.com/notebook/${book.notebookId}`
   : undefined;
-// İndirme erişimi e-postayla istenir; limitler Drive tarafında uygulanır
-const requestMail =
-  `mailto:sn.yusufdeniz@gmail.com` +
-  `?subject=${encodeURIComponent(`Kitap erişim isteği: ${book.title}`)}` +
-  `&body=${encodeURIComponent(
-    `Merhaba,\n\n"${book.title}" kitabı için indirme erişimi istiyorum.\n` +
-      `Kitap ID: ${book.id}\nPlanım: Abone / Pro / Max (birini bırakın)\n\nTeşekkürler.`,
-  )}`;
 
 const kategori = KATEGORILER.find((k) => k.key === book.category);
 
-const planlar = [
-  { ad: t("kitap.planStandart"), limit: t("kitap.planStandartLimit") },
-  { ad: t("kitap.planPro"), limit: t("kitap.planProLimit"), one: true },
-  { ad: t("kitap.planMax"), limit: t("kitap.planMaxLimit") },
-];
+// 💎 Nöropazarlama değer notu (NotebookLM'den üretilir; varsa gösterilir)
+import degerNotlari from "@/data/deger-notlari.json";
+const degerNotu = (
+  degerNotlari as Record<string, { baslik?: string; metin?: string }>
+)[book.id];
 ---
 
 <article class="mx-auto max-w-xl">
@@ -66,6 +55,174 @@ const planlar = [
     ← {t("kitap.rafaDon")}
   </a>
 
+  {/* 🗝️ Hazine açılış kutlaması: puanla kilit açılınca (?acildi=1) —
+      konfeti + tüm içeriğin anahtarları (oku · indir · NotebookLM) */}
+  <div
+    id="acildi-band"
+    hidden
+    data-book-id={book.id}
+    data-notebook={notebookUrl ?? ""}
+    class="menu-pop relative mt-4 overflow-hidden rounded-2xl border border-accent bg-accent-soft p-5 text-center"
+  >
+    <p class="font-display text-2xl font-semibold text-ink">🗝️ Hazine açıldı!</p>
+    <p class="mt-1 text-sm text-ink-muted">
+      Bu kitap artık kütüphanende — okuma, indirme ve kitaptan derlenen tüm
+      içerikler (özet, sorular, NotebookLM sohbeti{moduller.length > 0 && ", slayt/podcast pencereleri"}) aynı anda açıldı.
+    </p>
+    <div class="mt-3 flex flex-wrap justify-center gap-2">
+      <a id="acildi-indir" href="#" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105">📥 Bilgisayarına indir</a>
+      <a id="acildi-oku" href="#" target="_blank" rel="noopener noreferrer" class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">📖 Drive'da aç</a>
+      {notebookUrl && (
+        <a href={notebookUrl} target="_blank" rel="noopener noreferrer" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">💬 NotebookLM'de sor</a>
+      )}
+    </div>
+  </div>
+
+  {/* Hediye kutlaması: ?hediye=1 ile gelindiğinde görünür. Drive linki
+      statik HTML'e YAZILMAZ (misafir DOM'unda Drive linki olmamalı —
+      gate e2e testi bekçi); script anında kurar. */}
+  <div
+    id="hediye-band"
+    hidden
+    data-book-id={book.id}
+    class="menu-pop mt-4 rounded-2xl border border-accent bg-accent-soft p-5 text-center"
+  >
+    <p class="font-display text-xl font-semibold text-ink">🎁 Hediyen açıldı!</p>
+    <p class="mt-1 text-sm text-ink-muted">
+      Kitap artık senin — hemen okumaya başla, bitirince ilk yazını yaz.
+    </p>
+    <div class="mt-3 flex flex-wrap justify-center gap-2">
+      <a
+        id="hediye-drive"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105"
+      >
+        📖 Drive'da hemen aç
+      </a>
+      <a
+        href={yazYolu}
+        class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface"
+      >
+        ✍️ Yazını başlat (+100)
+      </a>
+    </div>
+  </div>
+  <script>
+    // Ref linkini panoya kopyala (Instagram paylaşımı için) — island
+    // içeriği sonradan geldiğinden delegasyonla dinlenir
+    document.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-ref-kopyala]");
+      if (!btn) return;
+      await navigator.clipboard.writeText(btn.dataset.refKopyala ?? "");
+      btn.textContent = "Kopyalandı ✓";
+      setTimeout(() => (btn.textContent = "Instagram için kopyala"), 2000);
+    });
+    // 🎊 Konfeti: hazine açılışında ekrana emoji parçacıkları yağar
+    function konfeti(hedef: HTMLElement) {
+      const parcalar = ["🎉", "✨", "🗝️", "📚", "⭐"];
+      for (let i = 0; i < 36; i++) {
+        const p = document.createElement("span");
+        p.textContent = parcalar[i % parcalar.length]!;
+        p.style.cssText = `position:absolute;top:-24px;left:${Math.random() * 100}%;font-size:${14 + Math.random() * 14}px;pointer-events:none;z-index:5`;
+        hedef.appendChild(p);
+        p.animate(
+          [
+            { transform: "translateY(0) rotate(0deg)", opacity: 1 },
+            { transform: `translateY(${180 + Math.random() * 160}px) rotate(${Math.random() > 0.5 ? "" : "-"}${180 + Math.random() * 360}deg)`, opacity: 0 },
+          ],
+          { duration: 1600 + Math.random() * 1400, delay: Math.random() * 600, easing: "cubic-bezier(0.16,1,0.3,1)", fill: "forwards" },
+        );
+        setTimeout(() => p.remove(), 4000);
+      }
+    }
+
+    document.addEventListener("astro:page-load", () => {
+      const params = new URLSearchParams(location.search);
+
+      const band = document.getElementById("hediye-band");
+      if (band && params.get("hediye") === "1") {
+        const link = document.getElementById("hediye-drive") as HTMLAnchorElement | null;
+        if (link)
+          link.href = `https://drive.google.com/file/d/${band.dataset.bookId}/view`;
+        band.removeAttribute("hidden");
+        konfeti(band);
+      }
+
+      const acildi = document.getElementById("acildi-band");
+      if (acildi && params.get("acildi") === "1") {
+        const id = acildi.dataset.bookId!;
+        (document.getElementById("acildi-indir") as HTMLAnchorElement).href =
+          `https://drive.google.com/uc?export=download&id=${id}`;
+        (document.getElementById("acildi-oku") as HTMLAnchorElement).href =
+          `https://drive.google.com/file/d/${id}/view`;
+        acildi.removeAttribute("hidden");
+        konfeti(acildi);
+      }
+    });
+
+    // 🎴 Davet kartı: kitap kapaklı, nöropazarlama metinli 1080×1350 PNG
+    document.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-davet-karti]");
+      if (!btn) return;
+      btn.textContent = "Hazırlanıyor…";
+      const W = 1080, H = 1350;
+      const c = document.createElement("canvas");
+      c.width = W; c.height = H;
+      const ctx = c.getContext("2d")!;
+      // Çini degrade zemin
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, "#0a2b33"); g.addColorStop(0.6, "#19646d"); g.addColorStop(1, "#239ba1");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // Kapak (CORS izinliyse)
+      const kapak = btn.dataset.kapak;
+      if (kapak) {
+        try {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = kapak; });
+          const kw = 460, kh = (kw * img.height) / img.width;
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16;
+          ctx.drawImage(img, (W - kw) / 2, 130, kw, kh);
+          ctx.restore();
+        } catch { /* kapak çizilemedi — metinle devam */ }
+      }
+      ctx.fillStyle = "#ffffff"; ctx.textAlign = "center";
+      ctx.font = "600 52px Georgia, serif";
+      const baslik = btn.dataset.kitap ?? "";
+      // Uzun başlığı iki satıra böl
+      const kelimeler = baslik.split(" ");
+      let satir = "", satirlar: string[] = [];
+      for (const k of kelimeler) {
+        if ((satir + " " + k).length > 28) { satirlar.push(satir.trim()); satir = k; }
+        else satir += " " + k;
+      }
+      satirlar.push(satir.trim());
+      satirlar.slice(0, 2).forEach((s, i) => ctx.fillText(s, W / 2, 880 + i * 62));
+      ctx.font = "34px Georgia, serif"; ctx.fillStyle = "#d5f4f2";
+      ctx.fillText("Bu bilgi hazinesi seni bekliyor.", W / 2, 1030);
+      ctx.fillText("Katıl — ilk kitabın hediye 🎁", W / 2, 1082);
+      ctx.font = "600 30px monospace"; ctx.fillStyle = "#79d5d6";
+      ctx.fillText((btn.dataset.ref ?? "").replace(/^https?:\/\//, ""), W / 2, 1190);
+      // İndir / paylaş
+      c.toBlob(async (blob) => {
+        if (!blob) return;
+        const dosya = new File([blob], "davet-karti.png", { type: "image/png" });
+        if (navigator.canShare?.({ files: [dosya] })) {
+          try { await navigator.share({ files: [dosya], text: btn.dataset.ref }); } catch {}
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "davet-karti.png";
+          a.click();
+        }
+        btn.textContent = "🎴 Davet kartı oluştur";
+      }, "image/png");
+    });
+  </script>
+
   <!-- Kapak kartı -->
   <header class="mt-4 overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-lg">
     {
@@ -74,7 +231,7 @@ const planlar = [
           src={book.cover}
           alt={book.title}
           width="640"
-          class="aspect-auto w-full object-cover"
+          class="cover-float aspect-auto w-full object-cover"
         />
       ) : (
         <div class="girih-texture flex aspect-[3/2] items-center justify-center bg-accent-soft p-8">
@@ -111,6 +268,20 @@ const planlar = [
       </p>
     </div>
   </header>
+
+  {
+    degerNotu?.metin && (
+      <section class="shine mt-4 rounded-2xl border border-accent/40 bg-accent-soft/40 p-5" data-reveal>
+        <p class="text-xs font-semibold uppercase tracking-wide text-accent">
+          💎 Bu kitap sana ne katacak?
+        </p>
+        {degerNotu.baslik && (
+          <h2 class="font-display mt-1 text-lg font-semibold text-ink">{degerNotu.baslik}</h2>
+        )}
+        <p class="mt-2 text-[15px] leading-relaxed text-ink">{degerNotu.metin}</p>
+      </section>
+    )
+  }
 
   {
     sira.map((bolum) => {
@@ -200,58 +371,29 @@ const planlar = [
 
       if (bolum === "oku")
         return (
-          <section class="mt-8">
-            <h2 class="font-display text-xl font-semibold text-ink">
-              {t("kitap.oku")}
-            </h2>
-            <div class="mt-3">
-              <DriveEmbed fileId={book.id} title={book.title} />
-            </div>
-          </section>
+          // Okuma Kapısı: dinamik erişim server island'da; sayfa statik kalır
+          <OkumaKapisi
+            server:defer
+            bookId={book.id}
+            bookTitle={book.title}
+            lang={lang}
+            moduller={moduller}
+            cover={book.cover ?? null}
+          >
+            <section slot="fallback" class="mt-8" aria-busy="true">
+              <h2 class="font-display text-xl font-semibold text-ink">
+                {t("kitap.oku")}
+              </h2>
+              <div class="mt-3 h-40 animate-pulse rounded-2xl border border-line bg-surface-raised" />
+            </section>
+          </OkumaKapisi>
         );
 
-      if (bolum === "moduller")
-        return (
-          moduller.length > 0 && (
-            <div class="mt-8">
-              <ModuleList moduller={moduller} />
-            </div>
-          )
-        );
+      if (bolum === "moduller") return null; // Okuma Kapısı adasında
 
-      if (bolum === "planlar")
-        return (
-          <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-6">
-            <h2 class="font-display text-xl font-semibold text-ink">
-              {t("kitap.planBaslik")}
-            </h2>
-            <p class="mt-1 text-sm text-ink-muted">{t("kitap.indirAciklama")}</p>
-            <div class="mt-4 grid gap-3 sm:grid-cols-3">
-              {planlar.map((plan) => (
-                <div
-                  class:list={[
-                    "rounded-xl border p-4 text-center",
-                    plan.one ? "border-accent bg-accent-soft" : "border-line",
-                  ]}
-                >
-                  <p class="font-display text-lg font-semibold text-ink">
-                    {plan.ad}
-                  </p>
-                  <p class="mt-1 text-sm text-ink-muted">{plan.limit}</p>
-                </div>
-              ))}
-            </div>
-            <div class="mt-5 text-center">
-              <a
-                href={requestMail}
-                class="inline-flex items-center gap-2 rounded-full border border-accent px-6 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white"
-              >
-                ✉️ {t("kitap.indir")}
-              </a>
-              <p class="mt-2 text-xs text-ink-muted">{t("kitap.planNot")}</p>
-            </div>
-          </section>
-        );
+      // "planlar" bölümü kaldırıldı: abonelik/indirme planları yok —
+      // erişim yalnızca emekle (puan/hediye) kazanılır.
+      if (bolum === "planlar") return null;
 
       // sohbet
       return (

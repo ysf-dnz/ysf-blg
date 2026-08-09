@@ -1,0 +1,275 @@
+---
+/**
+ * Topluluk akışı — Skool düzeni: sol composer+feed, sağ ray
+ * (mini liderlik · aktif kampanya · yaklaşan etkinlikler · uzun yazılar).
+ */
+import { asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import FeedCard from "@/features/community/FeedCard.astro";
+import EmptyState from "@/components/ui/EmptyState.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
+import { getBookMap, bookTitle } from "@/lib/books-lookup.ts";
+import { levelFor } from "@/lib/levels.ts";
+import { R } from "@/lib/routes.ts";
+import { formatDate } from "@/lib/dates.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+
+const [feed, posts, yaklasan, kampanya] = await Promise.all([
+  db.query.feedPosts.findMany({
+    orderBy: desc(schema.feedPosts.createdAt),
+    limit: 30,
+  }),
+  db.query.memberPosts.findMany({
+    where: eq(schema.memberPosts.status, "published"),
+    orderBy: desc(schema.memberPosts.publishedAt),
+    limit: 6,
+  }),
+  db.query.events.findMany({
+    where: gte(schema.events.startsAt, new Date()),
+    orderBy: asc(schema.events.startsAt),
+    limit: 2,
+  }),
+  db.query.campaigns.findFirst({
+    where: eq(schema.campaigns.status, "active"),
+    orderBy: desc(schema.campaigns.createdAt),
+  }),
+]);
+
+// Mini liderlik (7 gün, ilk 5) — tek grup sorgusu
+const haftalik = await db
+  .select({
+    userId: schema.pointsLedger.userId,
+    total: sql<number>`sum(${schema.pointsLedger.delta})`,
+  })
+  .from(schema.pointsLedger)
+  .where(
+    sql`${schema.pointsLedger.delta} > 0 and ${schema.pointsLedger.createdAt} > now() - interval '7 days'`,
+  )
+  .groupBy(schema.pointsLedger.userId)
+  .orderBy(desc(sql`sum(${schema.pointsLedger.delta})`))
+  .limit(5);
+
+const kampanyaGorevleri = kampanya
+  ? await db.query.campaignTasks.findMany({
+      where: eq(schema.campaignTasks.campaignId, kampanya.id),
+    })
+  : [];
+
+const kisiIds = [
+  ...feed.map((f) => f.userId),
+  ...posts.map((p) => p.userId),
+  ...haftalik.map((h) => h.userId),
+];
+
+// Yorum + beğeni verileri toplu
+const feedIds = feed.map((f) => f.id);
+const likeCounts = new Map<number, number>();
+const myLikes = new Set<number>();
+const commentsByPost = new Map<number, (typeof schema.comments.$inferSelect)[]>();
+if (feedIds.length) {
+  const [likeRows, cmts, mine] = await Promise.all([
+    db
+      .select({ feedPostId: schema.likes.feedPostId, c: sql<number>`count(*)` })
+      .from(schema.likes)
+      .where(inArray(schema.likes.feedPostId, feedIds))
+      .groupBy(schema.likes.feedPostId),
+    db.query.comments.findMany({
+      where: inArray(schema.comments.feedPostId, feedIds),
+      orderBy: schema.comments.createdAt,
+    }),
+    member
+      ? db.query.likes.findMany({ where: eq(schema.likes.userId, member.id) })
+      : Promise.resolve([]),
+  ]);
+  for (const r of likeRows) likeCounts.set(r.feedPostId!, Number(r.c));
+  for (const l of mine) if (l.feedPostId) myLikes.add(l.feedPostId);
+  for (const c of cmts) {
+    if (!c.feedPostId) continue;
+    (commentsByPost.get(c.feedPostId) ??
+      commentsByPost.set(c.feedPostId, []).get(c.feedPostId)!).push(c);
+    kisiIds.push(c.userId);
+  }
+}
+
+const [authors, levels, bookMap] = await Promise.all([
+  getUsersMap(kisiIds),
+  getLevelsMap(kisiIds),
+  getBookMap(),
+]);
+const myBooks = member
+  ? (
+      await db.query.bookAccess.findMany({
+        where: eq(schema.bookAccess.userId, member.id),
+      })
+    )
+      .map((a) => bookMap.get(a.bookId))
+      .filter(Boolean)
+  : [];
+---
+
+<ToplulukLayout title="Topluluk" description="Okuyan üyelerin akışı — beğeni alan puan kazanır.">
+  <div class="grid gap-8 lg:grid-cols-[1fr_300px]">
+    <div>
+      {
+        member ? (
+          <form method="post" action="/api/uye/feed" class="rounded-2xl border border-line bg-surface-raised p-4">
+            <input type="hidden" name="action" value="post" />
+            <div class="flex gap-3">
+              <Avatar name={member.name} avatarUrl={member.avatarUrl} size="sm" />
+              <textarea
+                name="body"
+                required
+                rows="2"
+                maxlength="2000"
+                placeholder="Ne okuyorsun, ne öğrendin?"
+                class="w-full resize-y rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-accent"
+              />
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2 pl-10">
+              <select name="category" class="cursor-pointer rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-muted">
+                <option value="ilerleme">📈 İlerleme</option>
+                <option value="soru">❓ Soru</option>
+                <option value="kaynak">🔗 Kaynak</option>
+                {member.role !== "member" && <option value="duyuru">📣 Duyuru</option>}
+              </select>
+              {myBooks.length > 0 && (
+                <select name="bookId" class="max-w-40 cursor-pointer truncate rounded-full border border-line bg-surface px-3 py-1.5 text-xs text-ink-muted">
+                  <option value="">📖 Kitap etiketi</option>
+                  {myBooks.map((b) => (
+                    <option value={b!.id}>{bookTitle(b)}</option>
+                  ))}
+                </select>
+              )}
+              <button class="ml-auto cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105">
+                Paylaş
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div class="rounded-2xl border border-accent/40 bg-accent-soft/60 p-4 text-center text-sm text-ink">
+            Akışa katılmak için <strong class="text-accent">üye ol</strong> — ilk kitabın hediye 🎁
+          </div>
+        )
+      }
+
+      <div class="mt-5 space-y-4" data-stagger>
+        {
+          feed.length === 0 ? (
+            <EmptyState
+              ikon="💬"
+              mesaj="Akış şimdilik sessiz — ilk gönderiyi sen paylaş, topluluk seninle başlasın."
+              ctaHref={member ? undefined : R.uye.panel}
+              ctaLabel={member ? undefined : "Üye ol"}
+            />
+          ) : (
+            feed.map((f) => (
+              <FeedCard
+                post={f}
+                author={authors.get(f.userId)}
+                level={levels.get(f.userId)}
+                likeCount={likeCounts.get(f.id) ?? 0}
+                likedByMe={myLikes.has(f.id)}
+                comments={commentsByPost.get(f.id) ?? []}
+                authors={authors}
+                memberId={member?.id}
+                bookTitle={f.bookId ? bookTitle(bookMap.get(f.bookId)) : null}
+              />
+            ))
+          )
+        }
+      </div>
+    </div>
+
+    <aside class="space-y-5">
+      {
+        kampanya && (
+          <a href={R.kampanya(kampanya.id)} class="hover-lift block rounded-2xl border border-accent/40 bg-accent-soft/50 p-4 hover:border-accent">
+            <p class="text-xs font-semibold uppercase tracking-wide text-accent">🔥 Aktif kampanya · ×1.5</p>
+            <p class="font-display mt-1 font-semibold text-ink">{kampanya.title}</p>
+            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
+              <div
+                class="h-full bg-accent"
+                style={`width:${kampanyaGorevleri.length ? Math.round((kampanyaGorevleri.filter((t) => t.status === "done").length / kampanyaGorevleri.length) * 100) : 0}%`}
+              />
+            </div>
+            <p class="mt-1 text-xs text-ink-muted">
+              {kampanyaGorevleri.filter((t) => t.status === "done").length}/{kampanyaGorevleri.length} görev tamamlandı
+            </p>
+          </a>
+        )
+      }
+
+      <div class="rounded-2xl border border-line bg-surface-raised p-4">
+        <div class="flex items-baseline justify-between">
+          <h2 class="font-display text-sm font-semibold text-ink">🏆 Bu hafta</h2>
+          <a href={R.lider} class="text-xs text-accent hover:underline">hepsi →</a>
+        </div>
+        {haftalik.length === 0 && <p class="mt-2 text-xs text-ink-muted">Henüz puan kazanılmadı — ilk sırayı kap.</p>}
+        <ol class="mt-2 space-y-1.5">
+          {
+            haftalik.map((h, i) => {
+              const u = authors.get(h.userId);
+              return (
+                <li>
+                  <a href={R.profil(u?.handle ?? "")} class="flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-accent-soft">
+                    <span class="w-4 text-xs text-ink-muted">{i + 1}</span>
+                    <Avatar name={u?.name ?? "?"} avatarUrl={u?.avatarUrl} size="sm" />
+                    <span class="min-w-0 flex-1 truncate text-ink">{u?.name}</span>
+                    <span class="text-xs font-semibold text-accent">{h.total}p</span>
+                  </a>
+                </li>
+              );
+            })
+          }
+        </ol>
+      </div>
+
+      {
+        yaklasan.length > 0 && (
+          <div class="rounded-2xl border border-line bg-surface-raised p-4">
+            <div class="flex items-baseline justify-between">
+              <h2 class="font-display text-sm font-semibold text-ink">📅 Yaklaşan</h2>
+              <a href={R.etkinlikler} class="text-xs text-accent hover:underline">tümü →</a>
+            </div>
+            <ul class="mt-2 space-y-2 text-sm">
+              {yaklasan.map((e) => (
+                <li class="rounded-lg border border-line px-3 py-2">
+                  <span class="block font-medium text-ink">{e.title}</span>
+                  <span class="text-xs text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      <div class="rounded-2xl border border-line bg-surface-raised p-4">
+        <div class="flex items-baseline justify-between">
+          <h2 class="font-display text-sm font-semibold text-ink">✍️ Uzun yazılar</h2>
+          <a href={R.uye.yaz()} class="text-xs text-accent hover:underline">yaz →</a>
+        </div>
+        <ul class="mt-2 space-y-1.5 text-sm">
+          {posts.length === 0 && <li class="text-xs text-ink-muted">İlk yazıyı sen yaz (+100 puan).</li>}
+          {
+            posts.map((p) => (
+              <li>
+                <a href={R.yazi(p.slug)} class="block rounded-lg px-1.5 py-1 leading-snug text-ink hover:bg-accent-soft hover:text-accent">
+                  {p.title}
+                  <span class="block text-xs text-ink-muted">
+                    @{authors.get(p.userId)?.handle} · Sv {levels.get(p.userId) ?? levelFor(0)}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </aside>
+  </div>
+</ToplulukLayout>

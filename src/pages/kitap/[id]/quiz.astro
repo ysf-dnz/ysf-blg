@@ -1,0 +1,192 @@
+---
+/**
+ * Kahoot tarzı kitap quiz'i: süre sayaçlı tek tek soru akışı.
+ * Doğru cevap indeksi istemciye GÖNDERİLMEZ; puanlama sunucuda yapılır.
+ */
+import { and, eq } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const books = await getCollection("books");
+const book = books.find((b) => b.data.id === id)?.data;
+if (!book) return Astro.redirect("/kutuphane");
+
+const member = await getOrCreateMember(Astro);
+if (!member)
+  return Astro.redirect(`/kutuphane/kitap/${book.id}`);
+
+const quiz = await db.query.quizzes.findFirst({
+  where: and(
+    eq(schema.quizzes.bookId, book.id),
+    eq(schema.quizzes.status, "published"),
+  ),
+});
+const questions = quiz
+  ? await db.query.quizQuestions.findMany({
+      where: eq(schema.quizQuestions.quizId, quiz.id),
+      orderBy: schema.quizQuestions.order,
+    })
+  : [];
+
+// İstemciye giden veri: doğru cevap YOK
+const clientQuestions = questions.map((q) => ({
+  id: q.id,
+  question: q.question,
+  options: JSON.parse(q.options) as string[],
+  durationSec: q.durationSec,
+}));
+
+const prevAttempt = quiz
+  ? await db.query.quizAttempts.findFirst({
+      where: and(
+        eq(schema.quizAttempts.quizId, quiz.id),
+        eq(schema.quizAttempts.userId, member.id),
+      ),
+    })
+  : undefined;
+---
+
+<Base title={`Quiz: ${book.titleTr ?? book.title}`}>
+  <div class="mx-auto max-w-xl">
+    <h1 class="font-display text-2xl font-semibold text-ink">
+      🧠 {book.titleTr ?? book.title}
+    </h1>
+
+    {
+      !quiz || clientQuestions.length === 0 ? (
+        <div class="mt-8 rounded-xl border border-line bg-surface-raised p-8 text-center">
+          <p class="text-ink-muted">Bu kitap için henüz quiz yok.</p>
+          <a href="/uye/quiz-olustur" class="mt-3 inline-block font-medium text-accent hover:underline">
+            İlk quiz'i sen hazırla — onaylanırsa kitap ödülü kazan <span class="arrow-slide">→</span>
+          </a>
+        </div>
+      ) : (
+        <div
+          id="quiz-app"
+          data-quiz-id={quiz.id}
+          data-book-id={book.id}
+          data-questions={JSON.stringify(clientQuestions)}
+          data-repeat={prevAttempt ? "1" : ""}
+          class="mt-6"
+        >
+          <div id="quiz-intro" class="rounded-2xl border border-line bg-surface-raised p-8 text-center" data-reveal>
+            <p class="text-ink-muted">
+              {clientQuestions.length} soru · doğruluk × hız puanı
+              {prevAttempt && (
+                <span class="mt-1 block text-xs">
+                  Daha önce çözdün ({prevAttempt.correctCount}/{prevAttempt.totalCount}) — tekrar oynayabilirsin, puan ilk denemede verilir.
+                </span>
+              )}
+            </p>
+            <button id="quiz-start" class="mt-5 cursor-pointer rounded-full bg-accent px-8 py-3 font-medium text-surface transition-transform hover:scale-105">
+              Başla
+            </button>
+          </div>
+          <div id="quiz-stage" class="hidden">
+            <div class="mb-3 flex items-center justify-between text-sm text-ink-muted">
+              <span id="quiz-no" />
+              <span id="quiz-timer" class="font-display text-xl font-bold text-accent" />
+            </div>
+            <div class="h-1.5 overflow-hidden rounded-full bg-accent-soft">
+              <div id="quiz-bar" class="h-full origin-left bg-accent transition-transform duration-1000 ease-linear" />
+            </div>
+            <h2 id="quiz-q" class="font-display mt-6 text-xl font-semibold text-ink" />
+            <div id="quiz-opts" class="mt-5 grid gap-3" />
+          </div>
+          <div id="quiz-done" class="hidden rounded-2xl border border-line bg-surface-raised p-8 text-center" />
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const app = document.getElementById("quiz-app");
+    if (!app || app.dataset.init) return;
+    app.dataset.init = "1";
+
+    type Q = { id: number; question: string; options: string[]; durationSec: number };
+    const questions: Q[] = JSON.parse(app.dataset.questions!);
+    const answers: { id: number; answer: number | null; ms: number }[] = [];
+    let i = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    let startedAt = 0;
+
+    const el = (id: string) => document.getElementById(id)!;
+
+    function showQuestion() {
+      const q = questions[i]!;
+      el("quiz-no").textContent = `Soru ${i + 1}/${questions.length}`;
+      el("quiz-q").textContent = q.question;
+      const opts = el("quiz-opts");
+      opts.innerHTML = "";
+      const renkler = ["bg-kat-egitim", "bg-kat-girisimcilik", "bg-kat-ai", "bg-kat-kisisel"];
+      q.options.forEach((opt, oi) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = `cursor-pointer rounded-xl ${renkler[oi % 4]} px-5 py-4 text-left font-medium text-white transition-transform hover:scale-[1.02]`;
+        b.textContent = opt;
+        b.addEventListener("click", () => answer(oi));
+        opts.appendChild(b);
+      });
+      // sayaç
+      let left = q.durationSec;
+      el("quiz-timer").textContent = String(left);
+      const bar = el("quiz-bar");
+      bar.style.transitionDuration = "1000ms";
+      bar.style.transform = "scaleX(1)";
+      startedAt = performance.now();
+      clearInterval(timer);
+      timer = setInterval(() => {
+        left--;
+        el("quiz-timer").textContent = String(Math.max(left, 0));
+        bar.style.transform = `scaleX(${Math.max(left / q.durationSec, 0)})`;
+        if (left <= 0) answer(null);
+      }, 1000);
+    }
+
+    async function answer(oi: number | null) {
+      clearInterval(timer);
+      const q = questions[i]!;
+      answers.push({ id: q.id, answer: oi, ms: Math.round(performance.now() - startedAt) });
+      i++;
+      if (i < questions.length) return showQuestion();
+
+      // Bitti → sunucu puanlar
+      el("quiz-stage").classList.add("hidden");
+      const done = el("quiz-done");
+      done.classList.remove("hidden");
+      done.innerHTML = "<p class='text-ink-muted'>Puanlanıyor…</p>";
+      try {
+        const res = await fetch("/api/uye/quiz", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quizId: Number(app!.dataset.quizId), answers }),
+        });
+        const r = await res.json();
+        const bookId = app!.dataset.bookId ?? "";
+        done.innerHTML = `
+          <p class="font-display text-5xl font-bold text-accent">${r.correctCount}/${r.totalCount}</p>
+          <p class="mt-2 text-ink">${r.points > 0 ? `+${r.points} puan kazandın 🎉` : "Tekrar oyun — puan ilk denemede verildi."}</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-3">
+            <a href="/uye/yaz?kitap=${encodeURIComponent(bookId)}" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105">✍️ Bu kitap için yazı yaz (+100)</a>
+            <a href="/lider" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">🏆 Liderlik tablosu</a>
+          </div>`;
+      } catch {
+        done.innerHTML = "<p class='text-ink-muted'>Bir şeyler ters gitti; tekrar dene.</p>";
+      }
+    }
+
+    document.getElementById("quiz-start")?.addEventListener("click", () => {
+      el("quiz-intro").classList.add("hidden");
+      el("quiz-stage").classList.remove("hidden");
+      showQuestion();
+    });
+  });
+</script>

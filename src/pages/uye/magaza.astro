@@ -1,0 +1,62 @@
+---
+/** Puan mağazası: flair süsleri (avatarında her yerde görünür). */
+import Base from "@/layouts/Base.astro";
+import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
+import { PUAN } from "@/lib/points.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+const balance = await pointBalance(member.id);
+const durum = Astro.url.searchParams.get("durum");
+
+const FLAIRLER = [
+  { emoji: "🔥", ad: "Ateşli" },
+  { emoji: "📚", ad: "Kitap Kurdu" },
+  { emoji: "🚀", ad: "Roket" },
+  { emoji: "🧠", ad: "Beyin" },
+  { emoji: "🌟", ad: "Yıldız" },
+  { emoji: "🦉", ad: "Baykuş" },
+];
+---
+
+<Base title="Puan Mağazası">
+  <div class="mx-auto max-w-xl">
+    <h1 class="font-display text-3xl font-semibold text-ink">✨ Puan Mağazası</h1>
+    <p class="mt-2 text-ink-muted">
+      Bakiyen: <strong class="text-accent" data-ticker>{balance}</strong> puan
+      {member.flair && <span class="ml-2">· mevcut süsün {member.flair}</span>}
+    </p>
+    {durum === "ok" && <p class="menu-pop mt-4 rounded-xl border border-accent bg-accent-soft p-3 text-center text-sm text-ink">Süsün takıldı ✨ Artık her yorumda seninle.</p>}
+    {durum === "yetersiz" && <p class="menu-pop mt-4 rounded-xl border border-line bg-surface-raised p-3 text-center text-sm text-ink-muted">Puanın henüz yetmiyor — bir yazı yaz, hemen dönersin ✍️</p>}
+
+    <h2 class="font-display mt-8 text-lg font-semibold text-ink">Avatar süsleri · {PUAN.flairCost}p</h2>
+    <ul class="mt-3 grid grid-cols-3 gap-3">
+      {
+        FLAIRLER.map((f) => (
+          <li>
+            <form method="post" action="/api/uye/magaza">
+              <input type="hidden" name="flair" value={f.emoji} />
+              <button
+                class:list={[
+                  "hover-lift w-full cursor-pointer rounded-2xl border p-4 text-center",
+                  member.flair === f.emoji ? "border-accent bg-accent-soft" : "border-line bg-surface-raised hover:border-accent/50",
+                ]}
+              >
+                <span class="block text-3xl">{f.emoji}</span>
+                <span class="mt-1 block text-sm font-medium text-ink">{f.ad}</span>
+                <span class="text-xs text-ink-muted">{member.flair === f.emoji ? "Takılı ✓" : `${PUAN.flairCost}p`}</span>
+              </button>
+            </form>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="mt-8 grid gap-3 text-sm text-ink-muted">
+      <p class="rounded-xl border border-line bg-surface-raised px-4 py-3">🎁 <strong class="text-ink">Kitap hediye et</strong> ({PUAN.giftBookCost}p) — <a href="/uye" class="text-accent hover:underline">panondan gönder</a></p>
+      <p class="rounded-xl border border-line bg-surface-raised px-4 py-3">⭐ <strong class="text-ink">Etkinlikte öncelikli koltuk</strong> ({PUAN.prioritySeatCost}p) — <a href="/etkinlikler" class="text-accent hover:underline">etkinliklerde seç</a></p>
+    </div>
+  </div>
+</Base>

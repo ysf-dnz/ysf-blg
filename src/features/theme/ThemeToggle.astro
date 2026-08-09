@@ -35,11 +35,19 @@ const t = useTranslations(langFromUrl(Astro.url.pathname));
     document.documentElement.dataset.theme = resolved;
   }
 
-  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+  // Delegasyon: View Transitions sonrası yeni butonda da çalışır
+  document.addEventListener("click", (e) => {
+    if (!(e.target as HTMLElement).closest("#theme-toggle")) return;
     const current = (localStorage.getItem(KEY) as Pref | null) ?? "system";
     const next = order[(order.indexOf(current) + 1) % order.length]!;
     localStorage.setItem(KEY, next);
-    apply(next);
+    // Destekleyen tarayıcıda tema değişimi yumuşak cross-fade ile
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (document.startViewTransition && !reduced) {
+      document.startViewTransition(() => apply(next));
+    } else {
+      apply(next);
+    }
   });
 
   media.addEventListener("change", () => {

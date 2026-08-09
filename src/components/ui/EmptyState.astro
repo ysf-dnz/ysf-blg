@@ -1,0 +1,22 @@
+---
+/** Boş durum: ikon + mesaj + yönlendiren CTA (asla çıkmaz sokak yok). */
+interface Props {
+  ikon?: string;
+  mesaj: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+}
+const { ikon = "🌱", mesaj, ctaHref, ctaLabel } = Astro.props;
+---
+
+<div class="rounded-2xl border border-line bg-surface-raised px-6 py-10 text-center" data-reveal>
+  <p class="empty-float font-display text-3xl" aria-hidden="true">{ikon}</p>
+  <p class="mt-3 text-ink-muted">{mesaj}</p>
+  {
+    ctaHref && ctaLabel && (
+      <a href={ctaHref} class="mt-4 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105">
+        {ctaLabel} <span class="arrow-slide">→</span>
+      </a>
+    )
+  }
+</div>

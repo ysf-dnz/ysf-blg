@@ -1,0 +1,296 @@
+---
+/**
+ * Kulüp sayfası — sekmeler: Pano · Etkinlikler · Üyeler.
+ * Pano = kulübün kampanyaları; kampanya detayında Kanban görev panosu.
+ */
+import { desc, eq, inArray } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { canManage, clubRoleOf } from "@/lib/permissions.ts";
+import { formatDate } from "@/lib/dates.ts";
+import { KATEGORILER } from "@/lib/kategorize.ts";
+import { groupByCategory } from "@/lib/books-lookup.ts";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const club = await db.query.clubs.findFirst({
+  where: eq(schema.clubs.slug, slug ?? ""),
+});
+if (!club) return Astro.redirect("/kulupler");
+
+const member = await getOrCreateMember(Astro);
+const myRole = await clubRoleOf(member, club.id);
+if (club.status !== "approved" && !myRole && member?.role !== "admin")
+  return Astro.redirect("/kulupler");
+
+const tab = Astro.url.searchParams.get("t") ?? "pano";
+
+const members = await db.query.clubMembers.findMany({
+  where: eq(schema.clubMembers.clubId, club.id),
+});
+const users = new Map(
+  members.length
+    ? (
+        await db.query.users.findMany({
+          where: inArray(schema.users.id, members.map((m) => m.userId)),
+        })
+      ).map((u) => [u.id, u])
+    : [],
+);
+const president = users.get(club.presidentId);
+
+const campaigns = await db.query.campaigns.findMany({
+  where: eq(schema.campaigns.clubId, club.id),
+  orderBy: desc(schema.campaigns.createdAt),
+});
+const clubEvents = await db.query.events.findMany({
+  where: eq(schema.events.clubId, club.id),
+  orderBy: desc(schema.events.startsAt),
+  limit: 20,
+});
+
+const books = await getCollection("books");
+const bookTitle = (id: string) =>
+  books.find((b) => b.data.id === id)?.data.titleTr ??
+  books.find((b) => b.data.id === id)?.data.title ??
+  id;
+const myBookOptions = member
+  ? (
+      await db.query.bookAccess.findMany({
+        where: eq(schema.bookAccess.userId, member.id),
+      })
+    )
+      .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
+      .filter(Boolean)
+  : [];
+
+const tabs = [
+  { key: "pano", label: "📋 Pano" },
+  { key: "kitaplik", label: "📚 Kitaplık" },
+  { key: "etkinlik", label: "📅 Etkinlikler" },
+  { key: "uyeler", label: "👥 Üyeler" },
+];
+
+// Ortak kütüphane — seçici kategoriye göre gruplu (400+ kitap kataloğu)
+const kitapGruplari = groupByCategory(
+  books.map((b) => b.data),
+  KATEGORILER,
+);
+const kitaplik = await db.query.clubBooks.findMany({
+  where: eq(schema.clubBooks.clubId, club.id),
+  orderBy: desc(schema.clubBooks.createdAt),
+});
+for (const k of kitaplik) {
+  if (!users.has(k.addedBy)) {
+    const u = await db.query.users.findFirst({ where: eq(schema.users.id, k.addedBy) });
+    if (u) users.set(u.id, u);
+  }
+}
+const durumEtiket: Record<string, string> = {
+  planning: "Planlanıyor",
+  active: "Aktif",
+  done: "Bitti",
+};
+---
+
+<Base title={club.name} description={`${club.place} okuma topluluğu`}>
+  <section class="girih-texture -mx-4 px-4 py-10">
+    <div class="flex flex-wrap items-center gap-4">
+      <div class="min-w-0 flex-1">
+        <h1 class="font-display text-3xl font-semibold text-ink">{club.name}</h1>
+        <p class="mt-1 text-ink-muted">
+          {club.place} · {club.il} · 👑 {president?.name}
+          {club.status === "pending" && (
+            <span class="ml-2 rounded bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">Onay bekliyor</span>
+          )}
+        </p>
+        {club.description && <p class="mt-2 max-w-xl text-sm text-ink-muted">{club.description}</p>}
+      </div>
+      <div class="text-center">
+        <p class="font-display text-2xl font-semibold text-accent" data-ticker>{members.length}</p>
+        <p class="text-xs text-ink-muted">üye</p>
+        {member && !myRole && club.status === "approved" && (
+          <form method="post" action="/api/uye/kulup">
+            <input type="hidden" name="action" value="join" />
+            <input type="hidden" name="clubId" value={club.id} />
+            <button class="mt-2 cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105">Katıl</button>
+          </form>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <nav class="mt-6 flex gap-2" aria-label="Kulüp sekmeleri">
+    {
+      tabs.map((x) => (
+        <a
+          href={`/kulup/${club.slug}?t=${x.key}`}
+          aria-current={tab === x.key ? "page" : undefined}
+          class:list={[
+            "pill-pop rounded-full border px-4 py-1.5 text-sm",
+            tab === x.key
+              ? "border-accent bg-accent-soft font-semibold text-accent"
+              : "border-line text-ink-muted hover:border-accent hover:text-accent",
+          ]}
+        >
+          {x.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    tab === "pano" && (
+      <section class="mt-6">
+        {canManage(myRole) && (
+          <form method="post" action="/api/uye/kampanya" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-[1fr_1fr_auto]">
+            <input type="hidden" name="clubId" value={club.id} />
+            <input name="title" required maxlength="80" placeholder='Kampanya başlığı — örn. "Golang Ayı"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+            <select name="bookId" required class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+              {myBookOptions.map((b) => (
+                <option value={b!.id}>{b!.titleTr ?? b!.title}</option>
+              ))}
+            </select>
+            <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Kampanya aç</button>
+          </form>
+        )}
+        <ul class="mt-4 space-y-3" data-stagger>
+          {campaigns.length === 0 && <p class="text-ink-muted">Henüz kampanya yok{canManage(myRole) ? " — gündem kitabını seç, ilk kampanyayı aç." : "."}</p>}
+          {campaigns.map((c) => (
+            <li>
+              <a href={`/kampanya/${c.id}`} class="hover-lift flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-raised px-5 py-4 hover:border-accent/50">
+                <span>
+                  <span class="block font-display text-lg font-semibold text-ink">{c.title}</span>
+                  <span class="text-sm text-ink-muted">📖 {bookTitle(c.bookId)}</span>
+                </span>
+                <span class:list={[
+                  "rounded-full px-3 py-1 text-xs font-medium",
+                  c.status === "active" ? "bg-accent-soft text-accent" : "border border-line text-ink-muted",
+                ]}>
+                  {durumEtiket[c.status]}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    tab === "kitaplik" && (
+      <section class="mt-6">
+        {myRole && (
+          <form method="post" action="/api/uye/kulup-kitaplik" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+            <input type="hidden" name="clubId" value={club.id} />
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="grid gap-1 text-sm">
+                <span class="font-medium text-ink">Katalogdan kitap</span>
+                <select name="bookId" class="rounded-lg border border-line bg-surface px-3 py-2">
+                  <option value="">— seç veya aşağıya not yaz —</option>
+                  {kitapGruplari.map((g) => (
+                    <optgroup label={g.ad}>
+                      {g.books.map((b) => (
+                        <option value={b.id}>{b.titleTr ?? b.title}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </label>
+              <label class="grid gap-1 text-sm">
+                <span class="font-medium text-ink">…veya not/kaynak başlığı</span>
+                <input name="title" maxlength="120" placeholder='Örn. "Go concurrency ders notlarım"' class="rounded-lg border border-line bg-surface px-3 py-2" />
+              </label>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-[1fr_2fr_auto]">
+              <input name="url" type="url" placeholder="https:// bağlantı (opsiyonel)" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+              <input name="note" maxlength="500" placeholder="Kısa not: neden değerli?" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+              <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ekle</button>
+            </div>
+          </form>
+        )}
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2" data-stagger>
+          {kitaplik.length === 0 && <p class="text-ink-muted">Ortak kitaplık boş — ilk kaynağı sen ekle.</p>}
+          {kitaplik.map((k) => {
+            const kitap = k.bookId ? books.find((b) => b.data.id === k.bookId)?.data : undefined;
+            return (
+              <li>
+                <article class="hover-lift flex h-full gap-3 rounded-xl border border-line bg-surface-raised p-4">
+                  {kitap?.cover && (
+                    <a href={`/kutuphane/kitap/${kitap.id}`} class="book-3d block w-14 shrink-0">
+                      <img src={kitap.cover} alt="" width="112" height="149" loading="lazy" class="aspect-[3/4] w-full rounded border border-line object-cover" />
+                    </a>
+                  )}
+                  <div class="min-w-0">
+                    <p class="font-medium leading-snug text-ink">
+                      {kitap ? (
+                        <a href={`/kutuphane/kitap/${kitap.id}`} class="hover:text-accent">{kitap.titleTr ?? kitap.title}</a>
+                      ) : k.url ? (
+                        <a href={k.url} target="_blank" rel="noopener noreferrer nofollow" class="hover:text-accent">{k.title} ↗</a>
+                      ) : (
+                        k.title
+                      )}
+                    </p>
+                    {k.note && <p class="mt-1 text-sm text-ink-muted">{k.note}</p>}
+                    <p class="mt-1.5 text-xs text-ink-muted">@{users.get(k.addedBy)?.handle}</p>
+                  </div>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    tab === "etkinlik" && (
+      <section class="mt-6">
+        {canManage(myRole) && (
+          <form method="post" action="/api/uye/etkinlik" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-2">
+            <input type="hidden" name="clubId" value={club.id} />
+            <input name="title" required maxlength="80" placeholder="Etkinlik başlığı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+            <input name="startsAt" required type="datetime-local" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+            <input name="location" placeholder="Yer / bağlantı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+            <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Etkinlik aç</button>
+          </form>
+        )}
+        <ul class="mt-4 space-y-3">
+          {clubEvents.length === 0 && <p class="text-ink-muted">Etkinlik yok.</p>}
+          {clubEvents.map((e) => (
+            <li class="rounded-xl border border-line bg-surface-raised px-5 py-3">
+              <strong class="text-ink">{e.title}</strong>
+              <span class="ml-2 text-sm text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}{e.location && ` · 📍 ${e.location}`}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    tab === "uyeler" && (
+      <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+        {members.map((m) => {
+          const u = users.get(m.userId);
+          return (
+            <li>
+              <a href={`/u/${u?.handle}`} class="hover-lift flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-3 hover:border-accent/50">
+                {u?.avatarUrl && <img src={u.avatarUrl} alt="" width="36" height="36" class="size-9 rounded-full" />}
+                <span class="min-w-0">
+                  <span class="block truncate text-sm font-medium text-ink">
+                    {u?.name} {m.role === "president" && "👑"} {m.role === "mod" && "🛡️"}
+                  </span>
+                  <span class="text-xs text-ink-muted">@{u?.handle}</span>
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+</Base>

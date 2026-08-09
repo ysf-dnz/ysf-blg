@@ -1,0 +1,16 @@
+---
+/** Topluluk sayfalarının ortak başlık deseni (kompakt, tutarlı ritim). */
+interface Props {
+  baslik: string;
+  aciklama?: string;
+}
+const { baslik, aciklama } = Astro.props;
+---
+
+<header class="flex flex-wrap items-end justify-between gap-4 py-2">
+  <div>
+    <h1 class="font-display text-2xl font-semibold text-ink sm:text-3xl">{baslik}</h1>
+    {aciklama && <p class="mt-1 text-sm text-ink-muted">{aciklama}</p>}
+  </div>
+  <slot name="aksiyon" />
+</header>

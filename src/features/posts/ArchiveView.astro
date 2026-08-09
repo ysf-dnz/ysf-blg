@@ -24,11 +24,12 @@ const t = useTranslations(lang);
   <nav class="mt-6 flex flex-wrap gap-2" aria-label={t("kategori.baslik")}>
     <a
       href={localizePath("/yazilar", lang)}
+      aria-current={aktifKategori ? undefined : "page"}
       class:list={[
-        "rounded-full border px-3 py-1 text-sm transition-colors",
+        "pill-pop rounded-full border px-3 py-1.5 text-sm",
         aktifKategori
           ? "border-line text-ink-muted hover:border-accent hover:text-accent"
-          : "border-accent bg-accent-soft text-accent",
+          : "border-accent bg-accent-soft font-semibold text-accent",
       ]}
     >
       {t("arsiv.tumKategoriler")}
@@ -37,10 +38,11 @@ const t = useTranslations(lang);
       CATEGORIES.map((kat) => (
         <a
           href={localizePath(`/kategori/${kat}`, lang)}
+          aria-current={aktifKategori === kat ? "page" : undefined}
           class:list={[
-            "rounded-full border px-3 py-1 text-sm transition-colors",
+            "pill-pop rounded-full border px-3 py-1.5 text-sm",
             aktifKategori === kat
-              ? "border-accent bg-accent-soft text-accent"
+              ? "border-accent bg-accent-soft font-semibold text-accent"
               : "border-line text-ink-muted hover:border-accent hover:text-accent",
           ]}
         >
@@ -50,15 +52,27 @@ const t = useTranslations(lang);
     }
   </nav>
 
-  <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {
-      page.data.map((post) => (
-        <li>
-          <PostCard post={post} />
-        </li>
-      ))
-    }
-  </ul>
+  {
+    page.data.length > 0 ? (
+      <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+        {page.data.map((post) => (
+          <li>
+            <PostCard post={post} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <div class="mt-12 rounded-xl border border-line bg-surface-raised px-6 py-10 text-center" data-reveal>
+        <p class="empty-float text-ink-muted">{t("arsiv.bos")}</p>
+        <a
+          href={localizePath("/yazilar", lang)}
+          class="mt-3 inline-block font-medium text-accent hover:underline"
+        >
+          {t("arsiv.bosLink")}
+        </a>
+      </div>
+    )
+  }
 
   <Pagination page={page} />
 </section>

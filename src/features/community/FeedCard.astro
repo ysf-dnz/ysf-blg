@@ -1,0 +1,108 @@
+---
+/** Feed gönderi kartı — akışta ve kulüp sayfasında aynı görünüm. */
+import Avatar from "@/components/ui/Avatar.astro";
+import { R } from "@/lib/routes.ts";
+import type { schema } from "@/db/client.ts";
+
+type FeedPost = typeof schema.feedPosts.$inferSelect;
+type User = typeof schema.users.$inferSelect;
+type Comment = typeof schema.comments.$inferSelect;
+
+interface Props {
+  post: FeedPost;
+  author?: User;
+  level?: number;
+  likeCount: number;
+  likedByMe: boolean;
+  comments: Comment[];
+  authors: Map<number, User>;
+  memberId?: number;
+  bookTitle?: string | null;
+}
+
+const {
+  post,
+  author,
+  level = 1,
+  likeCount,
+  likedByMe,
+  comments,
+  authors,
+  memberId,
+  bookTitle,
+} = Astro.props;
+
+const KATEGORI = {
+  soru: { ad: "Soru", renk: "var(--color-kat-egitim)" },
+  kaynak: { ad: "Kaynak", renk: "var(--color-kat-yazilim)" },
+  ilerleme: { ad: "İlerleme", renk: "var(--color-kat-girisimcilik)" },
+  duyuru: { ad: "Duyuru", renk: "var(--color-kat-kisisel)" },
+} as const;
+const kat = KATEGORI[post.category];
+---
+
+<article class="rounded-2xl border border-line bg-surface-raised p-4 transition-shadow hover:shadow-md">
+  <header class="flex items-center gap-2.5 text-sm">
+    <a href={R.profil(author?.handle ?? "")} class="shrink-0">
+      <Avatar name={author?.name ?? "?"} avatarUrl={author?.avatarUrl} level={level} size="sm" />
+    </a>
+    <a href={R.profil(author?.handle ?? "")} class="min-w-0 truncate font-medium text-ink hover:text-accent">
+      {author?.name}
+    </a>
+    <span class="ml-auto shrink-0 rounded-full px-2 py-0.5 text-xs font-medium text-white" style={`background:${kat.renk}`}>
+      {kat.ad}
+    </span>
+  </header>
+
+  <p class="mt-2.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{post.body}</p>
+  {
+    post.bookId && bookTitle && (
+      <a href={R.kitap(post.bookId)} class="mt-1.5 inline-block text-xs font-medium text-accent hover:underline">
+        📖 {bookTitle}
+      </a>
+    )
+  }
+
+  <footer class="mt-3 flex items-center gap-4 text-sm text-ink-muted">
+    {
+      memberId && !likedByMe && post.userId !== memberId ? (
+        <form method="post" action="/api/uye/feed">
+          <input type="hidden" name="action" value="like" />
+          <input type="hidden" name="feedPostId" value={post.id} />
+          <button class="cursor-pointer transition-transform hover:scale-110" title="Beğen (+1 puan yazara)">
+            👍 {likeCount}
+          </button>
+        </form>
+      ) : (
+        <span class:list={[likedByMe && "text-accent"]}>👍 {likeCount}</span>
+      )
+    }
+    <span>💬 {comments.length}</span>
+  </footer>
+
+  {
+    comments.length > 0 && (
+      <ul class="mt-3 space-y-2 border-t border-line pt-3 text-sm">
+        {comments.map((c) => (
+          <li class="flex gap-2">
+            <a href={R.profil(authors.get(c.userId)?.handle ?? "")} class="shrink-0 font-medium text-ink hover:text-accent">
+              {authors.get(c.userId)?.name}:
+            </a>
+            <span class="text-ink-muted">{c.body}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    memberId && (
+      <form method="post" action="/api/uye/feed" class="mt-3 flex gap-2">
+        <input type="hidden" name="action" value="comment" />
+        <input type="hidden" name="feedPostId" value={post.id} />
+        <input name="body" required maxlength="1000" placeholder="Yorum yaz…" class="w-full rounded-full border border-line bg-surface px-3 py-1.5 text-sm focus:border-accent" />
+        <button class="cursor-pointer text-accent transition-transform hover:scale-110" aria-label="Gönder">➤</button>
+      </form>
+    )
+  }
+</article>

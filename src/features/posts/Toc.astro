@@ -46,7 +46,9 @@ const visible = headings.filter((h) => h.depth <= 3);
 </style>
 
 <script>
-  // Scroll-spy: görünür başlığa göre aktif TOC linki
+  // Scroll-spy: görünür başlığa göre aktif TOC linki.
+  // astro:page-load ile her (soft) gezinmede yeniden bağlanır.
+  document.addEventListener("astro:page-load", () => {
   const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
   if (links.length > 0) {
     const bySlug = new Map(
@@ -72,4 +74,5 @@ const visible = headings.filter((h) => h.depth <= 3);
       if (heading) observer.observe(heading);
     }
   }
+  });
 </script>

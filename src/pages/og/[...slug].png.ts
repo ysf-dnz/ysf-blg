@@ -1,3 +1,4 @@
+export const prerender = true;
 import type { APIContext } from "astro";
 import { getPublishedPosts, postSlug } from "@/lib/posts.ts";
 import { useTranslations } from "@/lib/i18n/index.ts";

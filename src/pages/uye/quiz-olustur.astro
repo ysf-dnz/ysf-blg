@@ -1,0 +1,92 @@
+---
+/** Quiz seti oluşturucu: üye önerir (pending), admin yayınlar (published). */
+import { eq } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { KATEGORILER } from "@/lib/kategorize.ts";
+import { groupByCategory } from "@/lib/books-lookup.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+
+const access = await db.query.bookAccess.findMany({
+  where: eq(schema.bookAccess.userId, member.id),
+});
+const books = await getCollection("books");
+const myBooks = access
+  .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
+  .filter(Boolean);
+---
+
+<Base title="Quiz hazırla">
+  <div class="mx-auto max-w-2xl">
+    <h1 class="font-display text-3xl font-semibold text-ink">Quiz hazırla</h1>
+    <p class="mt-2 text-ink-muted">
+      Okuduğun kitap için soru seti hazırla; onaylanırsa <strong class="text-accent">+75 puan</strong> + istediğin bir kitaba erişim ödülü.
+    </p>
+
+    <form method="post" action="/api/uye/quiz-olustur" class="mt-6 grid gap-4">
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Kitap</span>
+        <select name="bookId" required class="rounded-lg border border-line bg-surface-raised px-3 py-2 text-ink">
+          {
+            groupByCategory(myBooks, KATEGORILER).map((g) => (
+              <optgroup label={g.ad}>
+                {g.books.map((b) => (
+                  <option value={b.id}>{b.titleTr ?? b.title}</option>
+                ))}
+              </optgroup>
+            ))
+          }
+        </select>
+      </label>
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Quiz başlığı</span>
+        <input name="title" required maxlength="80" class="rounded-lg border border-line bg-surface-raised px-3 py-2 text-ink" />
+      </label>
+
+      <div id="questions" class="grid gap-4"></div>
+      <button type="button" id="add-q" class="cursor-pointer justify-self-start rounded-full border border-line px-4 py-2 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">
+        + Soru ekle
+      </button>
+      <button class="cursor-pointer rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105">
+        {member.role === "admin" ? "Yayınla" : "Onaya gönder"}
+      </button>
+    </form>
+  </div>
+</Base>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const wrap = document.getElementById("questions");
+    const add = document.getElementById("add-q");
+    if (!wrap || !add || (add as HTMLElement).dataset.init) return;
+    (add as HTMLElement).dataset.init = "1";
+    let n = 0;
+    const addQuestion = () => {
+      const i = n++;
+      const div = document.createElement("div");
+      div.className = "rounded-xl border border-line bg-surface-raised p-4 grid gap-2";
+      div.innerHTML = `
+        <span class="text-sm font-medium">Soru ${i + 1}</span>
+        <input name="q_${i}_text" required placeholder="Soru metni" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <div class="grid gap-2 sm:grid-cols-2">
+          ${[0, 1, 2, 3].map((o) => `
+            <label class="flex items-center gap-2 text-sm">
+              <input type="radio" name="q_${i}_correct" value="${o}" ${o === 0 ? "checked" : ""} />
+              <input name="q_${i}_opt_${o}" required placeholder="Şık ${o + 1}" class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+            </label>`).join("")}
+        </div>
+        <p class="text-xs" style="color: var(--ink-muted)">Doğru şıkkın radyosunu işaretle · süre: <input name="q_${i}_sec" type="number" value="20" min="5" max="60" class="w-16 rounded border border-line bg-surface px-1 py-0.5" /> sn</p>`;
+      wrap.appendChild(div);
+    };
+    add.addEventListener("click", addQuestion);
+    addQuestion();
+    addQuestion();
+    addQuestion();
+  });
+</script>

@@ -1,0 +1,436 @@
+/* ============================================================
+   motion.css — sitenin animasyon dili (21st.dev ilhamlı)
+   Kural: yalnızca transform / opacity / filter anime edilir.
+   Tüm süsler prefers-reduced-motion'da kapanır (dosya sonu).
+   ============================================================ */
+
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-base: 300ms;
+  --dur-slow: 700ms;
+}
+
+/* ---------- Keyframe kütüphanesi ---------- */
+@keyframes ysf-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ysf-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ysf-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes ysf-blur-up {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes ysf-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes ysf-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes ysf-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+@keyframes ysf-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 220px 220px; }
+}
+@keyframes ysf-ring-spin {
+  to { --ysf-ring-angle: 570deg; }
+}
+@keyframes ysf-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes ysf-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Hikâye halkası dönüşü için animatable custom property */
+@property --ysf-ring-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 210deg;
+}
+
+/* ---------- Scroll-reveal sistemi ----------
+   JS (motion/init.ts) çalışınca <html>'e .motion-ok ekler;
+   JS yoksa içerik hiçbir zaman gizlenmez (progressive). */
+html.motion-ok [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out-expo),
+    transform var(--dur-slow) var(--ease-out-expo);
+}
+html.motion-ok [data-reveal].in {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Kademeli çocuklar: JS her çocuğa --i indeksi atar */
+html.motion-ok [data-stagger] > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out-expo),
+    transform var(--dur-slow) var(--ease-out-expo);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+html.motion-ok [data-stagger].in > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Giriş (yükleme) animasyonları ---------- */
+/* Hero başlığı: kelime kelime blur-reveal */
+.word-reveal > span {
+  display: inline-block;
+  animation: ysf-blur-up 0.9s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+.hero-sub {
+  animation: ysf-fade-up 0.9s var(--ease-out-expo) 0.45s both;
+}
+/* Yazı sayfası başlığı */
+.title-blur-in {
+  animation: ysf-blur-up 0.8s var(--ease-out-expo) both;
+}
+.meta-fade {
+  animation: ysf-fade-up 0.7s var(--ease-out-expo) 0.15s both;
+}
+
+/* ---------- Canlı degrade metin (hero vurgusu) ---------- */
+.gradient-text {
+  background: linear-gradient(
+    100deg,
+    var(--accent),
+    var(--color-cini-400),
+    var(--color-cini-300),
+    var(--accent)
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: ysf-gradient-shift 6s ease-in-out infinite;
+}
+
+/* ---------- Kart etkileşimleri ---------- */
+.hover-lift {
+  transition:
+    transform var(--dur-base) var(--ease-out-expo),
+    box-shadow var(--dur-base) var(--ease-out-expo),
+    border-color var(--dur-base) ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+/* Işık süpürmesi: kartın üstünden geçen parlama */
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in srgb, var(--accent) 14%, white 20%) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-out-expo);
+  pointer-events: none;
+}
+.shine:hover::after {
+  transform: translateX(120%);
+}
+/* Kart içindeki kapak görseli yakınlaşması */
+.img-zoom {
+  transition: transform var(--dur-slow) var(--ease-out-expo);
+}
+.group:hover .img-zoom {
+  transform: scale(1.045);
+}
+
+/* ---------- Header / nav ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: box-shadow var(--dur-base) ease;
+}
+.site-header.scrolled {
+  box-shadow: 0 1px 12px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.brand-link {
+  transition: letter-spacing var(--dur-base) var(--ease-out-expo), color var(--dur-fast) ease;
+}
+.brand-link:hover {
+  letter-spacing: 0.02em;
+}
+/* Soldan büyüyen altçizgi (aktif + hover) */
+.nav-underline {
+  position: relative;
+}
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.3rem;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out-expo);
+}
+.nav-underline:hover::after,
+.nav-underline[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+/* Mobil menü paneli: sağ üstten pop */
+.menu-pop {
+  transform-origin: top right;
+  animation: ysf-scale-in var(--dur-base) var(--ease-out-expo) both;
+}
+.menu-pop > a {
+  animation: ysf-fade-up 0.4s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+/* Arama kısayol ipucu nabzı */
+.kbd-pulse {
+  animation: ysf-pulse-soft 3.2s ease-in-out infinite;
+}
+/* Arama büyüteci sallanması */
+#search-open:hover svg {
+  transform: rotate(-8deg) scale(1.08);
+}
+#search-open svg {
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+/* Tema ikonu geçişi */
+#theme-toggle svg {
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+#theme-toggle:hover svg {
+  transform: rotate(20deg) scale(1.1);
+}
+
+/* ---------- Girih dokusu: sonsuz yavaş akış ---------- */
+.girih-texture::before {
+  animation: ysf-drift 80s linear infinite;
+}
+
+/* ---------- Hikâye halkaları ---------- */
+.story-ring > span:first-of-type {
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+.story-ring:not(.seen) > span:first-of-type {
+  animation: ysf-ring-spin 5s linear infinite;
+}
+.story-ring:hover:not(.seen) > span:first-of-type {
+  animation-duration: 1.6s;
+}
+
+/* ---------- Okuma ilerleme çubuğu ---------- */
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 40;
+  background: var(--accent);
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  pointer-events: none;
+}
+
+/* ---------- Zihin haritası: çizgi çizimi ---------- */
+html.motion-ok [data-reveal] line[pathLength] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+html.motion-ok [data-reveal].in line[pathLength] {
+  animation: ysf-draw 1.2s var(--ease-out-expo) forwards;
+}
+html.motion-ok [data-reveal] circle {
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  transition-delay: calc(var(--i, 0) * 80ms + 0.4s);
+}
+html.motion-ok [data-reveal].in circle {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- Kütüphane ---------- */
+/* Raf açılışında kitapların yumuşak gelişi */
+details[open] > ul {
+  animation: ysf-fade-up 0.5s var(--ease-out-expo) both;
+}
+/* 3B kitap kapağı */
+.book-3d {
+  perspective: 700px;
+}
+.book-3d > img,
+.book-3d > span:first-of-type {
+  transition: transform var(--dur-slow) var(--ease-out-expo), box-shadow var(--dur-slow) ease;
+  transform-style: preserve-3d;
+}
+.book-3d:hover > img,
+.book-3d:hover > span:first-of-type {
+  transform: rotateY(-8deg) translateY(-4px);
+  box-shadow: 10px 12px 24px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+/* Kitap detay kapağı: hafif süzülme */
+.cover-float {
+  animation: ysf-float 6s ease-in-out infinite;
+}
+
+/* ---------- Arama modalı ---------- */
+#search-dialog {
+  opacity: 0;
+  transform: scale(0.96) translateY(-8px);
+  transition:
+    opacity var(--dur-base) var(--ease-out-expo),
+    transform var(--dur-base) var(--ease-out-expo),
+    overlay var(--dur-base) allow-discrete,
+    display var(--dur-base) allow-discrete;
+}
+#search-dialog[open] {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+@starting-style {
+  #search-dialog[open] {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+}
+#search-dialog::backdrop {
+  transition: opacity var(--dur-base) ease, overlay var(--dur-base) allow-discrete, display var(--dur-base) allow-discrete;
+  opacity: 0;
+}
+#search-dialog[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  #search-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+/* Sonuçların kademeli gelişi */
+#search-dialog .pagefind-ui__result {
+  animation: ysf-fade-up 0.45s var(--ease-out-expo) both;
+}
+#search-dialog .pagefind-ui__result:nth-child(2) { animation-delay: 60ms; }
+#search-dialog .pagefind-ui__result:nth-child(3) { animation-delay: 120ms; }
+#search-dialog .pagefind-ui__result:nth-child(4) { animation-delay: 180ms; }
+#search-dialog .pagefind-ui__result:nth-child(5) { animation-delay: 240ms; }
+
+/* ---------- Mikro dokunuşlar ---------- */
+/* Ok kayması: "Tüm yazılar →", PrevNext, sayfalama */
+.arrow-slide {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+a:hover > .arrow-slide,
+a:hover .arrow-slide {
+  transform: translateX(4px);
+}
+a:hover > .arrow-slide-l,
+a:hover .arrow-slide-l {
+  transform: translateX(-4px);
+}
+.arrow-slide-l {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+/* Footer sosyal ikon mikro-zıplama */
+footer a svg {
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+footer a:hover svg {
+  transform: translateY(-3px) scale(1.1);
+}
+/* Kategori pilleri */
+.pill-pop {
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    background-color var(--dur-base) ease,
+    border-color var(--dur-base) ease,
+    color var(--dur-base) ease;
+}
+.pill-pop:hover {
+  transform: scale(1.05);
+}
+/* Kod kopyala onay pop'u */
+.code-copy-btn.copied {
+  animation: ysf-pop 0.4s var(--ease-spring);
+  color: var(--accent);
+}
+/* Boş durum kutusu süzülen içerik */
+.empty-float {
+  animation: ysf-float 5s ease-in-out infinite;
+}
+
+/* ---------- Sayfa geçişleri (View Transitions) ---------- */
+::view-transition-old(root) {
+  animation: ysf-fade-in 0.25s ease reverse;
+}
+::view-transition-new(root) {
+  animation: ysf-fade-in 0.35s ease;
+}
+
+/* ============================================================
+   Hareket azaltma: tüm süsler kapanır, içerik anında görünür
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html.motion-ok [data-reveal],
+  html.motion-ok [data-stagger] > *,
+  html.motion-ok [data-reveal] circle {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  html.motion-ok [data-reveal] line[pathLength] {
+    stroke-dashoffset: 0 !important;
+  }
+  .word-reveal > span,
+  .hero-sub,
+  .title-blur-in,
+  .meta-fade,
+  .gradient-text,
+  .girih-texture::before,
+  .story-ring > span:first-of-type,
+  .kbd-pulse,
+  .cover-float,
+  .empty-float,
+  details[open] > ul,
+  .menu-pop,
+  .menu-pop > a {
+    animation: none !important;
+  }
+}

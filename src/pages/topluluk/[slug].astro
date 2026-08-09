@@ -1,0 +1,98 @@
+---
+/** Üye yazısı sayfası. */
+import { eq } from "drizzle-orm";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { renderMemberMarkdown } from "@/lib/markdown.ts";
+import { levelFor } from "@/lib/levels.ts";
+import { earnedPoints, getOrCreateMember } from "@/lib/member.ts";
+import { formatDate } from "@/lib/dates.ts";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const post = await db.query.memberPosts.findFirst({
+  where: eq(schema.memberPosts.slug, slug ?? ""),
+});
+if (!post || post.status !== "published") return Astro.redirect("/topluluk");
+
+// "Yalnız üyeler" görünürlüğü: misafire tanıtım + katıl CTA'sı
+const okuyucu = await getOrCreateMember(Astro);
+const kilitli = post.visibility === "members" && !okuyucu;
+
+// Beğeniler (Medium tarzı alkış)
+const begeniler = await db.query.likes.findMany({
+  where: eq(schema.likes.memberPostId, post.id),
+});
+const benBegendim = okuyucu
+  ? begeniler.some((l) => l.userId === okuyucu.id)
+  : false;
+
+const author = await db.query.users.findFirst({
+  where: eq(schema.users.id, post.userId),
+});
+const level = author ? levelFor(await earnedPoints(author.id)) : 1;
+---
+
+<Base title={post.title} description={`${author?.name} — topluluk yazısı`}>
+  <article class="mx-auto max-w-[72ch]">
+    <header class="mb-8">
+      <h1 class="title-blur-in font-display text-3xl font-semibold leading-tight text-ink sm:text-4xl">
+        {post.title}
+      </h1>
+      <a href={`/u/${author?.handle}`} class="meta-fade mt-4 flex items-center gap-3">
+        {author?.avatarUrl && <img src={author.avatarUrl} alt="" width="40" height="40" class="size-10 rounded-full border border-line" />}
+        <span>
+          <span class="block font-medium text-ink">{author?.name}
+            <span class="ml-1 rounded bg-accent-soft px-1.5 text-xs font-medium text-accent">Sv {level}</span>
+          </span>
+          <span class="text-sm text-ink-muted">
+            {post.publishedAt && formatDate(post.publishedAt, "tr")}
+          </span>
+        </span>
+      </a>
+    </header>
+    {
+      kilitli ? (
+        <div class="relative">
+          <div
+            class="prose prose-lg pointer-events-none max-h-56 max-w-none overflow-hidden opacity-60 blur-[2px] dark:prose-invert select-none"
+            set:html={renderMemberMarkdown(post.markdown.slice(0, 400))}
+          />
+          <div class="menu-pop -mt-8 rounded-2xl border border-accent bg-accent-soft p-6 text-center">
+            <p class="font-display text-lg font-semibold text-ink">
+              👥 Bu yazı yalnız üyelere açık
+            </p>
+            <p class="mt-1 text-sm text-ink-muted">
+              Ücretsiz katıl, devamını oku — ilk kitabın da hediye.
+            </p>
+            <a href="/uye/hosgeldin" class="mt-3 inline-block rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105">
+              Katıl ve okumaya devam et
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div
+          class="prose prose-lg max-w-none dark:prose-invert prose-headings:font-display prose-a:text-accent"
+          set:html={renderMemberMarkdown(post.markdown)}
+        />
+      )
+    }
+    <footer class="mt-10 flex items-center justify-between border-t border-line pt-6 text-sm text-ink-muted">
+      <a href="/topluluk" class="hover:text-accent"><span class="arrow-slide-l">←</span> Topluluğa dön</a>
+      {
+        okuyucu && okuyucu.id !== post.userId && !benBegendim ? (
+          <form method="post" action="/api/uye/takip">
+            <input type="hidden" name="action" value="yazi-begen" />
+            <input type="hidden" name="memberPostId" value={post.id} />
+            <button class="cursor-pointer rounded-full border border-line px-4 py-1.5 transition-all hover:border-accent hover:text-accent hover:scale-105" title="Beğen (+1 puan yazara)">
+              👍 Beğen · {begeniler.length}
+            </button>
+          </form>
+        ) : (
+          <span class:list={[benBegendim && "text-accent"]}>👍 {begeniler.length}</span>
+        )
+      }
+    </footer>
+  </article>
+</Base>

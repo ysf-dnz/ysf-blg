@@ -1,0 +1,189 @@
+---
+/**
+ * Onboarding — "Bilgi Hazinesi": öğrenmenin en iyi yolu öğretmektir.
+ * Üye, hakkında yazacağı 5 kitabı seçer: İLKİ hediye 🎁 (anında açılır),
+ * kalan 4'ü kilitli hazine olarak listesine girer — yazdıkça açılır.
+ */
+import { and, eq } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
+import { FEATURED_GIFT_BOOK_ID } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+
+const balance = await pointBalance(member.id);
+const gift = await db.query.bookAccess.findFirst({
+  where: and(
+    eq(schema.bookAccess.userId, member.id),
+    eq(schema.bookAccess.source, "gift"),
+  ),
+});
+if (gift) return Astro.redirect(R.uye.panel);
+
+const books = (await getCollection("books")).map((b) => b.data);
+const featured = books.find((b) => b.id === FEATURED_GIFT_BOOK_ID);
+const vitrindekiler = [
+  ...(featured ? [featured] : []),
+  ...books
+    .filter((b) => b.id !== FEATURED_GIFT_BOOK_ID)
+    .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+    .slice(0, 29),
+];
+---
+
+<Base title="Hazineni kur">
+  <section class="girih-texture -mx-4 px-4 py-12 text-center">
+    <h1 class="word-reveal font-display mx-auto max-w-2xl text-3xl font-semibold leading-tight text-ink sm:text-4xl">
+      <span style="--i:0">Öğrenmenin</span>
+      <span style="--i:1">en</span>
+      <span style="--i:2">iyi</span>
+      <span style="--i:3">yolu</span>
+      <span style="--i:4" class="gradient-text">öğretmektir.</span>
+    </h1>
+    <p class="hero-sub mx-auto mt-4 max-w-xl text-lg text-ink-muted">
+      {member.name}, öğrenmek isteyip <strong class="text-ink">hakkında yazacağın 5 kitabı</strong> hazinene ekle.
+      İlki bizden hediye 🎁 — kalanların kilidini, yazdıkça kazandığın puanlarla aç.
+    </p>
+    <p class="hero-sub mt-3 text-sm text-ink-muted">
+      Cebinde şimdiden <strong class="text-accent" data-ticker>{balance}</strong> puan var.
+    </p>
+  </section>
+
+  <form method="post" action="/api/uye/hediye-sec" class="mt-6" data-reveal>
+    <!-- Yapışkan sayaç: hedef-gradyan (5/5'e yaklaştıkça doldurma isteği) -->
+    <div class="sticky top-[65px] z-20 -mx-4 border-b border-line bg-surface/85 px-4 py-2.5 backdrop-blur">
+      <div class="mx-auto flex max-w-3xl items-center gap-4">
+        <div class="h-2.5 flex-1 overflow-hidden rounded-full bg-accent-soft">
+          <div id="hazine-bar" class="h-full bg-accent transition-all" style="width:0%"></div>
+        </div>
+        <span id="hazine-sayac" class="text-sm font-medium text-ink-muted">0/5 seçildi</span>
+        <button
+          id="hazine-onayla"
+          disabled
+          class="cursor-pointer rounded-full bg-accent px-6 py-2 text-sm font-medium text-surface transition-transform enabled:hover:scale-105 disabled:opacity-40"
+        >
+          Hazinemi kur 🗝️
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-auto mt-4 max-w-3xl text-center">
+      <input
+        id="hediye-ara"
+        type="search"
+        placeholder="Kitap ara… (örn. Go, yapay zekâ, tasarım)"
+        class="w-full max-w-sm rounded-full border border-line bg-surface-raised px-4 py-2.5 text-sm text-ink focus:border-accent"
+      />
+      <p class="mt-2 text-xs text-ink-muted">İlk seçtiğin kitap hediyen olur ⭐</p>
+    </div>
+
+    <ul id="hediye-liste" class="mx-auto mt-5 grid max-w-4xl grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6" data-stagger>
+      {
+        vitrindekiler.map((b, i) => (
+          <li data-ad={`${b.titleTr ?? ""} ${b.title}`.toLocaleLowerCase("tr")}>
+            <label class="hazine-kart book-3d group/book relative block cursor-pointer">
+              <input type="checkbox" name="bookIds" value={b.id} class="peer sr-only" />
+              {b.cover ? (
+                <img src={b.cover} alt={b.title} width="320" height="427" loading={i < 6 ? "eager" : "lazy"} class="aspect-[3/4] w-full rounded-lg border-2 border-line object-cover shadow-sm transition-all peer-checked:border-accent peer-checked:shadow-lg" />
+              ) : (
+                <span class="flex aspect-[3/4] w-full items-center justify-center rounded-lg border-2 border-line bg-accent-soft p-2 text-center font-display text-xs font-semibold text-accent transition-all peer-checked:border-accent">{b.title}</span>
+              )}
+              <span class="hazine-rozet absolute right-1.5 top-1.5 hidden size-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-surface peer-checked:flex" />
+              <span class="mt-1.5 block truncate text-xs font-medium text-ink group-hover/book:text-accent">
+                {b.titleTr ?? b.title}
+              </span>
+              {i === 0 && <span class="text-[10px] font-semibold uppercase tracking-wide text-accent">⭐ Önerilen</span>}
+            </label>
+          </li>
+        ))
+      }
+    </ul>
+    <template id="hediye-tum-kitaplar">
+      {JSON.stringify(books.map((b) => ({ id: b.id, ad: b.titleTr ?? b.title, kapak: b.cover ?? null })))}
+    </template>
+  </form>
+</Base>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const form = document.querySelector<HTMLFormElement>('form[action="/api/uye/hediye-sec"]');
+    const bar = document.getElementById("hazine-bar");
+    const sayac = document.getElementById("hazine-sayac");
+    const onayla = document.getElementById("hazine-onayla") as HTMLButtonElement | null;
+    const input = document.getElementById("hediye-ara") as HTMLInputElement | null;
+    const list = document.getElementById("hediye-liste");
+    if (!form || !bar || !sayac || !onayla || !list || form.dataset.init) return;
+    form.dataset.init = "1";
+
+    // Seçim sırası: 1. seçim = hediye ⭐ (rozette sıra numarası görünür)
+    const sira: string[] = [];
+    const guncelle = () => {
+      const secili = sira.length;
+      bar.style.width = `${Math.min((secili / 5) * 100, 100)}%`;
+      sayac.textContent = secili >= 5 ? "5/5 — hazır! 🗝️" : `${secili}/5 seçildi`;
+      onayla.disabled = secili === 0;
+      // rozetlerde sıra: 1 = ⭐ hediye
+      for (const kart of form.querySelectorAll<HTMLLabelElement>(".hazine-kart")) {
+        const cb = kart.querySelector<HTMLInputElement>("input");
+        const rozet = kart.querySelector<HTMLElement>(".hazine-rozet");
+        if (!cb || !rozet) continue;
+        const idx = sira.indexOf(cb.value);
+        rozet.textContent = idx === 0 ? "⭐" : idx > 0 ? String(idx + 1) : "";
+      }
+    };
+    form.addEventListener("change", (e) => {
+      const cb = e.target as HTMLInputElement;
+      if (cb.name !== "bookIds") return;
+      if (cb.checked) {
+        if (sira.length >= 5) {
+          cb.checked = false;
+          return;
+        }
+        sira.push(cb.value);
+      } else {
+        sira.splice(sira.indexOf(cb.value), 1);
+      }
+      guncelle();
+    });
+    // Form gönderiminde seçim sırası korunur (hediye = ilk seçilen)
+    form.addEventListener("submit", () => {
+      for (const cb of form.querySelectorAll<HTMLInputElement>('input[name="bookIds"]:checked'))
+        cb.disabled = true; // yerine sıralı hidden alanlar
+      for (const id of sira) {
+        const h = document.createElement("input");
+        h.type = "hidden";
+        h.name = "bookIds";
+        h.value = id;
+        form.appendChild(h);
+      }
+    });
+
+    // Arama: vitrini filtrele; yoksa tüm katalogdan getir (seçilebilir kart üret)
+    const tpl = document.getElementById("hediye-tum-kitaplar");
+    const katalog = tpl ? (JSON.parse(tpl.textContent ?? "[]") as { id: string; ad: string; kapak: string | null }[]) : [];
+    const orijinal = [...list.children] as HTMLElement[];
+    input?.addEventListener("input", () => {
+      const q = input.value.trim().toLocaleLowerCase("tr");
+      if (!q) return void list.replaceChildren(...orijinal);
+      const yerel = orijinal.filter((li) => (li.dataset.ad ?? "").includes(q));
+      if (yerel.length > 0) return void list.replaceChildren(...yerel);
+      const uzak = katalog.filter((b) => b.ad.toLocaleLowerCase("tr").includes(q)).slice(0, 18);
+      list.innerHTML = uzak
+        .map(
+          (b) => `<li data-ad="${b.ad.toLocaleLowerCase("tr")}"><label class="hazine-kart book-3d relative block cursor-pointer">
+            <input type="checkbox" name="bookIds" value="${b.id}" class="peer sr-only" />
+            ${b.kapak ? `<img src="${b.kapak}" alt="" width="320" height="427" loading="lazy" class="aspect-[3/4] w-full rounded-lg border-2 border-line object-cover peer-checked:border-accent" />` : `<span class="flex aspect-[3/4] w-full items-center justify-center rounded-lg border-2 border-line bg-accent-soft p-2 text-center font-display text-xs font-semibold text-accent peer-checked:border-accent">${b.ad}</span>`}
+            <span class="hazine-rozet absolute right-1.5 top-1.5 hidden size-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-surface peer-checked:flex"></span>
+            <span class="mt-1.5 block truncate text-xs font-medium text-ink">${b.ad}</span>
+          </label></li>`,
+        )
+        .join("");
+    });
+  });
+</script>

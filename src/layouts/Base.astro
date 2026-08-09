@@ -1,11 +1,14 @@
 ---
 import "@/styles/global.css";
+import { ClientRouter } from "astro:transitions";
 import { langFromUrl, localizePath, useTranslations } from "@/lib/i18n/index.ts";
 import ThemeToggle from "@/features/theme/ThemeToggle.astro";
+import { Show, UserButton, SignInButton } from "@clerk/astro/components";
 import SearchModal from "@/features/search/SearchModal.astro";
 import Seo from "@/features/seo/Seo.astro";
 import JsonLd from "@/features/seo/JsonLd.astro";
 import SocialLinks from "@/features/site/SocialLinks.astro";
+import FloatingNudges from "@/components/ui/FloatingNudges.astro";
 import Analytics from "@/features/site/Analytics.astro";
 import type { SeoProps } from "@/features/seo/Seo.astro";
 
@@ -24,11 +27,15 @@ const { title, description = t("site.description"), seo, ownJsonLd } = Astro.pro
 const pageTitle = title ? `${title} · ${t("site.title")}` : t("site.title");
 
 const nav = [
+  { href: "/topluluk", label: "Topluluk" },
   { href: localizePath("/yazilar", lang), label: t("nav.yazilar") },
   { href: localizePath("/kutuphane", lang), label: t("nav.kutuphane") },
   { href: localizePath("/projeler", lang), label: t("nav.projeler") },
   { href: localizePath("/hakkimda", lang), label: t("nav.hakkimda") },
 ];
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isActive = (href: string) => path === href || path.startsWith(href + "/");
 ---
 
 <!doctype html>
@@ -49,53 +56,146 @@ const nav = [
       noindex={seo?.noindex}
     />
     {!ownJsonLd && <JsonLd />}
+    <ClientRouter />
     <Analytics />
     <slot name="head" />
     <script is:inline>
-      // No-flash tema: render'dan önce data-theme çözülür
+      // No-flash tema: render'dan önce data-theme çözülür.
+      // astro:after-swap: View Transitions gezinmesi yeni sayfanın statik
+      // data-theme="light"ını getirir; tema hemen yeniden uygulanır.
       (() => {
-        try {
-          const pref = localStorage.getItem("ysf:theme") ?? "system";
-          const dark =
-            pref === "dark" ||
-            (pref === "system" &&
-              matchMedia("(prefers-color-scheme: dark)").matches);
-          document.documentElement.dataset.theme = dark ? "dark" : "light";
-        } catch {}
+        const applyTheme = () => {
+          try {
+            const pref = localStorage.getItem("ysf:theme") ?? "system";
+            const dark =
+              pref === "dark" ||
+              (pref === "system" &&
+                matchMedia("(prefers-color-scheme: dark)").matches);
+            document.documentElement.dataset.theme = dark ? "dark" : "light";
+          } catch {}
+        };
+        applyTheme();
+        document.addEventListener("astro:after-swap", applyTheme);
       })();
     </script>
   </head>
   <body class="flex min-h-dvh flex-col">
-    <header class="border-b border-line">
+    <a
+      href="#icerik"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-surface"
+    >
+      {t("nav.icerigeAtla")}
+    </a>
+    <header class="site-header border-b border-line">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
         <a
           href={localizePath("/", lang)}
-          class="font-display text-xl font-semibold tracking-tight text-ink hover:text-accent"
+          class="brand-link font-display text-xl font-semibold tracking-tight text-ink hover:text-accent"
         >
           {t("site.title")}
         </a>
         <nav class="flex items-center gap-1 sm:gap-2" aria-label="Ana menü">
-          {
-            nav.map((item) => (
-              <a
-                href={item.href}
-                class="rounded-md px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
-              >
-                {item.label}
-              </a>
-            ))
-          }
+          <div class="hidden items-center gap-1 sm:flex sm:gap-2">
+            {
+              nav.map((item) => (
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  class:list={[
+                    "nav-underline rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent-soft hover:text-accent",
+                    isActive(item.href) ? "font-semibold text-accent" : "text-ink-muted",
+                  ]}
+                >
+                  {item.label}
+                </a>
+              ))
+            }
+          </div>
           <slot name="header-extra" />
           <SearchModal />
           <ThemeToggle />
+          <Show when="signed-out">
+            <SignInButton mode="modal" forceRedirectUrl="/uye/hosgeldin" asChild>
+              <button
+                type="button"
+                class="ml-1 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-medium text-surface transition-transform hover:scale-105"
+              >
+                {t("uye.katil")}
+              </button>
+            </SignInButton>
+          </Show>
+          <Show when="signed-in">
+            <a
+              href="/uye"
+              class="nav-underline rounded-md px-2 py-2 text-sm text-ink-muted transition-colors hover:text-accent"
+              title={t("uye.panel")}
+            >
+              {t("uye.panel")}
+            </a>
+            <UserButton />
+          </Show>
+          <details class="relative sm:hidden" id="mobil-menu">
+            <summary
+              class="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent [&::-webkit-details-marker]:hidden"
+              aria-label={t("nav.menu")}
+              title={t("nav.menu")}
+            >
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </summary>
+            <div
+              class="menu-pop absolute right-0 top-full z-40 mt-2 w-48 rounded-xl border border-line bg-surface-raised p-2 shadow-lg"
+            >
+              {
+                nav.map((item, i) => (
+                  <a
+                    href={item.href}
+                    style={`--i:${i}`}
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                    class:list={[
+                      "block rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-accent-soft hover:text-accent",
+                      isActive(item.href)
+                        ? "font-semibold text-accent"
+                        : "text-ink",
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                ))
+              }
+            </div>
+          </details>
         </nav>
       </div>
       <slot name="below-header" />
     </header>
 
-    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+    <main id="icerik" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
       <slot />
     </main>
+
+    <script>
+      import { initMotion } from "@/features/motion/init.ts";
+
+      // Mobil menü: dışarı tıklayınca veya Escape ile kapanır.
+      // Delegasyon kullanılır; View Transitions sonrası da çalışır.
+      const getMenu = () =>
+        document.getElementById("mobil-menu") as HTMLDetailsElement | null;
+      document.addEventListener("click", (e) => {
+        const menu = getMenu();
+        if (menu?.open && !menu.contains(e.target as Node)) menu.open = false;
+      });
+      document.addEventListener("keydown", (e) => {
+        const menu = getMenu();
+        if (e.key === "Escape" && menu?.open) menu.open = false;
+      });
+
+      // Animasyon motoru: ilk yüklemede ve her soft-nav sonrasında
+      document.addEventListener("astro:page-load", initMotion);
+    </script>
+
+    <FloatingNudges />
 
     <footer class="girih-texture border-t border-line">
       <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-ink-muted">

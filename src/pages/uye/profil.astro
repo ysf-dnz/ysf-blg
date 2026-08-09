@@ -1,0 +1,104 @@
+---
+/**
+ * Profil düzenleme: şehir + üniversite — harita pinleri ve üniversite
+ * ligi bu veriden beslenir (IA'daki kritik köprü).
+ */
+import Base from "@/layouts/Base.astro";
+import { getOrCreateMember } from "@/lib/member.ts";
+import iller from "@/data/il-koordinatlari.json";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+const kaydedildi = Astro.url.searchParams.get("durum") === "ok";
+const ilListesi = Object.keys(iller).sort((a, b) => a.localeCompare(b, "tr"));
+
+const socials = (() => {
+  try {
+    return JSON.parse(member.socials ?? "{}") as Record<string, string>;
+  } catch {
+    return {};
+  }
+})();
+const PLATFORMLAR = [
+  { key: "linkedin", ad: "LinkedIn", ph: "https://linkedin.com/in/…" },
+  { key: "github", ad: "GitHub", ph: "https://github.com/…" },
+  { key: "instagram", ad: "Instagram", ph: "https://instagram.com/…" },
+  { key: "youtube", ad: "YouTube", ph: "https://youtube.com/@…" },
+  { key: "x", ad: "X", ph: "https://x.com/…" },
+  { key: "website", ad: "Web sitesi", ph: "https://…" },
+];
+---
+
+<Base title="Profilim">
+  <div class="mx-auto max-w-lg">
+    {
+      kaydedildi && (
+        <div class="menu-pop mb-6 rounded-2xl border border-accent bg-accent-soft p-4 text-center text-sm text-ink">
+          Profilin güncellendi ✓ Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> ve
+          <a href="/lider" class="font-medium text-accent hover:underline"> üniversite liginde</a> yerin var.
+        </div>
+      )
+    }
+    <h1 class="font-display text-3xl font-semibold text-ink">Profilim</h1>
+    <p class="mt-2 text-sm text-ink-muted">
+      Şehrini seçersen haritadaki topluluğa katılırsın; üniversiteni yazarsan
+      puanların takımına da yazılır.
+    </p>
+
+    <form method="post" action="/api/uye/profil" class="mt-6 grid gap-4">
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Şehir</span>
+        <select name="city" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+          <option value="">— Belirtme —</option>
+          {
+            ilListesi.map((il) => (
+              <option value={il} selected={member.city === il}>{il}</option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Üniversite</span>
+        <input
+          name="university"
+          value={member.university ?? ""}
+          maxlength="80"
+          placeholder="Örn. ODTÜ"
+          class="rounded-lg border border-line bg-surface-raised px-3 py-2"
+        />
+      </label>
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Hakkında <span class="text-ink-muted">(kısa bio)</span></span>
+        <textarea
+          name="bio"
+          rows="3"
+          maxlength="280"
+          placeholder="Ne okuyorsun, ne üretiyorsun?"
+          class="rounded-lg border border-line bg-surface-raised px-3 py-2">{member.bio ?? ""}</textarea>
+      </label>
+
+      <fieldset class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+        <legend class="px-1 text-sm font-medium text-ink">🔗 Platformların</legend>
+        {
+          PLATFORMLAR.map((p) => (
+            <label class="grid grid-cols-[90px_1fr] items-center gap-2 text-sm">
+              <span class="text-ink-muted">{p.ad}</span>
+              <input
+                name={`social_${p.key}`}
+                type="url"
+                value={socials[p.key] ?? ""}
+                placeholder={p.ph}
+                class="rounded-lg border border-line bg-surface px-3 py-1.5"
+              />
+            </label>
+          ))
+        }
+      </fieldset>
+      <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105">
+        Kaydet
+      </button>
+    </form>
+  </div>
+</Base>

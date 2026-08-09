@@ -19,7 +19,7 @@ const t = useTranslations(langFromUrl(Astro.url.pathname));
           href={postPath(prev)}
           class="rounded-xl border border-line p-4 transition-colors hover:border-accent"
         >
-          <span class="text-xs text-ink-muted">← {t("post.oncekiYazi")}</span>
+          <span class="text-xs text-ink-muted"><span class="arrow-slide-l">←</span> {t("post.oncekiYazi")}</span>
           <p class="font-display mt-1 font-semibold text-ink">{prev.data.title}</p>
         </a>
       ) : (
@@ -30,7 +30,7 @@ const t = useTranslations(langFromUrl(Astro.url.pathname));
           href={postPath(next)}
           class="rounded-xl border border-line p-4 text-right transition-colors hover:border-accent"
         >
-          <span class="text-xs text-ink-muted">{t("post.sonrakiYazi")} →</span>
+          <span class="text-xs text-ink-muted">{t("post.sonrakiYazi")} <span class="arrow-slide">→</span></span>
           <p class="font-display mt-1 font-semibold text-ink">{next.data.title}</p>
         </a>
       )}

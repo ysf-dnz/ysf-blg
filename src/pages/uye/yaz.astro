@@ -1,0 +1,367 @@
+---
+/**
+ * Yazı editörü — Medium tarzı dikkat dağıtmayan deneyim:
+ * çerçevesiz büyük başlık, "hikâyeni anlat" gövdesi, seçimde beliren
+ * biçim çubuğu (B/i/link/H/alıntı), otomatik taslak kaydı ("Kaydedildi"),
+ * kitle seçimi (herkese açık / yalnız üyeler) ve üstte yayın çubuğu.
+ */
+import { desc, eq } from "drizzle-orm";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { getBookMap, bookTitle } from "@/lib/books-lookup.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+
+const bookMap = await getBookMap();
+const access = await db.query.bookAccess.findMany({
+  where: eq(schema.bookAccess.userId, member.id),
+});
+const myBooks = access.map((a) => bookMap.get(a.bookId)).filter(Boolean);
+
+// 🎯 Hazine hedefleri: listedeki KİLİTLİ kitaplar da seçilebilir
+// (okumadan da hakkında yazabilir — öğreterek öğrenme)
+const hazineListesi = await db.query.learningList.findMany({
+  where: eq(schema.learningList.userId, member.id),
+  orderBy: schema.learningList.order,
+});
+const rafIdler = new Set(access.map((a) => a.bookId));
+const hedefKitaplar = hazineListesi
+  .filter((h) => !rafIdler.has(h.bookId))
+  .map((h) => bookMap.get(h.bookId))
+  .filter(Boolean);
+
+const myPosts = await db.query.memberPosts.findMany({
+  where: eq(schema.memberPosts.userId, member.id),
+  orderBy: desc(schema.memberPosts.createdAt),
+  limit: 20,
+});
+
+const hedefKitapId = Astro.url.searchParams.get("kitap");
+// Raf VEYA hazine listesinden gelebilir (kilitli hedef hakkında da yazılır)
+const hedefKitap = hedefKitapId ? bookMap.get(hedefKitapId) : undefined;
+const gonderildi = Astro.url.searchParams.get("durum") === "gonderildi";
+
+const sablon = hedefKitap
+  ? `## "${bookTitle(hedefKitap)}" bana ne öğretti?\n\n_Kitaptan aklımda kalan tek cümle:_\n\n> \n\n## En çarpıcı 3 fikir\n\n1. \n2. \n3. \n\n## Kendi hayatıma nasıl uygularım?\n\n\n\n## Kime, neden öneririm?\n\n`
+  : "";
+
+const durumEtiket: Record<string, string> = {
+  draft: "Taslak",
+  pending: "Onay bekliyor",
+  published: "Yayında",
+  rejected: "Düzenleme istendi",
+};
+---
+
+<Base title="Yaz">
+  {
+    gonderildi && (
+      <div class="menu-pop mx-auto mb-6 max-w-[720px] rounded-2xl border border-accent bg-accent-soft p-4 text-center">
+        <p class="font-medium text-ink">Yazın onaya gitti 🎉 Onaylanınca <strong class="text-accent">+100 puan</strong>.</p>
+        <p class="mt-1 text-sm text-ink-muted">
+          Beklerken: <a href="/gundem" class="text-accent hover:underline">gündeme bak</a> ·
+          <a href="/dersler" class="text-accent hover:underline"> bir derse başla</a>
+        </p>
+      </div>
+    )
+  }
+
+  <form method="post" action="/api/uye/yazi" id="editor-form" class="mx-auto max-w-[720px]">
+    <!-- Yayın çubuğu (Medium üst barı) -->
+    <div class="sticky top-[65px] z-20 -mx-4 mb-8 flex items-center gap-3 border-b border-line bg-surface/85 px-4 py-2.5 backdrop-blur">
+      <span id="kayit-durumu" class="text-sm text-ink-muted">Taslak</span>
+      <span class="ml-auto"></span>
+      <select
+        name="visibility"
+        class="cursor-pointer rounded-full border border-line bg-surface-raised px-3 py-1.5 text-xs font-medium text-ink-muted"
+        title="Kimler okuyabilsin?"
+      >
+        <option value="public">🌍 Herkese açık</option>
+        <option value="members">👥 Yalnız üyeler</option>
+      </select>
+      <button
+        name="action"
+        value="draft"
+        class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent"
+      >
+        Taslak
+      </button>
+      <button
+        name="action"
+        value="submit"
+        class="cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105"
+      >
+        Yayımla
+      </button>
+    </div>
+
+    {
+      !hedefKitap && myBooks.length > 0 && (
+        <aside class="mb-6 rounded-2xl border border-line bg-surface-raised p-4" data-reveal>
+          <p class="text-sm text-ink">
+            📚 <strong>Kütüphanenden bir kaynak seçmek ister misin?</strong>
+            <span class="text-ink-muted"> Kitaba bağlı yazılar şablonla açılır ve kitabın sayfasında vitrine çıkar.</span>
+          </p>
+          <div class="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
+            {hedefKitaplar.slice(0, 4).map((b) => (
+              <a
+                href={`/uye/yaz?kitap=${encodeURIComponent(b!.id)}`}
+                class="book-3d relative w-16 shrink-0"
+                title={`🎯 Hazinendeki hedef: ${bookTitle(b)}`}
+              >
+                {b!.cover ? (
+                  <img src={b!.cover} alt={bookTitle(b)} width="128" height="171" loading="lazy" class="aspect-[3/4] w-full rounded border-2 border-accent/60 object-cover" />
+                ) : (
+                  <span class="flex aspect-[3/4] w-full items-center justify-center rounded border-2 border-accent/60 bg-accent-soft p-1 text-center text-[9px] font-semibold text-accent">{bookTitle(b)}</span>
+                )}
+                <span class="absolute -right-1 -top-1 rounded-full bg-accent px-1 text-[10px] text-surface">🎯</span>
+              </a>
+            ))}
+            {myBooks.slice(0, 12).map((b) => (
+              <a
+                href={`/uye/yaz?kitap=${encodeURIComponent(b!.id)}`}
+                class="book-3d w-16 shrink-0"
+                title={bookTitle(b)}
+              >
+                {b!.cover ? (
+                  <img src={b!.cover} alt={bookTitle(b)} width="128" height="171" loading="lazy" class="aspect-[3/4] w-full rounded border border-line object-cover" />
+                ) : (
+                  <span class="flex aspect-[3/4] w-full items-center justify-center rounded border border-line bg-accent-soft p-1 text-center text-[9px] font-semibold text-accent">{bookTitle(b)}</span>
+                )}
+              </a>
+            ))}
+          </div>
+        </aside>
+      )
+    }
+    {
+      hedefKitap && (
+        <div class="mb-6 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent-soft/60 p-3">
+          {hedefKitap.cover && (
+            <img src={hedefKitap.cover} alt="" width="40" height="53" class="aspect-[3/4] w-10 rounded border border-line object-cover" />
+          )}
+          <p class="text-sm text-ink">
+            <strong>{bookTitle(hedefKitap)}</strong> için yazıyorsun — şablon hazır,
+            boşlukları kendi cümlelerinle doldur. <span class="text-ink-muted">Onaylanınca <strong class="text-accent">+100</strong>.</span>
+          </p>
+        </div>
+      )
+    }
+
+    <input
+      id="baslik"
+      name="title"
+      required
+      maxlength="120"
+      placeholder="Başlık"
+      autocomplete="off"
+      class="font-display w-full border-0 bg-transparent text-4xl font-semibold leading-tight text-ink outline-none placeholder:text-ink-muted/40 sm:text-5xl"
+    />
+
+    <label class="mt-4 block">
+      <span class="sr-only">Kitap etiketi</span>
+      <select name="bookId" class="cursor-pointer rounded-full border border-line bg-surface-raised px-3 py-1 text-xs text-ink-muted">
+        <option value="">📖 Kitap etiketi (opsiyonel)</option>
+        {
+          myBooks.map((b) => (
+            <option value={b!.id} selected={b!.id === hedefKitapId}>
+              {bookTitle(b)}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+
+    <div class="relative mt-6">
+      <textarea
+        id="md-input"
+        name="markdown"
+        required
+        rows="14"
+        placeholder="Hikâyeni anlat…"
+        class="w-full resize-none border-0 bg-transparent font-sans text-lg leading-relaxed text-ink outline-none placeholder:text-ink-muted/40"
+      >{sablon}</textarea>
+
+      <!-- Seçimde beliren biçim çubuğu (Medium floating toolbar) -->
+      <div
+        id="fmt-bar"
+        hidden
+        class="absolute z-30 flex items-center gap-0.5 rounded-xl bg-ink p-1 text-surface shadow-xl"
+      >
+        <button type="button" data-fmt="bold" title="Kalın" class="cursor-pointer rounded-lg px-2.5 py-1.5 font-serif text-base font-bold hover:bg-white/15">B</button>
+        <button type="button" data-fmt="italic" title="Eğik" class="cursor-pointer rounded-lg px-2.5 py-1.5 font-serif text-base italic hover:bg-white/15">i</button>
+        <button type="button" data-fmt="link" title="Bağlantı" class="cursor-pointer rounded-lg px-2.5 py-1.5 hover:bg-white/15">🔗</button>
+        <span class="mx-0.5 h-5 w-px bg-white/25" aria-hidden="true"></span>
+        <button type="button" data-fmt="h2" title="Büyük başlık" class="cursor-pointer rounded-lg px-2.5 py-1.5 font-serif text-lg font-bold hover:bg-white/15">T</button>
+        <button type="button" data-fmt="h3" title="Küçük başlık" class="cursor-pointer rounded-lg px-2 py-1.5 font-serif text-sm font-bold hover:bg-white/15">T</button>
+        <button type="button" data-fmt="quote" title="Alıntı" class="cursor-pointer rounded-lg px-2.5 py-1.5 font-serif text-lg hover:bg-white/15">"</button>
+      </div>
+    </div>
+
+    <details class="mt-4">
+      <summary class="cursor-pointer text-sm text-ink-muted hover:text-accent">Önizleme</summary>
+      <div
+        id="md-preview"
+        class="prose prose-lg mt-3 max-w-none rounded-xl border border-line bg-surface-raised p-5 dark:prose-invert prose-headings:font-display"
+      ></div>
+    </details>
+  </form>
+
+  {
+    myPosts.length > 0 && (
+      <section class="mx-auto mt-12 max-w-[720px]">
+        <h2 class="font-display text-lg font-semibold text-ink">Yazıların</h2>
+        <ul class="mt-3 space-y-2">
+          {myPosts.map((p) => (
+            <li class="flex items-center justify-between rounded-lg border border-line bg-surface-raised px-4 py-2.5 text-sm">
+              <span class="truncate font-medium text-ink">
+                {p.status === "published" ? (
+                  <a href={`/topluluk/${p.slug}`} class="hover:text-accent">{p.title}</a>
+                ) : (
+                  p.title
+                )}
+                {p.visibility === "members" && <span title="Yalnız üyeler"> 👥</span>}
+              </span>
+              <span
+                class:list={[
+                  "ml-3 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                  p.status === "published" && "bg-accent-soft text-accent",
+                  p.status === "pending" && "bg-amber-500/15 text-amber-600",
+                  p.status === "draft" && "border border-line text-ink-muted",
+                  p.status === "rejected" && "bg-red-500/10 text-red-500",
+                ]}
+              >
+                {durumEtiket[p.status]}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</Base>
+
+<script>
+  import { marked } from "marked";
+
+  document.addEventListener("astro:page-load", () => {
+    const input = document.getElementById("md-input") as HTMLTextAreaElement | null;
+    const baslik = document.getElementById("baslik") as HTMLInputElement | null;
+    const preview = document.getElementById("md-preview");
+    const durum = document.getElementById("kayit-durumu");
+    const bar = document.getElementById("fmt-bar");
+    if (!input || !baslik || input.dataset.init) return;
+    input.dataset.init = "1";
+
+    // --- Otomatik boy: içerik büyüdükçe alan büyür (kaydırma yok) ---
+    const boyla = () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.max(input.scrollHeight, 280)}px`;
+    };
+    input.addEventListener("input", boyla);
+    boyla();
+
+    // --- Taslak otomatik kaydı (localStorage, 800ms debounce) ---
+    const KEY = "ysf:taslak";
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) ?? "null");
+      if (saved && !input.value.trim() && !baslik.value) {
+        baslik.value = saved.title ?? "";
+        input.value = saved.body ?? "";
+        boyla();
+      }
+    } catch {}
+    let t: ReturnType<typeof setTimeout>;
+    const kaydet = () => {
+      clearTimeout(t);
+      if (durum) durum.textContent = "Yazılıyor…";
+      t = setTimeout(() => {
+        localStorage.setItem(
+          KEY,
+          JSON.stringify({ title: baslik.value, body: input.value }),
+        );
+        if (durum) durum.textContent = "Kaydedildi";
+      }, 800);
+    };
+    input.addEventListener("input", kaydet);
+    baslik.addEventListener("input", kaydet);
+    // Gönderimde taslağı temizle
+    document.getElementById("editor-form")?.addEventListener("submit", () => {
+      localStorage.removeItem(KEY);
+    });
+
+    // --- Önizleme ---
+    const render = () => {
+      if (!preview) return;
+      const safe = input.value.replace(/</g, "&lt;");
+      preview.innerHTML = marked.parse(safe, { async: false }) as string;
+    };
+    input.addEventListener("input", render);
+    document.querySelector("details")?.addEventListener("toggle", render);
+    render();
+
+    // --- Seçimde beliren biçim çubuğu ---
+    const sarici = (once: string, sonra = once) => {
+      const { selectionStart: a, selectionEnd: b, value } = input;
+      const secili = value.slice(a, b) || "metin";
+      input.setRangeText(`${once}${secili}${sonra}`, a, b, "select");
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    };
+    const satirBasi = (onek: string) => {
+      const { selectionStart: a, value } = input;
+      const bas = value.lastIndexOf("\n", a - 1) + 1;
+      input.setRangeText(onek, bas, bas, "end");
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    };
+    const eylemler: Record<string, () => void> = {
+      bold: () => sarici("**"),
+      italic: () => sarici("_"),
+      link: () => {
+        const url = prompt("Bağlantı adresi:", "https://");
+        if (url) sarici("[", `](${url})`);
+      },
+      h2: () => satirBasi("## "),
+      h3: () => satirBasi("### "),
+      quote: () => satirBasi("> "),
+    };
+    bar?.querySelectorAll<HTMLButtonElement>("[data-fmt]").forEach((b) =>
+      b.addEventListener("mousedown", (e) => {
+        e.preventDefault(); // seçim kaybolmasın
+        eylemler[b.dataset.fmt!]?.();
+      }),
+    );
+
+    const konumla = () => {
+      if (!bar) return;
+      const { selectionStart: a, selectionEnd: b } = input;
+      if (a === b) {
+        bar.hidden = true;
+        return;
+      }
+      // Seçimin dikey konumunu satır sayısından yaklaşıkla
+      const oncesi = input.value.slice(0, a);
+      const satir = oncesi.split("\n").length - 1;
+      const satirYuk = parseFloat(getComputedStyle(input).lineHeight) || 29;
+      bar.hidden = false;
+      bar.style.top = `${Math.max(satir * satirYuk - 44, 0)}px`;
+      bar.style.left = "0px";
+    };
+    document.addEventListener("selectionchange", () => {
+      if (document.activeElement === input) konumla();
+    });
+    input.addEventListener("blur", () => setTimeout(() => bar && (bar.hidden = true), 200));
+
+    // Kısayollar: ⌘B / ⌘I
+    input.addEventListener("keydown", (e) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key === "b") { e.preventDefault(); eylemler.bold!(); }
+      if (e.key === "i") { e.preventDefault(); eylemler.italic!(); }
+    });
+  });
+</script>

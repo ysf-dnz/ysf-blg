@@ -6,8 +6,9 @@ test.describe("kitap rafı", () => {
   test("rafta kategoriler ve kapaklı kartlar var, kart detaya gider", async ({
     page,
   }) => {
-    await page.goto("/kutuphane");
-    const shelf = page.locator("details").first();
+    await page.goto("/kutuphane", { waitUntil: "domcontentloaded" });
+    // Not: header'daki mobil menü de <details>; raf çekmeceleri id'lidir
+    const shelf = page.locator("details[id^='kat-']").first();
     await expect(shelf).toBeVisible();
     const firstBook = page.locator('a[href^="/kutuphane/kitap/"]').first();
     await expect(firstBook).toBeVisible();
@@ -16,12 +17,12 @@ test.describe("kitap rafı", () => {
   });
 
   test("kitap detayında çekmeceler açılıp kapanır", async ({ page }) => {
-    await page.goto(MINDSET);
+    await page.goto(MINDSET, { waitUntil: "domcontentloaded" });
     await expect(
       page.getByRole("heading", { name: /Mindset/, level: 1 }),
     ).toBeVisible();
 
-    const drawer = page.locator("details").first();
+    const drawer = page.locator("main details").first();
     const answer = drawer.locator(".prose");
     await expect(answer).not.toBeVisible();
     await drawer.locator("summary").click();
@@ -29,27 +30,20 @@ test.describe("kitap rafı", () => {
     await expect(answer).toContainText(/zihniyet/i);
   });
 
-  test("Drive önizlemesi gömülü ve indirme kaçışları kapalı", async ({
+  test("misafire Drive İÇERİĞİ sızmaz: kilit kartı var, okuma iframe'i yok", async ({
     page,
   }) => {
-    await page.goto(MINDSET);
-    // Modüller ek Drive iframe'leri ekleyebilir; HEPSİ kilitli olmalı
-    const iframes = page.locator("iframe[src*='drive.google.com']");
-    expect(await iframes.count()).toBeGreaterThan(0);
-    for (const iframe of await iframes.all()) {
-      await expect(iframe).toHaveAttribute("src", /preview/);
-      // sandbox popup açılmasını engeller (allow-popups YOK)
-      const sandbox = await iframe.getAttribute("sandbox");
-      expect(sandbox).not.toContain("allow-popups");
-    }
-    // sayfada doğrudan Drive görüntüleme/indirme linki kalmadı
+    // Platform sonrası gerçek: okuma embed'i yalnızca erişimi olan üyeye
+    // render edilir; misafir kilit kartı + katıl CTA'sı görür.
+    await page.goto(MINDSET, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Bu bilgi seni bekliyor")).toBeVisible();
     await expect(
-      page.locator("a[href*='drive.google.com/file']"),
+      page.locator("iframe[src*='drive.google.com']"),
     ).toHaveCount(0);
   });
 
   test("sohbet butonu NotebookLM defterine işaret eder", async ({ page }) => {
-    await page.goto(MINDSET);
+    await page.goto(MINDSET, { waitUntil: "domcontentloaded" });
     const chat = page.getByRole("link", { name: /Kitapla sohbet et/i });
     await expect(chat).toHaveAttribute(
       "href",

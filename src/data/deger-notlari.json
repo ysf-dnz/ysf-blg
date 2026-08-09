@@ -1,0 +1,15 @@
+{
+  "_aciklama": "Kitap sayfası '💎 Bu kitap sana ne katacak?' kartı. Anahtar = books.json id'si. Mindset metni NotebookLM defterinden (5629a23a) üretildi; toplu üretim için scripts/nb-sor.py hattıyla batch iş planlandı.",
+  "1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z": {
+    "baslik": "Zihnini yeniden programlamanın tam zamanı",
+    "metin": "Üniversite yıllarının bu en kritik virajında, farkında bile olmadan kendi zihnine ördüğün görünmez duvarlarla gelecekteki potansiyelini her gün sabote ediyor olabilirsin. Bu kitap sana, karşılaştığın her zorlukta beynindeki nöronları fiziksel olarak nasıl büyüteceğini ve engelleri birer sıçrama tahtasına nasıl dönüştüreceğini somut bir şekilde öğretecek. Eğer bu zihinsel dönüşümü şimdi yaşamazsan, hayatın boyunca kaçırdığın her fırsatın ardından \"keşke deneseydim\" pişmanlığını taşıyacak ve kendi potansiyeline sadece uzaktan bakmakla yetineceksin."
+  },
+  "1h6nwQ-jHvqKuCtpiP3kdb5GsBtOcPww6": {
+    "baslik": "Go bilen mühendis, kapıları başka açar",
+    "metin": "Bulut, DevOps ve yapay zekâ altyapılarının ortak dili Go — ve bu kitap seni sıfırdan, deyimsel (idiomatic) Go yazan birine dönüştürmek için yazıldı. Staj mülakatında 'goroutine nedir?' sorusuna gülümseyerek cevap veren öğrenciyle, sorunun yanından geçen öğrenci arasındaki fark çoğu zaman tek bir kitaplık disiplindir. Sen bu bölümleri bitirip hakkında yazdıkça, GitHub profilin de CV'n de seninle birlikte konuşmaya başlayacak; erteleyen tarafta kalanlar ise aynı ilanlara bir yıl sonra tekrar bakacak."
+  },
+  "1pASwcWSHzwO55U2Lv-v4giPCoZBmdy-l": {
+    "baslik": "Kod yazmak ile zarif kod yazmak arasındaki çizgi",
+    "metin": "Çalışan kod yazmak seni işe aldırır; test edilebilir, zarif kod yazmak seni ekipte vazgeçilmez yapar. Effective Go pratikleri, code review'da 'bunu kim yazdı?' sorusunun övgüyle sorulmasını sağlayan alışkanlıkların toplamıdır. Bu alışkanlıkları şimdi edinmezsen, kötü alışkanlıkların üstüne yıllarca refactor borcu ödersin — en pahalı öğrenme biçimi de budur."
+  }
+}

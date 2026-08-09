@@ -17,17 +17,35 @@ const moduller = anaSayfa?.data.moduller ?? [];
 <Base>
   <StoryRing slot="below-header" />
   <section class="girih-texture -mx-4 px-4 py-16 sm:py-20">
-    <h1 class="font-display max-w-2xl text-4xl font-semibold leading-tight text-ink sm:text-5xl">
-      Where I turn what I read into <span class="text-accent">output</span>.
-    </h1>
-    <p class="mt-4 max-w-xl text-lg text-ink-muted">
-      On AI, software, entrepreneurship and education; every post is fed by a
-      notebook.
+    <p class="text-sm font-medium uppercase tracking-wide text-accent" data-reveal>
+      Knowledge is the reward
     </p>
+    <h1 class="word-reveal font-display mt-2 max-w-2xl text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+      <span style="--i:0">A</span>
+      <span style="--i:1">reading</span>
+      <span style="--i:2">generation,</span>
+      <span style="--i:3">building</span>
+      <span style="--i:4">a</span>
+      <span style="--i:5" class="gradient-text">brighter</span>
+      <span style="--i:6" class="gradient-text">future</span><span style="--i:7">.</span>
+    </h1>
+    <p class="hero-sub mt-4 max-w-xl text-lg text-ink-muted">
+      Books here aren't sold — <strong class="text-ink">they're earned</strong>.
+      Read, create, share; every contribution moves you one step closer to your
+      next book, your club and your future.
+    </p>
+    <div class="hero-sub mt-6 flex flex-wrap items-center gap-3">
+      <a href="/uye/hosgeldin" class="rounded-full bg-accent px-7 py-3.5 font-medium text-surface shadow-lg shadow-accent/25 transition-transform hover:scale-105">
+        Join free — your first book is a gift 🎁
+      </a>
+      <a href="/topluluk" class="rounded-full border border-line px-6 py-3.5 font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">
+        See the community
+      </a>
+    </div>
   </section>
 
   <section class="py-10">
-    <div class="mb-6 flex items-baseline justify-between">
+    <div class="mb-6 flex items-baseline justify-between" data-reveal>
       <h2 class="font-display text-2xl font-semibold text-ink">
         {t("home.sonYazilar")}
       </h2>
@@ -35,10 +53,10 @@ const moduller = anaSayfa?.data.moduller ?? [];
         href={localizePath("/yazilar", "en")}
         class="text-sm font-medium text-accent hover:underline"
       >
-        {t("home.tumYazilar")} →
+        {t("home.tumYazilar")} <span class="arrow-slide">→</span>
       </a>
     </div>
-    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
       {
         posts.map((post) => (
           <li>
@@ -57,7 +75,7 @@ const moduller = anaSayfa?.data.moduller ?? [];
     )
   }
 
-  <section class="py-10">
+  <section class="py-10" data-reveal>
     <MindMapMini />
   </section>
 </Base>

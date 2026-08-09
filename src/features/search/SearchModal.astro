@@ -8,7 +8,7 @@ const t = useTranslations(lang);
 <button
   id="search-open"
   type="button"
-  class="rounded-full p-2 text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
+  class="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2 text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
   aria-label={t("nav.ara")}
   title={t("nav.ara")}
 >
@@ -16,6 +16,13 @@ const t = useTranslations(lang);
     <circle cx="11" cy="11" r="7"></circle>
     <path d="m21 21-4.3-4.3"></path>
   </svg>
+  <kbd
+    class="kbd-pulse hidden rounded border border-line px-1.5 py-0.5 font-sans text-[11px] text-ink-muted md:inline"
+    aria-hidden="true"
+    data-search-kbd
+  >
+    ⌘K
+  </kbd>
 </button>
 
 <dialog
@@ -40,31 +47,45 @@ const t = useTranslations(lang);
 </style>
 
 <script>
-  const dialog = document.getElementById("search-dialog") as HTMLDialogElement | null;
-  const openBtn = document.getElementById("search-open");
-  let loaded = false;
+  // View Transitions uyumu: öğeler her çağrıda yeniden sorgulanır,
+  // Pagefind varlıkları window bayrağıyla bir kez yüklenir,
+  // UI her yeni sayfanın container'ına yeniden bağlanır.
+  declare global {
+    interface Window {
+      __ysfPagefindAssets?: Promise<void>;
+    }
+  }
 
-  async function openSearch() {
-    if (!dialog) return;
-    dialog.showModal();
-    if (loaded) return;
-    loaded = true;
-    try {
-      // Pagefind UI yalnızca ilk açılışta yüklenir (postbuild çıktısı).
-      // Klasik <script> etiketi kullanılır: import() dev'de Vite dönüşüm
-      // hattına girip "/public'ten import edilemez" hatası veriyor.
+  function loadPagefindAssets(): Promise<void> {
+    window.__ysfPagefindAssets ??= new Promise((resolve, reject) => {
       const css = document.createElement("link");
       css.rel = "stylesheet";
       css.href = "/pagefind/pagefind-ui.css";
       document.head.appendChild(css);
-      await new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = "/pagefind/pagefind-ui.js";
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-      const container = document.getElementById("search-container")!;
+      const s = document.createElement("script");
+      s.src = "/pagefind/pagefind-ui.js";
+      s.onload = () => resolve();
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return window.__ysfPagefindAssets;
+  }
+
+  async function openSearch() {
+    const dialog = document.getElementById("search-dialog") as HTMLDialogElement | null;
+    if (!dialog) return;
+    dialog.showModal();
+    const container = document.getElementById("search-container");
+    if (!container || container.dataset.init) {
+      dialog.querySelector<HTMLInputElement>("input")?.focus();
+      return;
+    }
+    container.dataset.init = "1";
+    try {
+      // Pagefind varlıkları (postbuild çıktısı) bir kez yüklenir; klasik
+      // <script> etiketi kullanılır: import() dev'de Vite dönüşüm hattına
+      // girip "/public'ten import edilemez" hatası veriyor.
+      await loadPagefindAssets();
       // @ts-expect-error — global PagefindUI
       new PagefindUI({
         element: "#search-container",
@@ -72,8 +93,8 @@ const t = useTranslations(lang);
         // dist'te sayfalar dizin (…/index.html) olarak üretilir; Pagefind da
         // linkleri "…/" ile verir. trailingSlash: "never" 404'lememesi için
         // sondaki eğik çizgi kırpılır (alt sonuç linkleri dahil).
-        processResult: (result) => {
-          const kirp = (u) =>
+        processResult: (result: { url?: string; sub_results?: { url?: string }[] }) => {
+          const kirp = (u: string) =>
             u.replace(/\/index\.html$/, "").replace(/(.+)\/$/, "$1");
           if (result?.url) result.url = kirp(result.url);
           for (const alt of result?.sub_results ?? []) {
@@ -95,14 +116,25 @@ const t = useTranslations(lang);
     }
   }
 
-  openBtn?.addEventListener("click", openSearch);
+  // Delegasyon: buton/dialog her sayfada değişse de dinleyiciler kalıcı
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("#search-open")) return void openSearch();
+    const dialog = document.getElementById("search-dialog") as HTMLDialogElement | null;
+    if (dialog && e.target === dialog) dialog.close();
+  });
   document.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
+      const dialog = document.getElementById("search-dialog") as HTMLDialogElement | null;
       dialog?.open ? dialog.close() : openSearch();
     }
   });
-  dialog?.addEventListener("click", (e) => {
-    if (e.target === dialog) dialog.close();
-  });
+  // macOS dışında kısayol ipucunu Ctrl K olarak göster
+  function fixKbd() {
+    if (/Mac|iPhone|iPad/.test(navigator.userAgent)) return;
+    const kbd = document.querySelector("[data-search-kbd]");
+    if (kbd) kbd.textContent = "Ctrl K";
+  }
+  document.addEventListener("astro:page-load", fixKbd);
 </script>

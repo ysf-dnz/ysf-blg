@@ -8,19 +8,20 @@ test.describe("tema", () => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-    // dark iken toggle: light → (localStorage'a yazılır)
+    // Toggle: tema değişimi startViewTransition İÇİNDE uygulanır (asenkron)
+    // — bu yüzden tıklama sonrası attribute'u poll'la bekleriz.
     await page.getByRole("button", { name: /tema/i }).click();
-    const theme = await page.locator("html").getAttribute("data-theme");
-    expect(["light", "dark"]).toContain(theme);
-
+    await expect
+      .poll(async () => page.evaluate(() => localStorage.getItem("ysf:theme")))
+      .not.toBeNull();
     const stored = await page.evaluate(() => localStorage.getItem("ysf:theme"));
-    expect(stored).not.toBeNull();
+    // sistem tercihi dark iken döngü: system → light
+    const beklenen =
+      stored === "dark" || stored === "system" ? "dark" : "light";
+    await expect(page.locator("html")).toHaveAttribute("data-theme", beklenen);
 
     // yeniden yüklemede tercih korunur (no-flash script)
     await page.reload();
-    await expect(page.locator("html")).toHaveAttribute(
-      "data-theme",
-      theme === "dark" ? "dark" : "light",
-    );
+    await expect(page.locator("html")).toHaveAttribute("data-theme", beklenen);
   });
 });

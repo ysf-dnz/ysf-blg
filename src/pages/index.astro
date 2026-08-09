@@ -4,7 +4,7 @@ import StoryRing from "@/features/stories/StoryRing.astro";
 import PostCard from "@/features/posts/PostCard.astro";
 import MindMapMini from "@/features/library/MindMapMini.astro";
 import ModuleList from "@/features/modules/ModuleList.astro";
-import { getEntry } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import { getPublishedPosts } from "@/lib/posts.ts";
 import { useTranslations, localizePath } from "@/lib/i18n/index.ts";
 
@@ -12,22 +12,79 @@ const t = useTranslations("tr");
 const posts = (await getPublishedPosts("tr")).slice(0, 6);
 const anaSayfa = await getEntry("siteConfig", "ana-sayfa");
 const moduller = anaSayfa?.data.moduller ?? [];
+// Sosyal kanıt sayıları (build anında)
+const kitapSayisi = (await getCollection("books")).length;
+const defterSayisi = (await getCollection("libraryNotebooks")).length;
 ---
 
 <Base>
   <StoryRing slot="below-header" />
   <section class="girih-texture -mx-4 px-4 py-16 sm:py-20">
-    <h1 class="font-display max-w-2xl text-4xl font-semibold leading-tight text-ink sm:text-5xl">
-      Okuduklarımı <span class="text-accent">üretime</span> dönüştürdüğüm yer.
+    <p class="text-sm font-medium uppercase tracking-wide text-accent" data-reveal>
+      Bilgi burada ödüldür
+    </p>
+    <h1 class="word-reveal font-display mt-2 max-w-2xl text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+      <span style="--i:0">Okuyan</span>
+      <span style="--i:1">bir</span>
+      <span style="--i:2">nesil,</span>
+      <span style="--i:3" class="gradient-text">parlak</span>
+      <span style="--i:4" class="gradient-text">bir</span>
+      <span style="--i:5" class="gradient-text">gelecek</span>
+      <span style="--i:6">inşa</span>
+      <span style="--i:7">ediyor.</span>
     </h1>
-    <p class="mt-4 max-w-xl text-lg text-ink-muted">
-      Yapay zekâ, yazılım, girişimcilik ve eğitim üzerine; her yazı bir
-      defterden beslenir.
+    <p class="hero-sub mt-4 max-w-xl text-lg text-ink-muted">
+      Burada kitaplar satılmaz — <strong class="text-ink">emekle kazanılır</strong>.
+      Oku, üret, paylaş; her katkın seni bir sonraki kitaba, kulübüne ve
+      geleceğine bir adım daha yaklaştırsın.
+    </p>
+    <div class="hero-sub mt-6 flex flex-wrap items-center gap-3">
+      <a
+        href="/uye/hosgeldin"
+        class="rounded-full bg-accent px-7 py-3.5 font-medium text-surface shadow-lg shadow-accent/25 transition-transform hover:scale-105"
+      >
+        Ücretsiz katıl — ilk kitabın hediye 🎁
+      </a>
+      <a href="/topluluk" class="rounded-full border border-line px-6 py-3.5 font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">
+        Topluluğu gör
+      </a>
+    </div>
+    <p class="hero-sub mt-6 flex flex-wrap gap-6 text-sm text-ink-muted">
+      <span><strong class="font-display text-xl text-accent" data-ticker>{kitapSayisi}</strong> kitap</span>
+      <span><strong class="font-display text-xl text-accent" data-ticker>{defterSayisi}</strong> defter</span>
+      <span><strong class="font-display text-xl text-accent">81</strong> ilde büyüyen topluluk</span>
     </p>
   </section>
 
+  <!-- Döngü: taahhüt & tutarlılık — küçük adım, görünür ilerleme -->
+  <section class="py-10" data-stagger>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="hover-lift rounded-2xl border border-line bg-surface-raised p-6">
+        <p class="font-display text-3xl">📖</p>
+        <h2 class="font-display mt-2 text-lg font-semibold text-ink">1 · Oku</h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          Katıldığın an ilk kitabın hediye. Sıfır risk, sıfır ücret — sadece merak.
+        </p>
+      </div>
+      <div class="hover-lift rounded-2xl border border-line bg-surface-raised p-6">
+        <p class="font-display text-3xl">✍️</p>
+        <h2 class="font-display mt-2 text-lg font-semibold text-ink">2 · Üret</h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          Yazı yaz, quiz çöz, kulübünde görev üstlen. Her üretim puan; her puan görünür ilerleme.
+        </p>
+      </div>
+      <div class="hover-lift rounded-2xl border border-line bg-surface-raised p-6">
+        <p class="font-display text-3xl">🚀</p>
+        <h2 class="font-display mt-2 text-lg font-semibold text-ink">3 · Yüksel</h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          Puanla yeni kitaplar açılır, seviyen artar, adın liderlik tablosuna ve haritaya yazılır.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <section class="py-10">
-    <div class="mb-6 flex items-baseline justify-between">
+    <div class="mb-6 flex items-baseline justify-between" data-reveal>
       <h2 class="font-display text-2xl font-semibold text-ink">
         {t("home.sonYazilar")}
       </h2>
@@ -35,10 +92,10 @@ const moduller = anaSayfa?.data.moduller ?? [];
         href={localizePath("/yazilar", "tr")}
         class="text-sm font-medium text-accent hover:underline"
       >
-        {t("home.tumYazilar")} →
+        {t("home.tumYazilar")} <span class="arrow-slide">→</span>
       </a>
     </div>
-    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
       {
         posts.map((post) => (
           <li>
@@ -57,7 +114,7 @@ const moduller = anaSayfa?.data.moduller ?? [];
     )
   }
 
-  <section class="py-10">
+  <section class="py-10" data-reveal>
     <MindMapMini />
   </section>
 </Base>

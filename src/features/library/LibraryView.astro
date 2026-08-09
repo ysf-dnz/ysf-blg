@@ -50,10 +50,10 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
     <p class="mt-3 max-w-xl text-ink-muted">{t("kutuphane.aciklama")}</p>
     <p class="mt-4 flex flex-wrap gap-4 text-sm text-ink-muted">
       <span>
-        <strong class="text-accent">{notebooks.length}</strong> {t("kutuphane.defter")}
+        <strong class="text-accent" data-ticker>{notebooks.length}</strong> {t("kutuphane.defter")}
       </span>
       <span>
-        <strong class="text-accent">{toplamKaynak}</strong> {t("kutuphane.kaynak")}
+        <strong class="text-accent" data-ticker>{toplamKaynak}</strong> {t("kutuphane.kaynak")}
       </span>
       <a
         href={KUTUPHANEM_URL}
@@ -69,14 +69,33 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
   {books.length > 0 && <LibraryGraph />}
 
   {
+    books.length === 0 && notebooks.length === 0 && (
+      <p class="mt-10 rounded-xl border border-line bg-surface-raised px-6 py-10 text-center text-ink-muted">
+        {t("kutuphane.bos")}
+      </p>
+    )
+  }
+
+  {
     books.length > 0 && (
       <section class="mt-10">
-        <h2 class="font-display text-2xl font-semibold text-ink">
-          {t("kutuphane.kitapRafi")}
-          <span class="ml-2 text-base font-normal text-ink-muted">
-            ({books.length})
-          </span>
-        </h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="font-display text-2xl font-semibold text-ink">
+            {t("kutuphane.kitapRafi")}
+            <span class="ml-2 text-base font-normal text-ink-muted">
+              ({books.length})
+            </span>
+          </h2>
+          <button
+            type="button"
+            id="raf-toggle"
+            data-ac={t("kutuphane.tumunuAc")}
+            data-kapat={t("kutuphane.tumunuKapat")}
+            class="rounded-md border border-line px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent"
+          >
+            {t("kutuphane.tumunuAc")}
+          </button>
+        </div>
         {bookCategories.map((cat, i) => {
           const catBooks = books.filter(
             (b) => (b.data.category ?? "diger") === cat.key,
@@ -110,18 +129,20 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
                   <li>
                     <a
                       href={localizePath(`/kutuphane/kitap/${book.data.id}`, lang)}
-                      class="group/book block"
+                      class="group/book book-3d block"
                     >
                       {book.data.cover ? (
                         <img
                           src={book.data.cover}
                           alt={book.data.title}
                           loading="lazy"
+                          decoding="async"
                           width="320"
-                          class="aspect-[3/4] w-full rounded-lg border border-line object-cover object-top shadow-sm transition-transform group-hover/book:-translate-y-1"
+                          height="427"
+                          class="aspect-[3/4] w-full rounded-lg border border-line object-cover object-top shadow-sm"
                         />
                       ) : (
-                        <span class="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-line bg-accent-soft p-3 text-center font-display text-sm font-semibold text-accent transition-transform group-hover/book:-translate-y-1">
+                        <span class="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-line bg-accent-soft p-3 text-center font-display text-sm font-semibold text-accent">
                           {book.data.title}
                         </span>
                       )}
@@ -174,3 +195,19 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
     }
   </div>
 </section>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+  const toggle = document.getElementById("raf-toggle");
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const raflar = document.querySelectorAll<HTMLDetailsElement>("details[id^='kat-']");
+      const hepsiAcik = [...raflar].every((d) => d.open);
+      raflar.forEach((d) => (d.open = !hepsiAcik));
+      toggle.textContent = hepsiAcik
+        ? (toggle.dataset.ac ?? "")
+        : (toggle.dataset.kapat ?? "");
+    });
+  }
+  });
+</script>

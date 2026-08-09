@@ -1,0 +1,86 @@
+---
+/** Eğitim vitrini: yayınlanan tüm eğitimler + ilerleme çubukları. */
+import { desc, eq, inArray, and } from "drizzle-orm";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+const courses = await db.query.courses.findMany({
+  where: eq(schema.courses.status, "published"),
+  orderBy: desc(schema.courses.createdAt),
+});
+const courseIds = courses.map((c) => c.id);
+const itemCounts = new Map<number, number>();
+const doneCounts = new Map<number, number>();
+if (courseIds.length) {
+  const its = await db.query.courseItems.findMany({
+    where: inArray(schema.courseItems.courseId, courseIds),
+  });
+  for (const it of its)
+    itemCounts.set(it.courseId, (itemCounts.get(it.courseId) ?? 0) + 1);
+  if (member) {
+    const prog = await db.query.courseProgress.findMany({
+      where: and(
+        inArray(schema.courseProgress.courseId, courseIds),
+        eq(schema.courseProgress.userId, member.id),
+      ),
+    });
+    for (const p of prog)
+      doneCounts.set(p.courseId, (doneCounts.get(p.courseId) ?? 0) + 1);
+  }
+}
+const clubs = new Map((await db.query.clubs.findMany()).map((c) => [c.id, c]));
+const creators = new Map(
+  (await db.query.users.findMany()).map((u) => [u.id, u]),
+);
+---
+
+<ToplulukLayout title="Dersler" description="Topluluk eğitimleri: video + yazı + quiz karışık müfredatlar.">
+  <section class="girih-texture -mx-4 px-4 py-10">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">🎓 Dersler</h1>
+        <p class="mt-2 text-ink-muted">Video izle, yazı oku, quiz çöz — hepsi tek yol haritasında.</p>
+      </div>
+      {member && (
+        <a href="/uye/egitim-olustur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+          Eğitim oluştur <span class="arrow-slide">→</span>
+        </a>
+      )}
+    </div>
+  </section>
+
+  {
+    courses.length === 0 ? (
+      <div class="mt-10 rounded-xl border border-line bg-surface-raised px-6 py-10 text-center" data-reveal>
+        <p class="empty-float text-ink-muted">İlk eğitimi sen oluştur — yayınlanırsa kitap ödülü senin.</p>
+      </div>
+    ) : (
+      <ul class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+        {courses.map((c) => {
+          const total = itemCounts.get(c.id) ?? 0;
+          const done = doneCounts.get(c.id) ?? 0;
+          const pct = total ? Math.round((done / total) * 100) : 0;
+          return (
+            <li>
+              <a href={`/egitim/${c.id}`} class="hover-lift shine block h-full rounded-xl border border-line bg-surface-raised p-5 hover:border-accent/50 hover:shadow-lg">
+                <h2 class="font-display text-lg font-semibold leading-snug text-ink">{c.title}</h2>
+                {c.description && <p class="mt-1 line-clamp-2 text-sm text-ink-muted">{c.description}</p>}
+                <p class="mt-2 text-xs text-ink-muted">
+                  {c.clubId ? clubs.get(c.clubId)?.name : `@${creators.get(c.createdBy)?.handle}`} · {total} bölüm
+                </p>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-accent-soft">
+                  <div class="h-full bg-accent" style={`width:${pct}%`} />
+                </div>
+                <p class="mt-1 text-xs text-ink-muted">%{pct}</p>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+</ToplulukLayout>

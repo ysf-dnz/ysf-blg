@@ -1,0 +1,104 @@
+---
+/**
+ * Nazik yüzen yardımcılar:
+ *  · sağ alt ✍️ "Üret"  — yazma/paylaşma kısayolları
+ *  · sol alt 📖 "Öğren" — okuma/araştırma kısayolları
+ * Nazik = 4 sn gecikmeli belirir, tek tıkla kapanır, oturum boyunca
+ * bir daha rahatsız etmez (sessionStorage), içeriği örtmez.
+ */
+const uretMenu = [
+  { href: "/uye/yaz", ikon: "✍️", ad: "Yazı yaz", not: "+100 puan" },
+  { href: "/topluluk", ikon: "💬", ad: "Hızlı gönderi", not: "akışa paylaş" },
+  { href: "/uye/quiz-olustur", ikon: "🧠", ad: "Quiz hazırla", not: "kitap ödülü" },
+];
+const ogrenMenu = [
+  { href: "/kutuphane", ikon: "📚", ad: "Kütüphane", not: "884 kitap" },
+  { href: "/dersler", ikon: "🎓", ad: "Dersler", not: "video+yazı+quiz" },
+  { href: "/gundem", ikon: "🔥", ad: "Gündem", not: "bu ayın kitabı" },
+];
+---
+
+<div id="nudge-uret" data-nudge="uret" hidden class="fixed bottom-4 right-4 z-30">
+  <div id="nudge-uret-menu" hidden class="menu-pop mb-2 w-56 rounded-2xl border border-line bg-surface-raised p-2 shadow-xl">
+    {
+      uretMenu.map((m) => (
+        <a href={m.href} class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-accent-soft">
+          <span aria-hidden="true">{m.ikon}</span>
+          <span class="font-medium text-ink">{m.ad}</span>
+          <span class="ml-auto text-xs text-accent">{m.not}</span>
+        </a>
+      ))
+    }
+  </div>
+  <div class="flex items-center justify-end gap-1.5">
+    <button type="button" data-nudge-kapat aria-label="Kapat" class="cursor-pointer rounded-full border border-line bg-surface-raised px-2 py-1 text-xs text-ink-muted transition-colors hover:text-accent">✕</button>
+    <button
+      type="button"
+      data-nudge-ac="nudge-uret-menu"
+      class="cursor-pointer rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-surface shadow-lg shadow-accent/25 transition-transform hover:scale-105"
+    >
+      ✍️ Üret
+    </button>
+  </div>
+</div>
+
+<div id="nudge-ogren" data-nudge="ogren" hidden class="fixed bottom-4 left-4 z-30">
+  <div id="nudge-ogren-menu" hidden class="menu-pop mb-2 w-56 origin-bottom-left rounded-2xl border border-line bg-surface-raised p-2 shadow-xl">
+    {
+      ogrenMenu.map((m) => (
+        <a href={m.href} class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-accent-soft">
+          <span aria-hidden="true">{m.ikon}</span>
+          <span class="font-medium text-ink">{m.ad}</span>
+          <span class="ml-auto text-xs text-accent">{m.not}</span>
+        </a>
+      ))
+    }
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button
+      type="button"
+      data-nudge-ac="nudge-ogren-menu"
+      class="cursor-pointer rounded-full border border-accent bg-surface-raised px-4 py-2.5 text-sm font-medium text-accent shadow-lg transition-transform hover:scale-105"
+    >
+      📖 Öğren
+    </button>
+    <button type="button" data-nudge-kapat aria-label="Kapat" class="cursor-pointer rounded-full border border-line bg-surface-raised px-2 py-1 text-xs text-ink-muted transition-colors hover:text-accent">✕</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    for (const kutu of document.querySelectorAll<HTMLElement>("[data-nudge]")) {
+      const ad = kutu.dataset.nudge!;
+      if (sessionStorage.getItem(`ysf:nudge:${ad}`) === "kapali") continue;
+      // Nazik giriş: 4 sn sonra, yumuşak fade-up
+      setTimeout(() => {
+        kutu.hidden = false;
+        kutu.animate(
+          [
+            { opacity: 0, transform: "translateY(12px)" },
+            { opacity: 1, transform: "translateY(0)" },
+          ],
+          { duration: 500, easing: "cubic-bezier(0.16,1,0.3,1)" },
+        );
+      }, 4000);
+
+      kutu.querySelector("[data-nudge-kapat]")?.addEventListener("click", () => {
+        sessionStorage.setItem(`ysf:nudge:${ad}`, "kapali");
+        kutu.hidden = true;
+      });
+      const acButon = kutu.querySelector<HTMLElement>("[data-nudge-ac]");
+      acButon?.addEventListener("click", () => {
+        const menu = document.getElementById(acButon.dataset.nudgeAc!);
+        if (menu) menu.hidden = !menu.hidden;
+      });
+    }
+    // Dışarı tıklayınca menüler kapanır
+    document.addEventListener("click", (e) => {
+      for (const menu of document.querySelectorAll<HTMLElement>("[id$='-menu'][id^='nudge-']")) {
+        if (!menu.hidden && !menu.closest("[data-nudge]")!.contains(e.target as Node))
+          menu.hidden = true;
+      }
+    });
+  });
+</script>

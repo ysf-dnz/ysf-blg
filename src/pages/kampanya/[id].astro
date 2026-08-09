@@ -1,0 +1,190 @@
+---
+/**
+ * Kampanya Kanban panosu: backlog → üstlenildi → incelemede → tamamlandı.
+ * 7 gün hareketsiz "üstlenildi" görevler render sırasında backlog'a döner.
+ */
+import { and, eq, inArray, lt } from "drizzle-orm";
+import { getCollection } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { canManage, canManageGlobal, clubRoleOf } from "@/lib/permissions.ts";
+import { KULUP_HAFTALIK_TAVAN } from "@/lib/economy.ts";
+import { haftalikGorevHarcamasi } from "@/pages/api/uye/gorev.ts";
+
+export const prerender = false;
+
+const id = Number(Astro.params.id ?? 0);
+const campaign = await db.query.campaigns.findFirst({
+  where: eq(schema.campaigns.id, id),
+});
+if (!campaign) return Astro.redirect("/gundem");
+
+const member = await getOrCreateMember(Astro);
+const myRole = campaign.clubId ? await clubRoleOf(member, campaign.clubId) : null;
+const yonetici = campaign.clubId
+  ? canManage(myRole)
+  : canManageGlobal(member) || member?.id === campaign.ownerId;
+
+// Bayat görevleri backlog'a döndür (7 gün)
+await db
+  .update(schema.campaignTasks)
+  .set({ status: "backlog", assigneeId: null, claimedAt: null })
+  .where(
+    and(
+      eq(schema.campaignTasks.campaignId, campaign.id),
+      eq(schema.campaignTasks.status, "claimed"),
+      lt(schema.campaignTasks.claimedAt, new Date(Date.now() - 7 * 864e5)),
+    ),
+  );
+
+const tasks = await db.query.campaignTasks.findMany({
+  where: eq(schema.campaignTasks.campaignId, campaign.id),
+  orderBy: schema.campaignTasks.createdAt,
+});
+const userIds = [
+  ...new Set(tasks.map((t) => t.assigneeId).filter(Boolean) as number[]),
+];
+const users = new Map(
+  userIds.length
+    ? (
+        await db.query.users.findMany({ where: inArray(schema.users.id, userIds) })
+      ).map((u) => [u.id, u])
+    : [],
+);
+
+const club = campaign.clubId
+  ? await db.query.clubs.findFirst({ where: eq(schema.clubs.id, campaign.clubId) })
+  : null;
+const books = await getCollection("books");
+const book = books.find((b) => b.data.id === campaign.bookId)?.data;
+
+// Yöneticiye haftalık ödül bütçesi görünürlüğü
+const butceKalan = yonetici
+  ? Math.max(KULUP_HAFTALIK_TAVAN - (await haftalikGorevHarcamasi(campaign.clubId)), 0)
+  : null;
+
+const SUTUNLAR = [
+  { key: "backlog", ad: "Backlog", ikon: "📥" },
+  { key: "claimed", ad: "Üstlenildi", ikon: "🔨" },
+  { key: "review", ad: "İncelemede", ikon: "🔍" },
+  { key: "done", ad: "Tamamlandı", ikon: "✅" },
+] as const;
+
+const TUR: Record<string, string> = {
+  yazi: "✍️ Yazı",
+  ozet: "📝 Özet",
+  quiz_seti: "🧠 Quiz seti",
+  ceviri: "🌐 Çeviri",
+  tanitim: "🎨 Tanıtım görseli",
+  etkinlik: "📅 Etkinlik",
+  sosyal_medya: "📱 Sosyal medya",
+  slayt: "📊 Slayt",
+  podcast: "🎙️ Podcast",
+  egitim: "🎓 Eğitim",
+};
+---
+
+<Base title={campaign.title} description={`Kampanya panosu — ${book?.title ?? campaign.bookId}`}>
+  <header class="girih-texture -mx-4 px-4 py-8">
+    <p class="text-sm text-ink-muted">
+      {club ? <a href={`/kulup/${club.slug}`} class="text-accent hover:underline">{club.name}</a> : "Site geneli"} · kampanya
+    </p>
+    <h1 class="font-display mt-1 text-3xl font-semibold text-ink">{campaign.title}</h1>
+    <p class="mt-1 text-ink-muted">📖 {book?.titleTr ?? book?.title ?? campaign.bookId} · kampanya üretimleri <strong class="text-accent">×1.5 puan</strong></p>
+    {
+      butceKalan !== null && (
+        <p class="mt-2 inline-flex items-center gap-2 rounded-full border border-line bg-surface-raised px-3 py-1 text-xs text-ink-muted">
+          💰 Haftalık ödül bütçesi: <strong class:list={[butceKalan < 200 ? "text-amber-600" : "text-accent"]}>{butceKalan}/{KULUP_HAFTALIK_TAVAN}</strong> kaldı
+        </p>
+      )
+    }
+  </header>
+
+  {
+    yonetici && (
+      <form method="post" action="/api/uye/gorev" class="mt-6 grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-[2fr_1fr_auto_auto]">
+        <input type="hidden" name="action" value="create" />
+        <input type="hidden" name="campaignId" value={campaign.id} />
+        <input name="title" required maxlength="120" placeholder='Görev — örn. "3. bölüm için Instagram carousel"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <select name="kind" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+          {Object.entries(TUR).map(([k, v]) => <option value={k}>{v}</option>)}
+        </select>
+        <input name="rewardPoints" type="number" value="50" min="10" max="500" class="w-24 rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="Puan ödülü" />
+        <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ekle</button>
+      </form>
+    )
+  }
+
+  <div class="mt-6 grid gap-4 overflow-x-auto md:grid-cols-4">
+    {
+      SUTUNLAR.map((s) => {
+        const items = tasks.filter((t) => t.status === s.key);
+        return (
+          <section class="min-w-56 rounded-2xl border border-line bg-surface-raised p-3">
+            <h2 class="flex items-center justify-between px-1 font-display text-sm font-semibold text-ink">
+              <span>{s.ikon} {s.ad}</span>
+              <span class="text-ink-muted">{items.length}</span>
+            </h2>
+            <ul class="mt-3 space-y-2">
+              {items.map((t) => {
+                const a = t.assigneeId ? users.get(t.assigneeId) : null;
+                return (
+                  <li class="rounded-xl border border-line bg-surface p-3 text-sm">
+                    <p class="font-medium leading-snug text-ink">{t.title}</p>
+                    <p class="mt-1 flex items-center justify-between text-xs text-ink-muted">
+                      <span>{TUR[t.kind]}</span>
+                      <span class="font-semibold text-accent">+{t.rewardPoints}p</span>
+                    </p>
+                    {a && (
+                      <p class="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
+                        {a.avatarUrl && <img src={a.avatarUrl} alt="" width="16" height="16" class="size-4 rounded-full" />}
+                        @{a.handle}
+                      </p>
+                    )}
+                    {t.submissionUrl && (
+                      <a href={t.submissionUrl} target="_blank" rel="noopener noreferrer" class="mt-1 block truncate text-xs text-accent hover:underline">🔗 Teslim</a>
+                    )}
+                    {member && (
+                      <div class="mt-2 flex flex-wrap gap-1.5">
+                        {t.status === "backlog" && (
+                          <form method="post" action="/api/uye/gorev">
+                            <input type="hidden" name="action" value="claim" />
+                            <input type="hidden" name="taskId" value={t.id} />
+                            <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface transition-transform hover:scale-105">Üstlen</button>
+                          </form>
+                        )}
+                        {t.status === "claimed" && t.assigneeId === member.id && (
+                          <form method="post" action="/api/uye/gorev" class="flex w-full gap-1.5">
+                            <input type="hidden" name="action" value="submit" />
+                            <input type="hidden" name="taskId" value={t.id} />
+                            <input name="url" required type="url" placeholder="Teslim linki" class="w-full rounded border border-line bg-surface-raised px-2 py-1 text-xs" />
+                            <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface">Teslim</button>
+                          </form>
+                        )}
+                        {t.status === "review" && yonetici && (
+                          <>
+                            <form method="post" action="/api/uye/gorev">
+                              <input type="hidden" name="action" value="approve" />
+                              <input type="hidden" name="taskId" value={t.id} />
+                              <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface">Onayla</button>
+                            </form>
+                            <form method="post" action="/api/uye/gorev">
+                              <input type="hidden" name="action" value="reopen" />
+                              <input type="hidden" name="taskId" value={t.id} />
+                              <button class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs text-ink-muted">Geri gönder</button>
+                            </form>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })
+    }
+  </div>
+</Base>

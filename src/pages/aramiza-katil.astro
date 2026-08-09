@@ -1,0 +1,51 @@
+---
+/** Temsilcilik başvurusu: şehir/üniversite. */
+import Base from "@/layouts/Base.astro";
+import { getOrCreateMember } from "@/lib/member.ts";
+
+export const prerender = false;
+const member = await getOrCreateMember(Astro);
+---
+
+<Base title="Aramıza katıl" description="Şehrinin veya üniversitenin temsilcisi ol.">
+  <section class="girih-texture -mx-4 px-4 py-12 text-center">
+    <h1 class="word-reveal font-display text-3xl font-semibold text-ink sm:text-4xl">
+      <span style="--i:0">Şehrinin</span>
+      <span style="--i:1" class="gradient-text">öncüsü</span>
+      <span style="--i:2">ol.</span>
+    </h1>
+    <p class="hero-sub mx-auto mt-3 max-w-lg text-ink-muted">
+      Temsilciler davetlerde ×1.5 puan kazanır, üniversite tablosunda takım kaptanıdır,
+      ayın temsilcisi kitapla ödüllendirilir.
+    </p>
+  </section>
+
+  {
+    !member ? (
+      <p class="mt-8 rounded-xl border border-line bg-surface-raised px-6 py-8 text-center text-ink-muted">
+        Başvurmak için önce üye ol — sağ üstten <strong class="text-accent">Katıl</strong>.
+      </p>
+    ) : (
+      <form method="post" action="/api/uye/basvuru" class="mx-auto mt-8 grid max-w-lg gap-4" data-reveal>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Temsilcilik türü</span>
+          <select name="kind" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+            <option value="university">Üniversite</option>
+            <option value="city">Şehir</option>
+          </select>
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Üniversite / şehir adı</span>
+          <input name="place" required maxlength="80" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Neden sen?</span>
+          <textarea name="message" rows="4" maxlength="1000" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+        </label>
+        <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+          Başvur
+        </button>
+      </form>
+    )
+  }
+</Base>

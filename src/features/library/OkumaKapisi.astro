@@ -1,0 +1,243 @@
+---
+/**
+ * Okuma Kapısı — SERVER ISLAND (server:defer ile kullanılır).
+ * Kitap sayfası statik ve aranabilir kalır (Pagefind); üyelik/erişim/
+ * puan gibi dinamik her şey bu adada, istek anında çözülür:
+ * köprüler (quiz · kampanya) + okuma bölümü (embed | kilit kartı) +
+ * panel modülleri (yalnız erişene) + kitaptan beslenen yazılar.
+ */
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import DriveEmbed from "./DriveEmbed.astro";
+import ModuleList from "@/features/modules/ModuleList.astro";
+import type { Modul } from "@/features/modules/schema.ts";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember, hasBookAccess, pointBalance } from "@/lib/member.ts";
+import { getUsersMap } from "@/lib/social.ts";
+import { PUAN } from "@/lib/points.ts";
+import { useTranslations, type Lang } from "@/lib/i18n/index.ts";
+
+interface Props {
+  bookId: string;
+  bookTitle: string;
+  lang: Lang;
+  moduller?: Modul[];
+  /** Davet kartında kullanılacak kapak görseli */
+  cover?: string | null;
+}
+const { bookId, bookTitle, lang, moduller = [], cover = null } = Astro.props;
+const t = useTranslations(lang);
+const unlockCost = PUAN.bookUnlockCost;
+const yazYolu = `/uye/yaz?kitap=${encodeURIComponent(bookId)}`;
+
+const member = await getOrCreateMember(Astro);
+let access: "guest" | "locked" | "open" = "guest";
+let balance = 0;
+if (member) {
+  access = (await hasBookAccess(member.id, bookId)) ? "open" : "locked";
+  if (access === "locked") balance = await pointBalance(member.id);
+}
+
+// Kilit kartı seçenek 1: üyenin rafındaki ilk kitaba yönlendirilmiş yazı
+const rafim = member
+  ? await db.query.bookAccess.findFirst({
+      where: eq(schema.bookAccess.userId, member.id),
+    })
+  : undefined;
+const rafYazYolu = rafim
+  ? `/uye/yaz?kitap=${encodeURIComponent(rafim.bookId)}`
+  : "/uye/yaz";
+// Seçenek 2: ref kodlu paylaşım linki
+const siteKok = Astro.url.origin;
+const refLink = member ? `${siteKok}/?ref=${member.handle}` : siteKok;
+const paylasimMetni = encodeURIComponent(
+  `"${bookTitle}" kitabını okuyorum — burada kitaplar parayla değil emekle açılıyor. Sen de katıl, ilk kitabın hediye: ${refLink}`,
+);
+
+const [quiz, kampanya, beslenen] = await Promise.all([
+  db.query.quizzes.findFirst({
+    where: and(
+      eq(schema.quizzes.bookId, bookId),
+      eq(schema.quizzes.status, "published"),
+    ),
+  }),
+  db.query.campaigns.findFirst({
+    where: and(
+      eq(schema.campaigns.bookId, bookId),
+      eq(schema.campaigns.status, "active"),
+    ),
+  }),
+  db.query.memberPosts.findMany({
+    where: and(
+      eq(schema.memberPosts.bookId, bookId),
+      eq(schema.memberPosts.status, "published"),
+    ),
+    orderBy: desc(schema.memberPosts.publishedAt),
+    limit: 5,
+  }),
+]);
+const yazarlar = await getUsersMap(beslenen.map((p) => p.userId));
+
+// Yazı beğenileri (Medium tarzı puanlama)
+const begeniSayilari = new Map<number, number>();
+if (beslenen.length) {
+  const rows = await db
+    .select({ id: schema.likes.memberPostId, c: sql<number>`count(*)` })
+    .from(schema.likes)
+    .where(inArray(schema.likes.memberPostId, beslenen.map((p) => p.id)))
+    .groupBy(schema.likes.memberPostId);
+  for (const r of rows) if (r.id) begeniSayilari.set(r.id, Number(r.c));
+}
+---
+
+{
+  (quiz || kampanya) && (
+    <div class="mt-4 flex flex-wrap gap-2">
+      {kampanya && (
+        <a href={`/kampanya/${kampanya.id}`} class="pill-pop rounded-full border border-accent bg-accent-soft px-4 py-1.5 text-sm font-medium text-accent">
+          🔥 Gündemde: {kampanya.title} — üretim ×1.5
+        </a>
+      )}
+      {quiz && (
+        <a href={`/kitap/${bookId}/quiz`} class="pill-pop rounded-full border border-line px-4 py-1.5 text-sm font-medium text-ink-muted hover:border-accent hover:text-accent">
+          🧠 Quiz'i çöz (50 puana kadar)
+        </a>
+      )}
+    </div>
+  )
+}
+
+<section class="mt-8">
+  <h2 class="font-display text-xl font-semibold text-ink">{t("kitap.oku")}</h2>
+  <div class="mt-3">
+    {
+      access === "open" ? (
+        <DriveEmbed fileId={bookId} title={bookTitle} />
+      ) : (
+        <div class="shine relative overflow-hidden rounded-2xl border border-line bg-surface-raised p-8 text-center">
+          <div class="pointer-events-none absolute inset-0 girih-texture opacity-60" aria-hidden="true" />
+          <div class="relative mx-auto max-w-md">
+            <span class="mx-auto flex size-14 items-center justify-center rounded-full bg-accent text-surface">
+              <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <rect x="4" y="10" width="16" height="10" rx="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+            <h3 class="font-display mt-4 text-2xl font-semibold text-ink">{t("kitap.kilitli")}</h3>
+            <p class="mt-2 text-ink-muted">{t("kitap.kilitliAciklama")}</p>
+            {/* Nazik vitrin: kilidin ardında seni bekleyenler */}
+            <ul class="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-1.5 text-left text-xs text-ink-muted">
+              <li class="rounded-lg bg-surface px-2.5 py-1.5">📥 Kitabı bilgisayarına indir</li>
+              <li class="rounded-lg bg-surface px-2.5 py-1.5">📖 Sitede oku (Drive)</li>
+              <li class="rounded-lg bg-surface px-2.5 py-1.5">💬 NotebookLM ile kitaba soru sor</li>
+              <li class="rounded-lg bg-surface px-2.5 py-1.5">📝 Bölüm bölüm Türkçe özet</li>
+              {moduller.length > 0 ? (
+                <li class="rounded-lg bg-surface px-2.5 py-1.5">🎧 {moduller.length} ek içerik: slayt · podcast · infografik</li>
+              ) : (
+                <li class="rounded-lg bg-surface px-2.5 py-1.5">🧠 Sorularla hızlı bakış</li>
+              )}
+              <li class="rounded-lg bg-surface px-2.5 py-1.5">🗝️ Kütüphanene sonsuza dek eklenir</li>
+            </ul>
+            {access === "guest" ? (
+              <a href={`/uye/hosgeldin?donus=${encodeURIComponent(`/kutuphane/kitap/${bookId}`)}`} class="mt-5 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+                {t("kitap.girisYap")}
+              </a>
+            ) : balance >= unlockCost ? (
+              <form method="post" action="/api/uye/kitap-ac" class="mt-5">
+                <input type="hidden" name="bookId" value={bookId} />
+                <button type="submit" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+                  {unlockCost} {t("kitap.puanlaAc")}
+                </button>
+                <p class="mt-2 text-xs text-ink-muted">{balance} {t("uye.puan")}</p>
+              </form>
+            ) : (
+              <div class="mt-5 text-left">
+                <div class="h-2.5 overflow-hidden rounded-full bg-accent-soft">
+                  <div class="h-full bg-accent transition-all" style={`width:${Math.min(Math.round((balance / unlockCost) * 100), 100)}%`} />
+                </div>
+                <p class="mt-2 text-sm font-medium text-ink">
+                  {t("kitap.puanYetersiz")}{" "}
+                  <span class="text-accent">{balance}/{unlockCost} {t("uye.puan")} — %{Math.min(Math.round((balance / unlockCost) * 100), 100)}</span>
+                </p>
+                <ul class="mt-3 space-y-2 text-sm text-ink-muted">
+                  <li class="rounded-lg border border-line px-3 py-2">
+                    ✍️ <a href={rafYazYolu} class="text-accent hover:underline">Kütüphanendeki bir kitap hakkında yaz (+100 · en hızlı yol)</a>
+                  </li>
+                  <li class="rounded-lg border border-line px-3 py-2">
+                    <span class="block">📣 Paylaş, arkadaşın kodunla gelsin (+25, ilk yazısında +75):</span>
+                    <span class="mt-1.5 flex flex-wrap gap-1.5">
+                      <a href={`https://wa.me/?text=${paylasimMetni}`} target="_blank" rel="noopener noreferrer" class="pill-pop rounded-full border border-line px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent">WhatsApp</a>
+                      <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(refLink)}`} target="_blank" rel="noopener noreferrer" class="pill-pop rounded-full border border-line px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent">LinkedIn</a>
+                      <button type="button" data-ref-kopyala={refLink} class="pill-pop cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent">Instagram için kopyala</button>
+                      <button
+                        type="button"
+                        data-davet-karti
+                        data-kitap={bookTitle}
+                        data-kapak={cover ?? ""}
+                        data-ref={refLink}
+                        class="pill-pop cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface"
+                      >
+                        🎴 Davet kartı oluştur
+                      </button>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+{
+  access === "open" && moduller.length > 0 && (
+    <div class="mt-8">
+      <ModuleList moduller={moduller} />
+    </div>
+  )
+}
+
+{
+  beslenen.length > 0 && (
+    <section class="mt-8">
+      <h2 class="font-display text-xl font-semibold text-ink">✍️ Bu kitaptan beslenen yazılar</h2>
+      <ul class="mt-3 space-y-2">
+        {beslenen.map((y) => {
+          const yazar = yazarlar.get(y.userId);
+          return (
+            <li>
+              <div class="hover-lift flex items-center gap-3 rounded-lg border border-line bg-surface-raised px-4 py-3 hover:border-accent/50">
+                <a href={`/u/${yazar?.handle}`} class="shrink-0" title={`@${yazar?.handle} — profili gör, takip et`}>
+                  {yazar?.avatarUrl ? (
+                    <img src={yazar.avatarUrl} alt="" width="32" height="32" class="size-8 rounded-full border border-line" />
+                  ) : (
+                    <span class="flex size-8 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">{yazar?.name?.[0]}</span>
+                  )}
+                </a>
+                <a href={`/topluluk/${y.slug}`} class="min-w-0 flex-1">
+                  <span class="block truncate font-medium text-ink">{y.title}</span>
+                  <span class="text-xs text-ink-muted">@{yazar?.handle}{yazar?.flair ? ` ${yazar.flair}` : ""}</span>
+                </a>
+                {member && y.userId !== member.id ? (
+                  <form method="post" action="/api/uye/takip">
+                    <input type="hidden" name="action" value="yazi-begen" />
+                    <input type="hidden" name="memberPostId" value={y.id} />
+                    <button class="cursor-pointer text-sm text-ink-muted transition-transform hover:scale-110" title="Beğen (+1 puan yazara)">
+                      👍 {begeniSayilari.get(y.id) ?? 0}
+                    </button>
+                  </form>
+                ) : (
+                  <span class="text-sm text-ink-muted">👍 {begeniSayilari.get(y.id) ?? 0}</span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <a href={yazYolu} class="mt-3 inline-block text-sm font-medium text-accent hover:underline">
+        Sen de bu kitap için yaz (+100) <span class="arrow-slide">→</span>
+      </a>
+    </section>
+  )
+}

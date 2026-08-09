@@ -1,0 +1,81 @@
+---
+/** Üye rehberi: seviyeye göre sıralı, ada/üniversiteye/şehre göre aranabilir. */
+import { desc, ilike, or, sql } from "drizzle-orm";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import { db, schema } from "@/db/client.ts";
+import { levelFor } from "@/lib/levels.ts";
+
+export const prerender = false;
+
+const q = Astro.url.searchParams.get("q")?.trim() ?? "";
+const earnedExpr = sql<number>`coalesce((select sum(case when ${schema.pointsLedger.delta} > 0 then ${schema.pointsLedger.delta} else 0 end) from ${schema.pointsLedger} where ${schema.pointsLedger.userId} = ${schema.users.id}), 0)`;
+
+const rows = await db
+  .select({
+    id: schema.users.id,
+    name: schema.users.name,
+    handle: schema.users.handle,
+    avatarUrl: schema.users.avatarUrl,
+    university: schema.users.university,
+    city: schema.users.city,
+    role: schema.users.role,
+    earned: earnedExpr,
+  })
+  .from(schema.users)
+  .where(
+    q
+      ? or(
+          ilike(schema.users.name, `%${q}%`),
+          ilike(schema.users.university, `%${q}%`),
+          ilike(schema.users.city, `%${q}%`),
+        )
+      : undefined,
+  )
+  .orderBy(desc(earnedExpr))
+  .limit(60);
+---
+
+<ToplulukLayout title="Üyeler" description="Topluluk üyeleri — seviye, üniversite ve şehir.">
+  <section class="girih-texture -mx-4 px-4 py-10">
+    <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">👥 Üyeler</h1>
+    <form class="mt-4 max-w-sm">
+      <input
+        name="q"
+        value={q}
+        placeholder="Ada, üniversiteye veya şehre göre ara…"
+        class="w-full rounded-full border border-line bg-surface-raised px-4 py-2 text-sm text-ink focus:border-accent"
+      />
+    </form>
+  </section>
+
+  <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+    {rows.length === 0 && <p class="text-ink-muted">Sonuç yok.</p>}
+    {
+      rows.map((u) => (
+        <li>
+          <a href={`/u/${u.handle}`} class="hover-lift flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-4 hover:border-accent/50">
+            <span class="relative shrink-0">
+              {u.avatarUrl ? (
+                <img src={u.avatarUrl} alt="" width="48" height="48" class="size-12 rounded-full" />
+              ) : (
+                <span class="flex size-12 items-center justify-center rounded-full bg-accent-soft font-display font-semibold text-accent">{u.name[0]}</span>
+              )}
+              <span class="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-surface">
+                {levelFor(Number(u.earned))}
+              </span>
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate font-medium text-ink">
+                {u.name} {u.role === "rep" && "🏛️"} {u.role === "admin" && "⭐"}
+              </span>
+              <span class="block truncate text-xs text-ink-muted">
+                {[u.university, u.city].filter(Boolean).join(" · ") || `@${u.handle}`}
+              </span>
+            </span>
+            <span class="ml-auto shrink-0 font-display text-sm font-semibold text-accent">{u.earned}p</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</ToplulukLayout>

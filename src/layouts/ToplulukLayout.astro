@@ -1,0 +1,61 @@
+---
+/**
+ * Topluluk alanı çatısı — Skool tarzı yapışkan sekme çubuğu.
+ * 8 topluluk sayfası tek bağlamda: "neredeyim" hissi her sayfada aynı.
+ */
+import Base from "@/layouts/Base.astro";
+import { R } from "@/lib/routes.ts";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+
+const sekmeler = [
+  { href: R.topluluk, label: "Akış", ikon: "💬" },
+  { href: R.gundem, label: "Gündem", ikon: "🔥" },
+  { href: R.kulupler, label: "Kulüpler", ikon: "🏛️" },
+  { href: R.dersler, label: "Dersler", ikon: "🎓" },
+  { href: R.lider, label: "Liderlik", ikon: "🏆" },
+  { href: R.etkinlikler, label: "Etkinlikler", ikon: "📅" },
+  { href: R.uyeler, label: "Üyeler", ikon: "👥" },
+  { href: R.harita, label: "Harita", ikon: "🗺️" },
+];
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const aktifMi = (href: string) => path === href || path.startsWith(href + "/");
+---
+
+<Base title={title} description={description}>
+  <slot name="below-header" slot="below-header" />
+  <nav
+    class="sticky top-[65px] z-20 -mx-4 border-b border-line bg-surface/85 px-4 backdrop-blur"
+    aria-label="Topluluk bölümleri"
+  >
+    <div
+      class="flex gap-1 overflow-x-auto py-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch]"
+    >
+      {
+        sekmeler.map((s) => (
+          <a
+            href={s.href}
+            aria-current={aktifMi(s.href) ? "page" : undefined}
+            class:list={[
+              "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm transition-colors",
+              aktifMi(s.href)
+                ? "bg-accent font-semibold text-surface"
+                : "text-ink-muted hover:bg-accent-soft hover:text-accent",
+            ]}
+          >
+            <span aria-hidden="true">{s.ikon}</span>
+            {s.label}
+          </a>
+        ))
+      }
+    </div>
+  </nav>
+
+  <div class="pt-6">
+    <slot />
+  </div>
+</Base>

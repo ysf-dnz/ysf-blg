@@ -1,7 +1,14 @@
 ---
+/**
+ * Kitap sayfası — STATİK ve Pagefind'de aranabilir (884 sayfa build'de).
+ * Erişim kapısı, köprüler ve modüller BookDetail içindeki OkumaKapisi
+ * server island'ında istek anında çözülür.
+ */
 import { getCollection } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import BookDetail from "@/features/library/BookDetail.astro";
+
+export const prerender = true;
 
 export async function getStaticPaths() {
   const books = await getCollection("books");

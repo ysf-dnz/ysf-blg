@@ -16,14 +16,14 @@ const okumaSuresi = readingTimeMinutes(post.body ?? "");
 ---
 
 <article
-  class="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface-raised transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg"
+  class="group hover-lift shine relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface-raised hover:border-accent/50 hover:shadow-xl"
 >
   {
     data.cover && (
       <Image
         src={data.cover}
         alt=""
-        class="aspect-[16/9] w-full object-cover"
+        class="img-zoom aspect-[16/9] w-full object-cover"
         widths={[400, 640]}
         sizes="(max-width: 640px) 100vw, 400px"
       />

@@ -1,3 +1,4 @@
+export const prerender = true;
 /**
  * GEO: her yazının ham markdown'ı /yazilar/<slug>.md olarak yayınlanır.
  * AI crawler'lar için düşük sürtünmeli erişim; llms.txt bunlara link verir.

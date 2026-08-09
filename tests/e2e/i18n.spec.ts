@@ -9,7 +9,7 @@ test.describe("i18n routing", () => {
 
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.locator("h1")).toContainText(/output/i);
+    await expect(page.locator("h1").first()).toContainText(/future/i);
   });
 
   test("çevirisi olan yazıda dil değiştirici görünür", async ({ page }) => {
