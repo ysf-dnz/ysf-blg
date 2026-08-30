@@ -3,6 +3,7 @@
  * puan toplamı, kitap erişimi.
  */
 import { and, eq, sql } from "drizzle-orm";
+import { awardPoints, sayacRozetleri } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { PUAN } from "./points.ts";
 import type { APIContext, AstroGlobal } from "astro";
@@ -66,7 +67,7 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
 
   if (user) {
     // Karşılama puanı; hediye kitabı üye /uye/hosgeldin'de KENDİSİ seçer
-    await db.insert(schema.pointsLedger).values({
+    await awardPoints({
       userId: member.id,
       delta: PUAN.welcome,
       reason: "welcome",
@@ -87,7 +88,7 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
           inviter.role === "rep"
             ? Math.round(PUAN.referralJoined * PUAN.repReferralMultiplier)
             : PUAN.referralJoined;
-        await db.insert(schema.pointsLedger).values({
+        await awardPoints({
           userId: inviter.id,
           delta: bonus,
           reason: "referral_joined",
@@ -116,7 +117,7 @@ export async function activateReferralIfFirstPost(authorId: number) {
     .update(schema.referrals)
     .set({ status: "activated" })
     .where(eq(schema.referrals.id, ref.id));
-  await db.insert(schema.pointsLedger).values({
+  await awardPoints({
     userId: ref.inviterId,
     delta: PUAN.referralActivated,
     reason: "referral_activated",
@@ -127,6 +128,7 @@ export async function activateReferralIfFirstPost(authorId: number) {
     kind: "referral",
     body: `Davet ettiğin üyenin ilk yazısı yayınlandı 🚀 +${PUAN.referralActivated} puan`,
   });
+  await sayacRozetleri(ref.inviterId, "referral_activated");
 }
 
 /** Toplam bakiye (kazanılan - harcanan) */

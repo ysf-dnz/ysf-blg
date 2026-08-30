@@ -1,7 +1,18 @@
 # PROGRESS — ysf-blog "Bilgi Ödüldür" Platformu
 
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
-> Bu dosya: son durum + QStash kararı + kalan işler. Yeni oturum buradan devam eder.
+> Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
+
+## 🆕 TOPLULUK MOTORU (2026-08-09, ikinci oturum)
+**Görev 2.0 + hiyerarşi + lig/sezon + ödül mıknatısı** — plan: `~/.claude/plans/bunlar-bu-skill-e-giggly-raven.md`
+- **Görev sistemi**: atomik claim (`WHERE status='backlog'` + RETURNING), kulüp üyeliği şartı, üye başına 2 aktif görev limiti, yönetici "Ata ▾" doğrudan atama, Kolay/Orta/Zor zorluk presetleri (25/50/100), `due_at` UI + geri sayım rozetleri, `/uye`'de "Görevlerim", tüm geçişlerde bildirim, kampanya kapatma (`action=close` → kampanya.ts).
+- **Hiyerarşi**: kulüp içi gruplar (`club_groups`; lider otomatik mod), mod terfi UI (🛡️±), grup hedefli görev (ilk 48s yalnız grup — `?grup=1`), grup katkı özeti (30g), 19+ üye nudge'ı. API: `kulup.ts` grup-kur/grup-ata/rol/lig-kur.
+- **Lig/Sezon**: `lib/league.ts` (skor = pozitif katkı ÷ √üye; `aktifSezon()` yoksa ayı otomatik açar), `/lider?t=lig` Kulüpler Ligi, kulüp sayfası 🏟️ Lig sekmesi (sıra + iç sıralama + başkanın özel ligleri `club_leagues`).
+- **Ödüller**: `lib/rewards.ts` — `awardPoints()` puanın TEK KAPISI (tüm 11 endpoint refactor edildi); streak (lazy: dün→+1, 7g→+25+rozet, 30g→+150+rozet), seviye açılımları (3: hazine kitabı bedava `source=level`; 5: +kitap+usta-okur; 7: quiz/eğitim onaysız yayın — quiz-olustur.ts/egitim.ts), sayaç rozetleri (gorev-10, quiz-ustasi, davetci-5→bedava kitap), ilk-yazi/kulup-kurucu rozetleri (admin.ts), rozet vitrini `/uye`+`/u/[handle]`, sıradaki-seviye kartı.
+- **Cron (Vercel)**: `vercel.json` → `GET /api/cron/gunluk` (03:00 UTC; `CRON_SECRET` Bearer/x-cron-secret — .env.local'e eklendi). İşler: bayat görev süpürme, sezon kapanışı (şampiyon kulübe sezon-sampiyonu rozeti + site ilk 10'a hazine kitabı) + yeni sezon, ayın 1'i oylama birincisi → "Ayın Kitabı" kampanyası + oy sıfırlama, biten özel liglerin kapanışı (lig-birincisi). `cron_runs` idempotency doğrulandı (2. çağrı no-op, auth'suz 401). NOT: QStash kararı yerine Vercel Cron seçildi (daha az bağımlılık).
+- **Şema**: +5 tablo (seasons, club_leagues, club_groups, badges, cron_runs), `club_members.group_id`, `campaign_tasks.group_id`, `users.streak_count/streak_last_day`, ledger reason +3 (streak_bonus, season_reward, level_reward). Neon'a push'landı.
+- **Onarımlar**: kulüp etkinliği ucu (clubId + kulüp rolü), ⭐ öncelikli koltuk UI (checkbox + sayaç), etkinlikler kulüp redirect'i.
+- **Test**: `tests/unit/league-rewards.test.ts` (12 test — normalizasyon, streak, sezon penceresi); toplam 102 birim yeşil; build yeşil; seed genişletildi (2 grup, özel lig, 4 rozet, streak'ler).
 
 ## ✅ Tamamlanan (kronolojik özet)
 1. **UX temeli**: mobil nav, skip-link, aria-current, erişilebilir pagination, boş durumlar, reduced-motion.

@@ -3,6 +3,7 @@
  * Bakiye yetersizse veya kitap zaten açıksa güvenle geri döner.
  */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember, hasBookAccess, pointBalance } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
@@ -26,7 +27,7 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(target);
   }
 
-  await db.insert(schema.pointsLedger).values({
+  await awardPoints({
     userId: member.id,
     delta: -PUAN.bookUnlockCost,
     reason: "book_unlock",

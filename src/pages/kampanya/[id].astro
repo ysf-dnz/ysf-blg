@@ -59,6 +59,50 @@ const club = campaign.clubId
 const books = await getCollection("books");
 const book = books.find((b) => b.data.id === campaign.bookId)?.data;
 
+// Yönetici için atanabilir kulüp üyeleri (doğrudan atama menüsü)
+const atanabilir =
+  yonetici && campaign.clubId
+    ? await db
+        .select({ id: schema.users.id, handle: schema.users.handle, name: schema.users.name })
+        .from(schema.clubMembers)
+        .innerJoin(schema.users, eq(schema.clubMembers.userId, schema.users.id))
+        .where(eq(schema.clubMembers.clubId, campaign.clubId))
+    : [];
+
+// Kampanya kulübünün grupları (görev hedefleme + rozet)
+const gruplar = campaign.clubId
+  ? await db.query.clubGroups.findMany({
+      where: eq(schema.clubGroups.clubId, campaign.clubId),
+    })
+  : [];
+const grupAdi = new Map(gruplar.map((g) => [g.id, g.name]));
+
+// Uyarı bantları (?kapildi=1 / ?limit=1 / ?grup=1) ve kapalı kampanya durumu
+const uyari = Astro.url.searchParams.get("kapildi")
+  ? "Bu görev senden hızlı davranan biri tarafından üstlenildi — backlog'daki diğer görevlere göz at."
+  : Astro.url.searchParams.get("limit")
+    ? "Aynı anda en fazla 2 görev üstlenebilirsin. Önce üzerindekileri teslim et."
+    : Astro.url.searchParams.get("grup")
+      ? "Bu görev ilk 48 saat hedeflenen grubun üyelerine ayrılmış — sonra herkese açılır."
+      : null;
+const kapali = campaign.status === "done";
+
+/** Son tarih rozeti: kalan gün + son 24 saatte amber */
+function dueBadge(due: Date | null): { text: string; urgent: boolean } | null {
+  if (!due) return null;
+  const kalanMs = due.getTime() - Date.now();
+  if (kalanMs < 0) return { text: "⏰ süresi geçti", urgent: true };
+  const saat = Math.ceil(kalanMs / 36e5);
+  if (saat <= 24) return { text: `⏳ ${saat} saat`, urgent: true };
+  return { text: `📆 ${Math.ceil(saat / 24)} gün`, urgent: false };
+}
+
+const ZORLUK = [
+  { ad: "Kolay", puan: 25 },
+  { ad: "Orta", puan: 50 },
+  { ad: "Zor", puan: 100 },
+];
+
 // Yöneticiye haftalık ödül bütçesi görünürlüğü
 const butceKalan = yonetici
   ? Math.max(KULUP_HAFTALIK_TAVAN - (await haftalikGorevHarcamasi(campaign.clubId)), 0)
@@ -90,8 +134,22 @@ const TUR: Record<string, string> = {
     <p class="text-sm text-ink-muted">
       {club ? <a href={`/kulup/${club.slug}`} class="text-accent hover:underline">{club.name}</a> : "Site geneli"} · kampanya
     </p>
-    <h1 class="font-display mt-1 text-3xl font-semibold text-ink">{campaign.title}</h1>
+    <h1 class="font-display mt-1 text-3xl font-semibold text-ink">
+      {campaign.title}
+      {kapali && <span class="ml-2 align-middle rounded-full bg-accent-soft px-3 py-1 text-sm font-medium text-accent">Tamamlandı 🏁</span>}
+    </h1>
     <p class="mt-1 text-ink-muted">📖 {book?.titleTr ?? book?.title ?? campaign.bookId} · kampanya üretimleri <strong class="text-accent">×1.5 puan</strong></p>
+    {
+      yonetici && !kapali && (
+        <form method="post" action="/api/uye/kampanya" class="mt-2 inline-block">
+          <input type="hidden" name="action" value="close" />
+          <input type="hidden" name="campaignId" value={campaign.id} />
+          <button class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-xs text-ink-muted transition-colors hover:border-accent hover:text-accent">
+            🏁 Kampanyayı kapat
+          </button>
+        </form>
+      )
+    }
     {
       butceKalan !== null && (
         <p class="mt-2 inline-flex items-center gap-2 rounded-full border border-line bg-surface-raised px-3 py-1 text-xs text-ink-muted">
@@ -102,16 +160,40 @@ const TUR: Record<string, string> = {
   </header>
 
   {
-    yonetici && (
-      <form method="post" action="/api/uye/gorev" class="mt-6 grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-[2fr_1fr_auto_auto]">
+    uyari && (
+      <p class="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-700 dark:text-amber-400">
+        ⚡ {uyari}
+      </p>
+    )
+  }
+
+  {
+    yonetici && !kapali && (
+      <form method="post" action="/api/uye/gorev" class="mt-6 grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-[2fr_1fr_auto]">
         <input type="hidden" name="action" value="create" />
         <input type="hidden" name="campaignId" value={campaign.id} />
-        <input name="title" required maxlength="120" placeholder='Görev — örn. "3. bölüm için Instagram carousel"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <input name="title" required maxlength="120" placeholder='Görev — örn. "3. bölüm için Instagram carousel"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm sm:col-span-2" />
+        <input name="dueAt" type="date" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="Son tarih (opsiyonel)" />
         <select name="kind" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
           {Object.entries(TUR).map(([k, v]) => <option value={k}>{v}</option>)}
         </select>
-        <input name="rewardPoints" type="number" value="50" min="10" max="500" class="w-24 rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="Puan ödülü" />
-        <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ekle</button>
+        {gruplar.length > 0 && (
+          <select name="groupId" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="Grup hedefi: ilk 48 saat yalnız o gruba açık">
+            <option value="">Grup hedefi yok</option>
+            {gruplar.map((g) => <option value={g.id}>🎯 {g.name}</option>)}
+          </select>
+        )}
+        <div class="flex items-center gap-2">
+          <div class="flex rounded-lg border border-line" role="group" aria-label="Zorluk">
+            {ZORLUK.map((z, i) => (
+              <button type="button" data-zorluk={z.puan} class:list={["cursor-pointer px-3 py-2 text-xs text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent", i === 1 && "bg-accent-soft text-accent"]}>
+                {z.ad}
+              </button>
+            ))}
+          </div>
+          <input id="gorev-puan" name="rewardPoints" type="number" value="50" min="10" max="500" class="w-20 rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="Puan ödülü" />
+        </div>
+        <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ekle</button>
       </form>
     )
   }
@@ -132,9 +214,19 @@ const TUR: Record<string, string> = {
                 return (
                   <li class="rounded-xl border border-line bg-surface p-3 text-sm">
                     <p class="font-medium leading-snug text-ink">{t.title}</p>
-                    <p class="mt-1 flex items-center justify-between text-xs text-ink-muted">
+                    {t.groupId && grupAdi.has(t.groupId) && (
+                      <p class="mt-0.5 text-[10px] font-medium text-accent">🎯 {grupAdi.get(t.groupId)}</p>
+                    )}
+                    <p class="mt-1 flex flex-wrap items-center justify-between gap-1 text-xs text-ink-muted">
                       <span>{TUR[t.kind]}</span>
-                      <span class="font-semibold text-accent">+{t.rewardPoints}p</span>
+                      <span class="flex items-center gap-1.5">
+                        {(() => {
+                          const rozet = t.status !== "done" ? dueBadge(t.dueAt) : null;
+                          return rozet && <span class:list={[rozet.urgent ? "font-medium text-amber-600" : ""]}>{rozet.text}</span>;
+                        })()}
+                        <span class="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent">{t.rewardPoints <= 25 ? "Kolay" : t.rewardPoints <= 60 ? "Orta" : "Zor"}</span>
+                        <span class="font-semibold text-accent">+{t.rewardPoints}p</span>
+                      </span>
                     </p>
                     {a && (
                       <p class="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
@@ -147,11 +239,22 @@ const TUR: Record<string, string> = {
                     )}
                     {member && (
                       <div class="mt-2 flex flex-wrap gap-1.5">
-                        {t.status === "backlog" && (
+                        {t.status === "backlog" && !kapali && (
                           <form method="post" action="/api/uye/gorev">
                             <input type="hidden" name="action" value="claim" />
                             <input type="hidden" name="taskId" value={t.id} />
-                            <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface transition-transform hover:scale-105">Üstlen</button>
+                            <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Üstlen</button>
+                          </form>
+                        )}
+                        {t.status === "backlog" && !kapali && yonetici && atanabilir.length > 0 && (
+                          <form method="post" action="/api/uye/gorev" class="flex items-center gap-1">
+                            <input type="hidden" name="action" value="assign" />
+                            <input type="hidden" name="taskId" value={t.id} />
+                            <select name="assigneeId" required class="max-w-28 rounded border border-line bg-surface-raised px-1.5 py-1 text-xs text-ink-muted">
+                              <option value="" disabled selected>Ata ▾</option>
+                              {atanabilir.map((u) => <option value={u.id}>@{u.handle}</option>)}
+                            </select>
+                            <button class="cursor-pointer rounded-full border border-line px-2.5 py-1 text-xs text-ink-muted hover:border-accent hover:text-accent">Ata</button>
                           </form>
                         )}
                         {t.status === "claimed" && t.assigneeId === member.id && (
@@ -187,4 +290,17 @@ const TUR: Record<string, string> = {
       })
     }
   </div>
+
+  <script>
+    // Zorluk preset butonları puan alanını doldurur, seçileni vurgular
+    document.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-zorluk]");
+      if (!btn) return;
+      const input = document.getElementById("gorev-puan") as HTMLInputElement | null;
+      if (input) input.value = btn.dataset.zorluk!;
+      for (const b of btn.parentElement!.querySelectorAll("[data-zorluk]"))
+        b.classList.remove("bg-accent-soft", "text-accent");
+      btn.classList.add("bg-accent-soft", "text-accent");
+    });
+  </script>
 </Base>

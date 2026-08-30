@@ -3,12 +3,13 @@
  * Kulüp sayfası — sekmeler: Pano · Etkinlikler · Üyeler.
  * Pano = kulübün kampanyaları; kampanya detayında Kanban görev panosu.
  */
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { getCollection } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { canManage, clubRoleOf } from "@/lib/permissions.ts";
+import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
 import { formatDate } from "@/lib/dates.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
 import { groupByCategory } from "@/lib/books-lookup.ts";
@@ -71,6 +72,7 @@ const tabs = [
   { key: "pano", label: "📋 Pano" },
   { key: "kitaplik", label: "📚 Kitaplık" },
   { key: "etkinlik", label: "📅 Etkinlikler" },
+  { key: "lig", label: "🏟️ Lig" },
   { key: "uyeler", label: "👥 Üyeler" },
 ];
 
@@ -94,6 +96,55 @@ const durumEtiket: Record<string, string> = {
   active: "Aktif",
   done: "Bitti",
 };
+
+/* ---- Gruplar: 19+ üyede hiyerarşik yönetim ---- */
+const groups = await db.query.clubGroups.findMany({
+  where: eq(schema.clubGroups.clubId, club.id),
+});
+const groupName = new Map(groups.map((g) => [g.id, g.name]));
+const isPresident = myRole === "president";
+const grupNudge = isPresident && members.length >= 19 && groups.length === 0;
+
+/* ---- Lig sekmesi verileri ---- */
+const sezon = tab === "lig" ? await aktifSezon() : null;
+const ligDurum = sezon ? await kulupSiralamasi(sezon.startsAt, sezon.endsAt) : [];
+const ligSiram = ligDurum.findIndex((k) => k.clubId === club.id);
+const icSiralama = sezon ? await kulupIciSiralama(club.id, sezon.startsAt, sezon.endsAt) : [];
+const ozelLigler =
+  tab === "lig"
+    ? await db.query.clubLeagues.findMany({
+        where: eq(schema.clubLeagues.clubId, club.id),
+        orderBy: desc(schema.clubLeagues.createdAt),
+      })
+    : [];
+const ozelLigDurum = new Map<number, Awaited<ReturnType<typeof kulupIciSiralama>>>();
+for (const lig of ozelLigler.filter((l) => l.status === "active").slice(0, 3)) {
+  ozelLigDurum.set(lig.id, await kulupIciSiralama(club.id, lig.startsAt, lig.endsAt, 5));
+}
+
+// Grup katkı özeti: son 30 günde üyelerin pozitif puan toplamı, gruba göre
+const grupKatki = new Map<number, number>();
+if (groups.length && tab === "uyeler") {
+  const rows = await db
+    .select({
+      userId: schema.pointsLedger.userId,
+      t: sql<number>`coalesce(sum(${schema.pointsLedger.delta}), 0)`,
+    })
+    .from(schema.pointsLedger)
+    .where(
+      and(
+        inArray(schema.pointsLedger.userId, members.map((m) => m.userId)),
+        gt(schema.pointsLedger.delta, 0),
+        gte(schema.pointsLedger.createdAt, new Date(Date.now() - 30 * 864e5)),
+      ),
+    )
+    .groupBy(schema.pointsLedger.userId);
+  const puanByUser = new Map(rows.map((r) => [r.userId, Number(r.t)]));
+  for (const m of members) {
+    if (!m.groupId) continue;
+    grupKatki.set(m.groupId, (grupKatki.get(m.groupId) ?? 0) + (puanByUser.get(m.userId) ?? 0));
+  }
+}
 ---
 
 <Base title={club.name} description={`${club.place} okuma topluluğu`}>
@@ -116,7 +167,7 @@ const durumEtiket: Record<string, string> = {
           <form method="post" action="/api/uye/kulup">
             <input type="hidden" name="action" value="join" />
             <input type="hidden" name="clubId" value={club.id} />
-            <button class="mt-2 cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105">Katıl</button>
+            <button class="mt-2 cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl</button>
           </form>
         )}
       </div>
@@ -272,25 +323,202 @@ const durumEtiket: Record<string, string> = {
   }
 
   {
+    tab === "lig" && sezon && (
+      <section class="mt-6 grid gap-6 lg:grid-cols-2">
+        <div>
+          <div class="rounded-2xl border border-accent/40 bg-accent-soft/40 px-5 py-4">
+            <h2 class="font-display text-lg font-semibold text-ink">🏟️ {sezon.name} Sezonu</h2>
+            <p class="mt-1 text-sm text-ink-muted">
+              {ligSiram >= 0 ? (
+                <>Kulübün lig sırası: <strong class="font-display text-xl text-accent">{ligSiram + 1}</strong> / {ligDurum.length} · skor <strong class="text-accent">{ligDurum[ligSiram]?.normalized}</strong> (ham {ligDurum[ligSiram]?.raw}p)</>
+              ) : (
+                "Kulüp onaylanınca ligde yarışır."
+              )}
+              {" "}· <a href="/lider?t=lig" class="text-accent hover:underline">tüm lig →</a>
+            </p>
+          </div>
+
+          <h3 class="font-display mt-5 text-sm font-semibold text-ink">Bu sezon kulüp içi katkı</h3>
+          <ol class="mt-2 space-y-1.5">
+            {icSiralama.filter((u) => u.total > 0).length === 0 && (
+              <p class="text-sm text-ink-muted">Bu sezon henüz katkı yok — ilk puanı sen kazan.</p>
+            )}
+            {icSiralama.filter((u) => u.total > 0).map((u, i) => (
+              <li>
+                <a href={`/u/${u.handle}`} class="flex items-center gap-3 rounded-lg border border-line bg-surface-raised px-3 py-2 text-sm hover:border-accent/50">
+                  <span class="w-6 text-center font-semibold text-ink-muted">{["🥇", "🥈", "🥉"][i] ?? i + 1}</span>
+                  {u.avatarUrl && <img src={u.avatarUrl} alt="" width="24" height="24" class="size-6 rounded-full" />}
+                  <span class="min-w-0 flex-1 truncate text-ink">{u.name}</span>
+                  <span class="font-semibold text-accent">{u.total}p</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div>
+          {isPresident && (
+            <form method="post" action="/api/uye/kulup" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+              <h3 class="font-display text-sm font-semibold text-ink">➕ Özel lig kur</h3>
+              <input type="hidden" name="action" value="lig-kur" />
+              <input type="hidden" name="clubId" value={club.id} />
+              <input name="name" required maxlength="80" placeholder='Lig adı — örn. "Kasım Okuma Maratonu"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+              <div class="grid grid-cols-2 gap-3">
+                <label class="grid gap-1 text-xs text-ink-muted">Başlangıç
+                  <input name="startsAt" required type="date" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink" />
+                </label>
+                <label class="grid gap-1 text-xs text-ink-muted">Bitiş
+                  <input name="endsAt" required type="date" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink" />
+                </label>
+              </div>
+              <input name="rewardNote" maxlength="200" placeholder='Ödül vaadi — örn. "Birinciye kitap hediye"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+              <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ligi başlat</button>
+            </form>
+          )}
+
+          <h3 class="font-display mt-5 text-sm font-semibold text-ink">Kulüp ligleri</h3>
+          <ul class="mt-2 space-y-3">
+            {ozelLigler.length === 0 && <p class="text-sm text-ink-muted">Henüz özel lig yok{isPresident ? " — ilkini sen başlat." : "."}</p>}
+            {ozelLigler.map((lig) => {
+              const durum = ozelLigDurum.get(lig.id);
+              const kazanan = lig.winnerId ? users.get(lig.winnerId) : null;
+              return (
+                <li class="rounded-xl border border-line bg-surface-raised p-4">
+                  <p class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <strong class="text-ink">{lig.name}</strong>
+                    <span class:list={["rounded-full px-2.5 py-0.5 text-xs font-medium", lig.status === "active" ? "bg-accent-soft text-accent" : "border border-line text-ink-muted"]}>
+                      {lig.status === "active" ? "Sürüyor" : kazanan ? `Bitti · 🥇 @${kazanan.handle}` : "Bitti"}
+                    </span>
+                  </p>
+                  <p class="mt-1 text-xs text-ink-muted">
+                    {formatDate(lig.startsAt, "tr")} – {formatDate(lig.endsAt, "tr")}
+                    {lig.rewardNote && ` · 🎁 ${lig.rewardNote}`}
+                  </p>
+                  {durum && durum.filter((u) => u.total > 0).length > 0 && (
+                    <ol class="mt-2 space-y-1 text-xs">
+                      {durum.filter((u) => u.total > 0).map((u, i) => (
+                        <li class="flex items-center justify-between text-ink-muted">
+                          <span>{["🥇", "🥈", "🥉"][i] ?? i + 1} {u.name}</span>
+                          <span class="font-semibold text-accent">{u.total}p</span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {
     tab === "uyeler" && (
-      <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
-        {members.map((m) => {
-          const u = users.get(m.userId);
-          return (
-            <li>
-              <a href={`/u/${u?.handle}`} class="hover-lift flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-3 hover:border-accent/50">
-                {u?.avatarUrl && <img src={u.avatarUrl} alt="" width="36" height="36" class="size-9 rounded-full" />}
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-medium text-ink">
-                    {u?.name} {m.role === "president" && "👑"} {m.role === "mod" && "🛡️"}
+      <section class="mt-6">
+        {grupNudge && (
+          <p class="mb-4 rounded-xl border border-accent/40 bg-accent-soft/40 px-4 py-3 text-sm text-ink">
+            🧬 Kulübün <strong>{members.length} üyeye</strong> ulaştı — yönetimi kolaylaştırmak için
+            üyeleri <strong>gruplara böl</strong>: her gruba bir lider (🛡️ mod) ata, görevleri gruplara
+            hedefle, katkıyı grup grup izle. Aşağıdaki formdan ilk grubu kur.
+          </p>
+        )}
+
+        {isPresident && (
+          <div class="mb-6 grid gap-4 lg:grid-cols-2">
+            <form method="post" action="/api/uye/kulup" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+              <h2 class="font-display text-sm font-semibold text-ink">➕ Grup kur</h2>
+              <input type="hidden" name="action" value="grup-kur" />
+              <input type="hidden" name="clubId" value={club.id} />
+              <input name="name" required maxlength="60" placeholder='Grup adı — örn. "Roman Takımı"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+              <label class="grid gap-1 text-sm">
+                <span class="text-ink-muted">Grup lideri (otomatik 🛡️ mod olur)</span>
+                <select name="leaderId" class="rounded-lg border border-line bg-surface px-3 py-2">
+                  <option value="">— sonra seçerim —</option>
+                  {members.filter((m) => m.role !== "president").map((m) => (
+                    <option value={m.userId}>@{users.get(m.userId)?.handle}</option>
+                  ))}
+                </select>
+              </label>
+              <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Kur</button>
+            </form>
+
+            {groups.length > 0 && (
+              <form method="post" action="/api/uye/kulup" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4">
+                <h2 class="font-display text-sm font-semibold text-ink">👥 Üyeleri gruba ata</h2>
+                <input type="hidden" name="action" value="grup-ata" />
+                <input type="hidden" name="clubId" value={club.id} />
+                <select name="groupId" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+                  {groups.map((g) => <option value={g.id}>{g.name}</option>)}
+                  <option value="0">— gruptan çıkar —</option>
+                </select>
+                <select name="uyeId" multiple size="5" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" title="⌘/Ctrl ile çoklu seç">
+                  {members.map((m) => (
+                    <option value={m.userId}>
+                      @{users.get(m.userId)?.handle}{m.groupId ? ` · ${groupName.get(m.groupId)}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Ata</button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {groups.length > 0 && (
+          <div class="mb-6 flex flex-wrap gap-3">
+            {groups
+              .slice()
+              .sort((a, b) => (grupKatki.get(b.id) ?? 0) - (grupKatki.get(a.id) ?? 0))
+              .map((g, i) => (
+                <div class="rounded-xl border border-line bg-surface-raised px-4 py-2.5 text-sm">
+                  <span class="font-medium text-ink">{i === 0 && (grupKatki.get(g.id) ?? 0) > 0 ? "🏆 " : ""}{g.name}</span>
+                  <span class="ml-2 text-xs text-ink-muted">
+                    {members.filter((m) => m.groupId === g.id).length} üye ·
+                    <strong class="text-accent"> {grupKatki.get(g.id) ?? 0}p</strong>/30g
+                    {g.leaderId && ` · 🛡️ @${users.get(g.leaderId)?.handle}`}
                   </span>
-                  <span class="text-xs text-ink-muted">@{u?.handle}</span>
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+                </div>
+              ))}
+          </div>
+        )}
+
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+          {members.map((m) => {
+            const u = users.get(m.userId);
+            return (
+              <li class="hover-lift flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-3 hover:border-accent/50">
+                <a href={`/u/${u?.handle}`} class="flex min-w-0 flex-1 items-center gap-3">
+                  {u?.avatarUrl && <img src={u.avatarUrl} alt="" width="36" height="36" class="size-9 rounded-full" />}
+                  <span class="min-w-0">
+                    <span class="block truncate text-sm font-medium text-ink">
+                      {u?.name} {m.role === "president" && "👑"} {m.role === "mod" && "🛡️"}
+                    </span>
+                    <span class="text-xs text-ink-muted">
+                      @{u?.handle}
+                      {m.groupId && ` · ${groupName.get(m.groupId)}`}
+                    </span>
+                  </span>
+                </a>
+                {isPresident && m.role !== "president" && (
+                  <form method="post" action="/api/uye/kulup">
+                    <input type="hidden" name="action" value="rol" />
+                    <input type="hidden" name="clubId" value={club.id} />
+                    <input type="hidden" name="uyeId" value={m.userId} />
+                    <input type="hidden" name="rol" value={m.role === "mod" ? "member" : "mod"} />
+                    <button
+                      class="cursor-pointer rounded-full border border-line px-2.5 py-1 text-xs text-ink-muted transition-colors hover:border-accent hover:text-accent"
+                      title={m.role === "mod" ? "Moderatörlüğü al" : "Moderatör yap"}
+                    >
+                      {m.role === "mod" ? "🛡️−" : "🛡️+"}
+                    </button>
+                  </form>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     )
   }
 </Base>

@@ -1,7 +1,8 @@
-/** POST /api/uye/quiz-olustur — soru seti kaydet (admin: yayında, üye: onayda). */
+/** POST /api/uye/quiz-olustur — soru seti kaydet (admin/Sv7+: yayında, üye: onayda). */
 import type { APIRoute } from "astro";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember } from "@/lib/member.ts";
+import { earnedPoints, getOrCreateMember } from "@/lib/member.ts";
+import { levelFor } from "@/lib/levels.ts";
 
 export const prerender = false;
 
@@ -44,7 +45,11 @@ export const POST: APIRoute = async (context) => {
       bookId,
       title,
       createdBy: member.id,
-      status: member.role === "admin" ? "published" : "pending",
+      // Seviye 7+ güvenilir üretici: onaysız yayın
+      status:
+        member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
+          ? "published"
+          : "pending",
     })
     .returning();
 

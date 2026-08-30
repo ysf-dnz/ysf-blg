@@ -67,6 +67,8 @@ async function temizle() {
       await db.delete(schema.campaigns).where(inArray(schema.campaigns.id, kampanyalar.map((c) => c.id)));
     }
     await db.delete(schema.clubBooks).where(inArray(schema.clubBooks.clubId, kids));
+    await db.delete(schema.clubLeagues).where(inArray(schema.clubLeagues.clubId, kids));
+    await db.delete(schema.clubGroups).where(inArray(schema.clubGroups.clubId, kids));
     await db.delete(schema.clubMembers).where(inArray(schema.clubMembers.clubId, kids));
     const etkinlikler = await db.query.events.findMany({ where: inArray(schema.events.clubId, kids) });
     if (etkinlikler.length) {
@@ -97,6 +99,7 @@ async function temizle() {
   await db.delete(schema.applications).where(inArray(schema.applications.userId, ids));
   await db.delete(schema.notifications).where(inArray(schema.notifications.userId, ids));
   await db.delete(schema.bookAccess).where(inArray(schema.bookAccess.userId, ids));
+  await db.delete(schema.badges).where(inArray(schema.badges.userId, ids));
   await db.delete(schema.pointsLedger).where(inArray(schema.pointsLedger.userId, ids));
   await db.delete(schema.users).where(inArray(schema.users.id, ids));
   console.log(`♻︎ ${ids.length} eski demo üye ve bağlı verileri temizlendi`);
@@ -293,6 +296,43 @@ async function kur() {
     { userId: U.can!.id, kind: "task", body: '"Kitap sohbeti podcast bölümü" görevini üstlendin — 7 gün içinde teslim et 🎙️', href: `/kampanya/${kampanya!.id}` },
     { userId: U.ayse!.id, kind: "referral", body: "Can davetinle katıldı ve ilk yazısı onaylandı 🚀 +75 puan" },
   ]);
+
+  // 🏟️ Topluluk motoru: gruplar + özel lig + rozetler + streak
+  const [grupRoman, grupTeknik] = await db
+    .insert(schema.clubGroups)
+    .values([
+      { clubId: kulup!.id, name: "Roman Takımı", leaderId: U.elif!.id },
+      { clubId: kulup!.id, name: "Teknik Kitap Takımı", leaderId: U.mehmet!.id },
+    ])
+    .returning();
+  await db.update(schema.clubMembers).set({ groupId: grupRoman!.id })
+    .where(and(eq(schema.clubMembers.clubId, kulup!.id), eq(schema.clubMembers.userId, U.elif!.id)));
+  await db.update(schema.clubMembers).set({ groupId: grupTeknik!.id })
+    .where(and(eq(schema.clubMembers.clubId, kulup!.id), inArray(schema.clubMembers.userId, [U.mehmet!.id, U.can!.id])));
+  await db.update(schema.clubMembers).set({ role: "mod" })
+    .where(and(eq(schema.clubMembers.clubId, kulup!.id), eq(schema.clubMembers.userId, U.mehmet!.id)));
+
+  const bugun = new Date();
+  await db.insert(schema.clubLeagues).values({
+    clubId: kulup!.id,
+    name: "Golang Okuma Maratonu",
+    startsAt: new Date(bugun.getTime() - 7 * 864e5),
+    endsAt: new Date(bugun.getTime() + 14 * 864e5),
+    rewardNote: "Birinciye kitap hediye 🎁",
+    createdBy: U.ayse!.id,
+  });
+  await db.insert(schema.badges).values([
+    { userId: U.ayse!.id, kind: "kulup-kurucu" },
+    { userId: U.ayse!.id, kind: "ilk-yazi" },
+    { userId: U.elif!.id, kind: "ilk-yazi" },
+    { userId: U.elif!.id, kind: "streak-7" },
+  ]).onConflictDoNothing();
+  const gunKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  await db.update(schema.users).set({ streakCount: 9, streakLastDay: gunKey(bugun) })
+    .where(eq(schema.users.id, U.elif!.id));
+  await db.update(schema.users).set({ streakCount: 3, streakLastDay: gunKey(new Date(bugun.getTime() - 864e5)) })
+    .where(eq(schema.users.id, U.ayse!.id));
 
   console.log(`✓ Numune veri kuruldu:
   üyeler: 5 (ayse-demir 🔥 rep, mehmet-kaya, zeynep-arslan 📚, can-yildiz, elif-celik 🚀)

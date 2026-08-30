@@ -43,15 +43,35 @@ const [takipciler, takipEdiyorMu] = await Promise.all([
     : Promise.resolve(undefined),
 ]);
 const books = await getCollection("books");
+
+// 🏅 Rozet vitrini (kalıcı DB rozetleri)
+const dbRozetler = await db.query.badges.findMany({
+  where: eq(schema.badges.userId, user.id),
+});
+const ROZET_META: Record<string, string> = {
+  "ilk-yazi": "✍️ İlk Yazı",
+  "streak-7": "🔥 7 Gün Seri",
+  "streak-30": "🔥🔥 30 Gün Seri",
+  "gorev-10": "🔨 10 Görev",
+  "quiz-ustasi": "🧠 Quiz Ustası",
+  "davetci-5": "🤝 Davetçi",
+  "kulup-kurucu": "🏛️ Kulüp Kurucu",
+  "sezon-sampiyonu": "🏆 Sezon Şampiyonu",
+  "lig-birincisi": "🥇 Lig Birincisi",
+  "usta-okur": "📚 Usta Okur",
+};
 const shelf = access
   .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
   .filter(Boolean);
 
+// Türetilen + kalıcı rozetler tek vitrinde (tekrarlar elenir)
 const rozetler = [
-  posts.length >= 1 && "✍️ İlk Yazı",
-  posts.length >= 3 && "🔗 Zincir (3 yazı)",
-  user.role === "rep" && "🏛️ Temsilci",
-  user.role === "admin" && "⭐ Kurucu",
+  ...new Set([
+    ...dbRozetler.map((r) => ROZET_META[r.kind] ?? r.kind),
+    posts.length >= 3 && "🔗 Zincir (3 yazı)",
+    user.role === "rep" && "🏛️ Temsilci",
+    user.role === "admin" && "⭐ Kurucu",
+  ]),
 ].filter(Boolean) as string[];
 
 const socials = (() => {
@@ -116,7 +136,7 @@ const SOSYAL_ETIKET: Record<string, string> = {
             <input type="hidden" name="handle" value={user.handle} />
             <button
               class:list={[
-                "cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-transform hover:scale-105",
+                "cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-transform hover:scale-105 active:scale-[0.97]",
                 takipEdiyorMu
                   ? "border border-line text-ink-muted"
                   : "bg-accent text-surface shadow-lg shadow-accent/25",

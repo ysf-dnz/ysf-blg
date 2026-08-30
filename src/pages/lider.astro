@@ -3,10 +3,11 @@
  * Liderlik tabloları (Skool formatı): 7 gün / 30 gün / tüm zamanlar,
  * üniversiteler arası takım tablosu. Yalnızca pozitif kazanımlar sayılır.
  */
-import { and, desc, gte, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
 import { levelFor } from "@/lib/levels.ts";
+import { aktifSezon, kulupSiralamasi } from "@/lib/league.ts";
 
 export const prerender = false;
 
@@ -62,8 +63,28 @@ const tabs = [
   { key: "7", label: "7 gün" },
   { key: "30", label: "30 gün" },
   { key: "all", label: "Tüm zamanlar" },
+  { key: "lig", label: "🏟️ Kulüpler Ligi" },
 ];
 const madalya = ["🥇", "🥈", "🥉"];
+
+// 🏟️ Kulüpler Ligi: aktif sezon puan durumu + geçen sezonun şampiyonu
+const sezon = tab === "lig" ? await aktifSezon() : null;
+const ligSiralama = sezon ? await kulupSiralamasi(sezon.startsAt, sezon.endsAt) : [];
+const gecenSezon =
+  tab === "lig"
+    ? await db.query.seasons.findFirst({
+        where: eq(schema.seasons.status, "closed"),
+        orderBy: desc(schema.seasons.endsAt),
+      })
+    : null;
+const gecenSampiyon = gecenSezon?.championClubId
+  ? await db.query.clubs.findFirst({
+      where: eq(schema.clubs.id, gecenSezon.championClubId),
+    })
+  : null;
+const kalanGun = sezon
+  ? Math.max(Math.ceil((sezon.endsAt.getTime() - Date.now()) / 864e5), 0)
+  : 0;
 ---
 
 <ToplulukLayout title="Liderlik" description="Topluluğun en çok katkı verenleri.">
@@ -91,7 +112,48 @@ const madalya = ["🥇", "🥈", "🥉"];
     }
   </nav>
 
-  <div class="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
+  {
+    tab === "lig" && sezon && (
+      <section class="mt-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-accent/40 bg-accent-soft/40 px-5 py-3">
+          <p class="text-sm text-ink">
+            <strong class="font-display">{sezon.name} Sezonu</strong> · bitişe{" "}
+            <strong class="text-accent">{kalanGun} gün</strong> · skor = üye katkısı ÷ √üye (adil kıyas)
+          </p>
+          {gecenSampiyon && (
+            <p class="text-sm text-ink-muted">
+              Geçen sezonun şampiyonu: 🏆{" "}
+              <a href={`/kulup/${gecenSampiyon.slug}`} class="font-medium text-accent hover:underline">
+                {gecenSampiyon.name}
+              </a>
+            </p>
+          )}
+        </div>
+        <ol class="mt-4 space-y-2" data-stagger>
+          {ligSiralama.length === 0 && (
+            <p class="text-ink-muted">Henüz onaylı kulüp yok — <a href="/kulup-kur" class="text-accent hover:underline">ilk kulübü sen kur</a>.</p>
+          )}
+          {ligSiralama.map((k, i) => (
+            <li>
+              <a
+                href={`/kulup/${k.slug}`}
+                class="hover-lift flex items-center gap-4 rounded-xl border border-line bg-surface-raised px-4 py-3 hover:border-accent/50"
+              >
+                <span class="w-8 text-center font-display text-lg font-bold text-ink-muted">{madalya[i] ?? i + 1}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate font-medium text-ink">{k.name}</span>
+                  <span class="text-xs text-ink-muted">{k.memberCount} üye · ham {k.raw}p</span>
+                </span>
+                <span class="font-display text-lg font-semibold text-accent">{k.normalized}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+
+  <div class:list={["mt-6 grid gap-8 lg:grid-cols-[1fr_320px]", tab === "lig" && "hidden"]}>
     <ol class="space-y-2" data-stagger>
       {rows.length === 0 && <p class="text-ink-muted">Bu dönemde henüz puan kazanılmadı.</p>}
       {

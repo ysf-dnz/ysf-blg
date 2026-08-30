@@ -1,5 +1,6 @@
 /** POST /api/uye/admin — yazı/başvuru onay-red (yalnızca admin). */
 import type { APIRoute } from "astro";
+import { awardPoints, awardBadge, sayacRozetleri } from "@/lib/rewards.ts";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
@@ -27,7 +28,7 @@ export const POST: APIRoute = async (context) => {
           .update(schema.memberPosts)
           .set({ status: "published", publishedAt: new Date() })
           .where(eq(schema.memberPosts.id, post.id));
-        await db.insert(schema.pointsLedger).values({
+        await awardPoints({
           userId: post.userId,
           delta: PUAN.postApproved,
           reason: "post_approved",
@@ -40,6 +41,7 @@ export const POST: APIRoute = async (context) => {
           href: `/topluluk/${post.slug}`,
         });
         await activateReferralIfFirstPost(post.userId);
+        await awardBadge(post.userId, "ilk-yazi", "İlk yazın yayında ✍️ Rozetin hazır!");
       } else {
         await db
           .update(schema.memberPosts)
@@ -77,6 +79,7 @@ export const POST: APIRoute = async (context) => {
           body: `"${club.name}" kulübün onaylandı 🏛️ Panon hazır — ilk kampanyanı aç!`,
           href: `/kulup/${club.slug}`,
         });
+        await awardBadge(club.presidentId, "kulup-kurucu", `"${club.name}" ile Kulüp Kurucu rozetini kazandın 🏛️`);
       }
     }
   }
@@ -93,7 +96,7 @@ export const POST: APIRoute = async (context) => {
         .set({ status: approved ? "published" : "rejected" })
         .where(eq(schema.quizzes.id, quiz.id));
       if (approved && quiz.createdBy) {
-        await db.insert(schema.pointsLedger).values({
+        await awardPoints({
           userId: quiz.createdBy,
           delta: PUAN.quizSetApproved,
           reason: "quiz_set_approved",
@@ -105,6 +108,7 @@ export const POST: APIRoute = async (context) => {
           body: `"${quiz.title}" quiz'in yayınlandı 🧠 +${PUAN.quizSetApproved} puan — kitap ödülün için admin'le iletişime geç.`,
           href: `/kitap/${quiz.bookId}/quiz`,
         });
+        await sayacRozetleri(quiz.createdBy, "quiz_set_approved");
       }
     }
   }

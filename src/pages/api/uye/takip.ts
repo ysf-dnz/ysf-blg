@@ -1,5 +1,6 @@
 /** POST /api/uye/takip — yazar takip et/bırak + yazı beğen (Medium tarzı). */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -60,7 +61,7 @@ export const POST: APIRoute = async (context) => {
         .onConflictDoNothing()
         .returning();
       if (ins) {
-        await db.insert(schema.pointsLedger).values({
+        await awardPoints({
           userId: post.userId,
           delta: PUAN.likeReceived,
           reason: "like_received",

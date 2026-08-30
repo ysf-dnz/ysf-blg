@@ -4,9 +4,11 @@
  * (kulüpsüzlerde site vitrini admin onayına tabidir → pending).
  */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember } from "@/lib/member.ts";
+import { earnedPoints, getOrCreateMember } from "@/lib/member.ts";
+import { levelFor } from "@/lib/levels.ts";
 
 export const prerender = false;
 
@@ -53,7 +55,7 @@ export const POST: APIRoute = async (context) => {
             ),
           );
         if (Number(done?.c) === Number(total?.c)) {
-          await db.insert(schema.pointsLedger).values({
+          await awardPoints({
             userId: member.id,
             delta: 25,
             reason: "quiz", // ders bitirme ödülü (küçük)
@@ -97,7 +99,11 @@ export const POST: APIRoute = async (context) => {
       bookId: String(form.get("bookId") ?? "") || null,
       title,
       description: String(form.get("description") ?? "") || null,
-      status: clubId || member.role === "admin" ? "published" : "pending",
+      // Seviye 7+ güvenilir üretici: onaysız yayın
+      status:
+        clubId || member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
+          ? "published"
+          : "pending",
       createdBy: member.id,
     })
     .returning();

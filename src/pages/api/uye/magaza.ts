@@ -1,5 +1,6 @@
 /** POST /api/uye/magaza — flair satın alma (50 puan). */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
@@ -22,7 +23,7 @@ export const POST: APIRoute = async (context) => {
   if ((await pointBalance(member.id)) < PUAN.flairCost)
     return context.redirect("/uye/magaza?durum=yetersiz");
 
-  await db.insert(schema.pointsLedger).values({
+  await awardPoints({
     userId: member.id,
     delta: -PUAN.flairCost,
     reason: "spend_flair",

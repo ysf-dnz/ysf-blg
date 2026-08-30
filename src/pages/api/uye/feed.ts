@@ -4,6 +4,7 @@
  * kendi gönderini beğenemezsin, gönderi başına 1 beğeni (unique index).
  */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -104,7 +105,7 @@ export const POST: APIRoute = async (context) => {
           );
         // inserted dahil sayıldı → daha önceki puanlı sayı = c - 1
         if (likePuaniVerilirMi(Number(sayi?.c ?? 1) - 1)) {
-          await db.insert(schema.pointsLedger).values({
+          await awardPoints({
             userId: post.userId,
             delta: PUAN.likeReceived,
             reason: "like_received",

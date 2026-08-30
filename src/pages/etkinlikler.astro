@@ -17,13 +17,20 @@ const events = await db.query.events.findMany({
 const eventIds = events.map((e) => e.id);
 const myRsvps = new Set<number>();
 const counts = new Map<number, number>();
+const priorityCounts = new Map<number, number>();
+const myPriority = new Set<number>();
 if (eventIds.length) {
   const rows = await db.query.eventRsvps.findMany({
     where: inArray(schema.eventRsvps.eventId, eventIds),
   });
   for (const r of rows) {
     counts.set(r.eventId, (counts.get(r.eventId) ?? 0) + 1);
-    if (member && r.userId === member.id) myRsvps.add(r.eventId);
+    if (r.priority)
+      priorityCounts.set(r.eventId, (priorityCounts.get(r.eventId) ?? 0) + 1);
+    if (member && r.userId === member.id) {
+      myRsvps.add(r.eventId);
+      if (r.priority) myPriority.add(r.eventId);
+    }
   }
 }
 const canCreate = member && member.role !== "member";
@@ -62,15 +69,26 @@ const canCreate = member && member.role !== "member";
               {e.description && <p class="mt-1 text-sm text-ink-muted">{e.description}</p>}
             </div>
             <div class="text-center">
-              <p class="text-sm text-ink-muted">{counts.get(e.id) ?? 0} katılımcı</p>
+              <p class="text-sm text-ink-muted">
+                {counts.get(e.id) ?? 0} katılımcı
+                {(priorityCounts.get(e.id) ?? 0) > 0 && (
+                  <span title="Öncelikli koltuk"> · ⭐{priorityCounts.get(e.id)}</span>
+                )}
+              </p>
               {member && !myRsvps.has(e.id) ? (
                 <form method="post" action="/api/uye/etkinlik">
                   <input type="hidden" name="action" value="rsvp" />
                   <input type="hidden" name="eventId" value={e.id} />
-                  <button class="mt-1 cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105">Katılıyorum</button>
+                  <button class="mt-1 cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katılıyorum</button>
+                  <label class="mt-1.5 flex cursor-pointer items-center justify-center gap-1.5 text-xs text-ink-muted">
+                    <input type="checkbox" name="priority" value="1" class="accent-(--accent)" />
+                    ⭐ Öncelikli koltuk (25p)
+                  </label>
                 </form>
               ) : myRsvps.has(e.id) ? (
-                <p class="mt-1 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-medium text-accent">Katılıyorsun ✓</p>
+                <p class="mt-1 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-medium text-accent">
+                  Katılıyorsun ✓{myPriority.has(e.id) && " ⭐"}
+                </p>
               ) : null}
             </div>
           </article>

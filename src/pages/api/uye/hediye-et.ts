@@ -4,6 +4,7 @@
  * Korumalar: kendine olmaz, alıcı zaten sahipse olmaz, bakiye şart.
  */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember, hasBookAccess, pointBalance } from "@/lib/member.ts";
@@ -41,7 +42,7 @@ export const POST: APIRoute = async (context) => {
   }
   if ((await pointBalance(member.id)) < PUAN.giftBookCost) return geri();
 
-  await db.insert(schema.pointsLedger).values({
+  await awardPoints({
     userId: member.id,
     delta: -PUAN.giftBookCost,
     reason: "spend_gift",

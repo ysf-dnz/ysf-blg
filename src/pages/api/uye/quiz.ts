@@ -3,6 +3,7 @@
  * Puan = doğruluk × hız; yalnızca ilk denemede points_ledger'a yazılır.
  */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -43,7 +44,7 @@ export const POST: APIRoute = async (context) => {
 
   const awarded = prev ? 0 : points;
   if (awarded > 0) {
-    await db.insert(schema.pointsLedger).values({
+    await awardPoints({
       userId: member.id,
       delta: awarded,
       reason: "quiz",

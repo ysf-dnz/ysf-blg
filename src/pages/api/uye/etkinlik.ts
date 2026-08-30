@@ -1,7 +1,9 @@
 /** POST /api/uye/etkinlik — etkinlik aç (rep/admin) ve RSVP (+10 puan). */
 import type { APIRoute } from "astro";
+import { awardPoints } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
+import { canManage, clubRoleOf } from "@/lib/permissions.ts";
 import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
@@ -29,14 +31,14 @@ export const POST: APIRoute = async (context) => {
         .onConflictDoNothing()
         .returning();
       if (inserted) {
-        await db.insert(schema.pointsLedger).values({
+        await awardPoints({
           userId: member.id,
           delta: PUAN.eventAttended,
           reason: "event_attended",
           refId: String(eventId),
         });
         if (priority) {
-          await db.insert(schema.pointsLedger).values({
+          await awardPoints({
             userId: member.id,
             delta: -PUAN.prioritySeatCost,
             reason: "spend_priority",
@@ -48,8 +50,12 @@ export const POST: APIRoute = async (context) => {
     return context.redirect("/etkinlikler");
   }
 
-  if (member.role === "member")
-    return new Response("Yetkisiz", { status: 403 });
+  // Oluşturma: kulüp etkinliğinde kulüp yöneticisi, global'de rep/admin
+  const clubId = Number(form.get("clubId") ?? 0) || null;
+  const yetkili = clubId
+    ? canManage(await clubRoleOf(member, clubId))
+    : member.role !== "member";
+  if (!yetkili) return new Response("Yetkisiz", { status: 403 });
   const title = String(form.get("title") ?? "").trim();
   const startsAt = new Date(String(form.get("startsAt") ?? ""));
   if (!title || isNaN(startsAt.getTime()))
@@ -57,9 +63,10 @@ export const POST: APIRoute = async (context) => {
   await db.insert(schema.events).values({
     title,
     startsAt,
+    clubId,
     location: String(form.get("location") ?? "") || null,
     description: String(form.get("description") ?? "") || null,
     createdBy: member.id,
   });
-  return context.redirect("/etkinlikler");
+  return context.redirect(clubId ? context.request.headers.get("referer") || "/etkinlikler" : "/etkinlikler");
 };

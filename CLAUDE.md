@@ -29,7 +29,37 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - e2e **dev server'a** koşar (Vercel adapter `astro preview` desteklemez — kanıtlı). Tuzaklar: `details.first()` mobil menüyü bulur (`details[id^='kat-']` kullan); tema toggle startViewTransition'la asenkron; uzun dev oturumu EMFILE/`504 Outdated Optimize Dep` üretir → sunucu restart + `rm -rf node_modules/.vite`.
 - Değer notları: `src/data/deger-notlari.json` (NotebookLM MCP `notebook_query` ile üretim; 884 için batch iş BEKLİYOR — nb-sor.py hattı)
 
+## Topluluk motoru (2026-08-09 eklendi)
+- **Puanın tek kapısı `src/lib/rewards.ts` `awardPoints()`** — ledger'a DOĞRUDAN insert YASAK; streak + seviye açılımları (3/5/7: bedava kitap, usta-okur, onaysız yayın) + rozetler buradan tetiklenir.
+- Lig/sezon `src/lib/league.ts`: kulüp skoru = pozitif katkı ÷ √üye; `aktifSezon()` ayı otomatik açar. `/lider?t=lig`, kulüp sayfası Lig sekmesi (özel ligler `club_leagues`).
+- Kulüp içi gruplar (`club_groups`; lider=mod), grup hedefli görev ilk 48s gruba özel; claim atomik + kulüp üyeliği şart + üye başına 2 aktif görev.
+- Cron: `vercel.json` → `GET /api/cron/gunluk` (`CRON_SECRET`; `cron_runs` idempotency). İşler: bayat görev, sezon kapanış/açılış, ayın kitabı (oy birincisi → kampanya), özel lig kapanışı.
+
 ## Bekleyenler / sonraki adımlar
 - Commit + Vercel deploy hiç yapılmadı (tüm iş local + Neon canlı)
-- Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları, streak
+- Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları
 - Auth'lu e2e (@clerk/testing), 884 kitaba toplu değer notu üretimi
+
+## Agent skills
+
+### Issue tracker
+
+İşler GitHub Issues'ta (`ysf-dnz/ysf-blg`, `gh` CLI ile). Bkz. `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Varsayılan beş rol: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Bkz. `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Tek-bağlam: kökte `CONTEXT.md` + `docs/adr/`. Bkz. `docs/agents/domain.md`.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

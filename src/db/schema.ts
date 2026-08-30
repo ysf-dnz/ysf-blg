@@ -30,6 +30,9 @@ export const users = pgTable(
     flair: text("flair"),
     /** Sosyal linkler JSON: {linkedin, github, instagram, youtube, x, website} */
     socials: text("socials"),
+    /** 🔥 Günlük seri: ardışık aktif gün sayısı ve son aktif günü (YYYY-MM-DD) */
+    streakCount: integer("streak_count").notNull().default(0),
+    streakLastDay: text("streak_last_day"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
@@ -62,6 +65,9 @@ export const pointsLedger = pgTable("points_ledger", {
       "spend_priority", // negatif: etkinlik öncelikli koltuk
       "spend_flair", // negatif: avatar süsü
       "admin_adjust",
+      "streak_bonus", // 7/30 gün seri ödülü
+      "season_reward", // sezon sonu ödülü
+      "level_reward", // seviye atlama ödülü
     ],
   }).notNull(),
   refId: text("ref_id"),
@@ -324,10 +330,23 @@ export const clubMembers = pgTable(
     role: text("role", { enum: ["president", "mod", "member"] })
       .notNull()
       .default("member"),
+    /** Kulüp içi grup ataması (19+ üyede hiyerarşik yönetim) */
+    groupId: integer("group_id"),
     joinedAt: timestamp("joined_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("club_members_idx").on(t.clubId, t.userId)],
 );
+
+/** Kulüp içi gruplar: başkan kurar, lider (mod) yönetir */
+export const clubGroups = pgTable("club_groups", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id")
+    .notNull()
+    .references(() => clubs.id),
+  name: text("name").notNull(),
+  leaderId: integer("leader_id").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
 /** Kulüp ortak kütüphanesi: katalogdan kitap VEYA serbest not/kaynak */
 export const clubBooks = pgTable("club_books", {
@@ -405,6 +424,8 @@ export const campaignTasks = pgTable("campaign_tasks", {
     .notNull()
     .default("backlog"),
   assigneeId: integer("assignee_id").references(() => users.id),
+  /** Grup hedefli görev: ilk 48 saat yalnız grup üyeleri üstlenir */
+  groupId: integer("group_id"),
   rewardPoints: integer("reward_points").notNull().default(50),
   dueAt: timestamp("due_at"),
   claimedAt: timestamp("claimed_at"),
@@ -472,4 +493,82 @@ export const courseProgress = pgTable(
     completedAt: timestamp("completed_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("course_progress_idx").on(t.userId, t.itemId)],
+);
+
+/* ============================================================
+   Lig, sezon, rozet, cron — topluluk motoru
+   ============================================================ */
+
+/** Site geneli sezonlar (aylık): kulüpler ligi bu pencerede yarışır */
+export const seasons = pgTable("seasons", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // örn. "2026 Ağustos"
+  startsAt: timestamp("starts_at").notNull(),
+  endsAt: timestamp("ends_at").notNull(),
+  status: text("status", { enum: ["active", "closed"] })
+    .notNull()
+    .default("active"),
+  /** Kapanışta kazanan kulüp (rozet + duyuru için) */
+  championClubId: integer("champion_club_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/** Başkanın kulüp içi özel ligleri */
+export const clubLeagues = pgTable("club_leagues", {
+  id: serial("id").primaryKey(),
+  clubId: integer("club_id")
+    .notNull()
+    .references(() => clubs.id),
+  name: text("name").notNull(),
+  startsAt: timestamp("starts_at").notNull(),
+  endsAt: timestamp("ends_at").notNull(),
+  /** Serbest metin ödül vaadi: "Şampiyona kitap hediye" */
+  rewardNote: text("reward_note"),
+  createdBy: integer("created_by")
+    .notNull()
+    .references(() => users.id),
+  status: text("status", { enum: ["active", "closed"] })
+    .notNull()
+    .default("active"),
+  winnerId: integer("winner_id").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/** Rozetler: başarı anlarında bir kez verilir */
+export const badges = pgTable(
+  "badges",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    kind: text("kind", {
+      enum: [
+        "ilk-yazi",
+        "streak-7",
+        "streak-30",
+        "gorev-10",
+        "quiz-ustasi",
+        "davetci-5",
+        "kulup-kurucu",
+        "sezon-sampiyonu",
+        "lig-birincisi",
+        "usta-okur",
+      ],
+    }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("badges_idx").on(t.userId, t.kind)],
+);
+
+/** Cron idempotency: her iş+dönem bir kez çalışır */
+export const cronRuns = pgTable(
+  "cron_runs",
+  {
+    id: serial("id").primaryKey(),
+    job: text("job").notNull(),
+    periodKey: text("period_key").notNull(), // örn. "2026-08" veya "2026-08-09"
+    ranAt: timestamp("ran_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("cron_runs_idx").on(t.job, t.periodKey)],
 );

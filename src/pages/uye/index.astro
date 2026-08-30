@@ -2,7 +2,7 @@
 /**
  * Üye panosu: puan, seviye, açılan kitaplar, bildirimler, davet linki.
  */
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { getCollection } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
@@ -14,6 +14,7 @@ import {
 } from "@/lib/member.ts";
 import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { PUAN } from "@/lib/points.ts";
+import { UNLOCKS } from "@/lib/rewards.ts";
 
 export const prerender = false;
 
@@ -76,6 +77,24 @@ const gorevler = [
 const tamamlanan = gorevler.filter((g) => g.ok).length;
 const level = levelFor(earned);
 const toNext = pointsToNextLevel(earned);
+
+// 🔨 Görevlerim: üstlenilen kampanya görevleri + son tarih
+const uzerimdeki = await db
+  .select({
+    id: schema.campaignTasks.id,
+    title: schema.campaignTasks.title,
+    status: schema.campaignTasks.status,
+    dueAt: schema.campaignTasks.dueAt,
+    rewardPoints: schema.campaignTasks.rewardPoints,
+    campaignId: schema.campaignTasks.campaignId,
+  })
+  .from(schema.campaignTasks)
+  .where(
+    and(
+      eq(schema.campaignTasks.assigneeId, member.id),
+      inArray(schema.campaignTasks.status, ["claimed", "review"]),
+    ),
+  );
 const books = await getCollection("books");
 // 🗝️ Bilgi Hazinesi: 5 kitaplık hedef listesi (açılanlar ✓, kalanlar kilitli)
 const hazine = await db.query.learningList.findMany({
@@ -95,6 +114,33 @@ const myBooks = access
   .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
   .filter(Boolean);
 const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
+
+// 🏅 Rozetler + 🔥 streak + sıradaki seviye açılımı
+const rozetler = await db.query.badges.findMany({
+  where: eq(schema.badges.userId, member.id),
+});
+const ROZET_META: Record<string, { ikon: string; ad: string }> = {
+  "ilk-yazi": { ikon: "✍️", ad: "İlk Yazı" },
+  "streak-7": { ikon: "🔥", ad: "7 Gün Seri" },
+  "streak-30": { ikon: "🔥🔥", ad: "30 Gün Seri" },
+  "gorev-10": { ikon: "🔨", ad: "10 Görev" },
+  "quiz-ustasi": { ikon: "🧠", ad: "Quiz Ustası" },
+  "davetci-5": { ikon: "🤝", ad: "Davetçi" },
+  "kulup-kurucu": { ikon: "🏛️", ad: "Kulüp Kurucu" },
+  "sezon-sampiyonu": { ikon: "🏆", ad: "Sezon Şampiyonu" },
+  "lig-birincisi": { ikon: "🥇", ad: "Lig Birincisi" },
+  "usta-okur": { ikon: "📚", ad: "Usta Okur" },
+};
+// Streak bugün/dün aktifse canlı sayılır; değilse görsel olarak sıfır göster
+const bugunKey = new Date();
+const gk = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const streakCanli =
+  member.streakLastDay === gk(bugunKey) ||
+  member.streakLastDay === gk(new Date(Date.now() - 864e5));
+const streakGoster = streakCanli ? member.streakCount : 0;
+const siradakiAcilim = UNLOCKS[[3, 5, 7].find((lv) => lv > level) ?? 0] ?? null;
+const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
 ---
 
 <Base title={t("uye.panel")}>
@@ -106,7 +152,7 @@ const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
       <h1 class="font-display text-3xl font-semibold text-ink">{member.name}</h1>
       <p class="mt-1 text-ink-muted">@{member.handle}</p>
     </div>
-    <div class="ml-auto flex gap-4 text-center">
+    <div class="ml-auto flex flex-wrap gap-4 text-center">
       <div class="rounded-xl border border-line bg-surface-raised px-5 py-3">
         <p class="font-display text-2xl font-semibold text-accent" data-ticker>{balance}</p>
         <p class="text-xs text-ink-muted">{t("uye.puan")}</p>
@@ -117,8 +163,36 @@ const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
           <p class="text-xs text-ink-muted">{t("uye.sonrakiSeviye")}: {toNext}</p>
         )}
       </div>
+      <div class="rounded-xl border border-line bg-surface-raised px-5 py-3" title="Her gün puan kazandıran bir şey yap, serin büyüsün. 7 gün: +25p · 30 gün: +150p">
+        <p class="font-display text-2xl font-semibold text-accent">🔥 {streakGoster}</p>
+        <p class="text-xs text-ink-muted">günlük seri</p>
+      </div>
     </div>
   </section>
+
+  {
+    siradakiAcilim && (
+      <p class="mt-6 rounded-xl border border-accent/40 bg-accent-soft/40 px-4 py-2.5 text-sm text-ink" data-reveal>
+        ✨ <strong>Seviye {siradakiAcilimSeviye}</strong>'te seni ne bekliyor: {siradakiAcilim}
+        {toNext !== null && <span class="text-ink-muted"> — sonraki seviyeye {toNext} puan</span>}
+      </p>
+    )
+  }
+
+  {
+    rozetler.length > 0 && (
+      <section class="mt-6 flex flex-wrap gap-2" data-reveal aria-label="Rozetler">
+        {rozetler.map((r) => {
+          const m = ROZET_META[r.kind];
+          return (
+            <span class="rounded-full border border-line bg-surface-raised px-3 py-1.5 text-sm" title={m?.ad}>
+              {m?.ikon} <span class="text-xs text-ink-muted">{m?.ad}</span>
+            </span>
+          );
+        })}
+      </section>
+    )
+  }
 
   {
     tamamlanan < gorevler.length && (
@@ -204,6 +278,43 @@ const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
     )
   }
 
+  {
+    uzerimdeki.length > 0 && (
+      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5" data-reveal>
+        <h2 class="font-display text-xl font-semibold text-ink">🔨 Görevlerim</h2>
+        <p class="mt-1 text-xs text-ink-muted">Üstlendiğin kampanya görevleri — teslim ettikçe puan kazanırsın (×1.5).</p>
+        <ul class="mt-3 divide-y divide-line">
+          {uzerimdeki.map((g) => {
+            const kalanMs = g.dueAt ? g.dueAt.getTime() - Date.now() : null;
+            const acil = kalanMs !== null && kalanMs < 864e5;
+            return (
+              <li class="flex flex-wrap items-center justify-between gap-2 py-2.5">
+                <a href={`/kampanya/${g.campaignId}`} class="min-w-0 flex-1 truncate text-sm font-medium text-ink hover:text-accent">
+                  {g.title}
+                </a>
+                <span class="flex items-center gap-2 text-xs">
+                  {g.dueAt && (
+                    <span class:list={[acil ? "font-medium text-amber-600" : "text-ink-muted"]}>
+                      {kalanMs! < 0 ? "⏰ süresi geçti" : acil ? `⏳ ${Math.ceil(kalanMs! / 36e5)} saat` : `📆 ${Math.ceil(kalanMs! / 864e5)} gün`}
+                    </span>
+                  )}
+                  {g.status === "review" ? (
+                    <span class="rounded-full bg-accent-soft px-2.5 py-0.5 text-accent">🔍 İncelemede</span>
+                  ) : (
+                    <a href={`/kampanya/${g.campaignId}`} class="rounded-full bg-accent px-3 py-1 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+                      Teslim et →
+                    </a>
+                  )}
+                  <span class="font-semibold text-accent">+{Math.round(g.rewardPoints * 1.5)}p</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    )
+  }
+
   <section class="mt-8" data-reveal>
     <h2 class="font-display text-xl font-semibold text-ink">{t("kutuphane.kitapRafi")}</h2>
     <ul class="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6" data-stagger>
@@ -237,7 +348,7 @@ const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
         </select>
         <div class="flex gap-2">
           <input name="handle" required placeholder="@kullanici-adi" class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-          <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105">Gönder</button>
+          <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Gönder</button>
         </div>
       </form>
       <a href="/uye/magaza" class="mt-3 inline-block text-sm font-medium text-accent hover:underline">✨ Puan mağazası →</a>
