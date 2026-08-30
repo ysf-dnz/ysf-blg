@@ -83,7 +83,7 @@ const prevAttempt = quiz
                 </span>
               )}
             </p>
-            <button id="quiz-start" class="mt-5 cursor-pointer rounded-full bg-accent px-8 py-3 font-medium text-surface transition-transform hover:scale-105">
+            <button id="quiz-start" class="mt-5 cursor-pointer rounded-full bg-accent px-8 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
               Başla
             </button>
           </div>
@@ -175,7 +175,7 @@ const prevAttempt = quiz
           <p class="font-display text-5xl font-bold text-accent">${r.correctCount}/${r.totalCount}</p>
           <p class="mt-2 text-ink">${r.points > 0 ? `+${r.points} puan kazandın 🎉` : "Tekrar oyun — puan ilk denemede verildi."}</p>
           <div class="mt-5 flex flex-wrap justify-center gap-3">
-            <a href="/uye/yaz?kitap=${encodeURIComponent(bookId)}" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105">✍️ Bu kitap için yazı yaz (+100)</a>
+            <a href="/uye/yaz?kitap=${encodeURIComponent(bookId)}" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">✍️ Bu kitap için yazı yaz (+100)</a>
             <a href="/lider" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">🏆 Liderlik tablosu</a>
           </div>`;
       } catch {

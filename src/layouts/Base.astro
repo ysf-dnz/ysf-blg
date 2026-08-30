@@ -72,6 +72,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
               (pref === "system" &&
                 matchMedia("(prefers-color-scheme: dark)").matches);
             document.documentElement.dataset.theme = dark ? "dark" : "light";
+            // Tema düğmesi ikonları tercihe (light/dark/system) bakar
+            document.documentElement.dataset.themePref = pref;
           } catch {}
         };
         applyTheme();
@@ -86,7 +88,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     >
       {t("nav.icerigeAtla")}
     </a>
-    <header class="site-header border-b border-line">
+    <header class="site-header">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
         <a
           href={localizePath("/", lang)}
@@ -118,7 +120,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
             <SignInButton mode="modal" forceRedirectUrl="/uye/hosgeldin" asChild>
               <button
                 type="button"
-                class="ml-1 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-medium text-surface transition-transform hover:scale-105"
+                class="ml-1 cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]"
               >
                 {t("uye.katil")}
               </button>
@@ -177,18 +179,25 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
 
     <script>
       import { initMotion } from "@/features/motion/init.ts";
+      import { closePop } from "@/features/motion/waapi.ts";
 
       // Mobil menü: dışarı tıklayınca veya Escape ile kapanır.
+      // Kapanış girişle simetrik: panel origin'ine küçülerek söner (§7).
       // Delegasyon kullanılır; View Transitions sonrası da çalışır.
       const getMenu = () =>
         document.getElementById("mobil-menu") as HTMLDetailsElement | null;
+      const closeMenu = (menu: HTMLDetailsElement) => {
+        const panel = menu.querySelector<HTMLElement>(".menu-pop");
+        if (panel) closePop(panel, () => (menu.open = false));
+        else menu.open = false;
+      };
       document.addEventListener("click", (e) => {
         const menu = getMenu();
-        if (menu?.open && !menu.contains(e.target as Node)) menu.open = false;
+        if (menu?.open && !menu.contains(e.target as Node)) closeMenu(menu);
       });
       document.addEventListener("keydown", (e) => {
         const menu = getMenu();
-        if (e.key === "Escape" && menu?.open) menu.open = false;
+        if (e.key === "Escape" && menu?.open) closeMenu(menu);
       });
 
       // Animasyon motoru: ilk yüklemede ve her soft-nav sonrasında

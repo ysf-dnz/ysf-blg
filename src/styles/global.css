@@ -73,6 +73,16 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  /* Display yüzü: optik boyutlandırma açık (Fraunces variable eksenleri) */
+  .font-display {
+    font-optical-sizing: auto;
+  }
+  /* Büyük display başlıklar negatif tracking ister (apple-design §15);
+     base katmanında olduğundan tracking-* utility'leri gerektiğinde ezer */
+  h1:where(.font-display),
+  h2:where(.font-display) {
+    letter-spacing: -0.02em;
+  }
   ::selection {
     background-color: var(--accent);
     color: var(--surface);

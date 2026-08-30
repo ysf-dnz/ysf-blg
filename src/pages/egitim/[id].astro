@@ -121,7 +121,7 @@ const IKON = { youtube: "🎬", yazi: "✍️", quiz: "🧠" } as const;
         aktifQuiz && (
           <div class="rounded-2xl border border-line bg-surface-raised p-8 text-center">
             <p class="font-display text-xl font-semibold text-ink">🧠 {aktifQuiz.title}</p>
-            <a href={`/kitap/${aktifQuiz.bookId}/quiz`} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+            <a href={`/kitap/${aktifQuiz.bookId}/quiz`} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
               Quiz'i çöz <span class="arrow-slide">→</span>
             </a>
           </div>
@@ -135,7 +135,7 @@ const IKON = { youtube: "🎬", yazi: "✍️", quiz: "🧠" } as const;
               <form method="post" action="/api/uye/egitim">
                 <input type="hidden" name="action" value="complete" />
                 <input type="hidden" name="itemId" value={aktif.id} />
-                <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105">
+                <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                   Tamamlandı işaretle ✓
                 </button>
               </form>

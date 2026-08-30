@@ -7,7 +7,7 @@
  * View Transitions ile uyum: astro:page-load'da yeniden bağlanır.
  */
 
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+import { prefersReducedMotion } from "./waapi.ts";
 
 function easeOutExpo(t: number): number {
   return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
@@ -48,7 +48,7 @@ function initTicker() {
       io.unobserve(el);
       el.dataset.done = "1";
       const target = parseInt(el.textContent ?? "0", 10);
-      if (!Number.isFinite(target) || reduced) continue;
+      if (!Number.isFinite(target) || prefersReducedMotion()) continue;
       const start = performance.now();
       const dur = 1200;
       const tick = (now: number) => {

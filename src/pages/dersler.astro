@@ -46,7 +46,7 @@ const creators = new Map(
         <p class="mt-2 text-ink-muted">Video izle, yazı oku, quiz çöz — hepsi tek yol haritasında.</p>
       </div>
       {member && (
-        <a href="/uye/egitim-olustur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+        <a href="/uye/egitim-olustur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
           Eğitim oluştur <span class="arrow-slide">→</span>
         </a>
       )}
@@ -66,7 +66,7 @@ const creators = new Map(
           const pct = total ? Math.round((done / total) * 100) : 0;
           return (
             <li>
-              <a href={`/egitim/${c.id}`} class="hover-lift shine block h-full rounded-xl border border-line bg-surface-raised p-5 hover:border-accent/50 hover:shadow-lg">
+              <a href={`/egitim/${c.id}`} class="hover-lift shine block h-full rounded-xl border border-line bg-surface-raised p-5 hover:border-accent/50">
                 <h2 class="font-display text-lg font-semibold leading-snug text-ink">{c.title}</h2>
                 {c.description && <p class="mt-1 line-clamp-2 text-sm text-ink-muted">{c.description}</p>}
                 <p class="mt-2 text-xs text-ink-muted">

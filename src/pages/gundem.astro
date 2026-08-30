@@ -56,7 +56,7 @@ const aktifKitap = aktif ? bookOf(aktif.bookId) : undefined;
         <p class="hero-sub mt-2 text-ink-muted">
           📖 {aktifKitap?.titleTr ?? aktifKitap?.title ?? aktif.bookId} · üretimler ×1.5 puan
         </p>
-        <a href={`/kampanya/${aktif.id}`} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+        <a href={`/kampanya/${aktif.id}`} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
           Panoya git <span class="arrow-slide">→</span>
         </a>
       </section>

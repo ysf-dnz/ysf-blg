@@ -70,7 +70,7 @@ const degerNotu = (
       içerikler (özet, sorular, NotebookLM sohbeti{moduller.length > 0 && ", slayt/podcast pencereleri"}) aynı anda açıldı.
     </p>
     <div class="mt-3 flex flex-wrap justify-center gap-2">
-      <a id="acildi-indir" href="#" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105">📥 Bilgisayarına indir</a>
+      <a id="acildi-indir" href="#" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">📥 Bilgisayarına indir</a>
       <a id="acildi-oku" href="#" target="_blank" rel="noopener noreferrer" class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">📖 Drive'da aç</a>
       {notebookUrl && (
         <a href={notebookUrl} target="_blank" rel="noopener noreferrer" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">💬 NotebookLM'de sor</a>
@@ -97,7 +97,7 @@ const degerNotu = (
         href="#"
         target="_blank"
         rel="noopener noreferrer"
-        class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105"
+        class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]"
       >
         📖 Drive'da hemen aç
       </a>
@@ -120,7 +120,9 @@ const degerNotu = (
       setTimeout(() => (btn.textContent = "Instagram için kopyala"), 2000);
     });
     // 🎊 Konfeti: hazine açılışında ekrana emoji parçacıkları yağar
+    // (WAAPI, CSS reduced-motion kuralına girmez — burada elle atlanır)
     function konfeti(hedef: HTMLElement) {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const parcalar = ["🎉", "✨", "🗝️", "📚", "⭐"];
       for (let i = 0; i < 36; i++) {
         const p = document.createElement("span");

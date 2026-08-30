@@ -34,14 +34,6 @@
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-@keyframes ysf-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
-}
-@keyframes ysf-pulse-soft {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
-}
 @keyframes ysf-drift {
   from { background-position: 0 0; }
   to   { background-position: 220px 220px; }
@@ -128,15 +120,46 @@ html.motion-ok [data-stagger].in > * {
   animation: ysf-gradient-shift 6s ease-in-out infinite;
 }
 
+/* ---------- Basış geri bildirimi (Response §1) ----------
+   Dokunmatikte hover yoktur; her etkileşim pointer-down anında yanıt verir.
+   .sv-nav (tam ekran story tık bölgeleri) hariç tutulur. */
+:where(button, summary, [role="button"]):not(.sv-nav) {
+  transition: transform var(--dur-fast) var(--ease-out-expo);
+}
+:where(button, summary, [role="button"]):not(.sv-nav):active {
+  transform: scale(0.97);
+}
+.nav-underline:active {
+  transform: scale(0.97);
+}
+.pill-pop:active {
+  transform: scale(0.97);
+}
+
 /* ---------- Kart etkileşimleri ---------- */
+/* Gölge, ::after'da hazır bekler; yalnız opacity anime edilir (compositor). */
 .hover-lift {
+  position: relative;
   transition:
     transform var(--dur-base) var(--ease-out-expo),
-    box-shadow var(--dur-base) var(--ease-out-expo),
     border-color var(--dur-base) ease;
+}
+.hover-lift::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ink) 12%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out-expo);
+  pointer-events: none;
+  z-index: -1;
 }
 .hover-lift:hover {
   transform: translateY(-4px);
+}
+.hover-lift:hover::after {
+  opacity: 1;
 }
 /* Işık süpürmesi: kartın üstünden geçen parlama */
 .shine {
@@ -181,11 +204,14 @@ html.motion-ok [data-stagger].in > * {
 .site-header.scrolled {
   box-shadow: 0 1px 12px color-mix(in srgb, var(--ink) 8%, transparent);
 }
+/* letter-spacing yerine transform: compositor dostu, komşu nav'ı itmez */
 .brand-link {
-  transition: letter-spacing var(--dur-base) var(--ease-out-expo), color var(--dur-fast) ease;
+  display: inline-block;
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out-expo), color var(--dur-fast) ease;
 }
 .brand-link:hover {
-  letter-spacing: 0.02em;
+  transform: scale(1.02);
 }
 /* Soldan büyüyen altçizgi (aktif + hover) */
 .nav-underline {
@@ -208,29 +234,26 @@ html.motion-ok [data-stagger].in > * {
 .nav-underline[aria-current="page"]::after {
   transform: scaleX(1);
 }
-/* Mobil menü paneli: sağ üstten pop */
+/* Menü paneli: tetikleyicisinden pop (origin --pop-origin ile ayarlanır;
+   varsayılan sağ üst = header mobil menüsü) */
 .menu-pop {
-  transform-origin: top right;
+  transform-origin: var(--pop-origin, top right);
   animation: ysf-scale-in var(--dur-base) var(--ease-out-expo) both;
 }
 .menu-pop > a {
   animation: ysf-fade-up 0.4s var(--ease-out-expo) both;
   animation-delay: calc(var(--i, 0) * 50ms);
 }
-/* Arama kısayol ipucu nabzı */
-.kbd-pulse {
-  animation: ysf-pulse-soft 3.2s ease-in-out infinite;
-}
-/* Arama büyüteci sallanması */
+/* Arama büyüteci sallanması (hover momentum taşımaz → overshoot yok) */
 #search-open:hover svg {
   transform: rotate(-8deg) scale(1.08);
 }
 #search-open svg {
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
 /* Tema ikonu geçişi */
 #theme-toggle svg {
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
 #theme-toggle:hover svg {
   transform: rotate(20deg) scale(1.1);
@@ -243,13 +266,12 @@ html.motion-ok [data-stagger].in > * {
 
 /* ---------- Hikâye halkaları ---------- */
 .story-ring > span:first-of-type {
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
-.story-ring:not(.seen) > span:first-of-type {
-  animation: ysf-ring-spin 5s linear infinite;
-}
+/* Görülmemiş halka statik gradyanla zaten ayırt edilir; dönüş yalnız
+   hover'da (sürekli süs hareketi geri bildirimi değersizleştirir) */
 .story-ring:hover:not(.seen) > span:first-of-type {
-  animation-duration: 1.6s;
+  animation: ysf-ring-spin 1.6s linear infinite;
 }
 
 /* ---------- Okuma ilerleme çubuğu ---------- */
@@ -304,9 +326,10 @@ details[open] > ul {
   transform: rotateY(-8deg) translateY(-4px);
   box-shadow: 10px 12px 24px color-mix(in srgb, var(--ink) 18%, transparent);
 }
-/* Kitap detay kapağı: hafif süzülme */
+/* Kitap detay kapağı: tek seferlik yumuşak giriş (sonsuz süzülme,
+   0.2 Hz vestibüler bandına düşer — kaldırıldı) */
 .cover-float {
-  animation: ysf-float 6s ease-in-out infinite;
+  animation: ysf-fade-up 0.7s var(--ease-out-expo) both;
 }
 
 /* ---------- Arama modalı ---------- */
@@ -354,7 +377,7 @@ details[open] > ul {
 /* Ok kayması: "Tüm yazılar →", PrevNext, sayfalama */
 .arrow-slide {
   display: inline-block;
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
 a:hover > .arrow-slide,
 a:hover .arrow-slide {
@@ -366,11 +389,11 @@ a:hover .arrow-slide-l {
 }
 .arrow-slide-l {
   display: inline-block;
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
 /* Footer sosyal ikon mikro-zıplama */
 footer a svg {
-  transition: transform var(--dur-base) var(--ease-spring);
+  transition: transform var(--dur-base) var(--ease-out-expo);
 }
 footer a:hover svg {
   transform: translateY(-3px) scale(1.1);
@@ -378,7 +401,7 @@ footer a:hover svg {
 /* Kategori pilleri */
 .pill-pop {
   transition:
-    transform var(--dur-fast) var(--ease-spring),
+    transform var(--dur-fast) var(--ease-out-expo),
     background-color var(--dur-base) ease,
     border-color var(--dur-base) ease,
     color var(--dur-base) ease;
@@ -391,9 +414,9 @@ footer a:hover svg {
   animation: ysf-pop 0.4s var(--ease-spring);
   color: var(--accent);
 }
-/* Boş durum kutusu süzülen içerik */
+/* Boş durum kutusu: tek seferlik giriş */
 .empty-float {
-  animation: ysf-float 5s ease-in-out infinite;
+  animation: ysf-fade-up 0.6s var(--ease-out-expo) both;
 }
 
 /* ---------- Sayfa geçişleri (View Transitions) ---------- */
@@ -425,12 +448,39 @@ footer a:hover svg {
   .gradient-text,
   .girih-texture::before,
   .story-ring > span:first-of-type,
-  .kbd-pulse,
   .cover-float,
   .empty-float,
   details[open] > ul,
   .menu-pop,
   .menu-pop > a {
     animation: none !important;
+  }
+}
+
+/* ============================================================
+   Saydamlık azaltma & yüksek kontrast (apple-design §14)
+   ============================================================ */
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #search-dialog::backdrop,
+  #story-viewer::backdrop {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.72);
+  }
+}
+@media (prefers-contrast: more) {
+  .site-header {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--ink);
+  }
+  #search-dialog,
+  .menu-pop {
+    border-color: var(--ink);
   }
 }

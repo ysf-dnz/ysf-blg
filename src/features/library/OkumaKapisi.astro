@@ -138,13 +138,13 @@ if (beslenen.length) {
               <li class="rounded-lg bg-surface px-2.5 py-1.5">🗝️ Kütüphanene sonsuza dek eklenir</li>
             </ul>
             {access === "guest" ? (
-              <a href={`/uye/hosgeldin?donus=${encodeURIComponent(`/kutuphane/kitap/${bookId}`)}`} class="mt-5 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+              <a href={`/uye/hosgeldin?donus=${encodeURIComponent(`/kutuphane/kitap/${bookId}`)}`} class="mt-5 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                 {t("kitap.girisYap")}
               </a>
             ) : balance >= unlockCost ? (
               <form method="post" action="/api/uye/kitap-ac" class="mt-5">
                 <input type="hidden" name="bookId" value={bookId} />
-                <button type="submit" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+                <button type="submit" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                   {unlockCost} {t("kitap.puanlaAc")}
                 </button>
                 <p class="mt-2 text-xs text-ink-muted">{balance} {t("uye.puan")}</p>

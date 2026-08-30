@@ -35,7 +35,7 @@ const TUR: Record<string, string> = {
         <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">Kulüpler</h1>
         <p class="mt-2 text-ink-muted">Topluluğun hücreleri — <a href="/harita" class="text-accent hover:underline">haritada gör</a>.</p>
       </div>
-      <a href="/kulup-kur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105">
+      <a href="/kulup-kur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
         Kulüp kur <span class="arrow-slide">→</span>
       </a>
     </div>
@@ -51,7 +51,7 @@ const TUR: Record<string, string> = {
       <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
         {clubs.map((c) => (
           <li>
-            <a href={`/kulup/${c.slug}`} class="hover-lift shine block h-full rounded-xl border border-line bg-surface-raised p-5 hover:border-accent/50 hover:shadow-lg">
+            <a href={`/kulup/${c.slug}`} class="hover-lift shine block h-full rounded-xl border border-line bg-surface-raised p-5 hover:border-accent/50">
               <p class="text-xs font-medium text-accent">{TUR[c.kind]}</p>
               <h2 class="font-display mt-1 text-lg font-semibold text-ink">{c.name}</h2>
               <p class="mt-1 text-sm text-ink-muted">{c.place} · {c.il}</p>
