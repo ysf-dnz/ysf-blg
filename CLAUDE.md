@@ -36,7 +36,7 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - Cron: `vercel.json` → `GET /api/cron/gunluk` (`CRON_SECRET`; `cron_runs` idempotency). İşler: bayat görev, sezon kapanış/açılış, ayın kitabı (oy birincisi → kampanya), özel lig kapanışı.
 
 ## Bekleyenler / sonraki adımlar
-- Commit + Vercel deploy hiç yapılmadı (tüm iş local + Neon canlı)
+- Push + Vercel deploy henüz yapılmadı (iş local commit'li — 2026-08-30 itibarıyla working tree temiz; Neon canlı; git kimliği repo-yerel ysf-dnz)
 - Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları
 - Auth'lu e2e (@clerk/testing), 884 kitaba toplu değer notu üretimi
 
