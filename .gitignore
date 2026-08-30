@@ -22,3 +22,10 @@ test-results/
 .DS_Store
 .vercel
 .env*
+
+# claude code (kişisel izinler — makineye özel)
+.claude/settings.local.json
+
+# graphify (makineye özel yorumlayıcı/kök işaretçileri; grafik + cache commit'lenir)
+graphify-out/.graphify_python
+graphify-out/.graphify_root

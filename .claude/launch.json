@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "graph",
+      "runtimeExecutable": "/Users/macbook/.local/share/uv/tools/graphifyy/bin/python",
+      "runtimeArgs": ["-m", "http.server", "4998", "--directory", "/Users/macbook/Downloads/ysf-blog/graphify-out"],
+      "port": 4998
     }
   ]
 }
