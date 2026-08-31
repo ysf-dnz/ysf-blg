@@ -31,6 +31,17 @@ export default defineConfig({
   // webAnalytics: Vercel'e deploy edilince ziyaretçi istatistikleri otomatik
   // toplanır (vercel.com → proje → Analytics); lokalde etkisizdir
   adapter: vercel({ webAnalytics: { enabled: true } }),
+  security: {
+    // Astro 5.14+ X-Forwarded-Host'a yalnız bu listedekiler için güvenir.
+    // Liste TANIMSIZKEN Vercel'de Astro kendini iç host (localhost) sanır:
+    // Astro.url.origin bozulur (davet linki "localhost" çıktı) ve CSRF
+    // checkOrigin GERÇEK form POST'larını bile 403'ler (onboarding kırıldı).
+    allowedDomains: [
+      { hostname: "yusufdeniz.com", protocol: "https" },
+      { hostname: "www.yusufdeniz.com", protocol: "https" },
+      { hostname: "**.vercel.app", protocol: "https" },
+    ],
+  },
   trailingSlash: "never",
   i18n: {
     defaultLocale: "tr",

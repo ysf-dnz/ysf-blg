@@ -14,6 +14,9 @@ import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
+/** Tarayıcıyla doğrudan gelinirse (GET) çirkin 404 yerine akışa geri dön */
+export const GET: APIRoute = (context) => context.redirect("/uye/hosgeldin");
+
 export const POST: APIRoute = async (context) => {
   const member = await getOrCreateMember(context);
   if (!member) return new Response("Giriş gerekli", { status: 401 });

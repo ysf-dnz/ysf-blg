@@ -59,8 +59,8 @@ const vitrindekiler = [
         </>
       ) : (
         <>
-          {member.name}, öğrenmek isteyip <strong class="text-ink">hakkında yazacağın 5 kitabı</strong> hazinene ekle.
-          İlki bizden hediye 🎁 — kalanların kilidini, yazdıkça kazandığın puanlarla aç.
+          {member.name}, hakkında yazmak isteyeceğin <strong class="text-ink">1–5 kitap</strong> seç (istersen tek kitapla başla).
+          İlk seçtiğin bizden hediye 🎁 — kalanların kilidini, yazdıkça kazandığın puanlarla aç.
         </>
       )}
     </p>
@@ -94,7 +94,9 @@ const vitrindekiler = [
         placeholder="Kitap ara… (örn. Go, yapay zekâ, tasarım)"
         class="w-full max-w-sm rounded-full border border-line bg-surface-raised px-4 py-2.5 text-sm text-ink focus:border-accent"
       />
-      <p class="mt-2 text-xs text-ink-muted">İlk seçtiğin kitap hediyen olur ⭐</p>
+      <p class="mt-2 text-xs text-ink-muted">
+        İlk seçtiğin kitap hediyen olur ⭐ · Arama <strong>tüm {books.length} kitabı</strong> tarar · Sonradan panodan hep ekleyebilirsin
+      </p>
     </div>
 
     <ul id="hediye-liste" class="mx-auto mt-5 grid max-w-4xl grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6" data-stagger>
@@ -140,7 +142,15 @@ const vitrindekiler = [
     const guncelle = () => {
       const secili = sira.length;
       bar.style.width = `${Math.min((secili / 5) * 100, 100)}%`;
-      sayac.textContent = secili >= 5 ? "5/5 — hazır! 🗝️" : `${secili}/5 seçildi`;
+      // 5 ZORUNLU DEĞİL: 1 kitap yeter (ilki hediye) — metin bunu söylesin
+      sayac.textContent =
+        secili === 0
+          ? "En az 1 kitap seç"
+          : secili >= 5
+            ? "5/5 — hazır! 🗝️"
+            : `${secili} seçildi (5'e kadar ekleyebilirsin)`;
+      onayla.textContent =
+        secili <= 1 ? "Hediyemi al 🎁" : `${secili} kitapla kur 🗝️`;
       onayla.disabled = secili === 0;
       // rozetlerde sıra: 1 = ⭐ hediye
       for (const kart of form.querySelectorAll<HTMLLabelElement>(".hazine-kart")) {

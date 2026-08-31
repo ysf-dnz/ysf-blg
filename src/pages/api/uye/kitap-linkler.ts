@@ -11,6 +11,7 @@
  */
 import type { APIRoute } from "astro";
 import { getOrCreateMember, hasBookAccess } from "@/lib/member.ts";
+import { siteKok } from "@/lib/urls.ts";
 import { getEntry } from "astro:content";
 
 export const prerender = false;
@@ -35,7 +36,7 @@ export const GET: APIRoute = async (context) => {
         ? `https://notebooklm.google.com/notebook/${notebookId}`
         : null,
       // Kutlama anı = paylaşım anı: davet kartı bu ref linkiyle üretilir
-      ref: `${context.url.origin}/?ref=${member.handle}`,
+      ref: `${siteKok(context.site, context.url)}/?ref=${member.handle}`,
       kitapAdi: kitap?.data.titleTr ?? kitap?.data.title ?? "",
       kapak: kitap?.data.cover ?? null,
     },

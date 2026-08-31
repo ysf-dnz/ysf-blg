@@ -130,6 +130,18 @@ const degerNotu = (
       btn.textContent = "Kopyalandı ✓";
       setTimeout(() => (btn.textContent = "Instagram için kopyala"), 2000);
     });
+
+    // 📖 İlk-10-sayfa önizlemesi: panel İLK açıldığında iframe'e src atanır
+    // (ağır önizleme ucu görüntülenmeden tetiklenmesin) — island delegasyonu
+    document.addEventListener("click", (e) => {
+      const ozet = (e.target as HTMLElement).closest("[data-onizleme] summary");
+      if (!ozet) return;
+      const panel = ozet.parentElement as HTMLElement;
+      const frame = panel.querySelector<HTMLIFrameElement>("[data-onizleme-frame]");
+      if (frame && !frame.src) {
+        frame.src = `/api/kitap-onizleme?bookId=${encodeURIComponent(panel.dataset.kitap ?? "")}`;
+      }
+    });
     // 🎊 Konfeti: hazine açılışında ekrana emoji parçacıkları yağar
     // (WAAPI, CSS reduced-motion kuralına girmez — burada elle atlanır)
     function konfeti(hedef: HTMLElement) {
