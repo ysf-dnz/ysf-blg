@@ -1,0 +1,25 @@
+# Vercel REMOTE build yapar → yalnız KAYNAK yüklenmeli, üretilmiş çıktı değil.
+# .vercelignore olmadan dist/ + public/pagefind + graphify-out + node_modules
+# binlerce dosya olarak yüklenip free-plan upload limitine (5000 dosya) takılır.
+
+# Bağımlılıklar (Vercel npm install yapar)
+node_modules/
+
+# Build çıktıları (Vercel yeniden build eder — postbuild pagefind/llms.txt dahil)
+dist/
+.vercel/
+.astro/
+public/pagefind/
+
+# Bilgi grafiği (yalnız geliştirme aracı, deploy'a gereksiz — 4.6MB)
+graphify-out/
+
+# Test/kalite artefaktları
+.lighthouseci/
+playwright-report/
+test-results/
+
+# Yerel/kişisel
+.claude/
+.git/
+.DS_Store

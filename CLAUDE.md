@@ -42,11 +42,14 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - Kulüp içi gruplar (`club_groups`; lider=mod), grup hedefli görev ilk 48s gruba özel; claim atomik + kulüp üyeliği şart + üye başına 2 aktif görev.
 - Cron: `vercel.json` → `GET /api/cron/gunluk` (`CRON_SECRET`; `cron_runs` idempotency). İşler: bayat görev, sezon kapanış/açılış, ayın kitabı (oy birincisi → kampanya), özel lig kapanışı.
 
+## Deploy (2026-08-31 CANLI)
+- **Production: https://ysf-blog.vercel.app** (deployment `dpl_2cwb8…`, target production). İlk deploy bugün yapıldı. Canlı doğrulandı: client bundle'da sır YOK, kitap sayfasında Drive/NotebookLM linki YOK, cron secret'sız 401, arama ("Mindset"→3 sonuç)/llms.txt/sitemap 200. Neon'a 8 index uygulandı (idempotency dahil). Vercel env: POSTGRES_URL, CRON_SECRET (3 ortam), SITE_URL, Clerk anahtarları.
+- **Deploy YÖNTEMİ**: git bağlı DEĞİL → `vercel deploy --prod --archive=tgz` (CLI). `--archive=tgz` ŞART: `.vercelignore` ile üretilmiş dosyalar hariç tutulsa da free-plan "5000 dosya/24s" limitini tek arşiv aşar. `--prebuilt` KULLANMA (lokal sırları taşır). Build Vercel'de (`vercel.json` buildCommand=`npm run build` → postbuild koşar).
+
 ## Bekleyenler / sonraki adımlar
-- Push + Vercel deploy henüz yapılmadı (iş local commit'li; Neon canlı; git kimliği repo-yerel ysf-dnz)
-- **DEPLOY ÖNCESİ ZORUNLU**: (1) Clerk `sk_test` anahtarını ROTATE et — eski build'lerde client bundle'a sızmıştı (astro.config'den `secretKey` kaldırıldı, bekçi artık yakalıyor); (2) `drizzle/canli-index-uygula.sql`'i canlı Neon'a uygula (idempotency unique index'i olmadan çift ödül/harcama korumaları DB tarafında yok); (3) Vercel env: `POSTGRES_URL`, `CRON_SECRET`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `SITE_URL`.
-- **Drive içerik koruması YARIM**: statik sayfalardaki sızıntı kapatıldı, ama 884 dosya Drive'da hâlâ "linki olan herkes" ve URL slug'ı = fileId. Kalan iş: PDF boyut ölçümü → service-account + auth'lu proxy (`/api/uye/kitap-icerik`), slug'ı fileId'den koparma, `sync-drive-books.ts`'i Drive API v3'e taşıma (public klasör listelemesi sync'in çalışma önkoşulu!).
-- Pagefind araması DEV sunucusunda 0 sonuç döner (index sağlam — build çıktısında doğrulandı); `search.spec.ts` bu yüzden kırmızı. Ayrı iş.
+- **Clerk `sk_test` anahtarını ROTATE et (KULLANICI)**: eski lokal build'lerde client bundle'a sızmıştı (hiç deploy edilmedi, o yüzden acil değil ama temizlik şart). Clerk Dashboard → API Keys → rotate → `vercel env rm/add CLERK_SECRET_KEY` → redeploy.
+- **Drive içerik koruması YARIM (Faz 5.C)**: statik sayfa sızıntısı kapandı ama 884 dosya Drive'da hâlâ "linki olan herkes" (Drive API ile doğrulandı) ve URL slug'ı = fileId. PDF boyut ölçüldü: **medyan 10MB, p95 42MB, p99/max 77MB, %4'ü >50MB** → saf proxy UX taşır AMA Range desteği ŞART. Kalan: service-account (KULLANICI Google Cloud'da oluşturmalı) + auth'lu Range-proxy `/api/uye/kitap-icerik`, slug'ı fileId'den koparma (301 haritası), `sync-drive-books.ts`'i Drive API v3'e taşıma (public klasör listelemesi sync önkoşulu — izinler kapanınca sync kırılır).
+- Pagefind araması DEV sunucusunda 0 sonuç döner (index sağlam — canlıda ÇALIŞIYOR); `search.spec.ts` dev'de kırmızı. Ayrı iş (spawn task açıldı).
 - Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları
 - Auth'lu e2e (@clerk/testing), 884 kitaba toplu değer notu üretimi
 
