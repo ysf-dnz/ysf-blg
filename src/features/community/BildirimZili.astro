@@ -1,0 +1,60 @@
+---
+/**
+ * Bildirim zili — SERVER ISLAND (server:defer ile kullanılır).
+ *
+ * NEDEN VAR: bildirimler 18 ayrı yerde üretiliyordu ama YALNIZCA /uye
+ * panosunda, hiçbir okunmamış göstergesi olmadan listeleniyordu. Kullanıcı
+ * panoya girmedikçe kendisine yazılan yorumdan, takipten, onaydan haberi
+ * olmuyordu — geri dönüş döngüsünün en ucuz halkası kopuktu.
+ *
+ * Ada olduğu için üstünde durduğu sayfalar statik kalır.
+ */
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+
+const member = await getOrCreateMember(Astro);
+
+let okunmamis = 0;
+if (member) {
+  const [row] = await db
+    .select({ c: sql<number>`count(*)` })
+    .from(schema.notifications)
+    .where(
+      and(
+        eq(schema.notifications.userId, member.id),
+        isNull(schema.notifications.readAt),
+      ),
+    );
+  okunmamis = Number(row?.c ?? 0);
+}
+---
+
+{
+  member && (
+    <a
+      href="/uye#bildirimler"
+      class="relative flex min-h-11 min-w-11 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
+      title={okunmamis > 0 ? `${okunmamis} yeni bildirim` : "Bildirimler"}
+      aria-label={okunmamis > 0 ? `${okunmamis} yeni bildirim` : "Bildirimler"}
+    >
+      <svg
+        class="size-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+      </svg>
+      {okunmamis > 0 && (
+        <span class="absolute right-1.5 top-1.5 flex min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-4 text-surface">
+          {okunmamis > 9 ? "9+" : okunmamis}
+        </span>
+      )}
+    </a>
+  )
+}

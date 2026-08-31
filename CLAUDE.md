@@ -15,7 +15,8 @@ takip, beğeni) + Skool (feed, seviye, harita, classroom) + Kahoot (süreli quiz
 - **Kitap sayfaları STATİK** (884 sayfa, getStaticPaths, aranabilir). Dinamik her şey `src/features/library/OkumaKapisi.astro` **server island**'ında (`server:defer`): erişim kapısı, quiz/kampanya köprüleri, panel modülleri (yalnız erişene — sızıntı testi bekçi), beslenen yazılar+beğeni, paylaşım/davet kartı.
 - **Misafir DOM'unda Drive iframe/link OLMAMALI** — `tests/e2e/gate.spec.ts` bekçi. Abonelik/İndirme Planları KALDIRILDI.
 - **Puan tek gerçek kaynak**: `points_ledger` (harcamalar negatif). Katsayılar `src/lib/points.ts`; korumalar `src/lib/economy.ts` (beğeni: aynı kişiden günde 5 puanlı; kulüp görev ödülü haftalık 1000 tavan — otomatik kırpılır). Seviyeler `src/lib/levels.ts` (Skool eşikleri 1-9, toplam KAZANILANDAN).
-- **Bilgi Hazinesi onboarding**: `/uye/hosgeldin` → 5 kitap seç (İLKİ hediye, `learning_list`); `/uye` panosunda kilitli hazine çubukları; kilit `/api/uye/kitap-ac` (200p) → `?acildi=1` konfeti+indirme bandı.
+- **Bilgi Hazinesi onboarding**: `/uye/hosgeldin` → 5 kitap seç (İLKİ hediye, `learning_list`); `/uye` panosunda kilitli hazine çubukları (yalnız SIRADAKİ hedef dolar); kilit `/api/uye/kitap-ac` (200p) → `?acildi=1` konfeti bandı. Hazineyi büyütmek için `/uye/hosgeldin?ek=1` (parametresiz gelen panoya döner).
+- **Kutlama bantlarının linkleri statik HTML'de DEĞİL**: `?acildi=1`/`?hediye=1` bantları `/api/uye/kitap-linkler`'den beslenir; o uç erişimi sunucuda doğrular. Statik sayfaya Drive/NotebookLM linki yazmak YASAK — `check-build-output.mjs` + `gate.spec.ts` bekçi.
 - Yetkiler `src/lib/permissions.ts` (admin her kulüpte başkan). Admin bootstrap: `OWNER_EMAILS` member.ts (sn.yusufdeniz@gmail.com ilk girişte admin).
 - Rotalar `src/lib/routes.ts`; topluluk 8 sayfası `ToplulukLayout` sekme çubuğunda; N+1 yardımcıları `src/lib/social.ts`, `books-lookup.ts`.
 
@@ -24,19 +25,28 @@ takip, beğeni) + Skool (feed, seviye, harita, classroom) + Kahoot (süreli quiz
 API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 
 ## Komutlar
-- `npm run qa` — kalite kapısı: check + 90 birim + build + çıktı-bekçisi + e2e
+- `npm run qa` — kalite kapısı: check + birim + **`npm run build`** (postbuild DAHİL — `astro build` çağırmak pagefind/llms.txt adımını atlar, bekçi bunu yakalar) + çıktı-bekçisi + e2e
+- Şema: `drizzle/0000_*.sql` boş DB için BASELINE'dır, canlıya uygulanamaz. Canlı Neon'a yeni index'ler için `drizzle/canli-index-uygula.sql` (önce çift-kayıt ön kontrolü).
 - `npm run seed:demo` — 5 demo üye + kulüp + kampanya + quiz + kurs + etkinlik (idempotent; `demo_` clerkId). Demo: /kulup/odtu-yz-okuma-demo, /u/elif-celik
 - e2e **dev server'a** koşar (Vercel adapter `astro preview` desteklemez — kanıtlı). Tuzaklar: `details.first()` mobil menüyü bulur (`details[id^='kat-']` kullan); tema toggle startViewTransition'la asenkron; uzun dev oturumu EMFILE/`504 Outdated Optimize Dep` üretir → sunucu restart + `rm -rf node_modules/.vite`.
 - Değer notları: `src/data/deger-notlari.json` (NotebookLM MCP `notebook_query` ile üretim; 884 için batch iş BEKLİYOR — nb-sor.py hattı)
 
 ## Topluluk motoru (2026-08-09 eklendi)
 - **Puanın tek kapısı `src/lib/rewards.ts` `awardPoints()`** — ledger'a DOĞRUDAN insert YASAK; streak + seviye açılımları (3/5/7: bedava kitap, usta-okur, onaysız yayın) + rozetler buradan tetiklenir.
+- **`awardPoints()` IDEMPOTENT**: `points_ledger_idem_idx` (kısmi unique: `user_id, reason, ref_id`, `like_received` HARİÇ — orada refId gönderi, alıcı yazardır) + `onConflictDoNothing`. Yazıldıysa `true` döner; çağıranlar buna bakmalı.
+- **Harcama tek kapı `spendPoints()`** — bakiye koşulu INSERT'in WHERE'ine gömülü TEK SQL. Sebep: `neon-http` sürücüsü interaktif transaction DESTEKLEMEZ, "önce oku sonra yaz" yarışa açıktı (200 puanla N kitap). `pointBalance` ile kontrol edip ayrı yazmak YASAK.
+- **Beğeni puanı tek kapı `begeniPuaniVer()`** — günlük 5 freni feed + üye yazısı beğenilerini BİRLİKTE sayar (eskiden yazı beğenisi freni hiç yoktu).
+- Gün/ay sınırı sabit **Europe/Istanbul** (`gunKey`, `gunBaslangici`) — Vercel UTC'de koşuyor, TR gecesi seri kırıyordu.
+- **Seviye hediyeleri HAK ESASLI** (`seviyeHediyeleriniUygula`): hazine boşken tetiklenirse hak yanmaz, `hediye-sec` sonrası telafi edilir. (Yeni üye +50 welcome ile anında Sv3 olur; eski olay-esaslı kurguda bu hediye HER üyede yanıyordu.)
 - Lig/sezon `src/lib/league.ts`: kulüp skoru = pozitif katkı ÷ √üye; `aktifSezon()` ayı otomatik açar. `/lider?t=lig`, kulüp sayfası Lig sekmesi (özel ligler `club_leagues`).
 - Kulüp içi gruplar (`club_groups`; lider=mod), grup hedefli görev ilk 48s gruba özel; claim atomik + kulüp üyeliği şart + üye başına 2 aktif görev.
 - Cron: `vercel.json` → `GET /api/cron/gunluk` (`CRON_SECRET`; `cron_runs` idempotency). İşler: bayat görev, sezon kapanış/açılış, ayın kitabı (oy birincisi → kampanya), özel lig kapanışı.
 
 ## Bekleyenler / sonraki adımlar
-- Push + Vercel deploy henüz yapılmadı (iş local commit'li — 2026-08-30 itibarıyla working tree temiz; Neon canlı; git kimliği repo-yerel ysf-dnz)
+- Push + Vercel deploy henüz yapılmadı (iş local commit'li; Neon canlı; git kimliği repo-yerel ysf-dnz)
+- **DEPLOY ÖNCESİ ZORUNLU**: (1) Clerk `sk_test` anahtarını ROTATE et — eski build'lerde client bundle'a sızmıştı (astro.config'den `secretKey` kaldırıldı, bekçi artık yakalıyor); (2) `drizzle/canli-index-uygula.sql`'i canlı Neon'a uygula (idempotency unique index'i olmadan çift ödül/harcama korumaları DB tarafında yok); (3) Vercel env: `POSTGRES_URL`, `CRON_SECRET`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `SITE_URL`.
+- **Drive içerik koruması YARIM**: statik sayfalardaki sızıntı kapatıldı, ama 884 dosya Drive'da hâlâ "linki olan herkes" ve URL slug'ı = fileId. Kalan iş: PDF boyut ölçümü → service-account + auth'lu proxy (`/api/uye/kitap-icerik`), slug'ı fileId'den koparma, `sync-drive-books.ts`'i Drive API v3'e taşıma (public klasör listelemesi sync'in çalışma önkoşulu!).
+- Pagefind araması DEV sunucusunda 0 sonuç döner (index sağlam — build çıktısında doğrulandı); `search.spec.ts` bu yüzden kırmızı. Ayrı iş.
 - Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları
 - Auth'lu e2e (@clerk/testing), 884 kitaba toplu değer notu üretimi
 

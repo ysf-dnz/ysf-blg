@@ -5,7 +5,10 @@ import * as schema from "./schema.ts";
 type Db = ReturnType<typeof create>;
 
 function create() {
-  const url = import.meta.env.POSTGRES_URL ?? process.env.POSTGRES_URL;
+  // process.env ÖNCE: import.meta.env build anında literal olarak gömülür;
+  // önce ona bakılırsa panelde env değiştirmek/sır rotasyonu redeploy'suz
+  // etkisiz kalır ve eski parola derlenmiş çıktıda yaşamaya devam eder.
+  const url = process.env.POSTGRES_URL ?? import.meta.env.POSTGRES_URL;
   if (!url) throw new Error("POSTGRES_URL tanımlı değil (vercel env pull).");
   return drizzle(neon(url), { schema });
 }

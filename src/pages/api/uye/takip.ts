@@ -1,10 +1,9 @@
 /** POST /api/uye/takip — yazar takip et/bırak + yazı beğen (Medium tarzı). */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
+import { begeniPuaniVer } from "@/lib/rewards.ts";
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
 
@@ -54,17 +53,20 @@ export const POST: APIRoute = async (context) => {
     const post = await db.query.memberPosts.findFirst({
       where: eq(schema.memberPosts.id, memberPostId),
     });
-    if (post && post.userId !== member.id) {
+    // Yalnız YAYINLANMIŞ yazı puan üretir: taslak/bekleyen yazılar
+    // görünmezdir, onlar üzerinden puan çiftliği kurulamaz.
+    if (post && post.userId !== member.id && post.status === "published") {
       const [ins] = await db
         .insert(schema.likes)
         .values({ userId: member.id, memberPostId })
         .onConflictDoNothing()
         .returning();
       if (ins) {
-        await awardPoints({
-          userId: post.userId,
-          delta: PUAN.likeReceived,
-          reason: "like_received",
+        // Günlük çiftlik freni (feed ile ORTAK sayaç) — eskiden burada
+        // hiç fren yoktu, sınırsız karşılıklı beğeni mümkündü.
+        await begeniPuaniVer({
+          begenenId: member.id,
+          yazarId: post.userId,
           refId: `yazi:${memberPostId}`,
         });
       }

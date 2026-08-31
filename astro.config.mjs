@@ -40,13 +40,16 @@ export default defineConfig({
     },
   },
   integrations: [
-    // Clerk env adları Vercel entegrasyonundan NEXT_PUBLIC_* olarak gelir
+    // Clerk env adları Vercel entegrasyonundan NEXT_PUBLIC_* olarak gelir.
+    // secretKey BURAYA VERİLMEZ: @clerk/astro entegrasyon opsiyonlarını
+    // injectScript ile tarayıcıya serileştirir (JSON.stringify) — buraya
+    // konan sır client bundle'ına açık metin iner. Sunucu tarafı
+    // CLERK_SECRET_KEY'i kendisi env'den okur.
     clerk({
       localization: trTR,
       publishableKey:
         process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
         env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      secretKey: process.env.CLERK_SECRET_KEY ?? env.CLERK_SECRET_KEY,
     }),
     mdx(),
     sitemap({

@@ -24,7 +24,12 @@ const gift = await db.query.bookAccess.findFirst({
     eq(schema.bookAccess.source, "gift"),
   ),
 });
-if (gift) return Astro.redirect(R.uye.panel);
+// Hazine BÜYÜTME modu: hediyesini almış üye ?ek=1 ile buraya dönüp
+// listesine yeni kitaplar ekleyebilir. Eskiden gift kaydı olan herkes
+// koşulsuz panoya atılıyordu → panodaki "yeni 5'li seç" ölü döngüydü ve
+// çekirdek oku-üret-aç döngüsü ilk 5 kitaptan sonra UI'dan sürdürülemiyordu.
+const ekleme = Astro.url.searchParams.get("ek") === "1";
+if (gift && !ekleme) return Astro.redirect(R.uye.panel);
 
 const books = (await getCollection("books")).map((b) => b.data);
 const featured = books.find((b) => b.id === FEATURED_GIFT_BOOK_ID);
@@ -37,7 +42,7 @@ const vitrindekiler = [
 ];
 ---
 
-<Base title="Hazineni kur">
+<Base title={ekleme ? "Hazineni büyüt" : "Hazineni kur"}>
   <section class="girih-texture -mx-4 px-4 py-12 text-center">
     <h1 class="word-reveal font-display mx-auto max-w-2xl text-3xl font-semibold leading-tight text-ink sm:text-4xl">
       <span style="--i:0">Öğrenmenin</span>
@@ -47,8 +52,17 @@ const vitrindekiler = [
       <span style="--i:4" class="gradient-text">öğretmektir.</span>
     </h1>
     <p class="hero-sub mx-auto mt-4 max-w-xl text-lg text-ink-muted">
-      {member.name}, öğrenmek isteyip <strong class="text-ink">hakkında yazacağın 5 kitabı</strong> hazinene ekle.
-      İlki bizden hediye 🎁 — kalanların kilidini, yazdıkça kazandığın puanlarla aç.
+      {ekleme ? (
+        <>
+          {member.name}, hazineni büyüt: <strong class="text-ink">sırada okumak istediğin kitapları</strong> ekle.
+          Kazandığın puanlarla tek tek açılacaklar.
+        </>
+      ) : (
+        <>
+          {member.name}, öğrenmek isteyip <strong class="text-ink">hakkında yazacağın 5 kitabı</strong> hazinene ekle.
+          İlki bizden hediye 🎁 — kalanların kilidini, yazdıkça kazandığın puanlarla aç.
+        </>
+      )}
     </p>
     <p class="hero-sub mt-3 text-sm text-ink-muted">
       Cebinde şimdiden <strong class="text-accent" data-ticker>{balance}</strong> puan var.

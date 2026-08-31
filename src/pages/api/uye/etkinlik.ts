@@ -1,8 +1,9 @@
 /** POST /api/uye/etkinlik — etkinlik aç (rep/admin) ve RSVP (+10 puan). */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
+import { and, eq } from "drizzle-orm";
+import { awardPoints, spendPoints } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
 import { canManage, clubRoleOf } from "@/lib/permissions.ts";
 import { PUAN } from "@/lib/points.ts";
 
@@ -19,15 +20,11 @@ export const POST: APIRoute = async (context) => {
     const eventId = Number(form.get("eventId") ?? 0);
     const oncelikli = form.get("priority") === "1";
     if (eventId) {
-      // Öncelikli koltuk: bakiye yetiyorsa puan düşülür, ⭐ ile listelenir
-      let priority = false;
-      if (oncelikli) {
-        const bakiye = await pointBalance(member.id);
-        priority = bakiye >= PUAN.prioritySeatCost;
-      }
+      // RSVP tekilliği DB'de (event_rsvps unique) — ödül yalnız gerçekten
+      // yeni satır yazıldığında verilir.
       const [inserted] = await db
         .insert(schema.eventRsvps)
-        .values({ eventId, userId: member.id, priority })
+        .values({ eventId, userId: member.id, priority: false })
         .onConflictDoNothing()
         .returning();
       if (inserted) {
@@ -37,13 +34,26 @@ export const POST: APIRoute = async (context) => {
           reason: "event_attended",
           refId: String(eventId),
         });
-        if (priority) {
-          await awardPoints({
+        // Öncelikli koltuk: ÖNCE atomik kesinti, koltuk ancak kesinti
+        // gerçekleştiyse ⭐ olur (eskiden bayat bakiye okumasıyla veriliyordu)
+        if (oncelikli) {
+          const kesildi = await spendPoints({
             userId: member.id,
-            delta: -PUAN.prioritySeatCost,
+            cost: PUAN.prioritySeatCost,
             reason: "spend_priority",
             refId: String(eventId),
           });
+          if (kesildi) {
+            await db
+              .update(schema.eventRsvps)
+              .set({ priority: true })
+              .where(
+                and(
+                  eq(schema.eventRsvps.eventId, eventId),
+                  eq(schema.eventRsvps.userId, member.id),
+                ),
+              );
+          }
         }
       }
     }

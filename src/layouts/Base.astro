@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 import { langFromUrl, localizePath, useTranslations } from "@/lib/i18n/index.ts";
 import ThemeToggle from "@/features/theme/ThemeToggle.astro";
 import { Show, UserButton, SignInButton } from "@clerk/astro/components";
+import BildirimZili from "@/features/community/BildirimZili.astro";
 import SearchModal from "@/features/search/SearchModal.astro";
 import Seo from "@/features/seo/Seo.astro";
 import JsonLd from "@/features/seo/JsonLd.astro";
@@ -134,6 +135,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
             >
               {t("uye.panel")}
             </a>
+            {/* Okunmamış bildirim sayacı — server island, sayfa statik kalır */}
+            <BildirimZili server:defer />
             <UserButton />
           </Show>
           <details class="relative sm:hidden" id="mobil-menu">

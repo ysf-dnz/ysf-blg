@@ -22,6 +22,27 @@ async function birKez(job: string, periodKey: string): Promise<boolean> {
   return !!row;
 }
 
+/**
+ * Dönem kilidini alır, işi çalıştırır; iş PATLARSA kilidi geri verir.
+ * Kilit iş bitmeden tüketilirse yarıda kalan bir sezon kapanışı bir daha
+ * hiç koşmaz (aktifSezon bayat sezonu seçmez) → ödüller kalıcı kaybolur.
+ */
+async function birKezCalistir<T>(
+  job: string,
+  periodKey: string,
+  fn: () => Promise<T>,
+): Promise<T | undefined> {
+  if (!(await birKez(job, periodKey))) return undefined;
+  try {
+    return await fn();
+  } catch (err) {
+    await db
+      .delete(schema.cronRuns)
+      .where(and(eq(schema.cronRuns.job, job), eq(schema.cronRuns.periodKey, periodKey)));
+    throw err;
+  }
+}
+
 /** 7 gün hareketsiz "üstlenildi" görevleri backlog'a döndür (site geneli) */
 async function bayatGorevSupur(): Promise<number> {
   const rows = await db
@@ -147,7 +168,10 @@ async function ozelLigleriKapat() {
 }
 
 export const GET: APIRoute = async ({ request }) => {
-  const secret = import.meta.env.CRON_SECRET;
+  // process.env ÖNCE: import.meta.env build anında gömülür → panelden
+  // rotasyon redeploy'suz etkisiz kalırdı (build'de tanımsızsa "undefined"
+  // kalıcı gömülür ve cron sonsuza dek 401 döner).
+  const secret = process.env.CRON_SECRET ?? import.meta.env.CRON_SECRET;
   const auth = request.headers.get("authorization") ?? "";
   const header = request.headers.get("x-cron-secret") ?? "";
   if (!secret || (auth !== `Bearer ${secret}` && header !== secret))
@@ -157,22 +181,27 @@ export const GET: APIRoute = async ({ request }) => {
   const rapor: Record<string, unknown> = {};
 
   // 1) Bayat görev süpürmesi (günlük)
-  if (await birKez("bayat-gorev", bugun)) rapor.bayatGorev = await bayatGorevSupur();
+  const bayat = await birKezCalistir("bayat-gorev", bugun, bayatGorevSupur);
+  if (bayat !== undefined) rapor.bayatGorev = bayat;
 
   // 2) Sezon döngüsü: biteni kapat, yenisini aç
   const sezon = await aktifSezon();
   if (sezon.endsAt <= new Date()) {
-    if (await birKez("sezon-kapat", String(sezon.id))) {
+    const kapandi = await birKezCalistir("sezon-kapat", String(sezon.id), async () => {
       await sezonKapat(sezon);
       await aktifSezon(); // yeni ayın sezonu
-      rapor.sezonKapandi = sezon.name;
-    }
+      return sezon.name;
+    });
+    if (kapandi !== undefined) rapor.sezonKapandi = kapandi;
   }
 
   // 3) Ayın kitabı (her ayın ilk günü)
-  if (new Date().getDate() === 1 && (await birKez("ayin-kitabi", bugun.slice(0, 7)))) {
-    await ayinKitabi();
-    rapor.ayinKitabi = true;
+  if (new Date().getDate() === 1) {
+    const secildi = await birKezCalistir("ayin-kitabi", bugun.slice(0, 7), async () => {
+      await ayinKitabi();
+      return true;
+    });
+    if (secildi !== undefined) rapor.ayinKitabi = secildi;
   }
 
   // 4) Biten özel ligler

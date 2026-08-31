@@ -3,9 +3,9 @@
  * Bakiye yetersizse veya kitap zaten açıksa güvenle geri döner.
  */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
+import { spendPoints } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember, hasBookAccess, pointBalance } from "@/lib/member.ts";
+import { getOrCreateMember, hasBookAccess } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
@@ -22,17 +22,20 @@ export const POST: APIRoute = async (context) => {
   if (await hasBookAccess(member.id, bookId)) {
     return context.redirect(target);
   }
-  const balance = await pointBalance(member.id);
-  if (balance < PUAN.bookUnlockCost) {
-    return context.redirect(target);
-  }
 
-  await awardPoints({
+  // Atomik harcama: bakiye koşulu INSERT'in içinde. Yetersiz bakiyede ya da
+  // bu kitap için harcama zaten kesilmişse satır yazılmaz → false döner.
+  // (Eskiden "önce oku sonra yaz"dı: 200 puanla paralel N istek N kitap açıyordu.)
+  const kesildi = await spendPoints({
     userId: member.id,
-    delta: -PUAN.bookUnlockCost,
+    cost: PUAN.bookUnlockCost,
     reason: "book_unlock",
     refId: bookId,
   });
+  if (!kesildi) {
+    return context.redirect(`${target}?hata=puan`);
+  }
+
   await db
     .insert(schema.bookAccess)
     .values({ userId: member.id, bookId, source: "points" })

@@ -2,7 +2,7 @@
 /**
  * Üye panosu: puan, seviye, açılan kitaplar, bildirimler, davet linki.
  */
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { getCollection } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
@@ -40,6 +40,21 @@ const [balance, earned, access, notifs, yaziSayisi, kulubum] = await Promise.all
     where: eq(schema.clubMembers.userId, member.id),
   }),
 ]);
+
+// Bildirimler görüldü → okundu işaretle. readAt sütunu şemada vardı ama
+// HİÇ yazılmıyordu; bu yüzden zil sayacı hiç sıfırlanamazdı.
+const okunmamisSayisi = notifs.filter((n) => !n.readAt).length;
+if (okunmamisSayisi > 0) {
+  await db
+    .update(schema.notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(schema.notifications.userId, member.id),
+        isNull(schema.notifications.readAt),
+      ),
+    );
+}
 
 
 // Yolculuk görevleri: eksik algıla, sıradaki adımı göster (Zeigarnik)
@@ -109,11 +124,34 @@ const hazineDurum = hazine.map((h) => ({
 }));
 const kilitliHazine = hazineDurum.filter((h) => !h.acik).length;
 const siradakiKalan = Math.max(PUAN.bookUnlockCost - balance, 0);
+// Yalnız SIRADAKİ kilitli kitap gerçek ilerlemeyi gösterir; diğerleri
+// "sırada bekliyor"dur. Eskiden dört kilitli slot da aynı yüzdeyi çizdiği
+// için ilerleme hissi yoktu (hangisine yaklaştığın belli olmuyordu).
+const siradakiKilitliIndex = hazineDurum.findIndex((h) => !h.acik);
+// Hediye akışının geri bildirimi (api/uye/hediye-et ?hediye=<kod> ile döner)
+const hediyeDurumu = Astro.url.searchParams.get("hediye");
+const HEDIYE_MESAJLARI: Record<string, string> = {
+  ok: "Hediyen ulaştı 🎁 Arkadaşının kütüphanesine eklendi.",
+  eksik: "Kitap ve kullanıcı adı gerekli — hediye gönderilmedi.",
+  sahipdegil: "Bu kitap senin rafında değil; yalnız sahip olduğun kitapları hediye edebilirsin.",
+  kisiyok: "Bu kullanıcı adını bulamadık — yazımını kontrol et (puanın harcanmadı).",
+  kendine: "Kendine hediye edemezsin 🙂",
+  zatensahip: "Arkadaşın bu kitaba zaten sahip — puanın harcanmadı.",
+  puan: `Yeterli puanın yok (${PUAN.giftBookCost} gerekli) — hediye gönderilmedi.`,
+};
+const hediyeMesaji = hediyeDurumu ? HEDIYE_MESAJLARI[hediyeDurumu] : undefined;
+const siradakiYuzde = Math.min(
+  Math.round((balance / PUAN.bookUnlockCost) * 100),
+  100,
+);
 
 const myBooks = access
   .map((a) => books.find((b) => b.data.id === a.bookId)?.data)
   .filter(Boolean);
 const inviteUrl = `${Astro.site ?? Astro.url.origin}?ref=${member.handle}`;
+const davetMetni = encodeURIComponent(
+  `Burada kitaplar parayla değil emekle açılıyor — oku, yaz, öğret, yeni kitap aç. Sen de katıl, ilk kitabın hediye: ${inviteUrl}`,
+);
 
 // 🏅 Rozetler + 🔥 streak + sıradaki seviye açılımı
 const rozetler = await db.query.badges.findMany({
@@ -239,15 +277,27 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
               Sıradaki hazinene <strong class="text-accent">{siradakiKalan} puan</strong> — bir yazı + bir quiz yeter ✍️
             </p>
           ) : (
-            <a href="/uye/hosgeldin" class="text-sm font-medium text-accent hover:underline">
+            /* ?ek=1: hazine büyütme modu — bu parametre olmadan hosgeldin
+               sayfası panoya geri yönlendirir (ölü döngü) */
+            <a href="/uye/hosgeldin?ek=1" class="text-sm font-medium text-accent hover:underline">
               Hazinen tamamlandı 🏆 — yeni 5'li seç →
             </a>
           )}
         </div>
         <ul class="mt-4 grid grid-cols-5 gap-3">
-          {hazineDurum.map((h) => (
+          {hazineDurum.map((h, i) => (
             <li>
-              <a href={`/kutuphane/kitap/${h.bookId}`} class="book-3d block" title={h.book?.titleTr ?? h.book?.title}>
+              <a
+                href={`/kutuphane/kitap/${h.bookId}`}
+                class="book-3d block"
+                title={
+                  h.acik
+                    ? (h.book?.titleTr ?? h.book?.title)
+                    : i === siradakiKilitliIndex
+                      ? `${h.book?.titleTr ?? h.book?.title} — sıradaki hedefin: ${siradakiKalan} puan kaldı`
+                      : `${h.book?.titleTr ?? h.book?.title} — sırada bekliyor`
+                }
+              >
                 <span class="relative block">
                   {h.book?.cover ? (
                     <img
@@ -267,7 +317,11 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
                 </span>
                 {!h.acik && (
                   <span class="mt-1 block h-1.5 overflow-hidden rounded-full bg-surface">
-                    <span class="block h-full bg-accent" style={`width:${Math.min(Math.round((balance / PUAN.bookUnlockCost) * 100), 100)}%`} />
+                    {/* Yalnız sıradaki hedef dolar; sonrakiler boş bekler */}
+                    <span
+                      class="block h-full bg-accent transition-all"
+                      style={`width:${i === siradakiKilitliIndex ? siradakiYuzde : 0}%`}
+                    />
                   </span>
                 )}
               </a>
@@ -342,6 +396,21 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
       <p class="mt-2 text-sm text-ink-muted">
         Rafındaki bir kitabı arkadaşına aç — <strong class="text-accent">{PUAN.giftBookCost} puan</strong> (kendine açmanın yarısı).
       </p>
+      {/* Hediye sonucu: başarısız dallar eskiden SESSİZDİ — üye yanlış
+          handle yazsa bile hediyenin gittiğini sanıyordu. */}
+      {hediyeMesaji && (
+        <p
+          class:list={[
+            "mt-3 rounded-lg border px-3 py-2 text-sm",
+            hediyeDurumu === "ok"
+              ? "border-accent bg-accent-soft text-ink"
+              : "border-line bg-surface text-ink-muted",
+          ]}
+          role="status"
+        >
+          {hediyeMesaji}
+        </p>
+      )}
       <form method="post" action="/api/uye/hediye-et" class="mt-3 grid gap-2">
         <select name="bookId" required class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
           {myBooks.map((b) => <option value={b!.id}>{b!.titleTr ?? b!.title}</option>)}
@@ -361,16 +430,68 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
       <code class="mt-3 block select-all overflow-x-auto rounded-lg border border-line bg-surface px-3 py-2 text-sm text-accent">
         {inviteUrl}
       </code>
+      {/* Link tek başına paylaşılmaz: kopyalama ve hazır paylaşım kanalları
+          olmadan davet kutusu ölü bir metin bloğuydu. */}
+      <div class="mt-3 flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          data-ref-kopyala={inviteUrl}
+          class="pill-pop cursor-pointer rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-surface"
+        >
+          🔗 Linki kopyala
+        </button>
+        <a
+          href={`https://wa.me/?text=${davetMetni}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pill-pop rounded-full border border-line px-4 py-1.5 text-xs font-medium hover:border-accent hover:text-accent"
+        >
+          WhatsApp
+        </a>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(inviteUrl)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pill-pop rounded-full border border-line px-4 py-1.5 text-xs font-medium hover:border-accent hover:text-accent"
+        >
+          LinkedIn
+        </a>
+      </div>
+      <script>
+        // Panodaki kopyala düğmesi (kitap sayfasındaki desenle aynı)
+        document.addEventListener("click", async (e) => {
+          const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-ref-kopyala]");
+          if (!btn) return;
+          await navigator.clipboard.writeText(btn.dataset.refKopyala ?? "");
+          const eski = btn.textContent;
+          btn.textContent = "Kopyalandı ✓";
+          setTimeout(() => (btn.textContent = eski), 2000);
+        });
+      </script>
     </div>
-    <div class="rounded-2xl border border-line bg-surface-raised p-6" data-reveal>
-      <h2 class="font-display text-xl font-semibold text-ink">🔔 Bildirimler</h2>
+    <div id="bildirimler" class="scroll-mt-24 rounded-2xl border border-line bg-surface-raised p-6" data-reveal>
+      <h2 class="font-display text-xl font-semibold text-ink">
+        🔔 Bildirimler
+        {okunmamisSayisi > 0 && (
+          <span class="ml-2 rounded-full bg-accent px-2 py-0.5 align-middle text-xs font-bold text-surface">
+            {okunmamisSayisi} yeni
+          </span>
+        )}
+      </h2>
       {
         notifs.length === 0 ? (
           <p class="mt-2 text-sm text-ink-muted">Henüz bildirim yok.</p>
         ) : (
           <ul class="mt-3 space-y-2 text-sm">
             {notifs.map((n) => (
-              <li class="rounded-lg border border-line px-3 py-2 text-ink-muted">
+              <li
+                class:list={[
+                  "rounded-lg border px-3 py-2",
+                  n.readAt
+                    ? "border-line text-ink-muted"
+                    : "border-accent bg-accent-soft/40 text-ink",
+                ]}
+              >
                 {n.href ? (
                   <a href={n.href} class="hover:text-accent">{n.body}</a>
                 ) : (

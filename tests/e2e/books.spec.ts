@@ -42,13 +42,18 @@ test.describe("kitap rafı", () => {
     ).toHaveCount(0);
   });
 
-  test("sohbet butonu NotebookLM defterine işaret eder", async ({ page }) => {
+  test("NotebookLM sohbeti kilidin ardında: misafire link verilmez", async ({
+    page,
+  }) => {
+    // Değişiklik bilinçli: defter linki kitabın TAM METNİ üzerinden soru
+    // sormayı sağlar. Statik sayfada durursa misafir kitabı hiç açmadan
+    // içeriğe erişirdi. Artık yalnız erişimi olana, Okuma Kapısı adasında
+    // sunucu tarafında render edilir.
     await page.goto(MINDSET, { waitUntil: "domcontentloaded" });
-    const chat = page.getByRole("link", { name: /Kitapla sohbet et/i });
-    await expect(chat).toHaveAttribute(
-      "href",
-      /notebooklm\.google\.com\/notebook\//,
-    );
-    await expect(chat).toHaveAttribute("target", "_blank");
+    await expect(
+      page.locator("a[href*='notebooklm.google.com']"),
+    ).toHaveCount(0);
+    // Vitrin metni yine görünür (kilidin ardındaki fayda anlatılır)
+    await expect(page.getByText("Bu bilgi seni bekliyor")).toBeVisible();
   });
 });

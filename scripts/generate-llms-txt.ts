@@ -1,13 +1,17 @@
 /**
- * Postbuild: dist/ içine llms.txt ve llms-full.txt üretir (GEO).
+ * Postbuild: llms.txt ve llms-full.txt üretir (GEO).
  * Yazı listesi src/content/posts'tan, tam metinler ham MDX'ten okunur.
+ * ÇIKTI İKİ YERE yazılır: dist/ (lokal) ve .vercel/output/static/ —
+ * Vercel deploy'u yalnız ikincisinden yapılır, dist/ canlıya çıkmaz.
  * Faz 7'de genişletilecek; şimdilik iskelet üretim.
  */
 import { readdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
+const VERCEL_STATIC = join(ROOT, ".vercel/output/static");
 const POSTS_DIR = join(ROOT, "src/content/posts");
 const SITE = process.env.SITE_URL ?? "https://yusufdeniz.dev";
 
@@ -90,6 +94,9 @@ const llmsFull = posts
   )
   .join("\n\n---\n\n");
 
-await writeFile(join(DIST, "llms.txt"), llms);
-await writeFile(join(DIST, "llms-full.txt"), llmsFull);
-console.log(`llms.txt üretildi (${posts.length} yazı).`);
+const hedefler = [DIST, VERCEL_STATIC].filter((d) => existsSync(d));
+for (const hedef of hedefler) {
+  await writeFile(join(hedef, "llms.txt"), llms);
+  await writeFile(join(hedef, "llms-full.txt"), llmsFull);
+}
+console.log(`llms.txt üretildi (${posts.length} yazı) → ${hedefler.join(", ")}`);

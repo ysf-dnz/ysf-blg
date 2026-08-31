@@ -9,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { getCollection } from "astro:content";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { seviyeHediyeleriniUygula } from "@/lib/rewards.ts";
 import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
@@ -48,6 +49,20 @@ export const POST: APIRoute = async (context) => {
       eq(schema.bookAccess.source, "gift"),
     ),
   });
+
+  // Hazine artık dolu: kayıt anında (liste boşken) verilemeyen seviye
+  // hediyelerini burada telafi et. Yeni üye +50 welcome ile anında Sv3
+  // olduğundan bu hak eskiden sessizce yanıyordu.
+  const telafi = await seviyeHediyeleriniUygula(member.id);
+  if (telafi.length > 0) {
+    await db.insert(schema.notifications).values({
+      userId: member.id,
+      kind: "level",
+      body: `Seviyenden hak ettiğin ${telafi.length} bedava kitap hazinenden açıldı 🎁`,
+      href: R.kitap(telafi[0]!),
+    });
+  }
+
   if (!existingGift) {
     const hediye = gecerli[0]!;
     await db

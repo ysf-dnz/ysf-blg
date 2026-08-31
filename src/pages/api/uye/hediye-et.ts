@@ -4,10 +4,10 @@
  * Korumalar: kendine olmaz, alıcı zaten sahipse olmaz, bakiye şart.
  */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
+import { spendPoints } from "@/lib/rewards.ts";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember, hasBookAccess, pointBalance } from "@/lib/member.ts";
+import { getOrCreateMember, hasBookAccess } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
@@ -22,32 +22,37 @@ export const POST: APIRoute = async (context) => {
     .trim()
     .replace(/^@/, "")
     .toLowerCase();
-  const geri = () => context.redirect("/uye");
+  // Hata dalları SESSİZ kalmamalı: yanlış handle yazan üye hediyenin
+  // gittiğini sanıyordu. Her başarısızlık ?hediye=<kod> ile panoda gösterilir.
+  const geri = (hata?: string) =>
+    context.redirect(hata ? `/uye?hediye=${hata}` : "/uye?hediye=ok");
 
-  if (!bookId || !handle) return geri();
+  if (!bookId || !handle) return geri("eksik");
   // Hediye edilecek kitaba kendin sahip olmalısın (raftan hediye edilir)
-  if (!(await hasBookAccess(member.id, bookId))) return geri();
+  if (!(await hasBookAccess(member.id, bookId))) return geri("sahipdegil");
 
   const alici = await db.query.users.findFirst({
     where: eq(schema.users.handle, handle),
   });
-  if (!alici || alici.id === member.id) return geri();
+  if (!alici) return geri("kisiyok");
+  if (alici.id === member.id) return geri("kendine");
   if (await hasBookAccess(alici.id, bookId)) {
     await db.insert(schema.notifications).values({
       userId: member.id,
       kind: "gift",
       body: `@${alici.handle} bu kitaba zaten sahip — puanın harcanmadı.`,
     });
-    return geri();
+    return geri("zatensahip");
   }
-  if ((await pointBalance(member.id)) < PUAN.giftBookCost) return geri();
 
-  await awardPoints({
+  // Atomik harcama: bakiye koşulu INSERT içinde; aynı hediye iki kez kesilmez
+  const kesildi = await spendPoints({
     userId: member.id,
-    delta: -PUAN.giftBookCost,
+    cost: PUAN.giftBookCost,
     reason: "spend_gift",
     refId: `${bookId}→${alici.id}`,
   });
+  if (!kesildi) return geri("puan");
   await db
     .insert(schema.bookAccess)
     .values({ userId: alici.id, bookId, source: "reward" })

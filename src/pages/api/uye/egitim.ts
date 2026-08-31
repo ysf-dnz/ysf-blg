@@ -5,10 +5,12 @@
  */
 import type { APIRoute } from "astro";
 import { awardPoints } from "@/lib/rewards.ts";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { earnedPoints, getOrCreateMember } from "@/lib/member.ts";
 import { levelFor } from "@/lib/levels.ts";
+import { canManage, clubRoleOf } from "@/lib/permissions.ts";
+import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
 
@@ -19,6 +21,50 @@ function parseYoutubeId(input: string): string | null {
     /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
   );
   return m?.[1] ?? null;
+}
+
+/**
+ * Eğitim tamamlama ödülü — üç kapıdan geçer:
+ *  1) kurs YAYINDA olmalı (pending kurs ödül üretmez),
+ *  2) kendi kursunu bitiren ödül almaz,
+ *  3) haftalık tavan (PUAN.courseWeeklyCap).
+ * Bu kapılar olmadan "tek öğelik kurs aç → bitir → +25" döngüsü sınırsız
+ * puan basıyordu (8 tekrar = bedava kitap).
+ */
+async function kursOduluVer(userId: number, courseId: number): Promise<void> {
+  const kurs = await db.query.courses.findFirst({
+    where: eq(schema.courses.id, courseId),
+  });
+  if (!kurs || kurs.status !== "published" || kurs.createdBy === userId) return;
+
+  const haftaBasi = new Date(Date.now() - 7 * 864e5);
+  const [hafta] = await db
+    .select({ t: sql<number>`coalesce(sum(${schema.pointsLedger.delta}), 0)` })
+    .from(schema.pointsLedger)
+    .where(
+      and(
+        eq(schema.pointsLedger.userId, userId),
+        eq(schema.pointsLedger.reason, "course_completed"),
+        gte(schema.pointsLedger.createdAt, haftaBasi),
+      ),
+    );
+  const kalan = PUAN.courseWeeklyCap - Number(hafta?.t ?? 0);
+  const verilecek = Math.min(PUAN.courseCompleted, Math.max(0, kalan));
+  if (verilecek <= 0) return;
+
+  const yazildi = await awardPoints({
+    userId,
+    delta: verilecek,
+    reason: "course_completed",
+    refId: `course:${courseId}`,
+  });
+  if (!yazildi) return;
+  await db.insert(schema.notifications).values({
+    userId,
+    kind: "course",
+    body: `Bir eğitimi tamamladın 🎓 +${verilecek} puan`,
+    href: `/egitim/${courseId}`,
+  });
 }
 
 export const POST: APIRoute = async (context) => {
@@ -55,18 +101,7 @@ export const POST: APIRoute = async (context) => {
             ),
           );
         if (Number(done?.c) === Number(total?.c)) {
-          await awardPoints({
-            userId: member.id,
-            delta: 25,
-            reason: "quiz", // ders bitirme ödülü (küçük)
-            refId: `course:${item.courseId}`,
-          });
-          await db.insert(schema.notifications).values({
-            userId: member.id,
-            kind: "course",
-            body: "Bir eğitimi tamamladın 🎓 +25 puan",
-            href: `/egitim/${item.courseId}`,
-          });
+          await kursOduluVer(member.id, item.courseId);
         }
       }
     }
@@ -76,7 +111,14 @@ export const POST: APIRoute = async (context) => {
   // create
   const title = String(form.get("title") ?? "").trim();
   if (!title) return new Response("Başlık gerekli", { status: 400 });
-  const clubId = Number(form.get("clubId") ?? 0) || null;
+  // clubId form'dan gelir → YÖNETİCİSİ OLMADIĞIN kulübe iliştirilemez.
+  // (Eskiden doğrulanmıyordu: rastgele bir clubId göndermek hem yabancı
+  // kulübün listesini kirletiyor hem kursu anında "published" yapıyordu.)
+  const istenenClubId = Number(form.get("clubId") ?? 0) || null;
+  const clubId =
+    istenenClubId && canManage(await clubRoleOf(member, istenenClubId))
+      ? istenenClubId
+      : null;
 
   type Item = { kind: "youtube" | "yazi" | "quiz"; title: string; ref: string };
   const items: Item[] = [];

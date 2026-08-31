@@ -2,8 +2,10 @@
  * "Bilgi Ödüldür" topluluk platformu şeması.
  * Puanın tek gerçek kaynağı points_ledger'dır; toplamlar sorguyla türetilir.
  */
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   pgTable,
   serial,
@@ -42,37 +44,55 @@ export const users = pgTable(
 );
 
 /** Puan hareketleri — tek gerçek kaynak */
-export const pointsLedger = pgTable("points_ledger", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  delta: integer("delta").notNull(),
-  reason: text("reason", {
-    enum: [
-      "welcome",
-      "post_approved",
-      "quiz",
-      "quiz_set_approved",
-      "referral_joined",
-      "referral_activated",
-      "like_received",
-      "task_done",
-      "event_attended",
-      "rep_bonus",
-      "book_unlock", // negatif: kitap açma harcaması
-      "spend_gift", // negatif: arkadaşa kitap hediye etme
-      "spend_priority", // negatif: etkinlik öncelikli koltuk
-      "spend_flair", // negatif: avatar süsü
-      "admin_adjust",
-      "streak_bonus", // 7/30 gün seri ödülü
-      "season_reward", // sezon sonu ödülü
-      "level_reward", // seviye atlama ödülü
-    ],
-  }).notNull(),
-  refId: text("ref_id"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const pointsLedger = pgTable(
+  "points_ledger",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    delta: integer("delta").notNull(),
+    reason: text("reason", {
+      enum: [
+        "welcome",
+        "post_approved",
+        "quiz",
+        "course_completed", // eğitim bitirme (quiz'den ayrı: tavanı ve analitiği ayrı)
+        "quiz_set_approved",
+        "referral_joined",
+        "referral_activated",
+        "like_received",
+        "task_done",
+        "event_attended",
+        "rep_bonus",
+        "book_unlock", // negatif: kitap açma harcaması
+        "spend_gift", // negatif: arkadaşa kitap hediye etme
+        "spend_priority", // negatif: etkinlik öncelikli koltuk
+        "spend_flair", // negatif: avatar süsü
+        "admin_adjust",
+        "streak_bonus", // 7/30 gün seri ödülü
+        "season_reward", // sezon sonu ödülü
+        "level_reward", // seviye atlama ödülü
+      ],
+    }).notNull(),
+    refId: text("ref_id"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    /**
+     * Idempotency: aynı (üye, sebep, referans) ödülü/harcaması iki kez
+     * yazılamaz — çift tık, paralel istek ve yeniden gönderim tek satıra
+     * düşer. like_received HARİÇTİR: orada refId gönderi id'sidir ama
+     * alıcı yazardır; farklı kişilerin aynı gönderiye beğenisi meşru
+     * biçimde aynı üçlüyü üretir (fren zaten economy.ts'te günlük sayaç).
+     */
+    uniqueIndex("points_ledger_idem_idx")
+      .on(t.userId, t.reason, t.refId)
+      .where(sql`${t.refId} is not null and ${t.reason} <> 'like_received'`),
+    index("points_ledger_user_idx").on(t.userId),
+    index("points_ledger_created_idx").on(t.createdAt),
+  ],
+);
 
 /** Kitap erişimleri (book_id = content collection'daki kitap id'si) */
 export const bookAccess = pgTable(
@@ -117,31 +137,46 @@ export const memberPosts = pgTable(
 );
 
 /** Topluluk akışı: kısa gönderiler (Skool feed) */
-export const feedPosts = pgTable("feed_posts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  bookId: text("book_id"),
-  category: text("category", {
-    enum: ["soru", "kaynak", "ilerleme", "duyuru"],
-  })
-    .notNull()
-    .default("ilerleme"),
-  body: text("body").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const feedPosts = pgTable(
+  "feed_posts",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    bookId: text("book_id"),
+    category: text("category", {
+      enum: ["soru", "kaynak", "ilerleme", "duyuru"],
+    })
+      .notNull()
+      .default("ilerleme"),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    // Akış son 30 gönderiyi tarihe göre çeker; hız sınırı (userId, createdAt) sorar
+    index("feed_posts_created_idx").on(t.createdAt),
+    index("feed_posts_user_created_idx").on(t.userId, t.createdAt),
+  ],
+);
 
-export const comments = pgTable("comments", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  feedPostId: integer("feed_post_id").references(() => feedPosts.id),
-  memberPostId: integer("member_post_id").references(() => memberPosts.id),
-  body: text("body").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const comments = pgTable(
+  "comments",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    feedPostId: integer("feed_post_id").references(() => feedPosts.id),
+    memberPostId: integer("member_post_id").references(() => memberPosts.id),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("comments_feed_post_idx").on(t.feedPostId),
+    index("comments_user_created_idx").on(t.userId, t.createdAt),
+  ],
+);
 
 /** Beğeni: alan üyeye 1 puan (Skool kuralı) */
 export const likes = pgTable(
@@ -434,17 +469,22 @@ export const campaignTasks = pgTable("campaign_tasks", {
 });
 
 /** Site içi bildirimler */
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  kind: text("kind").notNull(),
-  body: text("body").notNull(),
-  href: text("href"),
-  readAt: timestamp("read_at"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    kind: text("kind").notNull(),
+    body: text("body").notNull(),
+    href: text("href"),
+    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // Bildirim zili her sayfa görüntülemesinde okunmamış sayar → index şart
+  (t) => [index("notifications_user_idx").on(t.userId, t.readAt)],
+);
 
 /** Eğitimler: YouTube-gömülü müfredat (video barındırılmaz) */
 export const courses = pgTable("courses", {

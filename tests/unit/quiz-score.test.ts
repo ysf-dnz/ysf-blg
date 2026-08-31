@@ -46,4 +46,39 @@ describe("scoreQuiz", () => {
     const r = scoreQuiz([soru(1)], [{ id: 99, answer: 1, ms: 0 }], MAX);
     expect(r.correctCount).toBe(0);
   });
+
+  // --- İstismar korumaları (ms İSTEMCİDEN gelir, asla güvenilmez) ---
+
+  it("NEGATİF ms tavanı aşamaz — sınırsız puan basımı kapalı", () => {
+    const qs = [soru(1), soru(2), soru(3)];
+    const r = scoreQuiz(
+      qs,
+      qs.map((q) => ({ id: q.id, answer: 1, ms: -1_000_000 })),
+      MAX,
+    );
+    expect(r.points).toBe(MAX);
+    expect(r.points).toBeLessThanOrEqual(MAX);
+  });
+
+  it("aşırı negatif ms bile tam puanı geçemez (tek soru)", () => {
+    const r = scoreQuiz([soru(1)], [{ id: 1, answer: 1, ms: -2e9 }], MAX);
+    expect(r.points).toBeLessThanOrEqual(MAX);
+  });
+
+  it("sayı olmayan/sonsuz ms en yavaş cevap sayılır (taban puan)", () => {
+    const nan = scoreQuiz([soru(1)], [{ id: 1, answer: 1, ms: NaN }], MAX);
+    const inf = scoreQuiz([soru(1)], [{ id: 1, answer: 1, ms: Infinity }], MAX);
+    expect(nan.points).toBe(MAX / 2);
+    expect(inf.points).toBe(MAX / 2);
+  });
+
+  it("durationSec 0 olsa bile bölme patlamaz ve tavan korunur", () => {
+    const r = scoreQuiz(
+      [{ id: 1, correctIndex: 1, durationSec: 0 }],
+      [{ id: 1, answer: 1, ms: 0 }],
+      MAX,
+    );
+    expect(Number.isFinite(r.points)).toBe(true);
+    expect(r.points).toBeLessThanOrEqual(MAX);
+  });
 });

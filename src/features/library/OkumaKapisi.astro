@@ -23,8 +23,17 @@ interface Props {
   moduller?: Modul[];
   /** Davet kartında kullanılacak kapak görseli */
   cover?: string | null;
+  /** NotebookLM defteri — linki YALNIZ erişimi olana render edilir */
+  notebookId?: string | null;
 }
-const { bookId, bookTitle, lang, moduller = [], cover = null } = Astro.props;
+const {
+  bookId,
+  bookTitle,
+  lang,
+  moduller = [],
+  cover = null,
+  notebookId = null,
+} = Astro.props;
 const t = useTranslations(lang);
 const unlockCost = PUAN.bookUnlockCost;
 const yazYolu = `/uye/yaz?kitap=${encodeURIComponent(bookId)}`;
@@ -111,7 +120,19 @@ if (beslenen.length) {
   <div class="mt-3">
     {
       access === "open" ? (
-        <DriveEmbed fileId={bookId} title={bookTitle} />
+        <>
+          <DriveEmbed fileId={bookId} title={bookTitle} />
+          {notebookId && (
+            <a
+              href={`https://notebooklm.google.com/notebook/${notebookId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="pill-pop mt-3 inline-flex items-center gap-2 rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface"
+            >
+              📔 NotebookLM ile bu kitaba soru sor
+            </a>
+          )}
+        </>
       ) : (
         <div class="shine relative overflow-hidden rounded-2xl border border-line bg-surface-raised p-8 text-center">
           <div class="pointer-events-none absolute inset-0 girih-texture opacity-60" aria-hidden="true" />

@@ -208,10 +208,19 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (action === "approve" && task.status === "review" && yonetici && task.assigneeId) {
-    await db
+    // ATOMİK onay (claim ile aynı desen): status guard WHERE'de. Eskiden
+    // update yalnız id ile filtreliydi ve koşul isteğin başında okunan bayat
+    // snapshot'a dayanıyordu → çift tık / paralel onay çift ödül yazıyordu.
+    const onaylandi = await db
       .update(schema.campaignTasks)
       .set({ status: "done" })
-      .where(eq(schema.campaignTasks.id, task.id));
+      .where(
+        andOp(eq(schema.campaignTasks.id, task.id), eq(schema.campaignTasks.status, "review")),
+      )
+      .returning({ id: schema.campaignTasks.id });
+    if (onaylandi.length === 0) {
+      return context.redirect(`/kampanya/${task.campaignId}`);
+    }
     // Kampanya çarpanı: gündem kitabıyla ilgili üretim ×1.5
     const istenen = Math.round(task.rewardPoints * PUAN.campaignMultiplier);
     // Haftalık kulüp bütçesi: bu kulübün kampanyalarında son 7 günde

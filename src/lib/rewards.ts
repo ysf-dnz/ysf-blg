@@ -5,10 +5,12 @@
  * awardBadge(): rozeti bir kez verir (unique) ve bildirim bırakır.
  * Tasarım: kullanıcıyı asla bloklamaz — ödül yan etkileri best-effort.
  */
-import { and, eq, gt, inArray } from "drizzle-orm";
+import { and, eq, gt, gte, inArray } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { LEVEL_THRESHOLDS, levelFor } from "@/lib/levels.ts";
+import { likePuaniVerilirMi } from "@/lib/economy.ts";
+import { PUAN } from "@/lib/points.ts";
 
 type Reason = (typeof schema.pointsLedger.$inferInsert)["reason"];
 type BadgeKind = (typeof schema.badges.$inferInsert)["kind"];
@@ -20,9 +22,21 @@ export const UNLOCKS: Record<number, string> = {
   7: "🚀 Quiz ve eğitimlerin onay beklemeden yayınlanır",
 };
 
-/** Yerel gün anahtarı (YYYY-MM-DD) — streak hesabı bunun üstünden yürür */
+/**
+ * Gün anahtarı (YYYY-MM-DD) — streak hesabı bunun üstünden yürür.
+ * Topluluk TR odaklı; sunucu (Vercel) UTC'de koştuğu için gün sınırı
+ * SABİT Europe/Istanbul'dur — yoksa TR saatiyle 00:00-03:00 arası
+ * aktivite önceki güne yazılıp serileri haksız yere kırardı.
+ */
+export const TOPLULUK_TZ = "Europe/Istanbul";
+const gunBicimi = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: TOPLULUK_TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 export function gunKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return gunBicimi.format(d);
 }
 
 /** Saf streak geçişi (birim test edilir): dünse +1, bugünse aynı, değilse 1 */
@@ -86,6 +100,48 @@ export async function hazineKitabiAc(
   return kilitli.bookId;
 }
 
+/**
+ * Seviye hediyesi HAKKI: bu seviyeye kadar kaç bedava hazine kitabı
+ * kazanılmış olmalı (kümülatif). UNLOCKS ile aynı seviyeleri anlatır.
+ */
+function seviyeHediyeHakki(level: number): number {
+  let hak = 0;
+  if (level >= 3) hak++;
+  if (level >= 5) hak++;
+  return hak;
+}
+
+/**
+ * Seviye hediyelerini HAK ESASLI uygular (kendi kendini onarır).
+ *
+ * NEDEN: eski kurgu olay esaslıydı — hediye yalnız seviye atlama ANINDA
+ * verilirdi. Yeni üye kayıtta +50 puanla anında Seviye 3 olduğu için
+ * hediye `learning_list` HENÜZ BOŞKEN tetikleniyor, `hazineKitabiAc`
+ * null dönüyor ve hak telafisiz YANIYORDU: vaat edilen iki bedava
+ * kitaptan biri fiilen hiç dağıtılmıyordu.
+ *
+ * Burada hak ile gerçekleşen karşılaştırılır; eksik varsa (hazine artık
+ * doluysa) tamamlanır. Hazine seçimi sonrası da çağrılır.
+ *
+ * @returns yeni açılan kitap id'leri
+ */
+export async function seviyeHediyeleriniUygula(userId: number): Promise<string[]> {
+  const seviye = levelFor(await kazanilan(userId));
+  const hak = seviyeHediyeHakki(seviye);
+  if (hak === 0) return [];
+
+  const verilmis = await db.query.bookAccess.findMany({
+    where: and(eq(schema.bookAccess.userId, userId), eq(schema.bookAccess.source, "level")),
+  });
+  const acilanlar: string[] = [];
+  for (let i = verilmis.length; i < hak; i++) {
+    const kitap = await hazineKitabiAc(userId, "level");
+    if (!kitap) break; // hazine boş/tükendi — hak korunur, sonra uygulanır
+    acilanlar.push(kitap);
+  }
+  return acilanlar;
+}
+
 /** Toplam kazanılan (pozitif) puan — seviye bundan türer */
 async function kazanilan(userId: number): Promise<number> {
   const [row] = await db
@@ -101,17 +157,18 @@ async function seviyeAcilimi(userId: number, onceki: number, sonraki: number) {
   if (yeniLv <= eskiLv) return;
   for (let lv = eskiLv + 1; lv <= yeniLv; lv++) {
     if (lv === 3) {
-      const kitap = await hazineKitabiAc(userId, "level");
+      // Hak esaslı: hazine boşsa hak YANMAZ, liste dolunca uygulanır
+      const [kitap] = await seviyeHediyeleriniUygula(userId);
       await db.insert(schema.notifications).values({
         userId,
         kind: "level",
         body: kitap
           ? "Seviye 3'e ulaştın 🎉 Hazinendeki sıradaki kitap bedava açıldı!"
-          : "Seviye 3'e ulaştın 🎉 Hazinene kitap ekle, bedava açılsın.",
+          : "Seviye 3'e ulaştın 🎉 Hazineni kur — bedava kitabın seni bekliyor.",
         href: kitap ? `/kutuphane/kitap/${kitap}` : "/uye/hosgeldin",
       });
     } else if (lv === 5) {
-      await hazineKitabiAc(userId, "level");
+      await seviyeHediyeleriniUygula(userId);
       await awardBadge(
         userId,
         "usta-okur",
@@ -144,50 +201,154 @@ async function streakIlerlet(userId: number) {
     .update(schema.users)
     .set({ streakCount: g.count, streakLastDay: g.day })
     .where(eq(schema.users.id, userId));
-  // Kilometre taşları: ledger'a doğrudan yazılır (awardPoints'e dönmez — döngü yok)
+  // Kilometre taşları awardPoints üzerinden verilir: bonus seviye atlatıyorsa
+  // açılım (bedava kitap / rozet) da tetiklensin. Sonsuz döngü yok — bu satıra
+  // gelindiğinde streakLastDay bugüne çekilmiştir, iç çağrıda ilerledi=false.
+  // refId dönem anahtarlı: aynı kilometre taşı iki kez ödüllenmez (ledger unique).
   if (g.count === 7) {
-    await db.insert(schema.pointsLedger).values({
+    await awardPoints({
       userId,
-      delta: 25,
+      delta: PUAN.streak7,
       reason: "streak_bonus",
-      refId: "streak-7",
+      refId: `streak-7:${g.day}`,
     });
-    await awardBadge(userId, "streak-7", "7 günlük seri 🔥 +25 puan!");
+    await awardBadge(userId, "streak-7", `7 günlük seri 🔥 +${PUAN.streak7} puan!`);
   } else if (g.count === 30) {
-    await db.insert(schema.pointsLedger).values({
+    await awardPoints({
       userId,
-      delta: 150,
+      delta: PUAN.streak30,
       reason: "streak_bonus",
-      refId: "streak-30",
+      refId: `streak-30:${g.day}`,
     });
-    await awardBadge(userId, "streak-30", "30 günlük seri 🔥🔥 +150 puan!");
+    await awardBadge(userId, "streak-30", `30 günlük seri 🔥🔥 +${PUAN.streak30} puan!`);
   }
 }
 
 /**
  * Puanın tek kapısı: ledger + (pozitifse) streak + seviye açılımları.
  * Yan etkiler kullanıcı akışını asla düşürmez.
+ *
+ * Idempotent: aynı (userId, reason, refId) daha önce yazıldıysa hiçbir şey
+ * yapmaz ve false döner (points_ledger_idem_idx). Çift tık / paralel istek
+ * / yeniden gönderim böylece çift ödül üretemez.
+ * @returns ledger'a GERÇEKTEN yazıldıysa true
  */
 export async function awardPoints(opts: {
   userId: number;
   delta: number;
   reason: Reason;
   refId?: string;
-}): Promise<void> {
+}): Promise<boolean> {
   const onceki = opts.delta > 0 ? await kazanilan(opts.userId) : 0;
-  await db.insert(schema.pointsLedger).values({
-    userId: opts.userId,
-    delta: opts.delta,
-    reason: opts.reason,
-    refId: opts.refId,
-  });
-  if (opts.delta <= 0) return;
+  const [row] = await db
+    .insert(schema.pointsLedger)
+    .values({
+      userId: opts.userId,
+      delta: opts.delta,
+      reason: opts.reason,
+      refId: opts.refId,
+    })
+    .onConflictDoNothing()
+    .returning({ id: schema.pointsLedger.id });
+  if (!row) return false;
+  if (opts.delta <= 0) return true;
   try {
     await streakIlerlet(opts.userId);
     await seviyeAcilimi(opts.userId, onceki, onceki + opts.delta);
   } catch {
     /* ödül süsleri asla ana akışı düşürmesin */
   }
+  return true;
+}
+
+/**
+ * Harcama kapısı: bakiye yeterliyse TEK atomik SQL ile düşer.
+ *
+ * Neden tek SQL: neon-http sürücüsü interaktif transaction desteklemez,
+ * bu yüzden "önce bakiyeyi oku, sonra yaz" deseni yarışa açıktır —
+ * 200 puanla paralel N istek atıp N kitap açmak mümkündü. Burada bakiye
+ * koşulu INSERT'in WHERE'ine gömülüdür: koşul tutmazsa satır yazılmaz.
+ * ON CONFLICT DO NOTHING ile aynı harcama iki kez de kesilemez.
+ *
+ * @param cost POZİTİF maliyet (ledger'a negatif yazılır)
+ * @returns harcama gerçekten kesildiyse true; bakiye yetmediyse veya
+ *          bu harcama zaten kesilmişse false
+ */
+export async function spendPoints(opts: {
+  userId: number;
+  cost: number;
+  reason: Reason;
+  refId: string;
+}): Promise<boolean> {
+  const sonuc = await db.execute(sql`
+    insert into points_ledger (user_id, delta, reason, ref_id)
+    select ${opts.userId}, ${-opts.cost}, ${opts.reason}, ${opts.refId}
+    where (
+      select coalesce(sum(delta), 0) from points_ledger where user_id = ${opts.userId}
+    ) >= ${opts.cost}
+    on conflict do nothing
+    returning id
+  `);
+  const satirlar = Array.isArray(sonuc)
+    ? sonuc
+    : ((sonuc as { rows?: unknown[] })?.rows ?? []);
+  return satirlar.length > 0;
+}
+
+/** TR gününün başlangıcı (Türkiye kalıcı UTC+3, yaz saati yok) */
+export function gunBaslangici(simdi: Date = new Date()): Date {
+  return new Date(`${gunKey(simdi)}T00:00:00+03:00`);
+}
+
+/**
+ * Beğeni ödülü — çiftlik freni TEK kapıdan geçer.
+ *
+ * Sayaç HEM feed gönderisi HEM üye yazısı beğenilerini birlikte sayar:
+ * eskiden fren yalnız feed'de vardı ve yalnız feed beğenilerini sayıyordu,
+ * bu yüzden iki hesap birbirinin yazılarını beğenerek günlük sınırı
+ * tamamen atlayabiliyordu.
+ *
+ * @returns puan gerçekten verildiyse true (beğeni her hâlükârda kalır)
+ */
+export async function begeniPuaniVer(opts: {
+  begenenId: number;
+  yazarId: number;
+  refId: string;
+}): Promise<boolean> {
+  const bugun = gunBaslangici();
+  const [feedSayi, yaziSayi] = await Promise.all([
+    db
+      .select({ c: sql<number>`count(*)` })
+      .from(schema.likes)
+      .innerJoin(schema.feedPosts, eq(schema.likes.feedPostId, schema.feedPosts.id))
+      .where(
+        and(
+          eq(schema.likes.userId, opts.begenenId),
+          eq(schema.feedPosts.userId, opts.yazarId),
+          gte(schema.likes.createdAt, bugun),
+        ),
+      ),
+    db
+      .select({ c: sql<number>`count(*)` })
+      .from(schema.likes)
+      .innerJoin(schema.memberPosts, eq(schema.likes.memberPostId, schema.memberPosts.id))
+      .where(
+        and(
+          eq(schema.likes.userId, opts.begenenId),
+          eq(schema.memberPosts.userId, opts.yazarId),
+          gte(schema.likes.createdAt, bugun),
+        ),
+      ),
+  ]);
+  // Yeni eklenen beğeni de sayıma dahil → daha önceki sayı = toplam - 1
+  const toplam = Number(feedSayi[0]?.c ?? 0) + Number(yaziSayi[0]?.c ?? 0);
+  if (!likePuaniVerilirMi(Math.max(0, toplam - 1))) return false;
+  return awardPoints({
+    userId: opts.yazarId,
+    delta: PUAN.likeReceived,
+    reason: "like_received",
+    refId: opts.refId,
+  });
 }
 
 /** Sayaç rozetleri: 10 görev, 5 quiz, 5 aktif davet */

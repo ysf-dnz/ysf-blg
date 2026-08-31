@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "admin": "ASTRO_KEYSTATIC=1 astro dev",
     "build": "astro build",
-    "postbuild": "pagefind --site dist/client && rm -rf public/pagefind && cp -R dist/client/pagefind public/pagefind && node --experimental-strip-types scripts/generate-llms-txt.ts",
+    "postbuild": "pagefind --site dist/client && rm -rf public/pagefind && cp -R dist/client/pagefind public/pagefind && rm -rf .vercel/output/static/pagefind && cp -R dist/client/pagefind .vercel/output/static/pagefind && node --experimental-strip-types scripts/generate-llms-txt.ts",
     "preview": "astro preview",
     "check": "astro check",
     "sync:kutuphanem": "node --experimental-strip-types scripts/sync-kutuphanem.ts",
@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "seed:demo": "node --env-file=.env.local --experimental-strip-types scripts/seed-demo.ts",
-    "qa": "astro check && vitest run && astro build && node scripts/check-build-output.mjs && playwright test"
+    "qa": "astro check && vitest run && npm run build && node scripts/check-build-output.mjs && playwright test"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",

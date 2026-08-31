@@ -1,9 +1,9 @@
 /** POST /api/uye/magaza — flair satın alma (50 puan). */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
-import { eq } from "drizzle-orm";
+import { spendPoints } from "@/lib/rewards.ts";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { getOrCreateMember, pointBalance } from "@/lib/member.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 
 export const prerender = false;
@@ -20,15 +20,26 @@ export const POST: APIRoute = async (context) => {
     return new Response("Geçersiz flair", { status: 400 });
 
   if (member.flair === flair) return context.redirect("/uye/magaza");
-  if ((await pointBalance(member.id)) < PUAN.flairCost)
-    return context.redirect("/uye/magaza?durum=yetersiz");
 
-  await awardPoints({
-    userId: member.id,
-    delta: -PUAN.flairCost,
-    reason: "spend_flair",
-    refId: flair,
+  // Daha önce satın alınmış bir süsü tekrar takmak bedavadır.
+  const sahip = await db.query.pointsLedger.findFirst({
+    where: and(
+      eq(schema.pointsLedger.userId, member.id),
+      eq(schema.pointsLedger.reason, "spend_flair"),
+      eq(schema.pointsLedger.refId, flair),
+    ),
   });
+  if (!sahip) {
+    // Atomik harcama: bakiye koşulu INSERT içinde (yarışta çift kesinti yok)
+    const kesildi = await spendPoints({
+      userId: member.id,
+      cost: PUAN.flairCost,
+      reason: "spend_flair",
+      refId: flair,
+    });
+    if (!kesildi) return context.redirect("/uye/magaza?durum=yetersiz");
+  }
+
   await db
     .update(schema.users)
     .set({ flair })

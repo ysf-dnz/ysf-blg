@@ -34,9 +34,9 @@ const VARSAYILAN_SIRA = ["sorular", "ozet", "oku", "moduller", "sohbet"] as cons
 const duzen = await getEntry("siteConfig", "kitap-sayfa");
 const sira = duzen?.data.sira?.length ? duzen.data.sira : [...VARSAYILAN_SIRA];
 
-const notebookUrl = book.notebookId
-  ? `https://notebooklm.google.com/notebook/${book.notebookId}`
-  : undefined;
+// NotebookLM linki BİLİNÇLİ olarak burada kurulmaz: bu sayfa statiktir ve
+// misafire de servis edilir. Link, erişim sunucuda doğrulandıktan sonra
+// OkumaKapisi adasında (kilidin ardında) render edilir.
 
 const kategori = KATEGORILER.find((k) => k.key === book.category);
 
@@ -56,12 +56,16 @@ const degerNotu = (
   </a>
 
   {/* 🗝️ Hazine açılış kutlaması: puanla kilit açılınca (?acildi=1) —
-      konfeti + tüm içeriğin anahtarları (oku · indir · NotebookLM) */}
+      konfeti + tüm içeriğin anahtarları (oku · indir · NotebookLM) + paylaşım.
+
+      GÜVENLİK: bu sayfa STATİKTİR, bu yüzden hiçbir Drive/NotebookLM linki
+      buraya yazılmaz ve istemcide kurulmaz. Bantın linkleri
+      /api/uye/kitap-linkler'den gelir; o uç erişimi SUNUCUDA doğrular.
+      (Eskiden misafir `?acildi=1` yazarak çalışan indirme linki alıyordu.) */}
   <div
     id="acildi-band"
     hidden
     data-book-id={book.id}
-    data-notebook={notebookUrl ?? ""}
     class="menu-pop relative mt-4 overflow-hidden rounded-2xl border border-accent bg-accent-soft p-5 text-center"
   >
     <p class="font-display text-2xl font-semibold text-ink">🗝️ Hazine açıldı!</p>
@@ -70,17 +74,23 @@ const degerNotu = (
       içerikler (özet, sorular, NotebookLM sohbeti{moduller.length > 0 && ", slayt/podcast pencereleri"}) aynı anda açıldı.
     </p>
     <div class="mt-3 flex flex-wrap justify-center gap-2">
-      <a id="acildi-indir" href="#" class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">📥 Bilgisayarına indir</a>
-      <a id="acildi-oku" href="#" target="_blank" rel="noopener noreferrer" class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">📖 Drive'da aç</a>
-      {notebookUrl && (
-        <a href={notebookUrl} target="_blank" rel="noopener noreferrer" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">💬 NotebookLM'de sor</a>
-      )}
+      <a id="acildi-indir" href="#" hidden class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">📥 Bilgisayarına indir</a>
+      <a id="acildi-oku" href="#" hidden target="_blank" rel="noopener noreferrer" class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">📖 Drive'da aç</a>
+      <a id="acildi-notebook" href="#" hidden target="_blank" rel="noopener noreferrer" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:border-accent hover:text-accent">💬 NotebookLM'de sor</a>
+    </div>
+    {/* 📣 Kutlama anı = paylaşım anı: kazanımı paylaşmanın en doğal yeri */}
+    <div class="mt-4 border-t border-accent/30 pt-3">
+      <p class="text-xs text-ink-muted">Bu hazineyi emekle açtın — arkadaşını da çağır, ilk kitabı hediye:</p>
+      <span class="mt-2 flex flex-wrap justify-center gap-1.5">
+        <button type="button" id="acildi-davet" data-davet-karti data-kitap={book.titleTr ?? book.title} data-kapak={book.cover ?? ""} data-ref="" class="pill-pop cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface">🎴 Davet kartı oluştur</button>
+        <a id="acildi-wa" href="#" hidden target="_blank" rel="noopener noreferrer" class="pill-pop rounded-full border border-line px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent">WhatsApp</a>
+        <button type="button" id="acildi-kopyala" data-ref-kopyala="" class="pill-pop cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent">Instagram için kopyala</button>
+      </span>
     </div>
   </div>
 
   {/* Hediye kutlaması: ?hediye=1 ile gelindiğinde görünür. Drive linki
-      statik HTML'e YAZILMAZ (misafir DOM'unda Drive linki olmamalı —
-      gate e2e testi bekçi); script anında kurar. */}
+      statik HTML'e YAZILMAZ ve istemcide KURULMAZ — auth'lu uçtan gelir. */}
   <div
     id="hediye-band"
     hidden
@@ -95,6 +105,7 @@ const degerNotu = (
       <a
         id="hediye-drive"
         href="#"
+        hidden
         target="_blank"
         rel="noopener noreferrer"
         class="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]"
@@ -140,25 +151,62 @@ const degerNotu = (
       }
     }
 
-    document.addEventListener("astro:page-load", () => {
+    /**
+     * Kutlama bandının linkleri SUNUCUDAN alınır. Erişimi olmayan (misafir
+     * dahil) 403 alır ve bant hiç açılmaz — `?acildi=1` yazmak tek başına
+     * hiçbir şey açmaz. Statik HTML'de hiçbir Drive linki yoktur.
+     */
+    async function bandiDoldur(band: HTMLElement) {
+      const bookId = band.dataset.bookId;
+      if (!bookId) return false;
+      let veri: {
+        indir: string; oku: string; notebook: string | null;
+        ref: string; kitapAdi: string; kapak: string | null;
+      };
+      try {
+        const yanit = await fetch(
+          `/api/uye/kitap-linkler?bookId=${encodeURIComponent(bookId)}`,
+          { credentials: "same-origin" },
+        );
+        if (!yanit.ok) return false;
+        veri = await yanit.json();
+      } catch {
+        return false;
+      }
+      const kur = (id: string, href: string | null) => {
+        const el = document.getElementById(id) as HTMLAnchorElement | null;
+        if (!el || !href) return;
+        el.href = href;
+        el.removeAttribute("hidden");
+      };
+      kur("acildi-indir", veri.indir);
+      kur("acildi-oku", veri.oku);
+      kur("acildi-notebook", veri.notebook);
+      kur("hediye-drive", veri.oku);
+
+      // Paylaşım kancaları da aynı yanıttan beslenir (ref link üyeye özel)
+      const metin = encodeURIComponent(
+        `"${veri.kitapAdi}" kitabını emekle açtım — burada kitaplar parayla değil emekle açılıyor. Sen de katıl, ilk kitabın hediye: ${veri.ref}`,
+      );
+      kur("acildi-wa", `https://wa.me/?text=${metin}`);
+      const davet = document.getElementById("acildi-davet");
+      if (davet) davet.dataset.ref = veri.ref;
+      const kopyala = document.getElementById("acildi-kopyala");
+      if (kopyala) kopyala.dataset.refKopyala = veri.ref;
+      return true;
+    }
+
+    document.addEventListener("astro:page-load", async () => {
       const params = new URLSearchParams(location.search);
 
       const band = document.getElementById("hediye-band");
-      if (band && params.get("hediye") === "1") {
-        const link = document.getElementById("hediye-drive") as HTMLAnchorElement | null;
-        if (link)
-          link.href = `https://drive.google.com/file/d/${band.dataset.bookId}/view`;
+      if (band && params.get("hediye") === "1" && (await bandiDoldur(band))) {
         band.removeAttribute("hidden");
         konfeti(band);
       }
 
       const acildi = document.getElementById("acildi-band");
-      if (acildi && params.get("acildi") === "1") {
-        const id = acildi.dataset.bookId!;
-        (document.getElementById("acildi-indir") as HTMLAnchorElement).href =
-          `https://drive.google.com/uc?export=download&id=${id}`;
-        (document.getElementById("acildi-oku") as HTMLAnchorElement).href =
-          `https://drive.google.com/file/d/${id}/view`;
+      if (acildi && params.get("acildi") === "1" && (await bandiDoldur(acildi))) {
         acildi.removeAttribute("hidden");
         konfeti(acildi);
       }
@@ -381,6 +429,7 @@ const degerNotu = (
             lang={lang}
             moduller={moduller}
             cover={book.cover ?? null}
+            notebookId={book.notebookId ?? null}
           >
             <section slot="fallback" class="mt-8" aria-busy="true">
               <h2 class="font-display text-xl font-semibold text-ink">
@@ -397,21 +446,13 @@ const degerNotu = (
       // erişim yalnızca emekle (puan/hediye) kazanılır.
       if (bolum === "planlar") return null;
 
-      // sohbet
+      // sohbet — NotebookLM linki KİLİDİN ARDINDADIR (Okuma Kapısı adasında
+      // render edilir). Burada yalnız vitrin durur: link statik HTML'e
+      // yazılırsa misafir kitabı hiç açmadan tam metin üzerinden soru sorabilir.
       return (
         <section class="mt-8 rounded-2xl border border-accent/30 bg-accent-soft p-6 text-center">
-          {notebookUrl ? (
-            <>
-              <a
-                href={notebookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
-              >
-                📔 {t("kitap.sohbet")}
-              </a>
-              <p class="mt-3 text-sm text-ink-muted">{t("kitap.sohbetAciklama")}</p>
-            </>
+          {book.notebookId ? (
+            <p class="text-sm text-ink-muted">📔 {t("kitap.sohbetAciklama")}</p>
           ) : (
             <p class="text-sm text-ink-muted">{t("kitap.sohbetYok")}</p>
           )}

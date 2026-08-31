@@ -29,11 +29,18 @@ export function scoreQuiz(
     const a = answers.find((x) => x.id === q.id);
     if (!a || a.answer !== q.correctIndex) continue;
     correctCount++;
-    // hız bonusu: 0.5 taban + 0.5 × kalan süre oranı
-    const speed = Math.max(0, 1 - a.ms / (q.durationSec * 1000));
+    // hız bonusu: 0.5 taban + 0.5 × kalan süre oranı.
+    // ms İSTEMCİDEN gelir → [0, süre] aralığına sıkıştırılır ve speed iki
+    // taraftan kırpılır; aksi halde negatif ms speed'i sınırsız büyütüp
+    // tek istekte keyfi puan bastırır.
+    const sure = Math.max(1, q.durationSec) * 1000;
+    const ms = Number.isFinite(a.ms) ? Math.min(Math.max(a.ms, 0), sure) : sure;
+    const speed = Math.min(1, Math.max(0, 1 - ms / sure));
     raw += 0.5 + 0.5 * speed;
   }
   const points =
-    questions.length === 0 ? 0 : Math.round((raw / questions.length) * maxPoints);
+    questions.length === 0
+      ? 0
+      : Math.min(maxPoints, Math.max(0, Math.round((raw / questions.length) * maxPoints)));
   return { correctCount, totalCount: questions.length, points };
 }

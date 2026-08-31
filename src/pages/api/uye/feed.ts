@@ -4,12 +4,10 @@
  * kendi gönderini beğenemezsin, gönderi başına 1 beğeni (unique index).
  */
 import type { APIRoute } from "astro";
-import { awardPoints } from "@/lib/rewards.ts";
+import { begeniPuaniVer } from "@/lib/rewards.ts";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { PUAN } from "@/lib/points.ts";
-import { likePuaniVerilirMi } from "@/lib/economy.ts";
 
 /** Basit hız sınırı: aynı üyeden son 30 sn'de gönderi/yorum varsa reddet. */
 async function sonSaniyelerdeVarMi(userId: number): Promise<boolean> {
@@ -70,6 +68,19 @@ export const POST: APIRoute = async (context) => {
         feedPostId,
         body,
       });
+      // Gönderi sahibine haber ver: yorum bildirim üretmiyordu, bu yüzden
+      // kimse yanıtından haberdar olmuyor ve konuşma ölüyordu.
+      const gonderi = await db.query.feedPosts.findFirst({
+        where: eq(schema.feedPosts.id, feedPostId),
+      });
+      if (gonderi && gonderi.userId !== member.id) {
+        await db.insert(schema.notifications).values({
+          userId: gonderi.userId,
+          kind: "comment",
+          body: `${member.name} gönderine yorum yaptı 💬 "${body.slice(0, 60)}${body.length > 60 ? "…" : ""}"`,
+          href: "/topluluk",
+        });
+      }
     }
   }
 
@@ -87,31 +98,12 @@ export const POST: APIRoute = async (context) => {
       if (inserted) {
         // Çiftlik freni: aynı beğenenden aynı yazara bugün ≥5 beğeni
         // varsa beğeni KALIR ama puan üretmez (sessiz koruma).
-        const bugun = new Date();
-        bugun.setHours(0, 0, 0, 0);
-        const [sayi] = await db
-          .select({ c: sql<number>`count(*)` })
-          .from(schema.likes)
-          .innerJoin(
-            schema.feedPosts,
-            eq(schema.likes.feedPostId, schema.feedPosts.id),
-          )
-          .where(
-            and(
-              eq(schema.likes.userId, member.id),
-              eq(schema.feedPosts.userId, post.userId),
-              gte(schema.likes.createdAt, bugun),
-            ),
-          );
-        // inserted dahil sayıldı → daha önceki puanlı sayı = c - 1
-        if (likePuaniVerilirMi(Number(sayi?.c ?? 1) - 1)) {
-          await awardPoints({
-            userId: post.userId,
-            delta: PUAN.likeReceived,
-            reason: "like_received",
-            refId: String(feedPostId),
-          });
-        }
+        // Sayaç feed + üye yazısı beğenilerini BİRLİKTE sayar (ortak kapı).
+        await begeniPuaniVer({
+          begenenId: member.id,
+          yazarId: post.userId,
+          refId: String(feedPostId),
+        });
       }
     }
   }

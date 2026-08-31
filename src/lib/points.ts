@@ -20,6 +20,15 @@ export const PUAN = {
   likeReceived: 1,
   /** Etkinlik katılımı */
   eventAttended: 10,
+  /** 7 günlük seri kilometre taşı */
+  streak7: 25,
+  /** 30 günlük seri kilometre taşı */
+  streak30: 150,
+  /** Eğitim (kurs) tamamlama ödülü */
+  courseCompleted: 25,
+  /** Bir üyenin eğitim tamamlamadan kazanabileceği HAFTALIK tavan —
+   *  kendi kursunu açıp bitirme döngüsüyle sınırsız basımı engeller */
+  courseWeeklyCap: 100,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */
