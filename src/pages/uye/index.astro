@@ -188,7 +188,17 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
     )}
     <div>
       <h1 class="font-display text-3xl font-semibold text-ink">{member.name}</h1>
-      <p class="mt-1 text-ink-muted">@{member.handle}</p>
+      <p class="mt-1 flex items-center gap-2 text-ink-muted">
+        @{member.handle}
+        {member.role === "admin" && (
+          <a
+            href="/uye/admin"
+            class="pill-pop rounded-full border border-accent px-3 py-0.5 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-surface"
+          >
+            🛡️ Admin paneli
+          </a>
+        )}
+      </p>
     </div>
     <div class="ml-auto flex flex-wrap gap-4 text-center">
       <div class="rounded-xl border border-line bg-surface-raised px-5 py-3">
