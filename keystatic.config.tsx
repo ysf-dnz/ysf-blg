@@ -261,8 +261,23 @@ function hakkimdaSingleton(lang: "tr" | "en", label: string) {
   });
 }
 
+/**
+ * Depolama modu:
+ * - Lokal gelistirme: dosya sistemine dogrudan yazar (offline, hizli).
+ * - Canli (PROD) veya KEYSTATIC_GITHUB=1: GitHub moduna gecer — her kayit
+ *   ysf-dnz/ysf-blg reposuna commit olur; giris GitHub ile yapilir ve
+ *   yalnizca repoya yazma yetkisi olanlar panele girebilir. Vercel repoya
+ *   bagli oldugu icin her icerik commit'i otomatik deploy tetikler.
+ */
+// Not: bu dosya TARAYICIDA da calisir (Keystatic UI) — process KULLANMA.
+// PUBLIC_ oneki sayesinde bayrak client+server iki tarafta da ayni gorunur.
+const githubModu =
+  import.meta.env.PROD || import.meta.env.PUBLIC_KEYSTATIC_GITHUB === "1";
+
 export default config({
-  storage: { kind: "local" },
+  storage: githubModu
+    ? { kind: "github", repo: "ysf-dnz/ysf-blg" }
+    : { kind: "local" },
   ui: {
     brand: { name: "ysf-blog admin" },
     navigation: {

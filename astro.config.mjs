@@ -15,9 +15,14 @@ import { transformerNotationHighlight } from "@shikijs/transformers";
 
 const SITE = process.env.SITE_URL ?? "https://yusufdeniz.dev";
 
-// Keystatic yalnızca ASTRO_KEYSTATIC=1 iken (lokal admin oturumu) yüklenir;
-// production build'e admin çıkmaz.
-const keystaticEnabled = process.env.ASTRO_KEYSTATIC === "1";
+// Keystatic admin paneli. Lokalde ASTRO_KEYSTATIC=1 (npm run admin) ile,
+// canlıda KEYSTATIC_GITHUB_CLIENT_ID tanımlıysa yüklenir.
+// Canlıda depolama GitHub modudur (keystatic.config.tsx): giriş GitHub ile
+// yapılır ve YALNIZCA repoya yazma yetkisi olan kişi panele girebilir —
+// anahtarlar Vercel env'inde yoksa panel hiç derlenmez (kazara açılmaz).
+const keystaticEnabled =
+  process.env.ASTRO_KEYSTATIC === "1" ||
+  Boolean(process.env.KEYSTATIC_GITHUB_CLIENT_ID);
 const adminIntegrations = keystaticEnabled
   ? [
       (await import("@astrojs/react")).default(),
