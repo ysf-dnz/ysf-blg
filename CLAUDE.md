@@ -43,7 +43,9 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - Cron: `vercel.json` → `GET /api/cron/gunluk` (`CRON_SECRET`; `cron_runs` idempotency). İşler: bayat görev, sezon kapanış/açılış, ayın kitabı (oy birincisi → kampanya), özel lig kapanışı.
 
 ## Deploy (2026-08-31 CANLI)
-- **Production: https://ysf-blog.vercel.app** (deployment `dpl_2cwb8…`, target production). İlk deploy bugün yapıldı. Canlı doğrulandı: client bundle'da sır YOK, kitap sayfasında Drive/NotebookLM linki YOK, cron secret'sız 401, arama ("Mindset"→3 sonuç)/llms.txt/sitemap 200. Neon'a 8 index uygulandı (idempotency dahil). Vercel env: POSTGRES_URL, CRON_SECRET (3 ortam), SITE_URL, Clerk anahtarları.
+- **Production: https://yusufdeniz.com** (+ www; `ysf-blog.vercel.app` alias'ı da çalışır). Domain Squarespace'te kayıtlı; DNS: `A @ → 76.76.21.21` + `CNAME www → cname.vercel-dns.com` (Squarespace DNS panelinde custom records; "Squarespace Defaults" park preset'i otomatik kalktı; Email Security TXT'leri korundu). `SITE_URL=https://yusufdeniz.com` — canonical/og/sitemap/llms.txt bu domain'le üretiliyor (canlı doğrulandı).
+- İlk deploy'da canlı doğrulanan güvenlik: client bundle'da sır YOK, kitap sayfasında Drive/NotebookLM linki YOK, cron secret'sız 401, arama ("Mindset"→3 sonuç)/llms.txt/sitemap 200. Neon'a 8 index uygulandı (idempotency dahil). Vercel env: POSTGRES_URL, CRON_SECRET (3 ortam), SITE_URL, Clerk anahtarları.
+- Clerk şu an DEV instance (pk_test/sk_test) — yeni domain'de çalışır ama "development" modundadır. Prod'a geçiş: Clerk Dashboard'da production instance + sk_live + Clerk'in isteyeceği DNS kayıtları (clerk.yusufdeniz.com CNAME'leri Squarespace'e eklenecek).
 - **Deploy YÖNTEMİ**: git bağlı DEĞİL → `vercel deploy --prod --archive=tgz` (CLI). `--archive=tgz` ŞART: `.vercelignore` ile üretilmiş dosyalar hariç tutulsa da free-plan "5000 dosya/24s" limitini tek arşiv aşar. `--prebuilt` KULLANMA (lokal sırları taşır). Build Vercel'de (`vercel.json` buildCommand=`npm run build` → postbuild koşar).
 
 ## Bekleyenler / sonraki adımlar
