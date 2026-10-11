@@ -1,0 +1,12 @@
+---
+/**
+ * Davet bağlantısı (kanal: bağlantı) → kurs karşılama sayfası. QR kanalı: /d/q/[kod].
+ * NEDEN rest param: astro.config'teki "/D/[kod]" yönlendirmesi Astro'da küçük harfe
+ * çevrilmiş "/d/[kod]" anahtarını alır ve AYNI anahtarlı sayfa dosyasını rota
+ * listesinden düşürür (create.js joinSegments + filteredFiledBasedRoutes); deseni
+ * büyük harfe özel kaldığı için /d/x 404 oluyordu. "/d/[...kod]" farklı anahtardır.
+ */
+import { karsila } from "@/features/davet/karsilama.ts";
+export const prerender = false;
+return await karsila(Astro, "link");
+---

@@ -79,6 +79,10 @@ export const pointsLedger = pgTable(
         "course_learner_completed", // üretici: katılımcı bitirdi (course:{id}:u:{learner})
         "answer_accepted", // cevap yazarı: en iyi cevap (yorum:{id})
         "resource_accepted", // öneren: ek kaynak kabul (kaynak:{id})
+        // Kurs daveti (Faz 2) — bekleyen → kurs aktivasyonunda kesinleşir; davet tavanı 300/7g
+        "course_invite_welcome", // davetli: davetle katıldığı kursta aktive oldu (course:{id})
+        "course_invite_activated", // davet eden: davetlisi aktive oldu (course:{id}:u:{invitee})
+        "course_invite_completed", // davet eden: davetlisi bitirdi (course:{id}:u:{invitee})
       ],
     }).notNull(),
     refId: text("ref_id"),
@@ -662,6 +666,52 @@ export const reports = pgTable(
   (t) => [
     uniqueIndex("reports_idx").on(t.reporterId, t.targetType, t.targetId),
     index("reports_status_idx").on(t.status, t.createdAt),
+  ],
+);
+
+/**
+ * Davet kodu (Faz 2): (davet eden, hedef) başına tek aktif kod. 7 karakter
+ * Crockford Base32 (I, L, O, U yok). /d/{kod} bağlantısının ve QR'ın içeriği;
+ * kişisel veri taşımaz. note: kartın ≤80 karakterlik kişisel notu.
+ */
+export const inviteCodes = pgTable(
+  "invite_codes",
+  {
+    id: serial("id").primaryKey(),
+    code: text("code").notNull(),
+    inviterId: integer("inviter_id")
+      .notNull()
+      .references(() => users.id),
+    targetType: text("target_type", { enum: ["course", "event"] }).notNull(),
+    targetId: integer("target_id").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at"),
+  },
+  (t) => [
+    uniqueIndex("invite_codes_code_idx").on(t.code),
+    uniqueIndex("invite_codes_aktif_idx")
+      .on(t.inviterId, t.targetType, t.targetId)
+      .where(sql`${t.revokedAt} is null`),
+  ],
+);
+
+/** Davet bağlantısı ziyareti: huni "görüntülenme" + IP hız sınırı; 30 gün sonra cron siler */
+export const inviteVisits = pgTable(
+  "invite_visits",
+  {
+    id: serial("id").primaryKey(),
+    inviteCodeId: integer("invite_code_id")
+      .notNull()
+      .references(() => inviteCodes.id),
+    ipHash: text("ip_hash").notNull(),
+    uaHash: text("ua_hash"),
+    kanal: text("kanal", { enum: ["qr", "link"] }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("invite_visits_ip_idx").on(t.ipHash, t.createdAt),
+    index("invite_visits_code_idx").on(t.inviteCodeId),
   ],
 );
 

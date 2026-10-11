@@ -2,7 +2,7 @@
 /**
  * Üye panosu: puan, seviye, açılan kitaplar, bildirimler, davet linki.
  */
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getCollection } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
@@ -14,7 +14,7 @@ import {
 } from "@/lib/member.ts";
 import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { PUAN } from "@/lib/points.ts";
-import { UNLOCKS, bekleyenleriIsle } from "@/lib/rewards.ts";
+import { DAVET_REASONLARI, UNLOCKS, bekleyenleriIsle } from "@/lib/rewards.ts";
 
 export const prerender = false;
 
@@ -117,6 +117,61 @@ const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
     : b.expiresAt
       ? `son gün ${tarihKisa(b.expiresAt)}`
       : "koşul bekliyor";
+
+// 🤝 Davetlerim (Faz 2): kod başına görüntülenme (kanal) → katılım → aktivasyon; kazanılan/bekleyen
+// (yalnız davet EDEN olarak kazanılanlar: welcome davetlinin kendi puanıdır, tavan listesinde kalır)
+const DAVET_EDEN_REASONLARI = DAVET_REASONLARI.filter((r) => r !== "course_invite_welcome");
+const davetKodlarim = await db.query.inviteCodes.findMany({
+  where: and(eq(schema.inviteCodes.inviterId, member.id), isNull(schema.inviteCodes.revokedAt)),
+});
+const kodIdler = davetKodlarim.map((k) => k.id);
+const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]] = await Promise.all([
+  kodIdler.length
+    ? db
+        .select({ codeId: schema.inviteVisits.inviteCodeId, kanal: schema.inviteVisits.kanal, n: sql<number>`count(*)` })
+        .from(schema.inviteVisits)
+        .where(inArray(schema.inviteVisits.inviteCodeId, kodIdler))
+        .groupBy(schema.inviteVisits.inviteCodeId, schema.inviteVisits.kanal)
+    : [],
+  kodIdler.length
+    ? db
+        .select({
+          codeId: schema.courseEnrollments.inviteCodeId,
+          katilan: sql<number>`count(*)`,
+          aktif: sql<number>`count(${schema.courseEnrollments.activatedAt})`,
+          bitiren: sql<number>`count(${schema.courseEnrollments.completedAt})`,
+        })
+        .from(schema.courseEnrollments)
+        .where(inArray(schema.courseEnrollments.inviteCodeId, kodIdler))
+        .groupBy(schema.courseEnrollments.inviteCodeId)
+    : [],
+  kodIdler.length
+    ? db.query.courses.findMany({ where: inArray(schema.courses.id, davetKodlarim.map((k) => k.targetId)) })
+    : [],
+  db
+    .select({ t: sql<number>`coalesce(sum(${schema.pointsLedger.delta}), 0)` })
+    .from(schema.pointsLedger)
+    .where(and(eq(schema.pointsLedger.userId, member.id), inArray(schema.pointsLedger.reason, DAVET_EDEN_REASONLARI))),
+  db
+    .select({ t: sql<number>`coalesce(sum(${schema.pendingPoints.delta}), 0)` })
+    .from(schema.pendingPoints)
+    .where(
+      and(
+        eq(schema.pendingPoints.userId, member.id),
+        eq(schema.pendingPoints.status, "pending"),
+        inArray(schema.pendingPoints.reason, DAVET_EDEN_REASONLARI),
+      ),
+    ),
+]);
+const davetKursMap = new Map(davetKurslar.map((c) => [c.id, c]));
+const ziyaretMap = new Map<number, { qr: number; link: number }>();
+for (const z of davetZiyaret) {
+  const g = ziyaretMap.get(z.codeId) ?? { qr: 0, link: 0 };
+  g[z.kanal] += Number(z.n);
+  ziyaretMap.set(z.codeId, g);
+}
+const katilimMap = new Map(davetKatilim.map((k) => [k.codeId, { katilan: Number(k.katilan), aktif: Number(k.aktif), bitiren: Number(k.bitiren) }]));
+const kFaktor = [...katilimMap.values()].reduce((t, k) => t + k.aktif, 0);
 
 // 🔨 Görevlerim: üstlenilen kampanya görevleri + son tarih
 const uzerimdeki = await db
@@ -367,7 +422,41 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
     )
   }
 
-      {(bekleyenler.length > 0 || kirpilanlar.length > 0) && (
+      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5" data-reveal aria-label="Davetlerim">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="font-display text-xl font-semibold text-ink">🤝 Davetlerim</h2>
+      <p class="text-xs text-ink-muted">
+        Kazanılan <strong class="text-accent">+{Number(davetKazanc?.t ?? 0)}</strong>
+        {Number(davetBekleyen?.t ?? 0) > 0 && <> · bekleyen +{Number(davetBekleyen.t)}</>}
+        {" "}· aktive olan davetli <strong class="text-ink">{kFaktor}</strong> · haftalık davet tavanı {PUAN.inviteWeeklyCap}
+      </p>
+    </div>
+    {davetKodlarim.length === 0 ? (
+      <p class="mt-2 text-sm text-ink-muted">Katıldığın bir kursun sayfasındaki <strong>🎴 Davet kartın</strong>ı paylaş: arkadaşın QR'ı okutunca o +{PUAN.inviteWelcome}, sen +{PUAN.inviteActivated} kazanırsın.</p>
+    ) : (
+      <table class="mt-3 w-full text-sm">
+        <thead class="text-left text-xs text-ink-muted"><tr><th class="py-1 font-medium">Kurs</th><th class="py-1 font-medium">Görüntülenme</th><th class="py-1 font-medium">Katılan</th><th class="py-1 font-medium">Aktive</th><th class="py-1 font-medium">Bitiren</th></tr></thead>
+        <tbody>
+          {davetKodlarim.map((k) => {
+            const z = ziyaretMap.get(k.id) ?? { qr: 0, link: 0 };
+            const kt = katilimMap.get(k.id) ?? { katilan: 0, aktif: 0, bitiren: 0 };
+            const kurs = davetKursMap.get(k.targetId);
+            return (
+              <tr class="border-t border-line">
+                <td class="py-1.5 pr-2"><a href={kurs ? `/kurslar/${kurs.slug}#davet` : "#"} class="text-accent hover:underline">{kurs?.title ?? k.code}</a> <span class="font-mono text-xs text-ink-muted">{k.code}</span></td>
+                <td class="py-1.5">{z.qr + z.link} <span class="text-xs text-ink-muted">(QR {z.qr} · link {z.link})</span></td>
+                <td class="py-1.5">{kt.katilan}</td>
+                <td class="py-1.5">{kt.aktif}</td>
+                <td class="py-1.5">{kt.bitiren}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    )}
+  </section>
+
+  {(bekleyenler.length > 0 || kirpilanlar.length > 0) && (
       <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5" data-reveal aria-label="Bekleyen puan">
         <h2 class="font-display text-xl font-semibold text-ink">⏳ Bekleyen puan {bekleyenToplam > 0 && <span class="text-accent">+{bekleyenToplam}</span>}</h2>
         <p class="mt-1 text-xs text-ink-muted">Ledger'a henüz girmedi, seviyeye sayılmaz; koşulu gerçekleşince kesinleşir.</p>

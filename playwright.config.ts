@@ -13,6 +13,8 @@ export default defineConfig({
     navigationTimeout: 30_000,
   },
   expect: { timeout: 15_000 },
+  // Dev sunucuda ilk derleme + eşzamanlı yük: 30 sn varsayılanı yanlış kırmızı üretiyordu
+  timeout: 60_000,
   globalSetup: "./tests/e2e/global-setup.ts",
   projects: [
     { name: "misafir", testIgnore: /auth\.spec|kurs\.spec/ },

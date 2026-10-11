@@ -18,6 +18,17 @@ import { R } from "@/lib/routes.ts";
 import { PUAN } from "@/lib/points.ts";
 import { siteKok } from "@/lib/urls.ts";
 import { formatDate } from "@/lib/dates.ts";
+import {
+  DAVET_CEREZ,
+  davetCereziKur,
+  davetHedefi,
+  davetKoduUret,
+  kartSurumu,
+  kursaKatil,
+  qrIcerigi,
+  uygulamaIciTarayici,
+} from "@/lib/davet.ts";
+import { renderSVG } from "uqr";
 
 export const prerender = false;
 
@@ -30,6 +41,42 @@ const uretici = !!member && member.id === course.createdBy;
 const yonetici = !!member && (uretici || member.role === "admin");
 if (course.status !== "published" && !yonetici)
   return new Response("Kurs bulunamadı", { status: 404 });
+
+// Davetle geliş (?d=KOD): çerez /d/'de kuruldu; kod URL'de kalır ki bot OG kartını bulsun
+const dKod = Astro.url.searchParams.get("d");
+const davetHam = dKod ? await davetHedefi(dKod) : null;
+const davet =
+  davetHam && davetHam.kurs.id === course.id && !uretici && (!member || davetHam.davetEden.id !== member.id)
+    ? davetHam
+    : null;
+// "Tarayıcıda aç" ile çerezsiz gelen davetli: çerez yoksa burada kur (var olan ezilmez → ilk davet kazanır)
+if (davet && !Astro.cookies.has(DAVET_CEREZ)) davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
+
+// Girişten dönüşte otomatik katılım (karşılama akışı: ek dokunuş yok — AC-5).
+// GET durum değiştirdiği için yalnız aynı site: başka siteden açılan ?katil=1 (CSRF) işlemez;
+// Clerk dönüşü aynı origin (modal) ya da aynı site (accounts.yusufdeniz.com) olur.
+if (
+  member &&
+  Astro.url.searchParams.get("katil") === "1" &&
+  course.status === "published" &&
+  Astro.request.headers.get("sec-fetch-site") !== "cross-site"
+) {
+  const k = await kursaKatil(member, course, Astro.cookies);
+  const p = new URLSearchParams();
+  if (k.yeni) p.set("katildin", "1");
+  if (k.davetli) p.set("davet", "1");
+  const b = Astro.url.searchParams.get("b");
+  if (b) p.set("b", b);
+  return Astro.redirect(`${R.kurs(course.slug)}${p.size ? `?${p}` : ""}`);
+}
+const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));
+/** Giriş sonrası dönüş: aynı sayfa (b ve d korunur) + otomatik katılım */
+const girisDonus = (() => {
+  const p = new URLSearchParams(Astro.url.search);
+  p.set("katil", "1");
+  if (davet) p.set("d", davet.kod.code);
+  return `${Astro.url.pathname}?${p}`;
+})();
 
 const buSayfa = `${Astro.url.pathname}${Astro.url.search}`;
 const items = await db.query.courseItems.findMany({
@@ -163,11 +210,21 @@ const IKON = { youtube: "🎬", yazi: "✍️", quiz: "🧠" } as const;
 const SEVIYE_AD = { baslangic: "Başlangıç", orta: "Orta", ileri: "İleri" } as const;
 const siradaki = items.findIndex((it) => !doneIds.has(it.id));
 
-// Paylaşım linki: üyeyse davet kodu (?ref) taşır — F1-00 ile statik/SSR her yerde çerez kurulur
 const kok = siteKok(Astro.site, Astro.url);
-const paylasimLinki = `${kok}${R.kurs(course.slug)}${member ? `?ref=${member.handle}` : ""}`;
+// Davet kartı: katılmış üye ve üretici için kişiye+kursa özel kod (QR sunucuda SVG; istemciye JS yok)
+const davetKodum =
+  member && (katilim || uretici) && course.status === "published"
+    ? await davetKoduUret(member.id, course.id)
+    : null;
+const davetLinki = davetKodum ? `${kok}/d/${davetKodum.code.toLowerCase()}` : null;
+const davetQr = davetKodum ? renderSVG(qrIcerigi(kok, davetKodum.code), { ecc: "M", border: 2 }) : null;
+const kartV = davetKodum && member ? kartSurumu({ kod: davetKodum, davetEden: member, kurs: course }) : "";
+// Paylaşım linki: davet kodu varsa /d/, yoksa platform daveti (?ref)
+const paylasimLinki = davetLinki ?? `${kok}${R.kurs(course.slug)}${member ? `?ref=${member.handle}` : ""}`;
 
-const bant = Astro.url.searchParams.has("katildin")
+const bant = Astro.url.searchParams.has("davet")
+  ? `Davetle katıldın 🎉 İlk öğeyi bitirince sen +${PUAN.inviteWelcome}, davet eden +${PUAN.inviteActivated} kazanır; kursu bitirince +${PUAN.courseCompleted} puan.`
+  : Astro.url.searchParams.has("katildin")
   ? `Kursa katıldın 🎉 İlk öğeyi bitirince kurs aktive olur; kursu bitirince +${PUAN.courseCompleted} puan.`
   : Astro.url.searchParams.has("yayin")
     ? "Kursun yayında 🚀 Paylaş: ilk 3 katılımcı aktive olunca +50."
@@ -204,12 +261,47 @@ const ld = {
 
 <ToplulukLayout
   title={course.title}
-  description={aciklama}
-  seo={{ ogImagePath: kapak, noindex: course.status !== "published" }}
+  description={davet ? `${davet.davetEden.name} seni "${course.title}" kursuna davet ediyor. ${aciklama}` : aciklama}
+  seo={{
+    // Davet linkinde paylaşım önizlemesi kişisel karttır (WhatsApp/Telegram kartı görür)
+    ogImagePath: davet ? `/api/kart/${davet.kod.code}/og.png?v=${kartSurumu(davet)}` : kapak,
+    // Meta (FB/Messenger) og:url'yi yeniden tarar: ?d= korunmazsa kişisel kart yerine kapak çıkar
+    ogUrl: davet ? `${Astro.url.pathname}?d=${davet.kod.code}` : undefined,
+    noindex: course.status !== "published" || !!davet,
+  }}
 >
   {/* `<` kaçışı ZORUNLU: kullanıcı metni (başlık, vaat) </script> ile bloktan kaçabilir (XSS) */}
   <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />
 
+  {davet && !katilim && (
+    <div class="menu-pop mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-accent bg-accent-soft px-4 py-4">
+      <Avatar name={davet.davetEden.name} avatarUrl={davet.davetEden.avatarUrl} size="lg" />
+      <div class="min-w-0 flex-1">
+        <p class="font-display text-lg font-semibold text-ink">{davet.davetEden.name} seni bu kursa davet ediyor 🎓</p>
+        {davet.kod.note && <p class="mt-0.5 text-sm italic text-ink">“{davet.kod.note}”</p>}
+        <p class="mt-1 text-sm text-ink-muted">
+          Katılınca <strong class="text-accent">sen +{PUAN.inviteWelcome}</strong>, {davet.davetEden.name} +{PUAN.inviteActivated}; ilk öğeyi bitirince kesinleşir.
+          {!member && " Üyelik ücretsiz, ilk kitabın hediye."}
+        </p>
+      </div>
+      {member ? (
+        <form method="post" action="/api/uye/egitim">
+          <input type="hidden" name="action" value="join" />
+          <input type="hidden" name="courseId" value={course.id} />
+          <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
+        </form>
+      ) : (
+        <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
+          <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
+        </SignInButton>
+      )}
+    </div>
+  )}
+  {uygulamaIci && !member && (
+    <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Uygulama içi tarayıcıdasın: Google girişi burada çalışmayabilir. <strong>E-posta kodu</strong> ile gir ya da sağ üst ⋯ menüsünden <strong>Tarayıcıda aç</strong>.
+    </div>
+  )}
   {bant && (
     <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>
   )}
@@ -247,7 +339,7 @@ const ld = {
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
           {!member && (
-            <SignInButton mode="modal" forceRedirectUrl={buSayfa} asChild>
+            <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
               <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                 Katıl, ilk kitabın hediye 🎁
               </button>
@@ -268,9 +360,13 @@ const ld = {
             </a>
           )}
           {katilim && items.length > 0 && siradaki < 0 && <span class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent">Kursu bitirdin 🏁</span>}
-          <button type="button" data-kopyala={paylasimLinki} class="cursor-pointer rounded-full border border-line px-4 py-2.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">
-            🔗 Paylaş{member ? " (davet kodunla)" : ""}
-          </button>
+          {davetKodum ? (
+            <a href="#davet" class="rounded-full border border-accent px-4 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">🎴 Davet kartın</a>
+          ) : (
+            <button type="button" data-kopyala={paylasimLinki} class="cursor-pointer rounded-full border border-line px-4 py-2.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">
+              🔗 Paylaş{member ? " (davet kodunla)" : ""}
+            </button>
+          )}
         </div>
         {katilim && (
           <div class="mt-4 max-w-sm">
@@ -309,6 +405,32 @@ const ld = {
           </li>
         ))}
       </ol>
+      {davetKodum && davetLinki && (
+        <section id="davet" class="mt-4 rounded-xl border border-accent/40 bg-accent-soft/30 p-4">
+          <h2 class="font-display text-base font-semibold text-ink">🎴 Davet kartın</h2>
+          <p class="mt-1 text-xs text-ink-muted">
+            Arkadaşın QR'ı okutunca kursa katılır: o +{PUAN.inviteWelcome}, sen +{PUAN.inviteActivated} (ilk öğeyi bitirince), bitirince +{PUAN.inviteCompleted}.
+          </p>
+          <div class="mt-3 flex items-center gap-3">
+            <div class="w-24 shrink-0 rounded-lg bg-white p-1 [&_svg]:h-auto [&_svg]:w-full" set:html={davetQr} />
+            <div class="min-w-0 flex-1 text-xs">
+              <p class="truncate font-mono text-ink" title={davetLinki}>{davetLinki.replace(/^https?:\/\//, "")}</p>
+              <button type="button" data-kopyala={davetLinki} class="mt-2 cursor-pointer rounded-full bg-accent px-3 py-1.5 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Paylaş / Kopyala</button>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-1.5 text-xs">
+            <a href={`/api/kart/${davetKodum.code}/story.png?v=${kartV}`} download={`davet-${davetKodum.code}-hikaye.png`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">📱 Hikâye</a>
+            <a href={`/api/kart/${davetKodum.code}/kare.png?v=${kartV}`} download={`davet-${davetKodum.code}-kare.png`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">🟦 Kare</a>
+            <a href={`/api/kart/${davetKodum.code}/a6.pdf?v=${kartV}`} download={`davet-${davetKodum.code}-a6.pdf`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">🖨 A6 PDF</a>
+          </div>
+          <form method="post" action="/api/uye/davet" class="mt-3 flex gap-1.5">
+            <input type="hidden" name="courseId" value={course.id} />
+            <input type="hidden" name="next" value={`${R.kurs(course.slug)}#davet`} />
+            <input name="note" maxlength="80" value={davetKodum.note ?? ""} placeholder="Kişisel not (≤80, kartta görünür)" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-2 py-1 text-xs" />
+            <button class="cursor-pointer rounded-full border border-accent px-3 py-1 text-xs font-medium text-accent hover:bg-accent hover:text-surface">Kaydet</button>
+          </form>
+        </section>
+      )}
       {uretici && (
         <div class="mt-4 rounded-xl border border-line bg-surface-raised p-3 text-xs text-ink-muted">
           <p class="font-medium text-ink">Üretici özeti</p>
@@ -326,7 +448,7 @@ const ld = {
           <p class="text-3xl">🔒</p>
           <p class="mt-2 font-display text-xl font-semibold text-ink">{aktif.title}</p>
           <p class="mt-2 text-ink-muted">Bu öğe üyelere açık. İlk öğeyi ücretsiz izledin; devamı için katıl — ilk kitabın hediye.</p>
-          <SignInButton mode="modal" forceRedirectUrl={buSayfa} asChild>
+          <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
             <button type="button" class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl ve devam et 🎁</button>
           </SignInButton>
         </div>

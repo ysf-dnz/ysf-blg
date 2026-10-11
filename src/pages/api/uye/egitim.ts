@@ -18,6 +18,7 @@ import { asgariSureGectiMi } from "@/lib/economy.ts";
 import { slugifyTitle } from "@/lib/markdown.ts";
 import { R } from "@/lib/routes.ts";
 import { guvenliYol } from "@/lib/urls.ts";
+import { davetAktivasyonu, davetBitirme, kursaKatil } from "@/lib/davet.ts";
 
 export const prerender = false;
 
@@ -98,6 +99,8 @@ async function bitirmeOdulleri(
     kaynakOlusturulma: ogrenen.createdAt,
     note: `${ogrenen.name} "${kurs.title}" kursunu bitirdi`,
   });
+  // Davet eden: davetlisi bitirdi (+10; asgari süre bu noktada geçmiş)
+  await davetBitirme(katilim, kurs, ogrenen);
 }
 
 export const POST: APIRoute = async (context) => {
@@ -112,14 +115,12 @@ export const POST: APIRoute = async (context) => {
     const kurs = await kursBul(Number(form.get("courseId") ?? 0));
     if (!kurs || kurs.status !== "published")
       return new Response("Kurs yayında değil", { status: 404 });
-    // Üretici kendi kursuna katılmaz (kendine puan yok)
-    if (kurs.createdBy !== member.id) {
-      await db
-        .insert(schema.courseEnrollments)
-        .values({ userId: member.id, courseId: kurs.id })
-        .onConflictDoNothing();
-    }
-    return context.redirect(`${R.kurs(kurs.slug)}?katildin=1`);
+    // Atıflı katılım: karşılama çerezi bu kursa aitse davet bekleyenleri açılır
+    const k = await kursaKatil(member, kurs, context.cookies);
+    const p = new URLSearchParams();
+    if (k.yeni) p.set("katildin", "1");
+    if (k.davetli) p.set("davet", "1");
+    return context.redirect(`${R.kurs(kurs.slug)}${p.size ? `?${p}` : ""}`);
   }
 
   // ---------------- Öğe tamamla ----------------
@@ -190,6 +191,9 @@ export const POST: APIRoute = async (context) => {
             );
         }
       }
+
+      // Davetle gelen katılımcı aktive oldu → davet puanları kesinleşir (ADR K2)
+      if (akt) await davetAktivasyonu(katilim, kurs, member);
 
       // Bitirme: tüm öğeler tamam → tek SQL geçiş
       const [[total], [done]] = await Promise.all([
