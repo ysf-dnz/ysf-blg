@@ -35,7 +35,16 @@ export default defineConfig({
   output: "static",
   // webAnalytics: Vercel'e deploy edilince ziyaretçi istatistikleri otomatik
   // toplanır (vercel.com → proje → Analytics); lokalde etkisizdir
-  adapter: vercel({ webAnalytics: { enabled: true } }),
+  adapter: vercel({
+    webAnalytics: { enabled: true },
+    // Davet kartı çalışma zamanında üretilir (satori + resvg); fontlar fonksiyon
+    // paketine girmeli — render.ts process.cwd()/src/... yolundan okur (ADR 0001 K3.1)
+    includeFiles: [
+      "src/features/seo/og/fonts/fraunces-600.ttf",
+      "src/features/seo/og/fonts/inter-400.ttf",
+      "src/features/seo/og/fonts/inter-700.ttf",
+    ],
+  }),
   security: {
     // Astro 5.14+ X-Forwarded-Host'a yalnız bu listedekiler için güvenir.
     // Liste TANIMSIZKEN Vercel'de Astro kendini iç host (localhost) sanır:
@@ -54,6 +63,9 @@ export default defineConfig({
   // query taşıyamaz.
   redirects: {
     "/dersler": { status: 301, destination: "/kurslar" },
+    // QR içeriği büyük harf (alfanümerik mod); Vercel harf duyarlı → açık 301.
+    // Hedef VAR OLAN rota anahtarı olmalı (query taşıyamaz); kanal ayrımı /d/q/ yolundan.
+    "/D/[kod]": { status: 301, destination: "/d/q/[kod]" },
   },
   i18n: {
     defaultLocale: "tr",

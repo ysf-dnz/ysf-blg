@@ -47,3 +47,30 @@ test.describe("kurs akışı — üye", () => {
     await expect(page.getByText(/Bekleyen puan|Bilgi Hazine|puan/i).first()).toBeVisible();
   });
 });
+
+test.describe("kurs daveti — üye (Faz 2)", () => {
+  test.beforeEach(async ({ page }) => {
+    test.skip(!process.env.E2E_CLERK_USER, "CLERK_SECRET_KEY yok — auth e2e atlandı");
+    await page.goto("/");
+    await clerk.signIn({ page, emailAddress: process.env.E2E_CLERK_USER! });
+  });
+
+  test("katılmış üye davet kartını, QR'ı ve indirme linklerini görür; not kaydeder", async ({ page }) => {
+    await page.goto(KURS, { waitUntil: "domcontentloaded" });
+    const katil = page.getByRole("button", { name: /Kursa katıl/ }).first();
+    if (await katil.isVisible()) await katil.click();
+    await page.goto(`${KURS}#davet`, { waitUntil: "domcontentloaded" });
+    const kart = page.locator("#davet");
+    await expect(kart).toBeVisible();
+    await expect(kart.locator("svg")).toHaveCount(1); // QR sunucuda SVG
+    await expect(kart.getByRole("link", { name: /Hikâye/ })).toHaveAttribute("href", /\/api\/kart\/[0-9A-Z]{7}\/story\.png/);
+    await kart.locator('input[name="note"]').fill("e2e notu");
+    await kart.getByRole("button", { name: /Kaydet/ }).click();
+    await expect(page.locator('#davet input[name="note"]')).toHaveValue("e2e notu");
+  });
+
+  test("Davetlerim panoda görünür", async ({ page }) => {
+    await page.goto("/uye", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { level: 2, name: /Davetlerim/ })).toBeVisible();
+  });
+});

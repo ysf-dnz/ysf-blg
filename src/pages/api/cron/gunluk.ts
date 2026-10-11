@@ -211,6 +211,16 @@ export const GET: APIRoute = async ({ request }) => {
   const bekleyen = await birKezCalistir("bekleyen", bugun, () => bekleyenleriIsle());
   if (bekleyen !== undefined) rapor.bekleyen = bekleyen;
 
+  // 6) Davet ziyaret kayıtları 30 gün saklanır (PRD §4.3)
+  const temizlik = await birKezCalistir("davet-ziyaret-temizlik", bugun, async () => {
+    const silinen = await db
+      .delete(schema.inviteVisits)
+      .where(lt(schema.inviteVisits.createdAt, new Date(Date.now() - 30 * 864e5)))
+      .returning({ id: schema.inviteVisits.id });
+    return silinen.length;
+  });
+  if (temizlik !== undefined) rapor.davetZiyaretTemizlik = temizlik;
+
   return new Response(JSON.stringify({ ok: true, ...rapor }), {
     headers: { "content-type": "application/json" },
   });

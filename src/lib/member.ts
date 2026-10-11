@@ -88,7 +88,8 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
           inviter.role === "rep"
             ? Math.round(PUAN.referralJoined * PUAN.repReferralMultiplier)
             : PUAN.referralJoined;
-        await awardPoints({
+        // Davet tavanı (300/7 gün) awardPoints içinde otomatik; bildirim gerçek miktarı söyler
+        const yazilan = await awardPoints({
           userId: inviter.id,
           delta: bonus,
           reason: "referral_joined",
@@ -97,7 +98,10 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
         await db.insert(schema.notifications).values({
           userId: inviter.id,
           kind: "referral",
-          body: `${member.name} davetinle katıldı 🎉 +${bonus} puan`,
+          body:
+            yazilan > 0
+              ? `${member.name} davetinle katıldı 🎉 +${yazilan} puan${yazilan < bonus ? " (haftalık davet tavanına kırpıldı)" : ""}`
+              : `${member.name} davetinle katıldı 🎉 Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
           href: `/u/${member.handle}`,
         });
       }

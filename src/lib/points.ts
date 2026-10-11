@@ -45,6 +45,16 @@ export const PUAN = {
   resourceDailyCap: 45,
   /** En iyi cevap puanı GÜNLÜK tavanı (3 cevap × 10) — kukla hesap çiftliği freni */
   answerDailyCap: 30,
+  /** Kurs daveti: davetli, davetle katıldığı kursta aktive olunca */
+  inviteWelcome: 10,
+  /** Kurs daveti: davet eden, davetlisi aktive olunca */
+  inviteActivated: 15,
+  /** Kurs daveti: davet eden, davetlisi kursu bitirince */
+  inviteCompleted: 10,
+  /** Davet kaynaklı puanların kişi başı KAYAN 7 GÜN tavanı (saadet zinciri freni) */
+  inviteWeeklyCap: 300,
+  /** Davet bekleyeni bu kadar gün içinde aktivasyon gelmezse düşer */
+  inviteExpiryDays: 14,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */

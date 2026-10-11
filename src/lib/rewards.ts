@@ -46,10 +46,25 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
       return { reasons: ["answer_accepted"], since: gunBaslangici(), limit: PUAN.answerDailyCap };
     case "course_completed":
       return { reasons: ["course_completed"], since: yediGunOnce(), limit: PUAN.courseWeeklyCap };
+    // Davet tavanı (PRD §4.2): tüm davet kaynaklı puanlar tek havuzda, kayan 7 gün 300.
+    // referral_activated HARİÇ (admin onaylı). Faz 5: invite_second_level, Faz 3: event_invite_attended.
+    case "referral_joined":
+    case "course_invite_welcome":
+    case "course_invite_activated":
+    case "course_invite_completed":
+      return { reasons: DAVET_REASONLARI, since: yediGunOnce(), limit: PUAN.inviteWeeklyCap };
     default:
       return undefined;
   }
 }
+
+/** Davet tavanına giren reason'lar (tek kaynak; pano ve huni de bunu kullanır) */
+export const DAVET_REASONLARI: Reason[] = [
+  "referral_joined",
+  "course_invite_welcome",
+  "course_invite_activated",
+  "course_invite_completed",
+];
 
 /** db.execute sonucu sürücüye göre dizi ya da {rows} gelir */
 function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {

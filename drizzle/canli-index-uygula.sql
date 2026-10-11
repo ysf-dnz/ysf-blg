@@ -114,3 +114,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS "comments_accepted_idx" ON "comments" USING bt
 CREATE UNIQUE INDEX IF NOT EXISTS "likes_user_comment_idx" ON "likes" USING btree ("user_id", "comment_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "pending_points_idx" ON "pending_points" USING btree ("user_id", "reason", "ref_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "reports_idx" ON "reports" USING btree ("reporter_id", "target_type", "target_id");
+
+-- ---------------------------------------------------------------------------
+-- ADIM 6 — Faz 2 Kurs daveti (2026-10-11). `drizzle-kit push` ile uygulandı; kayıt.
+-- Yeni tablolar: invite_codes (code UNIQUE; kısmi unique (inviter_id,target_type,
+-- target_id) WHERE revoked_at IS NULL), invite_visits (ip_hash+created_at index; 30
+-- gün sonra cron siler). Yeni reason: course_invite_welcome/activated/completed.
+-- ---------------------------------------------------------------------------
+CREATE UNIQUE INDEX IF NOT EXISTS "invite_codes_code_idx" ON "invite_codes" USING btree ("code");
+CREATE UNIQUE INDEX IF NOT EXISTS "invite_codes_aktif_idx" ON "invite_codes" USING btree ("inviter_id", "target_type", "target_id") WHERE "revoked_at" IS NULL;
+CREATE INDEX IF NOT EXISTS "invite_visits_ip_idx" ON "invite_visits" USING btree ("ip_hash", "created_at");
+CREATE INDEX IF NOT EXISTS "invite_visits_code_idx" ON "invite_visits" USING btree ("invite_code_id");

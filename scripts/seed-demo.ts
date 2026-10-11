@@ -43,6 +43,11 @@ async function temizle() {
   await db.delete(schema.courseResources).where(inArray(schema.courseResources.userId, ids));
   await db.delete(schema.reports).where(inArray(schema.reports.reporterId, ids));
   await db.delete(schema.pendingPoints).where(inArray(schema.pendingPoints.userId, ids));
+  const demoKodlar = await db.query.inviteCodes.findMany({ where: inArray(schema.inviteCodes.inviterId, ids) });
+  if (demoKodlar.length) {
+    await db.delete(schema.inviteVisits).where(inArray(schema.inviteVisits.inviteCodeId, demoKodlar.map((k) => k.id)));
+    await db.delete(schema.inviteCodes).where(inArray(schema.inviteCodes.id, demoKodlar.map((k) => k.id)));
+  }
   const kurslar = await db.query.courses.findMany({ where: inArray(schema.courses.createdBy, ids) });
   if (kurslar.length) {
     const cids = kurslar.map((c) => c.id);
@@ -295,12 +300,22 @@ async function kur() {
       { courseId: kurs!.id, order: 3, kind: "quiz", title: quiz!.title, quizId: quiz!.id },
     ])
     .returning();
-  // Katılımlar: Elif %50 (aktive), Mehmet katıldı ama başlamadı, Can aktive
+  // Davet kodu (Ayşe → demo kurs; sabit kod e2e için) + ziyaretler
+  const [davetKodu] = await db
+    .insert(schema.inviteCodes)
+    .values({ code: "DEM07KQ", inviterId: U.ayse!.id, targetType: "course", targetId: kurs!.id, note: "Birlikte başlayalım, ilk öğeyi bu hafta bitiriyoruz 🚀" })
+    .returning();
+  await db.insert(schema.inviteVisits).values([
+    { inviteCodeId: davetKodu!.id, ipHash: "demo-ip-1", uaHash: "demo-ua", kanal: "qr" },
+    { inviteCodeId: davetKodu!.id, ipHash: "demo-ip-2", uaHash: "demo-ua", kanal: "qr" },
+    { inviteCodeId: davetKodu!.id, ipHash: "demo-ip-3", uaHash: "demo-ua", kanal: "link" },
+  ]);
+  // Katılımlar: Elif %50 (aktive), Mehmet katıldı ama başlamadı, Can aktive (Ayşe'nin davetiyle)
   const ikiGunOnce = new Date(Date.now() - 2 * 864e5);
   await db.insert(schema.courseEnrollments).values([
     { userId: U.elif!.id, courseId: kurs!.id, joinedAt: ikiGunOnce, activatedAt: ikiGunOnce },
     { userId: U.mehmet!.id, courseId: kurs!.id, joinedAt: ikiGunOnce },
-    { userId: U.can!.id, courseId: kurs!.id, joinedAt: ikiGunOnce, activatedAt: ikiGunOnce },
+    { userId: U.can!.id, courseId: kurs!.id, joinedAt: ikiGunOnce, activatedAt: ikiGunOnce, inviteCodeId: davetKodu!.id },
   ]);
   await db.insert(schema.courseProgress).values([
     { userId: U.elif!.id, courseId: kurs!.id, itemId: kursOgeleri[0]!.id },
@@ -390,6 +405,7 @@ async function kur() {
   kampanya: /kampanya/${kampanya!.id} (6 görev, her Kanban durumu)
   quiz: /kitap/${MINDSET}/quiz (yayında) + 1 bekleyen (admin kuyruğu)
   kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)
+  davet: /d/dem07kq (Ayşe'nin kurs daveti; 3 ziyaret, Can davetle katıldı)
   yazılar: /topluluk (3 yayında — 1'i yalnız-üyeler, 1 bekleyen)
   etkinlik: /etkinlikler (yarın, ⭐ öncelikli koltuklu)
   profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);
