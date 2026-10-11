@@ -1,6 +1,6 @@
 # Issue planı — Kurslar · Davet QR'ı · Topluluklarımız · Etkinlik girişi · Harita/DM
 
-**Kaynak:** `docs/prd/kurs-topluluk-ekosistemi.md` + `docs/adr/0001-kurs-davet-etkinlik-harita.md` · **Durum:** 7 soru varsayılanlarıyla kabul edildi (2026-10-11). GitHub: Faz 1 issue'ları #1–#13, faz epikleri #14–#17. **Faz 1 uygulandı** (dal `faz1-kurslar`; `pending_points` Faz 1'de; `F1-0T` qa önkoşulu eklendi).
+**Kaynak:** `docs/prd/kurs-topluluk-ekosistemi.md` + `docs/adr/0001-kurs-davet-etkinlik-harita.md` · **Durum:** 7 soru varsayılanlarıyla kabul edildi (2026-10-11). GitHub: Faz 1 issue'ları #1–#13, faz epikleri #14–#17. **Faz 1 uygulandı** (dal `faz1-kurslar`; `pending_points` Faz 1'de; `F1-0T` qa önkoşulu eklendi). **Faz 2 uygulandı** (dal `faz2-davet`, GitHub #18–#24; F2-H human). Sapmalar: bağlantı kanalı sayfası `/d/[...kod]` (rest param — redirect anahtarı tuzağı), kart CDN 1 gün, `invite_codes.note`, `/kurslar?davet=gecersiz` bandı.
 
 **Her issue'nun ortak bitti-tanımı:** `npm run qa` yeşil (postbuild dahil) · yeni fren `economy.ts`'te saf + `it.each` testli · yeni `reason` `schema.ts` enum'unda, refId ADR §7'den · `canli-index-uygula.sql` gerekiyorsa güncel · `npm run seed:demo` yeni veriyi kapsıyor · `CLAUDE.md`/`CONTEXT.md`/`PROGRESS.md` güncel · `graphify update .` koşuldu.
 **Etiketler:** `ready-for-agent` varsayılan; Yusuf'un elle yapacakları `ready-for-human`.
