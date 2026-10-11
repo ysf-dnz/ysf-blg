@@ -19,12 +19,14 @@ interface Props {
   seo?: Partial<SeoProps>;
   /** true ise sayfa kendi JsonLd'sini basar; Base varsayılanı atlanır */
   ownJsonLd?: boolean;
+  /** Araç ekranları (giriş tarayıcısı, dönen QR): yüzen düğmeler içeriğin üstüne binmesin */
+  sade?: boolean;
 }
 
 const lang = langFromUrl(Astro.url.pathname);
 const t = useTranslations(lang);
 
-const { title, description = t("site.description"), seo, ownJsonLd } = Astro.props;
+const { title, description = t("site.description"), seo, ownJsonLd, sade } = Astro.props;
 const pageTitle = title ? `${title} · ${t("site.title")}` : t("site.title");
 
 const nav = [
@@ -53,6 +55,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
       description={description}
       translationPath={seo?.translationPath}
       ogImagePath={seo?.ogImagePath}
+      ogUrl={seo?.ogUrl}
       article={seo?.article}
       noindex={seo?.noindex}
     />
@@ -83,11 +86,16 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     </script>
     <script is:inline>
       // Davet çerezi (F1-00): ana sayfa statik servis edilir, middleware koşmaz →
-      // canlıda /?ref= hiç çerez kurmuyordu. Aynı kural, aynı çerez; istemcide.
+      // canlıda /?ref= hiç çerez kurmuyordu. Aynı kural, aynı çerez; istemcide. ClientRouter
+      // gezintisinde de koşar (astro:page-load): middleware artık yalnız belge gezintisinde yazar.
       (function () {
-        var r = new URLSearchParams(location.search).get("ref");
-        if (r && /^[a-z0-9-]{2,40}$/.test(r))
-          document.cookie = "ysf_ref=" + r + "; Max-Age=2592000; Path=/; SameSite=Lax";
+        function kur() {
+          var r = new URLSearchParams(location.search).get("ref");
+          if (r && /^[a-z0-9-]{2,40}$/.test(r))
+            document.cookie = "ysf_ref=" + r + "; Max-Age=2592000; Path=/; SameSite=Lax";
+        }
+        kur();
+        document.addEventListener("astro:page-load", kur);
       })();
     </script>
   </head>
@@ -216,7 +224,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
       document.addEventListener("astro:page-load", initMotion);
     </script>
 
-    <FloatingNudges />
+    {!sade && <FloatingNudges />}
 
     <footer class="girih-texture border-t border-line">
       <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-ink-muted">

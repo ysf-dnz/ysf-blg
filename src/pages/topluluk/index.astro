@@ -3,7 +3,8 @@
  * Topluluk akışı — Skool düzeni: sol composer+feed, sağ ray
  * (mini liderlik · aktif kampanya · yaklaşan etkinlikler · uzun yazılar).
  */
-import { asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { asc, desc, eq, gte, inArray, sql, and } from "drizzle-orm";
+import { etkinlikGorunurSql } from "@/lib/etkinlik.ts";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import FeedCard from "@/features/community/FeedCard.astro";
 import EmptyState from "@/components/ui/EmptyState.astro";
@@ -31,7 +32,7 @@ const [feed, posts, yaklasan, kampanya] = await Promise.all([
     limit: 6,
   }),
   db.query.events.findMany({
-    where: gte(schema.events.startsAt, new Date()),
+    where: and(gte(schema.events.startsAt, new Date()), etkinlikGorunurSql),
     orderBy: asc(schema.events.startsAt),
     limit: 2,
   }),
@@ -239,9 +240,11 @@ const myBooks = member
             </div>
             <ul class="mt-2 space-y-2 text-sm">
               {yaklasan.map((e) => (
-                <li class="rounded-lg border border-line px-3 py-2">
-                  <span class="block font-medium text-ink">{e.title}</span>
-                  <span class="text-xs text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}</span>
+                <li>
+                  <a href={R.etkinlik(e.slug ?? String(e.id))} class="block rounded-lg border border-line px-3 py-2 hover:border-accent/50">
+                    <span class="block font-medium text-ink">{e.title}</span>
+                    <span class="text-xs text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}</span>
+                  </a>
                 </li>
               ))}
             </ul>

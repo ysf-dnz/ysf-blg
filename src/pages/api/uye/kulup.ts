@@ -5,6 +5,7 @@ import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { clubRoleOf } from "@/lib/permissions.ts";
 import { slugifyTitle } from "@/lib/markdown.ts";
+import { ilBul, kulupTuruMu } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 
@@ -16,14 +17,14 @@ export const POST: APIRoute = async (context) => {
   const action = String(form.get("action") ?? "");
 
   if (action === "apply") {
-    const name = String(form.get("name") ?? "").trim();
-    const kind = String(form.get("kind") ?? "universite") as
-      | "universite"
-      | "lise"
-      | "sehir";
-    const place = String(form.get("place") ?? "").trim();
-    const il = String(form.get("il") ?? "").trim();
-    if (!name || !place || !il) return new Response("Eksik alan", { status: 400 });
+    const name = String(form.get("name") ?? "").trim().slice(0, 60);
+    // clubs.kind DB'de düz text: beyaz liste yoksa her string yazılabiliyordu
+    const kind = String(form.get("kind") ?? "");
+    if (!kulupTuruMu(kind)) return new Response("Geçersiz topluluk türü", { status: 400 });
+    const place = String(form.get("place") ?? "").trim().slice(0, 80);
+    // İl 81 il listesinden: harita pini ve il filtresi serbest metinle eşleşmiyordu
+    const il = ilBul(String(form.get("il") ?? ""));
+    if (!name || !place || !il) return new Response("Eksik ya da geçersiz alan", { status: 400 });
 
     const slug = `${slugifyTitle(name)}-${Date.now().toString(36).slice(-3)}`;
     const [club] = await db

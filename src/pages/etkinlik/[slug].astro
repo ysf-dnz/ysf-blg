@@ -1,0 +1,526 @@
+---
+/**
+ * Etkinlik sayfası — herkese açık SSR: tarih, yer, kontenjan, düzenleyenler, takvime ekle.
+ * Kayıt (RSVP) yalnız POST /api/uye/etkinlik ile yazılır — GET ile kayıt YOK: sec-fetch frenleri
+ * aynı kökenli <img>, prefetch ve uygulamadan açılan bağlantıyı durdurmuyordu (rızasız, atıflı
+ * kayıt). Misafir sayfa içi girişten döner (?kayit=1 yalnız ipucu bandı) ve bir kez daha dokunur
+ * (iki dokunuş). Onay bekleyen topluluğun etkinliği yalnız görevlilere görünür (404).
+ * Davetle geliş (?d=KOD): "{Ad} seni davet ediyor" bandı + kişisel OG kartı; kayıtlı üye ve
+ * düzenleyen kendi davet kartını (QR) buradan alır.
+ */
+import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { SignInButton } from "@clerk/astro/components";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import { db, schema } from "@/db/client.ts";
+import {
+  etkinlikBul,
+  etkinlikGorunurMu,
+  gorevliRol,
+  hostIdleri,
+  hostPayHesabi,
+  kayitSayilari,
+  slugGaranti,
+} from "@/lib/etkinlik.ts";
+import {
+  degerlendirmeAcikMi,
+  etkinlikBitis,
+  KAPI_ACILIS_DK,
+  kayitAcikMi,
+  TUR_AD,
+  trAralik,
+  trSaat,
+  trTarih,
+} from "@/lib/etkinlik-kural.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { PUAN } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
+import { getUsersMap } from "@/lib/social.ts";
+import { belgeGezintisiMi, siteKok } from "@/lib/urls.ts";
+import {
+  davetCereziKur,
+  davetCereziOku,
+  davetKoduUret,
+  etkinlikDaveti,
+  kartSurumu,
+  qrIcerigi,
+  uygulamaIciTarayici,
+} from "@/lib/davet.ts";
+import { renderSVG } from "uqr";
+
+export const prerender = false;
+
+const param = Astro.params.slug ?? "";
+const e = await etkinlikBul(param);
+if (!e) return new Response("Etkinlik bulunamadı", { status: 404 });
+const slug = await slugGaranti(e);
+
+const member = await getOrCreateMember(Astro);
+const [kulup, rol] = await Promise.all([
+  e.clubId ? db.query.clubs.findFirst({ where: eq(schema.clubs.id, e.clubId) }) : null,
+  member ? gorevliRol(e, member.id) : null,
+]);
+const yonetici = !!member && (rol === "host" || member.role === "admin");
+const gorevli = yonetici || rol === "scanner";
+const gorunur = etkinlikGorunurMu(e, kulup);
+if (!gorunur && !gorevli) return new Response("Etkinlik bulunamadı", { status: 404 });
+// Slug'sız eski kayıt (/etkinlik/{id}) kalıcı adresine taşınır — görünürlük kapısından SONRA
+// (gizli etkinliğin başlığı id deneyerek Location'dan okunmasın)
+if (param !== slug) return Astro.redirect(`${R.etkinlik(slug)}${Astro.url.search}`, 301);
+
+const q = Astro.url.searchParams;
+const sayfa = R.etkinlik(slug);
+
+// Davetle geliş (?d=KOD): çerez /d/'de kuruldu; kod URL'de kalır ki bot OG kartını bulsun
+const dKod = q.get("d");
+const davetHam = dKod ? await etkinlikDaveti(dKod) : null;
+const davet =
+  davetHam && davetHam.etkinlik.id === e.id && (!member || davetHam.davetEden.id !== member.id) ? davetHam : null;
+// "Tarayıcıda aç" ile /d/'den geçmeden gelen davetli: çerezi burada kur. Yalnız belge gezintisinde
+// (aynı kökenli <img src="…?d=KOD"> atfı çalamasın) ve BU etkinliğin çerezi yoksa (aynı etkinlikte
+// ilk davet kazanır; başka hedefin bayat çerezi ezilir — yoksa bant puan vaat edip atıf yazılmazdı).
+if (davet && belgeGezintisiMi(Astro.request) && davetCereziOku(Astro.cookies, e.id, "event") === null)
+  davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
+/**
+ * Giriş sonrası dönüş: aynı sayfa (davet kodu korunur). `kayit=1` sunucuda HİÇBİR ŞEY yazmaz:
+ * yalnız "girişin tamam, yerini ayır" bandını açar (Astro yönlendiricisi hash'siz aynı adrese de gezinir).
+ */
+const girisDonus = `${sayfa}?kayit=1${davet ? `&d=${davet.kod.code}` : ""}`;
+const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));
+
+const simdi = new Date();
+const bitis = etkinlikBitis(e);
+const bitti = simdi > bitis;
+const [sayilar, kaydim, hostIds, gorevliler, katilimcilar, [puanlama]] = await Promise.all([
+  kayitSayilari([e.id]),
+  member
+    ? db.query.eventRsvps.findFirst({
+        where: and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, member.id)),
+      })
+    : undefined,
+  hostIdleri(e),
+  yonetici
+    ? db.query.eventStaff.findMany({ where: eq(schema.eventStaff.eventId, e.id), orderBy: asc(schema.eventStaff.id) })
+    : [],
+  // Katılımcı listesi yalnız üyelere (misafir toplamı görür)
+  member
+    ? db.query.eventRsvps.findMany({
+        where: eq(schema.eventRsvps.eventId, e.id),
+        orderBy: [desc(schema.eventRsvps.priority), asc(schema.eventRsvps.createdAt)],
+        limit: 60,
+      })
+    : [],
+  db
+    .select({ ort: sql<number>`avg(${schema.ratings.stars})`, n: sql<number>`count(*)` })
+    .from(schema.ratings)
+    .where(eq(schema.ratings.eventId, e.id)),
+]);
+const puanSayi = Number(puanlama?.n ?? 0);
+const puanOrt = puanSayi > 0 ? Number(puanlama!.ort).toFixed(1).replace(".", ",") : null;
+const sayi = sayilar.get(e.id) ?? { kayit: 0, oncelikli: 0, giris: 0 };
+const dolu = e.capacity != null && sayi.kayit >= e.capacity;
+const kayitAcik = kayitAcikMi(e, simdi);
+const kisiler = await getUsersMap([...hostIds, ...gorevliler.map((g) => g.userId), ...katilimcilar.map((k) => k.userId)]);
+const hostlar = hostIds.map((id) => kisiler.get(id)).filter((k) => !!k);
+
+// Değerlendirme: yalnız girişi doğrulanmış katılımcı (düzenleyen hariç), bitişten 7 gün sonrasına kadar
+const degerlendirebilir = !!kaydim?.checkedInAt && rol !== "host" && degerlendirmeAcikMi(e, simdi);
+const benimPuanim = degerlendirebilir
+  ? await db.query.ratings.findFirst({
+      where: and(eq(schema.ratings.userId, member!.id), eq(schema.ratings.eventId, e.id)),
+    })
+  : undefined;
+// Düzenleyen payı (ADR K2): bekleyen satır yok, canlı sayımdan; bitişten 48 saat sonra cron dağıtır.
+// Dağıtıldıysa gösterilen rakam ledger'dan (canlı hesap sonradan değişen listeyle yanıltmasın).
+const [hostPay, dagitilan] =
+  rol === "host"
+    ? await Promise.all([
+        hostPayHesabi(e),
+        db.query.pointsLedger.findFirst({
+          where: and(
+            eq(schema.pointsLedger.userId, member!.id),
+            eq(schema.pointsLedger.reason, "event_hosted"),
+            eq(schema.pointsLedger.refId, `event:${e.id}`),
+          ),
+        }),
+      ])
+    : [null, undefined];
+const payDagitim = new Date(bitis.getTime() + PUAN.eventHostedDelayHours * 3600e3);
+// Düzenleyen listesini yalnız etkinliği açan (ve admin), kapı açılışına kadar değiştirir
+const hostYonetir =
+  !!member &&
+  (member.id === e.createdBy || member.role === "admin") &&
+  simdi.getTime() < e.startsAt.getTime() - KAPI_ACILIS_DK * 60_000;
+// Girişten yeni dönen üye (?kayit=1): kayıt GET ile yazılmaz, düğmeye bir kez daha dokunur
+const kayitIpucu = !!member && !kaydim && q.get("kayit") === "1" && !bitti && kayitAcik && !dolu;
+
+const kok = siteKok(Astro.site, Astro.url);
+// AC-20: düzenleyen kendi etkinliğinde davet puanı almaz (davetli yine +5 alır)
+const davetEdenHost = !!davet && hostIds.includes(davet.davetEden.id);
+// Davet kartı: kayıtlı üye ve düzenleyen için kişiye+etkinliğe özel kod (QR sunucuda SVG; istemciye JS yok)
+const davetKodum =
+  member && gorunur && !bitti && (kaydim || rol === "host") ? await davetKoduUret(member.id, e.id, "event") : null;
+const davetLinki = davetKodum ? `${kok}/d/${davetKodum.code.toLowerCase()}` : null;
+const davetQr = davetKodum ? renderSVG(qrIcerigi(kok, davetKodum.code), { ecc: "M", border: 2 }) : null;
+const kartV = davetKodum && member ? kartSurumu({ kod: davetKodum, davetEden: member, etkinlik: { ...e, slug } }) : "";
+const aciklama =
+  e.description ?? `${trAralik(e)}${e.location ? ` · ${e.location}` : ""}${kulup ? ` · ${kulup.name}` : ""}`;
+const cevrimici = e.kind === "cevrimici";
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: e.title,
+  description: aciklama,
+  startDate: e.startsAt.toISOString(),
+  endDate: bitis.toISOString(),
+  eventStatus: "https://schema.org/EventScheduled",
+  eventAttendanceMode: `https://schema.org/${cevrimici ? "Online" : "Offline"}EventAttendanceMode`,
+  location: cevrimici
+    ? { "@type": "VirtualLocation", url: `${kok}${sayfa}` }
+    : {
+        "@type": "Place",
+        name: e.location ?? e.il ?? "Türkiye",
+        address: { "@type": "PostalAddress", ...(e.il ? { addressLocality: e.il } : {}), addressCountry: "TR" },
+      },
+  url: `${kok}${sayfa}`,
+  ...(e.coverUrl ? { image: e.coverUrl } : {}),
+  organizer: kulup
+    ? { "@type": "Organization", name: kulup.name, url: `${kok}${R.kulup(kulup.slug)}` }
+    : { "@type": "Organization", name: "Bilgi Ödüldür · Yusuf Deniz", url: kok },
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "TRY", url: `${kok}${sayfa}`, availability: `https://schema.org/${dolu ? "SoldOut" : "InStock"}` },
+  ...(e.capacity != null
+    ? { maximumAttendeeCapacity: e.capacity, remainingAttendeeCapacity: Math.max(e.capacity - sayi.kayit, 0) }
+    : {}),
+  ...(puanSayi > 0
+    ? { aggregateRating: { "@type": "AggregateRating", ratingValue: Number(puanlama!.ort).toFixed(1), ratingCount: puanSayi, bestRating: 5, worstRating: 1 } }
+    : {}),
+};
+
+const SONUC: Record<string, string> = {
+  yeni: q.has("davet")
+    ? `Davetle yerin ayrıldı 🎉 Girişin doğrulanınca sen +${PUAN.eventAttended + PUAN.eventInviteWelcome} puan kazanırsın (${PUAN.eventAttended} katılım + ${PUAN.eventInviteWelcome} davet).`
+    : `Yerin ayrıldı 🎟️ Etkinlikte girişin doğrulanınca +${PUAN.eventAttended} puan.`,
+  zaten: "Bu etkinliğe zaten kayıtlısın ✓",
+  dolu: "Kontenjan dolmuş — bu etkinliğe kayıt alınamıyor.",
+  kapali: "Bu etkinliğin kayıtları kapandı.",
+};
+const DEGER: Record<string, string> = {
+  tamam: "Değerlendirmen kaydedildi ⭐ Teşekkürler.",
+  "giris-yok": "Yalnız girişi doğrulanmış katılımcılar değerlendirebilir.",
+  pencere: "Değerlendirme penceresi kapalı (etkinlik bitişinden 7 gün sonrasına kadar açık).",
+  gecersiz: "1 ile 5 arasında bir puan seç.",
+};
+const GOREVLI: Record<string, string> = {
+  eklendi: "Görevli eklendi.",
+  silindi: "Görevli çıkarıldı.",
+  yok: "Bu kullanıcı adıyla üye bulunamadı.",
+  olmadi: `Eklenemedi: zaten görevli ya da sınır dolu (en çok ${PUAN.eventMaxCoHosts} ortak düzenleyen, ${PUAN.eventMaxStaff} görevli).`,
+  kilitli: "Düzenleyen listesini yalnız etkinliği açan, kapı açılışına (başlangıçtan 60 dk önce) kadar değiştirebilir.",
+};
+const GIRIS: Record<string, string> = {
+  geldi:
+    Number(q.get("puan")) > 0
+      ? `Girişin doğrulandı ✓ +${Math.trunc(Number(q.get("puan")))} puan. İyi etkinlikler!`
+      : "Girişin doğrulandı ✓ İyi etkinlikler!",
+  zaten: "Girişin daha önce doğrulanmıştı ✓",
+};
+const bant = q.has("yeni")
+  ? "Etkinliğin yayında 🎉 Topluluğunla paylaş."
+  : GIRIS[q.get("giris") ?? ""]
+    ? GIRIS[q.get("giris")!]
+    : (SONUC[q.get("sonuc") ?? ""] ?? DEGER[q.get("deger") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
+const oncelikYok = q.get("oncelik") === "yok";
+---
+
+<ToplulukLayout
+  title={e.title}
+  description={davet ? `${davet.davetEden.name} seni "${e.title}" etkinliğine davet ediyor. ${aciklama}` : aciklama}
+  seo={{
+    // Davet linkinde paylaşım önizlemesi kişisel karttır (WhatsApp/Telegram kartı görür)
+    ogImagePath: davet ? `/api/kart/${davet.kod.code}/og.png?v=${kartSurumu(davet)}` : (e.coverUrl ?? undefined),
+    // Meta (FB/Messenger) og:url'yi yeniden tarar: ?d= korunmazsa kişisel kart yerine kapak çıkar
+    ogUrl: davet ? `${sayfa}?d=${davet.kod.code}` : undefined,
+    noindex: !gorunur || !!davet,
+  }}
+>
+  {/* `<` kaçışı ZORUNLU: kullanıcı metni (başlık, açıklama) kapanış etiketiyle bloktan kaçabilir (XSS) */}
+  <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />
+
+  {davet && !kaydim && !bitti && (
+    <div class="menu-pop mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-accent bg-accent-soft px-4 py-4" data-davet-bandi>
+      <Avatar name={davet.davetEden.name} avatarUrl={davet.davetEden.avatarUrl} size="lg" />
+      <div class="min-w-48 flex-1">
+        <p class="font-display text-lg font-semibold text-ink">{davet.davetEden.name} seni bu etkinliğe davet ediyor 📅</p>
+        {davet.kod.note && <p class="mt-0.5 text-sm italic text-ink">“{davet.kod.note}”</p>}
+        <p class="mt-1 text-sm text-ink-muted">
+          Gelince <strong class="text-accent">sen +{PUAN.eventAttended + PUAN.eventInviteWelcome}</strong>{!davetEdenHost && <>, {davet.davetEden.name} +{PUAN.eventInviteAttended}</>}; kapıda girişin doğrulanınca kesinleşir.
+          {!member && " Üyelik ücretsiz, ilk kitabın hediye."}
+        </p>
+      </div>
+      {!kayitAcik || dolu ? (
+        <p class="text-sm font-medium text-ink">{dolu ? "Kontenjan doldu" : "Kayıtlar kapandı"}</p>
+      ) : member ? (
+        <form method="post" action="/api/uye/etkinlik" class="w-full sm:w-auto">
+          <input type="hidden" name="action" value="rsvp" />
+          <input type="hidden" name="eventId" value={e.id} />
+          <button class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97] sm:w-auto">Yerimi ayır 🎁</button>
+        </form>
+      ) : (
+        <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
+          <button type="button" class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97] sm:w-auto">Yerimi ayır 🎁</button>
+        </SignInButton>
+      )}
+    </div>
+  )}
+  {uygulamaIci && !member && (
+    <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Uygulama içi tarayıcıdasın: Google girişi burada çalışmayabilir. <strong>E-posta kodu</strong> ile gir ya da sağ üst ⋯ menüsünden <strong>Tarayıcıda aç</strong>.
+    </div>
+  )}
+  {bant && <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>}
+  {kayitIpucu && !davet && (
+    <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink" data-kayit-ipucu>
+      Girişin tamam ✓ Yerini ayırmak için <strong>Yerimi ayır</strong>'a dokun.
+    </div>
+  )}
+  {oncelikYok && (
+    <div class="menu-pop mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Yerin ayrıldı ama ⭐ öncelikli koltuk alınamadı: {PUAN.prioritySeatCost} puan gerekiyor.
+    </div>
+  )}
+  {!gorunur && (
+    <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Topluluk <strong>onay bekliyor</strong> — bu etkinlik şimdilik yalnız görevlilere görünür.
+    </div>
+  )}
+
+  <header class="girih-texture -mx-4 px-4 py-8" data-etkinlik-id={e.id}>
+    <div class="grid gap-6 md:grid-cols-[1fr_260px]">
+      <div class="min-w-0">
+        <p class="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+          {kulup && <a href={R.kulup(kulup.slug)} class="rounded-full border border-line px-2.5 py-0.5 hover:text-accent">🏛️ {kulup.name}</a>}
+          {e.kind && <span class="rounded-full border border-line px-2.5 py-0.5">{TUR_AD[e.kind]}</span>}
+          {e.il && <span class="rounded-full border border-line px-2.5 py-0.5">📍 {e.il}</span>}
+          {bitti && <span class="rounded-full bg-surface-raised px-2.5 py-0.5 font-medium text-ink">Sona erdi</span>}
+          {puanOrt && <span class="rounded-full border border-line px-2.5 py-0.5" data-etkinlik-puan>⭐ {puanOrt} · {puanSayi} değerlendirme</span>}
+        </p>
+        <h1 class="mt-3 font-display text-3xl font-semibold text-ink sm:text-4xl">📅 {e.title}</h1>
+        <p class="mt-3 text-lg text-ink"><time datetime={e.startsAt.toISOString()}>{trAralik(e)}</time></p>
+        {e.location && <p class="mt-1 text-ink-muted">📍 {e.location}</p>}
+        {e.description && <p class="mt-3 text-ink-muted">{e.description}</p>}
+
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          {hostlar.map((h) => (
+            <a href={R.profil(h.handle)} class="flex items-center gap-2 text-sm text-ink-muted hover:text-accent">
+              <Avatar name={h.name} avatarUrl={h.avatarUrl} size="sm" />
+              {h.name}
+            </a>
+          ))}
+          {hostlar.length > 0 && <span class="text-xs text-ink-muted">düzenliyor</span>}
+        </div>
+      </div>
+
+      <aside class="rounded-2xl border border-line bg-surface-raised p-5" data-kayit-kutusu>
+        <p class="font-display text-2xl font-semibold text-accent">
+          {sayi.kayit}{e.capacity != null && <span class="text-base text-ink-muted"> / {e.capacity}</span>}
+        </p>
+        <p class="text-xs text-ink-muted">
+          kayıtlı{sayi.oncelikli > 0 && ` · ⭐ ${sayi.oncelikli} öncelikli`}
+          {e.capacity != null && !dolu && ` · ${e.capacity - sayi.kayit} yer kaldı`}
+        </p>
+        {e.rsvpClosesAt && !bitti && (
+          <p class="mt-1 text-xs text-ink-muted">Kayıt kapanışı: {trTarih(e.rsvpClosesAt)} {trSaat(e.rsvpClosesAt)}</p>
+        )}
+
+        <div class="mt-4">
+          {kaydim ? (
+            <>
+              <p class="rounded-full bg-accent-soft px-4 py-2 text-center text-sm font-medium text-accent">
+                {kaydim.checkedInAt ? `Girişin doğrulandı ✓ (${trSaat(kaydim.checkedInAt)})` : "Kayıtlısın ✓"}{kaydim.priority && " ⭐"}
+              </p>
+              {!kaydim.checkedInAt && !bitti && (
+                <a href={`${R.uye.biletler}#bilet-${kaydim.id}`} class="mt-2 block rounded-full border border-accent px-4 py-2 text-center text-sm font-medium text-accent hover:bg-accent hover:text-surface">🎟️ Biletimi göster</a>
+              )}
+            </>
+          ) : bitti ? (
+            <p class="text-sm text-ink-muted">Etkinlik sona erdi.</p>
+          ) : !kayitAcik ? (
+            <p class="text-sm text-ink-muted">Kayıtlar kapandı.</p>
+          ) : dolu ? (
+            <p class="text-sm font-medium text-ink">Kontenjan doldu.</p>
+          ) : member ? (
+            <form method="post" action="/api/uye/etkinlik">
+              <input type="hidden" name="action" value="rsvp" />
+              <input type="hidden" name="eventId" value={e.id} />
+              <button class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎟️</button>
+              <label class="mt-2 flex cursor-pointer items-center justify-center gap-1.5 text-xs text-ink-muted">
+                <input type="checkbox" name="priority" value="1" class="accent-(--accent)" />
+                ⭐ Öncelikli koltuk ({PUAN.prioritySeatCost}p)
+              </label>
+            </form>
+          ) : (
+            <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
+              <button type="button" class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎟️</button>
+            </SignInButton>
+          )}
+        </div>
+        {!bitti && (
+          <p class="mt-3 text-xs text-ink-muted">
+            Giriş kapıda doğrulanır: gelen <strong class="text-ink">+{PUAN.eventAttended} puan</strong> kazanır.
+          </p>
+        )}
+        <a href={R.etkinlikTakvim(slug)} class="mt-3 inline-block text-sm text-accent hover:underline">🗓 Takvime ekle (.ics)</a>
+      </aside>
+    </div>
+  </header>
+
+  {gorevli && !bitti && (
+    <p class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface-raised px-4 py-3 text-sm" data-gorevli-cubugu>
+      <span class="text-ink-muted">Görevlisin:</span>
+      <a href={R.etkinlikGiris(slug)} class="rounded-full bg-accent px-4 py-1.5 font-medium text-surface">🎟️ Giriş ekranı (bilet okut)</a>
+      <a href={R.etkinlikEkran(slug)} class="rounded-full border border-accent px-4 py-1.5 font-medium text-accent hover:bg-accent hover:text-surface">📺 Dönen QR ekranı</a>
+      <span class="text-ink-muted">{sayi.giris} / {sayi.kayit} geldi</span>
+    </p>
+  )}
+
+  {degerlendirebilir && (
+    <section id="degerlendir" class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
+      <h2 class="font-display text-lg font-semibold text-ink">⭐ Etkinliği değerlendir</h2>
+      <p class="mt-1 text-sm text-ink-muted">Geldin, şimdi söz sende. Değerlendirmen düzenleyenlere yol gösterir; puan üretmez.</p>
+      <form method="post" action="/api/uye/etkinlik" class="mt-3 grid gap-3">
+        <input type="hidden" name="action" value="rate" />
+        <input type="hidden" name="eventId" value={e.id} />
+        <div class="flex gap-3 text-sm">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <label class="flex cursor-pointer items-center gap-1">
+              <input type="radio" name="stars" value={s} required checked={benimPuanim?.stars === s} /> {s}★
+            </label>
+          ))}
+        </div>
+        <input name="body" maxlength="300" value={benimPuanim?.body ?? ""} placeholder="Bir cümle (isteğe bağlı)" class="rounded-xl border border-line bg-surface px-3 py-2 text-sm" />
+        <button class="cursor-pointer justify-self-start rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">{benimPuanim ? "Güncelle" : "Gönder"}</button>
+      </form>
+    </section>
+  )}
+
+  {member && katilimcilar.length > 0 && (
+    <section class="mt-8">
+      <h2 class="font-display text-lg font-semibold text-ink">👥 Katılımcılar</h2>
+      <ul class="mt-3 flex flex-wrap gap-2">
+        {katilimcilar.map((k) => {
+          const u = kisiler.get(k.userId);
+          return u ? (
+            <li>
+              <a href={R.profil(u.handle)} class="flex items-center gap-2 rounded-full border border-line bg-surface-raised py-1 pl-1 pr-3 text-sm text-ink-muted hover:border-accent hover:text-accent">
+                <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+                {u.name}{k.priority && " ⭐"}
+              </a>
+            </li>
+          ) : null;
+        })}
+      </ul>
+    </section>
+  )}
+
+  {davetKodum && davetLinki && (
+    <section id="davet" class="mt-8 rounded-2xl border border-accent/40 bg-accent-soft/30 p-5">
+      <h2 class="font-display text-lg font-semibold text-ink">🎴 Davet kartın</h2>
+      <p class="mt-1 text-sm text-ink-muted">
+        {rol === "host"
+          ? `Arkadaşın QR'ı okutunca yerini ayırır; gelince +${PUAN.eventAttended + PUAN.eventInviteWelcome} kazanır. Düzenleyen olarak davet puanı almazsın — katılımcı başına +${PUAN.eventHostedPerAttendee} düzenleyen payın var.`
+          : `Arkadaşın QR'ı okutunca yerini ayırır: girişi doğrulanınca o +${PUAN.eventAttended + PUAN.eventInviteWelcome}, sen +${PUAN.eventInviteAttended} kazanırsın. Gelmezse bekleyen puan etkinlik bitince düşer.`}
+      </p>
+      <div class="mt-3 flex flex-wrap items-center gap-4">
+        <div class="w-28 shrink-0 rounded-lg bg-white p-1 [&_svg]:h-auto [&_svg]:w-full" set:html={davetQr} />
+        <div class="min-w-0 flex-1 text-sm">
+          <p class="truncate font-mono text-ink" title={davetLinki}>{davetLinki.replace(/^https?:\/\//, "")}</p>
+          <button type="button" data-kopyala={davetLinki} class="mt-2 cursor-pointer rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Paylaş / Kopyala</button>
+          <div class="mt-3 flex flex-wrap gap-1.5 text-xs">
+            <a href={`/api/kart/${davetKodum.code}/story.png?v=${kartV}`} download={`etkinlik-${davetKodum.code}-hikaye.png`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">📱 Hikâye</a>
+            <a href={`/api/kart/${davetKodum.code}/kare.png?v=${kartV}`} download={`etkinlik-${davetKodum.code}-kare.png`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">🟦 Kare</a>
+            <a href={`/api/kart/${davetKodum.code}/a6.pdf?v=${kartV}`} download={`etkinlik-${davetKodum.code}-a6.pdf`} class="rounded-full border border-line px-3 py-1 text-ink-muted hover:border-accent hover:text-accent">🖨 A6 PDF</a>
+          </div>
+        </div>
+      </div>
+      <form method="post" action="/api/uye/davet" class="mt-3 flex gap-1.5">
+        <input type="hidden" name="eventId" value={e.id} />
+        <input type="hidden" name="next" value={`${sayfa}#davet`} />
+        <input name="note" maxlength="80" value={davetKodum.note ?? ""} placeholder="Kişisel not (≤80, kartta görünür)" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-1.5 text-sm" />
+        <button class="cursor-pointer rounded-full border border-accent px-4 py-1.5 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Kaydet</button>
+      </form>
+    </section>
+  )}
+
+  {yonetici && (
+    <section id="yonetim" class="mt-10 rounded-2xl border border-line bg-surface-raised p-5">
+      <h2 class="font-display text-lg font-semibold text-ink">🎤 Düzenleyen paneli</h2>
+      <p class="mt-1 text-sm text-ink-muted">
+        Ortak düzenleyen (en çok {PUAN.eventMaxCoHosts}) katılımcı puanını paylaşır; giriş görevlisi yalnız bilet okutur, puan almaz.
+      </p>
+      {hostPay && (
+        <p class="mt-3 rounded-xl border border-line px-3 py-2 text-sm text-ink" data-host-pay>
+          👥 {hostPay.katilimci} doğrulanmış katılımcı × {PUAN.eventHostedPerAttendee} = <strong>{hostPay.toplam}</strong> puan
+          {hostPay.paylar.size > 1 && ` (${hostPay.paylar.size} düzenleyen arasında)`} →
+          {dagitilan
+            ? <> payın <strong class="text-accent">+{dagitilan.delta}</strong> hesabına yazıldı.</>
+            : simdi < payDagitim
+              ? <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; {trTarih(payDagitim)} sonrası dağıtılır (bitiş + {PUAN.eventHostedDelayHours} saat).</>
+              : <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; sıradaki günlük dağıtımda yazılır.</>}
+          <span class="block text-xs text-ink-muted">Bilet ya da dönen QR ile gelen ilk {PUAN.eventHostedMaxAttendees} katılımcı sayılır (elle girişler sayılmaz); ortalama ≥ 4,0 ve en az {PUAN.eventWellRatedMinCount} değerlendirmede +{PUAN.eventWellRated}. Düzenleyen puanları haftada en çok {PUAN.eventHostWeeklyCap}.</span>
+        </p>
+      )}
+      <p class="mt-3 text-sm">
+        <a href={R.etkinlikCsv(slug)} class="text-accent hover:underline">⬇ Katılım listesi (CSV)</a>
+      </p>
+      <ul class="mt-4 space-y-2">
+        {gorevliler.map((g) => {
+          const u = kisiler.get(g.userId);
+          return u ? (
+            <li class="flex flex-wrap items-center gap-3 text-sm">
+              <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+              <span class="text-ink">{u.name}</span>
+              <span class="rounded-full border border-line px-2 py-0.5 text-xs text-ink-muted">
+                {g.role === "host" ? (g.userId === e.createdBy ? "Düzenleyen (açan)" : "Ortak düzenleyen") : "Giriş görevlisi"}
+              </span>
+              {g.userId !== e.createdBy && (g.role !== "host" || hostYonetir) && (
+                <form method="post" action="/api/uye/etkinlik" class="ml-auto">
+                  <input type="hidden" name="action" value="staff-sil" />
+                  <input type="hidden" name="eventId" value={e.id} />
+                  <input type="hidden" name="handle" value={u.handle} />
+                  <button class="cursor-pointer text-xs text-ink-muted hover:text-red-500">Çıkar</button>
+                </form>
+              )}
+            </li>
+          ) : null;
+        })}
+      </ul>
+      <form method="post" action="/api/uye/etkinlik" class="mt-4 flex flex-wrap gap-2">
+        <input type="hidden" name="action" value="staff-ekle" />
+        <input type="hidden" name="eventId" value={e.id} />
+        <input name="handle" required maxlength="60" placeholder="@kullanici-adi" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <select name="rol" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" aria-label="Görev">
+          <option value="scanner">Giriş görevlisi</option>
+          {hostYonetir && <option value="host">Ortak düzenleyen</option>}
+        </select>
+        <button class="cursor-pointer rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Ekle</button>
+      </form>
+    </section>
+  )}
+</ToplulukLayout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-kopyala]")) {
+      if (btn.dataset.init) continue;
+      btn.dataset.init = "1";
+      btn.addEventListener("click", async () => {
+        const url = btn.dataset.kopyala ?? "";
+        if (navigator.share) {
+          try { await navigator.share({ url, title: document.title }); return; } catch { /* iptal */ }
+        }
+        try { await navigator.clipboard.writeText(url); btn.textContent = "✅ Kopyalandı"; } catch { prompt("Bağlantı:", url); }
+      });
+    }
+  });
+</script>

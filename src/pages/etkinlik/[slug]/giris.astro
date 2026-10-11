@@ -1,0 +1,407 @@
+---
+/**
+ * Giriş ekranı (görevli tarayıcısı) — yalnız host/scanner/admin. Kamerayla art arda bilet
+ * okutur (tarayıcıda BarcodeDetector varsa), yoksa kod elle yazılır ya da telefonun kamera
+ * uygulaması bileti açar ve /t/q/ görevliyi ?bilet= ile buraya getirir — bu yolla gelen bilet
+ * yalnız kutuya YAZILIR, girişi görevlinin "Doğrula" dokunuşu yazar (bağlantıya tıklatarak
+ * uzaktan "geldi" işaretletilemesin). Okutma JSON POST
+ * (/api/uye/giris); bağlantı yoksa localStorage kuyruğu, bağlantı gelince bir kez gönderilir
+ * (sunucu idempotent — AC-16, AC-18). Elle giriş: listeden "Geldi".
+ */
+import { asc, eq } from "drizzle-orm";
+import Base from "@/layouts/Base.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import { db, schema } from "@/db/client.ts";
+import { etkinlikBul, okutabilirMi, slugGaranti, yonetebilirMi } from "@/lib/etkinlik.ts";
+import { etkinlikBitis, girisPenceresinde, KAPI_ACILIS_DK, trAralik, trSaat } from "@/lib/etkinlik-kural.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { R } from "@/lib/routes.ts";
+import { getUsersMap } from "@/lib/social.ts";
+
+export const prerender = false;
+
+const e = await etkinlikBul(Astro.params.slug ?? "");
+const member = await getOrCreateMember(Astro);
+// Görevli olmayana sayfanın varlığı da gösterilmez
+if (!e || !(await okutabilirMi(e, member))) return new Response("Sayfa bulunamadı", { status: 404 });
+const slug = await slugGaranti(e);
+
+const kayitlar = await db.query.eventRsvps.findMany({
+  where: eq(schema.eventRsvps.eventId, e.id),
+  orderBy: asc(schema.eventRsvps.createdAt),
+});
+const kisiler = await getUsersMap(kayitlar.map((k) => k.userId));
+const gelen = kayitlar.filter((k) => k.checkedInAt);
+const bekleyen = kayitlar.filter((k) => !k.checkedInAt);
+const simdi = new Date();
+const pencerede = girisPenceresinde(e, simdi);
+const kapi = new Date(e.startsAt.getTime() - KAPI_ACILIS_DK * 60_000);
+const host = await yonetebilirMi(e, member);
+const q = Astro.url.searchParams;
+const ELLE: Record<string, string> = {
+  geldi: "Giriş işaretlendi ✓",
+  zaten: "Bu katılımcı zaten gelmiş.",
+  pencere: "Giriş penceresi dışında — işaretlenmedi.",
+  yok: "Bu kişinin kaydı yok.",
+  hiz: "Çok hızlı: dakikada 120 giriş sınırı.",
+};
+---
+
+<Base title={`Giriş · ${e.title}`} description="Etkinlik giriş doğrulaması" seo={{ noindex: true }} sade>
+  <section
+    class="mx-auto max-w-2xl py-6"
+    data-giris
+    data-etkinlik={e.id}
+    data-bilet={q.get("bilet") ?? ""}
+  >
+    <p class="text-sm"><a href={R.etkinlik(slug)} class="text-ink-muted hover:text-accent">← {e.title}</a></p>
+    <div class="mt-2 flex flex-wrap items-end justify-between gap-3">
+      <h1 class="font-display text-2xl font-semibold text-ink">🎟️ Giriş doğrulaması</h1>
+      <p class="text-sm text-ink-muted">
+        <strong class="font-display text-2xl text-accent" data-giris-sayac>{gelen.length}</strong> / {kayitlar.length} geldi
+      </p>
+    </div>
+    <p class="mt-1 text-sm text-ink-muted">
+      {trAralik(e)} ·
+      {pencerede
+        ? <span class="font-medium text-accent">giriş açık (bitiş {trSaat(etkinlikBitis(e))})</span>
+        : simdi < kapi
+          ? <span>kapı {trSaat(kapi)}'de açılır</span>
+          : <span>etkinlik bitti — giriş kapalı</span>}
+    </p>
+
+    {/* Sonuç: ekran okuyucuya da duyurulur; metinler textContent ile yazılır (innerHTML yok) */}
+    <div
+      data-sonuc
+      aria-live="assertive"
+      class="mt-5 flex min-h-28 items-center gap-4 rounded-2xl border-2 border-line bg-surface-raised px-5 py-4"
+    >
+      <img data-sonuc-avatar alt="" class="hidden size-16 rounded-full object-cover" />
+      <div class="min-w-0">
+        <p data-sonuc-baslik class="font-display text-xl font-semibold text-ink">Bilet bekleniyor…</p>
+        <p data-sonuc-alt class="text-sm text-ink-muted">Kamerayı aç ve bileti göster ya da kodu yaz.</p>
+      </div>
+    </div>
+    <p data-kuyruk class="mt-2 min-h-5 text-sm font-medium text-amber-600" aria-live="polite"></p>
+
+    <div class="mt-3 overflow-hidden rounded-2xl border border-line bg-black">
+      <video data-kamera playsinline muted class="hidden aspect-[4/3] w-full object-cover"></video>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button type="button" data-kamera-ac class="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">📷 Kamerayı aç</button>
+      <form data-elle-form class="flex min-w-0 flex-1 gap-2">
+        <input data-elle-girdi autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="120" placeholder="Bilet kodu (ör. 42.ABCD…)" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2 font-mono text-sm" aria-label="Bilet kodu" />
+        <button class="cursor-pointer rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Doğrula</button>
+      </form>
+    </div>
+    <p data-kamera-yok class="mt-2 hidden text-xs text-ink-muted">
+      Bu tarayıcı QR'ı kendisi çözemiyor (ör. iOS Safari). Telefonun <strong>kamera uygulamasıyla</strong> bileti okut: açılan bağlantı seni bu ekrana getirir ve girişi işler. Ya da bilet kodunu yaz.
+    </p>
+
+    {host && (
+      <p class="mt-4 text-sm">
+        <a href={R.etkinlikEkran(slug)} class="text-accent hover:underline">📺 Dönen QR ekranını aç</a>
+        <span class="text-ink-muted"> — kalabalık girişte katılımcılar kendi telefonlarıyla okutur.</span>
+      </p>
+    )}
+
+    <details id="liste" class="mt-6 rounded-2xl border border-line bg-surface-raised p-4" open={q.has("elle")}>
+      <summary class="cursor-pointer font-display font-semibold text-ink">Kayıt listesi ve elle giriş ({bekleyen.length} bekliyor)</summary>
+      {ELLE[q.get("elle") ?? ""] && <p class="mt-2 text-sm text-accent">{ELLE[q.get("elle")!]}</p>}
+      <ul class="mt-3 space-y-2">
+        {bekleyen.map((k) => {
+          const u = kisiler.get(k.userId);
+          return u ? (
+            <li class="flex items-center gap-3 text-sm" data-rsvp={k.id} data-geldi="0">
+              <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+              <span class="min-w-0 flex-1 truncate text-ink">{u.name}{k.priority && " ⭐"}</span>
+              <form method="post" action="/api/uye/etkinlik">
+                <input type="hidden" name="action" value="checkin-manual" />
+                <input type="hidden" name="eventId" value={e.id} />
+                <input type="hidden" name="userId" value={u.id} />
+                <button disabled={!pencerede} class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50">Geldi</button>
+              </form>
+            </li>
+          ) : null;
+        })}
+        {gelen.map((k) => {
+          const u = kisiler.get(k.userId);
+          return u ? (
+            <li class="flex items-center gap-3 text-sm text-ink-muted" data-rsvp={k.id} data-geldi="1">
+              <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+              <span class="min-w-0 flex-1 truncate">{u.name}</span>
+              <span class="text-xs">✓ {trSaat(k.checkedInAt!)}</span>
+            </li>
+          ) : null;
+        })}
+        {kayitlar.length === 0 && <li class="text-sm text-ink-muted">Henüz kayıt yok.</li>}
+      </ul>
+    </details>
+  </section>
+</Base>
+
+<script>
+  import {
+    kuyrugaEkle,
+    kuyrukOku,
+    kuyruktanCikar,
+    tokenAyikla,
+    yeniOkumaMi,
+    type KuyrukOgesi,
+  } from "@/features/etkinlik/giris-kuyrugu.ts";
+
+  type Sonuc = { durum: string; ad?: string; avatarUrl?: string | null; saat?: string; etkinlik?: string; oncelikli?: boolean };
+  const METIN: Record<string, [string, string, string]> = {
+    // durum: [başlık, alt metin, çerçeve sınıfı]
+    gecersiz: ["Geçersiz bilet", "Kod tanınmadı ya da imzası bozuk.", "border-red-500"],
+    yetkisiz: ["Yetkin yok", "Bu etkinliğin görevlisi değilsin.", "border-red-500"],
+    pencere: ["Giriş kapalı", "Kapı açılışından önce ya da etkinlik bitti.", "border-amber-500"],
+    hiz: ["Çok hızlı", "Dakikada 120 okutma sınırı — bilet kuyrukta, birazdan gönderilecek.", "border-amber-500"],
+    hazir: ["Bilet okundu", "Katılımcı karşındaysa Doğrula'ya dokun.", "border-accent"],
+    gonderildi: ["Kuyruk gönderildi", "Bağlantı geldi; bekleyen biletler işlendi.", "border-accent"],
+    oturum: ["Oturum düştü", "Sayfayı yenileyip yeniden giriş yap; okutulanlar kuyrukta.", "border-red-500"],
+    kuyruk: ["Bağlantı yok", "Bilet kuyruğa alındı; bağlantı gelince gönderilecek.", "border-amber-500"],
+  };
+  const CERCEVE = ["border-line", "border-accent", "border-amber-500", "border-red-500"];
+  let temizle: (() => void) | null = null;
+
+  function bip(frekans: number) {
+    try {
+      const c = new AudioContext();
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.frequency.value = frekans;
+      g.gain.value = 0.08;
+      o.connect(g).connect(c.destination);
+      o.start();
+      o.stop(c.currentTime + 0.12);
+      o.onended = () => void c.close();
+    } catch {
+      /* ses yoksa sessiz */
+    }
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    const kok = document.querySelector<HTMLElement>("[data-giris]");
+    if (!kok || kok.dataset.init) return;
+    kok.dataset.init = "1";
+    const eventId = Number(kok.dataset.etkinlik);
+    const ANAHTAR = `giris-kuyruk-${eventId}`;
+    const sec = <T extends HTMLElement>(s: string) => kok.querySelector<T>(s)!;
+    const kutu = sec("[data-sonuc]");
+    const baslik = sec("[data-sonuc-baslik]");
+    const alt = sec("[data-sonuc-alt]");
+    const avatar = sec<HTMLImageElement>("[data-sonuc-avatar]");
+    const kuyrukEl = sec("[data-kuyruk]");
+    const sayac = sec("[data-giris-sayac]");
+    const video = sec<HTMLVideoElement>("[data-kamera]");
+    const son = new Map<string, number>();
+    /** Şu an canlı okutmayla gönderilen biletler: kuyruk boşaltması bunları ikinci kez yollamaz */
+    const ucusta = new Set<string>();
+    let bosaltiliyor = false;
+    let sonDurum = "";
+    // localStorage yoksa/kapalıysa kuyruk yalnız bu sayfada (bellekte) yaşar
+    let bellek: KuyrukOgesi[] | null = null;
+
+    const oku = (): KuyrukOgesi[] => {
+      if (bellek) return bellek;
+      try {
+        return kuyrukOku(localStorage.getItem(ANAHTAR));
+      } catch {
+        return (bellek = []);
+      }
+    };
+    const depola = (k: KuyrukOgesi[]) => {
+      if (bellek) return void (bellek = k);
+      try {
+        localStorage.setItem(ANAHTAR, JSON.stringify(k));
+      } catch {
+        bellek = k;
+      }
+    };
+    /** Kuyruk satırı: yalnız GERÇEKTEN bekleyenler (o an gönderilmekte olan canlı okutma sayılmaz) */
+    const etiketle = (ozet = "") => {
+      const n = oku().filter((o) => !ucusta.has(o.token)).length;
+      kuyrukEl.textContent = n ? `⏳ Bağlantı bekleyen bilet: ${n}` : ozet;
+    };
+    const sayacArtir = () => (sayac.textContent = String(Number(sayac.textContent) + 1));
+
+    function goster(s: Sonuc) {
+      sonDurum = s.durum;
+      kutu.classList.remove(...CERCEVE);
+      avatar.classList.add("hidden");
+      if (s.durum === "geldi" || s.durum === "zaten") {
+        const geldi = s.durum === "geldi";
+        baslik.textContent = geldi ? `✓ ${s.ad}${s.oncelikli ? " ⭐" : ""}` : `Zaten geldi (${s.saat})`;
+        alt.textContent = geldi ? `Giriş ${s.saat} · ${s.etkinlik}` : `${s.ad} · ${s.etkinlik}`;
+        kutu.classList.add(geldi ? "border-accent" : "border-amber-500");
+        if (s.avatarUrl) {
+          avatar.src = s.avatarUrl;
+          avatar.classList.remove("hidden");
+        }
+        if (geldi) sayacArtir();
+        bip(geldi ? 880 : 330);
+        navigator.vibrate?.(geldi ? 80 : [60, 60, 60]);
+        return;
+      }
+      const [b, a, c] =
+        s.durum === "baska"
+          ? ["Başka etkinliğin bileti", s.etkinlik ?? "", "border-amber-500"]
+          : (METIN[s.durum] ?? METIN.gecersiz!);
+      baslik.textContent = b;
+      alt.textContent = a;
+      kutu.classList.add(c);
+      if (s.durum === "hazir" || s.durum === "gonderildi") return;
+      bip(220);
+      navigator.vibrate?.([120, 60, 120]);
+    }
+
+    /**
+     * "tamam": sunucu yanıtladı (kuyruktan düşer) · diğerleri: bilet kuyrukta kalır, sonra yeniden denenir.
+     * sessiz: kuyruk boşaltması — sonuç kutusuna/sese dokunmaz (kapıda o an okutulan biletin sonucu
+     * ezilmesin); yeni girişse yalnız sayaç artar. @returns durum ve yeni giriş mi
+     */
+    async function gonder(token: string, sessiz = false): Promise<["tamam" | "bekle" | "oturum" | "hiz", boolean]> {
+      try {
+        const r = await fetch("/api/uye/giris", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token, eventId }),
+          // Oturum düşünce middleware giriş sayfasına yönlendirir: izleme, ayırt et
+          redirect: "manual",
+          // Asılı bağlantı (Wi-Fi var, internet yok) dakikalarca beklemesin → kuyruğa düşsün
+          signal: AbortSignal.timeout(6000),
+        });
+        if (r.type === "opaqueredirect" || r.status === 401) return ["oturum", false];
+        // Hız sınırı giriş YAZMADI: bilet kuyruktan düşerse katılımcı işaretsiz kalırdı
+        if (r.status === 429) return ["hiz", false];
+        if (r.status >= 500) return ["bekle", false];
+        const s = (await r.json()) as Sonuc;
+        if (!sessiz) goster(s);
+        else if (s.durum === "geldi") sayacArtir();
+        return ["tamam", s.durum === "geldi"];
+      } catch {
+        return ["bekle", false];
+      }
+    }
+
+    async function isle(token: string) {
+      if (!yeniOkumaMi(son, token, Date.now())) return;
+      // ÖNCE kuyruğa yaz: yanıt beklerken sekme kapanır/yenilenirse okutma kaybolmasın (AC-18).
+      // Sunucu idempotent olduğu için yeniden gönderim zararsız.
+      ucusta.add(token);
+      depola(kuyrugaEkle(oku(), token, Date.now()));
+      const [s] = await gonder(token);
+      ucusta.delete(token);
+      if (s === "tamam") depola(kuyruktanCikar(oku(), token));
+      else goster({ durum: s === "bekle" ? "kuyruk" : s });
+      etiketle();
+    }
+
+    async function bosalt() {
+      if (bosaltiliyor) return;
+      bosaltiliyor = true;
+      let gonderilen = 0;
+      let yeni = 0;
+      try {
+        for (const o of oku()) {
+          if (ucusta.has(o.token)) continue;
+          const [s, yeniGiris] = await gonder(o.token, true);
+          if (s !== "tamam") break;
+          depola(kuyruktanCikar(oku(), o.token));
+          gonderilen++;
+          if (yeniGiris) yeni++;
+          etiketle();
+        }
+      } finally {
+        bosaltiliyor = false;
+      }
+      if (gonderilen) {
+        etiketle(`✓ Kuyruktaki ${gonderilen} bilet gönderildi (${yeni} yeni giriş)`);
+        // Kutu hâlâ "bağlantı yok / oturum / hız" diyorsa güncelle; canlı okutma sonucunu ezme
+        if (["kuyruk", "oturum", "hiz"].includes(sonDurum) && !oku().length) goster({ durum: "gonderildi" });
+      }
+    }
+
+    sec<HTMLFormElement>("[data-elle-form]").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const girdi = sec<HTMLInputElement>("[data-elle-girdi]");
+      const token = tokenAyikla(girdi.value);
+      if (!token) return goster({ durum: "gecersiz" });
+      son.delete(token); // elle girişte bekleme yok
+      girdi.value = "";
+      void isle(token);
+    });
+
+    // BarcodeDetector DOM tiplerinde yok (iOS Safari'de de yok) → çalışma zamanında yokla
+    const Dedektor = (window as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => { detect(v: HTMLVideoElement): Promise<{ rawValue: string }[]> } }).BarcodeDetector;
+    let akis: MediaStream | null = null;
+    let dongu = 0;
+    let aciliyor = false;
+    let kapandi = false;
+    const kameraAc = sec<HTMLButtonElement>("[data-kamera-ac]");
+    if (!Dedektor || !navigator.mediaDevices?.getUserMedia) {
+      kameraAc.classList.add("hidden");
+      sec("[data-kamera-yok]").classList.remove("hidden");
+    }
+    kameraAc.addEventListener("click", async () => {
+      if (akis || aciliyor || !Dedektor) return;
+      aciliyor = true;
+      kameraAc.disabled = true;
+      try {
+        const yeniAkis = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        // İzin beklenirken sayfadan çıkıldıysa akışı hemen kapat (kamera açık kalmasın)
+        if (kapandi) return yeniAkis.getTracks().forEach((t) => t.stop());
+        akis = yeniAkis;
+        video.srcObject = akis;
+        video.classList.remove("hidden");
+        await video.play();
+        kameraAc.textContent = "📷 Kamera açık";
+        const dedektor = new Dedektor({ formats: ["qr_code"] });
+        dongu = window.setInterval(async () => {
+          try {
+            for (const k of await dedektor.detect(video)) {
+              const token = tokenAyikla(k.rawValue);
+              if (token) void isle(token);
+            }
+          } catch {
+            /* kare hazır değil */
+          }
+        }, 300);
+      } catch {
+        sec("[data-kamera-yok]").classList.remove("hidden");
+        kameraAc.disabled = false;
+      } finally {
+        aciliyor = false;
+      }
+    });
+
+    const cevrimici = () => void bosalt();
+    window.addEventListener("online", cevrimici);
+    const zamanlayici = window.setInterval(bosalt, 15_000);
+    temizle = () => {
+      kapandi = true;
+      window.clearInterval(zamanlayici);
+      window.clearInterval(dongu);
+      window.removeEventListener("online", cevrimici);
+      akis?.getTracks().forEach((t) => t.stop());
+    };
+
+    etiketle();
+    void bosalt();
+    // /t/q/ görevliyi ?bilet= ile getirdi (telefon kamerasıyla okutma). Girişi OTOMATİK yazma:
+    // GET ile durum değişmez — yoksa görevliye bağlantı gönderen biri uzaktan "geldi" işaretletirdi.
+    const ilk = tokenAyikla(kok.dataset.bilet ?? "");
+    if (ilk) {
+      history.replaceState(history.state, "", location.pathname); // ClientRouter durumu korunur
+      sec<HTMLInputElement>("[data-elle-girdi]").value = ilk;
+      goster({ durum: "hazir" });
+      sec<HTMLFormElement>("[data-elle-form]").querySelector("button")?.focus();
+    }
+  });
+  // Sayfadan çıkışta kamera ve zamanlayıcılar kapanır (ClientRouter soft-nav'da script yaşar)
+  document.addEventListener("astro:before-swap", () => {
+    temizle?.();
+    temizle = null;
+  });
+</script>

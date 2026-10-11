@@ -16,18 +16,20 @@ interface Props {
 }
 const { title, description, seo, ownJsonLd } = Astro.props;
 
-const sekmeler = [
+// `ek`: detay sayfası liste sayfasının altında değilse (/kulup/x, /etkinlik/x) sekmeyi o da yakar
+const sekmeler: { href: string; label: string; ikon: string; ek?: string }[] = [
   { href: R.topluluk, label: "Akış", ikon: "💬" },
   { href: R.gundem, label: "Gündem", ikon: "🔥" },
-  { href: R.kulupler, label: "Kulüpler", ikon: "🏛️" },
+  { href: R.kulupler, label: "Topluluklarımız", ikon: "🏛️", ek: "/kulup" },
   { href: R.kurslar, label: "Kurslar", ikon: "🎓" },
   { href: R.lider, label: "Liderlik", ikon: "🏆" },
-  { href: R.etkinlikler, label: "Etkinlikler", ikon: "📅" },
+  { href: R.etkinlikler, label: "Etkinlikler", ikon: "📅", ek: "/etkinlik" },
   { href: R.uyeler, label: "Üyeler", ikon: "👥" },
   { href: R.harita, label: "Harita", ikon: "🗺️" },
 ];
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
-const aktifMi = (href: string) => path === href || path.startsWith(href + "/");
+const aktifMi = (s: (typeof sekmeler)[number]) =>
+  [s.href, s.ek].some((h) => !!h && (path === h || path.startsWith(h + "/")));
 ---
 
 <Base title={title} description={description} seo={seo} ownJsonLd={ownJsonLd}>
@@ -43,10 +45,10 @@ const aktifMi = (href: string) => path === href || path.startsWith(href + "/");
         sekmeler.map((s) => (
           <a
             href={s.href}
-            aria-current={aktifMi(s.href) ? "page" : undefined}
+            aria-current={aktifMi(s) ? "page" : undefined}
             class:list={[
               "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm transition-colors",
-              aktifMi(s.href)
+              aktifMi(s)
                 ? "bg-accent font-semibold text-surface"
                 : "text-ink-muted hover:bg-accent-soft hover:text-accent",
             ]}

@@ -69,20 +69,47 @@ test.describe("kurs daveti — üye (Faz 2)", () => {
     await expect(page.locator('#davet input[name="note"]')).toHaveValue("e2e notu");
   });
 
-  test("AC-5: /d/{kod} → giriş → ?katil=1 ile ek dokunuşsuz katılım; bekleyen +10 panoda", async ({ page }) => {
+  test("AC-5: GET ?katil=1 hiçbir şey yazmaz; niyet (sessionStorage) varsa dönüşte betik katılımı POST'lar; bekleyen +10 panoda", async ({ page }) => {
     const KURS2 = "/kurslar/go-ile-cli-araclari-demo"; // seed: Elif'in daveti DEM0C21
     const r = await page.request.get("/d/dem0c21", { maxRedirects: 0 }); // çerez bu context'e
     expect(r.status()).toBe(302);
-    await page.goto(`${KURS2}?d=DEM0C21&katil=1`, { waitUntil: "domcontentloaded" });
-    if (page.url().includes("davet=1")) {
+    // Sunucu GET'te yazmaz: üye olarak ?katil=1 yönlendirmez (eski akış 302 ?katildin=1 idi) — her koşumda geçerli
+    const g = await page.request.get(`${KURS2}?d=DEM0C21&katil=1`, { maxRedirects: 0 });
+    expect(g.status()).toBe(200);
+    // Niyetsiz yükleme (saldırganın bağlantısı / yeni sekme): katılmaz, adres değişmez, form bir dokunuş bekler
+    // (`load`: astro:page-load betiği koşmuş olsun ki adres kontrolü olası otomatik gönderimi görsün)
+    await page.goto(`${KURS2}?d=DEM0C21&katil=1`, { waitUntil: "load" });
+    await expect(page).not.toHaveURL(/katildin=1|davet=1/);
+    const katilabilir = (await page.locator("form[data-katil-formu]").count()) > 0;
+    const id = await page.locator("header[data-kurs-id]").getAttribute("data-kurs-id");
+    if (katilabilir) {
+      await expect(page.locator("form[data-katil-formu]").first()).toBeVisible();
+      // Davetsiz dönüş (?katil=1): ipucu bandı, yine yazma yok
+      await page.goto(`${KURS2}?katil=1&b=1`, { waitUntil: "load" });
+      await expect(page.locator("[data-katil-ipucu]")).toBeVisible();
+      await expect(page).toHaveURL(/katil=1&b=1$/);
+      // Bayat niyet (31 dk) tüketilmez, silinir
+      await page.evaluate((v) => sessionStorage.setItem("ysf_niyet", v), `katil:${id}:${Date.now() - 31 * 60_000}`);
+      await page.goto(`${KURS2}?katil=1`, { waitUntil: "load" });
+      await expect(page).toHaveURL(/katil=1$/);
+      await expect.poll(() => page.evaluate(() => sessionStorage.getItem("ysf_niyet"))).toBeNull();
+      // Niyet: "Katıl" düğmesinin yazdığı anahtar (Clerk modalı sürülemez → elle; misafir dokunuşu kurslar.spec'te)
+      await page.evaluate((v) => sessionStorage.setItem("ysf_niyet", v), `katil:${id}:${Date.now()}`);
+      await page.goto(`${KURS2}?d=DEM0C21&katil=1&b=1`, { waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/davet=1/);
+      await expect(page).toHaveURL(/b=1/); // bulunduğu öğe korunur (eski GET dalındaki gibi)
       await expect(page.getByText(/Davetle katıldın/)).toBeVisible();
+      expect(await page.evaluate(() => sessionStorage.getItem("ysf_niyet"))).toBeNull(); // niyet tüketildi
       await page.goto("/uye", { waitUntil: "domcontentloaded" });
       await expect(page.getByText(/Bekleyen puan/)).toBeVisible();
       await expect(page.getByText(/CLI Araçları/).first()).toBeVisible();
     } else {
-      // Daha önceki koşumda katılmıştı: davet bandı yok, ilerleme var
+      // Daha önceki koşumda katılmıştı: davet bandı yok, ilerleme var; bayat niyet sessizce tüketilir
+      await page.evaluate((v) => sessionStorage.setItem("ysf_niyet", v), `katil:${id}:${Date.now()}`);
+      await page.goto(`${KURS2}?katil=1`, { waitUntil: "domcontentloaded" });
       await expect(page.getByText(/seni bu kursa davet ediyor/)).toHaveCount(0);
       await expect(page.getByText(/\d+\/\d+ öğe/)).toBeVisible();
+      await expect.poll(() => page.evaluate(() => sessionStorage.getItem("ysf_niyet"))).toBeNull();
     }
   });
 

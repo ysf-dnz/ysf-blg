@@ -77,9 +77,11 @@ if (existsSync(sitemap0) && /\/uye(\/|<)/.test(readFileSync(sitemap0, "utf8"))) 
   hata++;
 }
 const sitemapIndex = `${STATIK}/sitemap-index.xml`;
-if (existsSync(sitemapIndex) && !readFileSync(sitemapIndex, "utf8").includes("sitemap-kurslar.xml")) {
-  console.error("✗ SITEMAP: sitemap-kurslar.xml index'te yok (customSitemaps)");
-  hata++;
+for (const ozel of ["sitemap-kurslar.xml", "sitemap-etkinlikler.xml"]) {
+  if (existsSync(sitemapIndex) && !readFileSync(sitemapIndex, "utf8").includes(ozel)) {
+    console.error(`✗ SITEMAP: ${ozel} index'te yok (customSitemaps)`);
+    hata++;
+  }
 }
 const vercelConfig = ".vercel/output/config.json";
 if (existsSync(vercelConfig)) {
@@ -88,6 +90,22 @@ if (existsSync(vercelConfig)) {
   if (!dersler || dersler.status !== 301) {
     console.error("✗ REDIRECT: /dersler → /kurslar 301 rotası adapter çıktısında yok");
     hata++;
+  }
+  // Büyük harf QR yolları (/D davet, /T bilet, /C dönen QR). Vercel kenarı deseni harf DUYARSIZ
+  // eşleştirir: hedef, kaynağın küçük harfli hâliyle aynı desene uyarsa canlıda sonsuz 301 döngüsü.
+  for (const [onek, hedefOnek] of [["D", "/d/q/"], ["T", "/t/q/"], ["C", "/c/q/"]]) {
+    const r = routes.find((x) => x.status === 301 && typeof x.src === "string" && x.src.startsWith(`^/${onek}`));
+    const hedef = r?.headers?.Location ?? "";
+    if (!r || !hedef.startsWith(hedefOnek)) {
+      console.error(`✗ REDIRECT: /${onek}/… → ${hedefOnek}… 301 rotası adapter çıktısında yok (bulunan hedef: ${hedef || "—"})`);
+      hata++;
+    } else if (new RegExp(r.src, "i").test(hedef.replace(/\$\d/g, "x"))) {
+      console.error(`✗ REDIRECT: /${onek}/… hedefi (${hedef}) kendi desenine uyuyor → canlıda sonsuz yönlendirme döngüsü`);
+      hata++;
+    } else if (hedef.includes("[")) {
+      console.error(`✗ REDIRECT: /${onek}/… hedefi çözülmemiş parametre taşıyor (${hedef}) — hedef sayfa dosyası yok`);
+      hata++;
+    }
   }
 }
 

@@ -68,6 +68,10 @@ export default defineConfig({
     // harf DUYARSIZ eşleştirir (/d/kod da buraya düşer) → hedef, kaynağın küçük harfli hâliyle
     // ASLA aynı yol olmamalı ("/T/[x]" → "/t/[x]" canlıda sonsuz döngü); kanal davetKanali'nden.
     "/D/[kod]": { status: 301, destination: "/d/q/[kod]" },
+    // Bilet QR'ı (Faz 3): HTTPS://HOST/T/{rsvpId}.{imza}
+    "/T/[token]": { status: 301, destination: "/t/q/[token]" },
+    // Dönen QR (Faz 3): HTTPS://HOST/C/{events.id}/{TOKEN} — 30 sn'de bir yenilenir
+    "/C/[etkinlik]/[token]": { status: 301, destination: "/c/q/[etkinlik]/[token]" },
   },
   i18n: {
     defaultLocale: "tr",
@@ -96,21 +100,24 @@ export default defineConfig({
       },
       // Statik yollu SSR sayfalar da sitemap'e girer; üye alanı girmesin
       // (/uyeler herkese açık, kalır). Dinamik [slug] sayfaları girmez →
-      // kurslar için SSR sitemap ayrıca listelenir (F1-04).
+      // kurslar ve etkinlikler için SSR sitemap'ler ayrıca listelenir (F1-04, F3-02).
       filter: (page) => !/\/uye(\/|$)/.test(new URL(page).pathname),
-      customSitemaps: [`${SITE}/sitemap-kurslar.xml`],
+      customSitemaps: [`${SITE}/sitemap-kurslar.xml`, `${SITE}/sitemap-etkinlikler.xml`],
     }),
     ...adminIntegrations,
   ],
   vite: {
     plugins: [tailwindcss()],
-    ...(keystaticEnabled && {
-      // Keystatic'in admin sayfası CJS bağımlılıklarıyla (lodash) birlikte
-      // ön-paketlenmeli; yoksa tarayıcıda hydration hatası verir
-      optimizeDeps: {
-        include: ["@keystatic/astro/ui", "@keystatic/core/ui", "lodash/debounce"],
-      },
-    }),
+    optimizeDeps: {
+      include: [
+        // leaflet: dev sunucusu yeni bağımlılığı koşum ortasında optimize edince "optimized dependencies
+        // changed → reloading" tam sayfa yenilemesi üretiyor (qa e2e zaman aşımları) → baştan paketle
+        "leaflet",
+        // Keystatic'in admin sayfası CJS bağımlılıklarıyla (lodash) birlikte
+        // ön-paketlenmeli; yoksa tarayıcıda hydration hatası verir
+        ...(keystaticEnabled ? ["@keystatic/astro/ui", "@keystatic/core/ui", "lodash/debounce"] : []),
+      ],
+    },
   },
   markdown: {
     shikiConfig: {

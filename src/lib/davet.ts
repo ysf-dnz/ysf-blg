@@ -1,7 +1,8 @@
 /**
- * Kurs daveti (Faz 2, ADR 0001 K2/K3): kod üretimi ve normalizasyonu, karşılama
- * çerezi, atıflı katılım ve bekleyen davet puanları. Davet mantığının TEK kaynağı;
- * /d/[kod], /kurslar/[slug], api/uye/egitim ve api/kart bunu çağırır.
+ * Davet (Faz 2-3, ADR 0001 K2/K3): kod üretimi ve normalizasyonu, karşılama çerezi,
+ * kurs için atıflı katılım ve bekleyen davet puanları. Hedef kurs YA DA etkinliktir
+ * (etkinlik kaydı/atfı lib/etkinlik.ts kayitOl'da). Davet mantığının TEK kaynağı;
+ * /d/[kod], /kurslar/[slug], /etkinlik/[slug], api/uye/egitim ve api/kart bunu çağırır.
  */
 import { createHash, createHmac, randomInt } from "node:crypto";
 import type { AstroCookies } from "astro";
@@ -11,12 +12,15 @@ import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
 import { bekleyenYaz, puanOlayi } from "./rewards.ts";
 import { hesapGencMi } from "./economy.ts";
+import { etkinlikBitis, etkinlikGorunurMu } from "./etkinlik-kural.ts";
 import { R } from "./routes.ts";
 
 export type InviteCode = typeof schema.inviteCodes.$inferSelect;
 export type Kurs = typeof schema.courses.$inferSelect;
 export type Katilim = typeof schema.courseEnrollments.$inferSelect;
 export type Kisi = typeof schema.users.$inferSelect;
+export type Etkinlik = typeof schema.events.$inferSelect;
+export type HedefTuru = "course" | "event";
 
 /** Crockford Base32: I, L, O, U yok — elle yazımda O→0, I/L→1 okunur */
 export const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -43,10 +47,12 @@ export function kodNormalize(girdi: string): string | null {
 /**
  * IP/UA takma adı: ham değer saklanmaz; HMAC anahtarı gizli (CRON_SECRET her ortamda var)
  * — sabit tuzlu SHA-256 IPv4 uzayını dakikalar içinde geri çevirtirdi.
+ * "h:" öneki alan ayrımıdır: aynı sır bilet ("t:") ve dönen QR ("c:") imzalarında da kullanılır;
+ * öneksiz olsaydı saldırganın seçtiği User-Agent ("t:123") bir bilet imzasının HMAC'ini üretirdi.
  */
 export function kisaHash(deger: string): string {
   const anahtar = process.env.CRON_SECRET ?? import.meta.env.CRON_SECRET ?? "ysf-davet-dev";
-  return createHmac("sha256", anahtar).update(deger).digest("hex").slice(0, 32);
+  return createHmac("sha256", anahtar).update(`h:${deger}`).digest("hex").slice(0, 32);
 }
 
 /** Davet süresi: katılımdan bu yana 14 gün geçtiyse davet puanları artık ödenmez (AC-8) */
@@ -76,37 +82,75 @@ export function davetKanali(kodHam: string): "qr" | "link" {
 }
 
 /** Kart önbellek sürümü: nota/ada/başlığa bağlı 8 karakter (?v=) — değişince CDN girdisi doğal düşer */
-export function kartSurumu(h: DavetHedefi): string {
+export function kartSurumu(h: DavetHedefi | EtkinlikDaveti): string {
+  const hedef =
+    "kurs" in h
+      ? [h.kurs.title, h.kurs.summary ?? "", h.kurs.coverUrl ?? ""]
+      : [h.etkinlik.title, h.etkinlik.startsAt.toISOString(), h.etkinlik.endsAt?.toISOString() ?? "", h.etkinlik.location ?? "", h.etkinlik.il ?? "", h.etkinlik.coverUrl ?? ""];
   return createHash("sha256")
-    .update([h.kod.code, h.kod.note ?? "", h.davetEden.name, h.davetEden.avatarUrl ?? "", h.kurs.title, h.kurs.summary ?? "", h.kurs.coverUrl ?? ""].join("|"))
+    .update([h.kod.code, h.kod.note ?? "", h.davetEden.name, h.davetEden.avatarUrl ?? "", ...hedef].join("|"))
     .digest("hex")
     .slice(0, 8);
 }
 
+/** Kurs daveti (tür alanı yok: `"kurs" in h` ile ayrılır — eski çağıranlar değişmedi) */
 export type DavetHedefi = { kod: InviteCode; davetEden: Kisi; kurs: Kurs };
+export type EtkinlikDaveti = { kod: InviteCode; davetEden: Kisi; etkinlik: Etkinlik & { slug: string } };
 
-/** Kodu çöz: aktif kod + yayındaki kurs + davet eden. Değilse null. */
-export async function davetHedefi(kodHam: string): Promise<DavetHedefi | null> {
+/**
+ * Kodu çöz: aktif kod + davet eden + geçerli hedef. Kurs: yayında. Etkinlik: herkese
+ * açık (topluluğu onaylı) ve BİTMEMİŞ — biten etkinliğin kodu kart/karşılama üretmez.
+ */
+export async function davetCoz(kodHam: string): Promise<DavetHedefi | EtkinlikDaveti | null> {
   const code = kodNormalize(kodHam);
   if (!code) return null;
   const kod = await db.query.inviteCodes.findFirst({
     where: and(eq(schema.inviteCodes.code, code), isNull(schema.inviteCodes.revokedAt)),
   });
-  if (!kod || kod.targetType !== "course") return null;
-  const [kurs, davetEden] = await Promise.all([
-    db.query.courses.findFirst({ where: eq(schema.courses.id, kod.targetId) }),
-    db.query.users.findFirst({ where: eq(schema.users.id, kod.inviterId) }),
+  if (!kod) return null;
+  const davetEdenP = db.query.users.findFirst({ where: eq(schema.users.id, kod.inviterId) });
+  if (kod.targetType === "course") {
+    const [kurs, davetEden] = await Promise.all([
+      db.query.courses.findFirst({ where: eq(schema.courses.id, kod.targetId) }),
+      davetEdenP,
+    ]);
+    if (!kurs || kurs.status !== "published" || !davetEden) return null;
+    return { kod, davetEden, kurs };
+  }
+  const [etkinlik, davetEden] = await Promise.all([
+    db.query.events.findFirst({ where: eq(schema.events.id, kod.targetId) }),
+    davetEdenP,
   ]);
-  if (!kurs || kurs.status !== "published" || !davetEden) return null;
-  return { kod, davetEden, kurs };
+  if (!etkinlik?.slug || !davetEden || new Date() > etkinlikBitis(etkinlik)) return null;
+  const kulup = etkinlik.clubId
+    ? await db.query.clubs.findFirst({ where: eq(schema.clubs.id, etkinlik.clubId), columns: { status: true } })
+    : null;
+  if (!etkinlikGorunurMu(etkinlik, kulup)) return null;
+  return { kod, davetEden, etkinlik: { ...etkinlik, slug: etkinlik.slug } };
 }
 
-/** (davet eden, kurs) için aktif kodu getirir, yoksa üretir (unique çakışmasında yeniden dener) */
-export async function davetKoduUret(inviterId: number, courseId: number): Promise<InviteCode> {
+/** Yalnız kurs daveti (kurs sayfası ve kurs kartı) */
+export async function davetHedefi(kodHam: string): Promise<DavetHedefi | null> {
+  const d = await davetCoz(kodHam);
+  return d && "kurs" in d ? d : null;
+}
+
+/** Yalnız etkinlik daveti (etkinlik sayfası) */
+export async function etkinlikDaveti(kodHam: string): Promise<EtkinlikDaveti | null> {
+  const d = await davetCoz(kodHam);
+  return d && "etkinlik" in d ? d : null;
+}
+
+/** (davet eden, hedef) için aktif kodu getirir, yoksa üretir (unique çakışmasında yeniden dener) */
+export async function davetKoduUret(
+  inviterId: number,
+  hedefId: number,
+  tur: HedefTuru = "course",
+): Promise<InviteCode> {
   const where = and(
     eq(schema.inviteCodes.inviterId, inviterId),
-    eq(schema.inviteCodes.targetType, "course"),
-    eq(schema.inviteCodes.targetId, courseId),
+    eq(schema.inviteCodes.targetType, tur),
+    eq(schema.inviteCodes.targetId, hedefId),
     isNull(schema.inviteCodes.revokedAt),
   );
   const mevcut = await db.query.inviteCodes.findFirst({ where });
@@ -114,7 +158,7 @@ export async function davetKoduUret(inviterId: number, courseId: number): Promis
   for (let i = 0; i < 3; i++) {
     const [row] = await db
       .insert(schema.inviteCodes)
-      .values({ code: kodUret(), inviterId, targetType: "course", targetId: courseId })
+      .values({ code: kodUret(), inviterId, targetType: tur, targetId: hedefId })
       .onConflictDoNothing()
       .returning();
     if (row) return row;
@@ -128,9 +172,13 @@ export async function davetKoduUret(inviterId: number, courseId: number): Promis
 export const DAVET_CEREZ = "ysf_davet";
 const CEREZ_GUN = 30;
 
-/** Değer `course:{courseId}:{codeId}` — davet eden koddan türer, ad/handle taşınmaz */
-export function davetCereziKur(cookies: AstroCookies, h: DavetHedefi, secure: boolean) {
-  cookies.set(DAVET_CEREZ, `course:${h.kurs.id}:${h.kod.id}`, {
+/**
+ * Değer `{course|event}:{hedefId}:{codeId}` — davet eden koddan türer, ad/handle taşınmaz.
+ * TEK çerez yuvası (ADR K3.4): son tıklanan davet öncekini ezer (kurs ↔ etkinlik dahil).
+ */
+export function davetCereziKur(cookies: AstroCookies, h: DavetHedefi | EtkinlikDaveti, secure: boolean) {
+  const deger = "kurs" in h ? `course:${h.kurs.id}:${h.kod.id}` : `event:${h.etkinlik.id}:${h.kod.id}`;
+  cookies.set(DAVET_CEREZ, deger, {
     path: "/",
     maxAge: 60 * 60 * 24 * CEREZ_GUN,
     sameSite: "lax",
@@ -139,10 +187,14 @@ export function davetCereziKur(cookies: AstroCookies, h: DavetHedefi, secure: bo
   });
 }
 
-/** Çerez bu kursa aitse kod id'sini döner (hedef eşleşmiyorsa atıf yok — AC-9) */
-export function davetCereziOku(cookies: AstroCookies | undefined, courseId: number): number | null {
-  const m = cookies?.get(DAVET_CEREZ)?.value?.match(/^course:(\d+):(\d+)$/);
-  return m && Number(m[1]) === courseId ? Number(m[2]) : null;
+/** Çerez BU hedefe (tür + id) aitse kod id'sini döner; eşleşmiyorsa atıf yok (AC-9) */
+export function davetCereziOku(
+  cookies: AstroCookies | undefined,
+  hedefId: number,
+  tur: HedefTuru = "course",
+): number | null {
+  const m = cookies?.get(DAVET_CEREZ)?.value?.match(/^(course|event):(\d+):(\d+)$/);
+  return m && m[1] === tur && Number(m[2]) === hedefId ? Number(m[3]) : null;
 }
 
 export function davetCereziSil(cookies: AstroCookies | undefined) {

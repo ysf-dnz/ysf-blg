@@ -125,3 +125,33 @@ CREATE UNIQUE INDEX IF NOT EXISTS "invite_codes_code_idx" ON "invite_codes" USIN
 CREATE UNIQUE INDEX IF NOT EXISTS "invite_codes_aktif_idx" ON "invite_codes" USING btree ("inviter_id", "target_type", "target_id") WHERE "revoked_at" IS NULL;
 CREATE INDEX IF NOT EXISTS "invite_visits_ip_idx" ON "invite_visits" USING btree ("ip_hash", "created_at");
 CREATE INDEX IF NOT EXISTS "invite_visits_code_idx" ON "invite_visits" USING btree ("invite_code_id");
+
+-- ---------------------------------------------------------------------------
+-- ADIM 7 — Faz 3 Topluluklarımız + etkinlik (2026-10-11). `drizzle-kit push` ile
+-- uygulandı (yalnız ADDITIVE, hepsi NULLABLE: şema canlıya Faz 3 kodundan ÖNCE
+-- çıktığı için o aradaki eski kod slug'sız etkinlik açabilmeli); kayıt.
+-- Yeni tablo: event_staff (event_id,user_id UNIQUE; role host|scanner).
+-- Yeni kolonlar: events(slug UNIQUE, ends_at, kind, il, capacity, rsvp_closes_at,
+-- cover_url), event_rsvps(checked_in_at, checkin_method, checked_in_by,
+-- invite_code_id), ratings(event_id; UNIQUE (user_id,event_id)).
+-- Yeni reason (TS-only): event_invite_welcome/attended, event_hosted, event_well_rated.
+-- clubs.kind +vakif/dernek/kurum (TS-only).
+-- ---------------------------------------------------------------------------
+CREATE UNIQUE INDEX IF NOT EXISTS "events_slug_idx" ON "events" USING btree ("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "event_staff_idx" ON "event_staff" USING btree ("event_id", "user_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "ratings_user_event_idx" ON "ratings" USING btree ("user_id", "event_id");
+
+-- Backfill (idempotent): slug, il (kulüpten), açan = otomatik host
+UPDATE events
+SET slug = trim(both '-' from lower(regexp_replace(translate(title,'çğıöşüÇĞİÖŞÜ','cgiosuCGIOSU'),'[^a-zA-Z0-9]+','-','g'))) || '-' || id
+WHERE slug IS NULL;
+UPDATE events e SET il = c.il FROM clubs c WHERE e.club_id = c.id AND e.il IS NULL;
+INSERT INTO event_staff (event_id, user_id, role)
+SELECT id, created_by, 'host' FROM events WHERE created_by IS NOT NULL
+ON CONFLICT DO NOTHING;
+
+-- ADIM 7b — Faz 3 kodu CANLIYA ÇIKTIKTAN SONRA (isteğe bağlı sıkılaştırma). Önce
+-- yukarıdaki slug backfill'ini yeniden koş (aradaki eski kodun açtığı etkinlikler),
+-- sonra şemada `slug: text("slug").notNull()` yapıp push'la (no-op olmalı):
+--   SELECT count(*) FROM events WHERE slug IS NULL;   -- 0 olmalı
+--   ALTER TABLE events ALTER COLUMN slug SET NOT NULL;

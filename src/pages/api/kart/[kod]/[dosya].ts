@@ -1,7 +1,8 @@
 /**
  * GET /api/kart/{kod}/{story|kare|og}.png | a6.pdf — davet kartı (PRD §4.3, ADR K3.4).
  * Public: kart zaten paylaşılmak için var; kişisel veri yok (ad + not davet edenin seçimi).
- * CDN'de 1 yıl cache; `?v=` yalnız cache-bust (kartSurumu), burada okunmaz.
+ * Hedef kurs ya da etkinlik (aynı şablon). CDN'de 1 GÜN cache; `?v=` yalnız cache-bust
+ * (kartSurumu), burada okunmaz.
  * Kapak/avatar fetch'i kart.ts'te 3 sn ile sınırlı; yine de patlarsa görselsiz kart.
  */
 import type { APIRoute } from "astro";
@@ -10,7 +11,8 @@ import { PDFDocument } from "pdf-lib";
 import { renderSVG } from "uqr";
 import { db, schema } from "@/db/client.ts";
 import { getBookMap } from "@/lib/books-lookup.ts";
-import { davetHedefi, qrIcerigi } from "@/lib/davet.ts";
+import { davetCoz, qrIcerigi } from "@/lib/davet.ts";
+import { etkinlikBitis, TUR_AD, trSaat } from "@/lib/etkinlik-kural.ts";
 import { siteKok } from "@/lib/urls.ts";
 import { type KartFormat, type KartGirdi, renderDavetKartiDetay } from "@/features/davet/kart.ts";
 
@@ -20,30 +22,54 @@ const SEVIYE_AD = { baslangic: "Başlangıç", orta: "Orta", ileri: "İleri" } a
 /** A6 PDF'e story PNG'si gömülür (A6 oranı 0.71, story 0.56 → kareden daha az boşluk) */
 const DOSYA: Record<string, KartFormat> = { "story.png": "story", "kare.png": "kare", "og.png": "og", "a6.pdf": "story" };
 const A6 = [298, 420] as const;
+const KISA_TARIH = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", day: "numeric", month: "long", weekday: "short" });
 
 export const GET: APIRoute = async ({ params, site, url }) => {
   const dosya = params.dosya ?? "";
   // hasOwn: "constructor"/"__proto__" gibi prototip anahtarları format sayılmasın (500 yerine 404)
   const format = Object.hasOwn(DOSYA, dosya) ? DOSYA[dosya] : undefined;
-  const hedef = format ? await davetHedefi(params.kod ?? "") : null;
+  const hedef = format ? await davetCoz(params.kod ?? "") : null;
   if (!format || !hedef) return new Response("Kart bulunamadı", { status: 404 });
-  const { kod, kurs, davetEden } = hedef;
+  const { kod, davetEden } = hedef;
 
   const kok = siteKok(site, url);
-  const [[{ n }], kitapKapak] = await Promise.all([
-    db.select({ n: sql<number>`count(*)` }).from(schema.courseItems).where(eq(schema.courseItems.courseId, kurs.id)),
-    kurs.coverUrl || !kurs.bookId ? null : getBookMap().then((m) => m.get(kurs.bookId!)?.cover),
-  ]);
-  const kapak = kurs.coverUrl ?? kitapKapak;
+  let icerik: Pick<KartGirdi, "baslik" | "vaat" | "meta" | "cagri">;
+  let kapak: string | null | undefined;
+  if ("kurs" in hedef) {
+    const { kurs } = hedef;
+    const [[{ n }], kitapKapak] = await Promise.all([
+      db.select({ n: sql<number>`count(*)` }).from(schema.courseItems).where(eq(schema.courseItems.courseId, kurs.id)),
+      kurs.coverUrl || !kurs.bookId ? null : getBookMap().then((m) => m.get(kurs.bookId!)?.cover),
+    ]);
+    kapak = kurs.coverUrl ?? kitapKapak;
+    icerik = {
+      baslik: kurs.title,
+      vaat: kurs.summary,
+      // ⏱ emoji fontlarda yok (Inter/Fraunces) → düz "N dk"
+      meta: [kurs.level && SEVIYE_AD[kurs.level], kurs.estMinutes && `${kurs.estMinutes} dk`, Number(n) > 0 && `${n} öğe`].filter(
+        (m): m is string => !!m,
+      ),
+    };
+  } else {
+    const e = hedef.etkinlik;
+    kapak = e.coverUrl;
+    icerik = {
+      baslik: e.title,
+      vaat: e.description,
+      // Tarih, saat, mekân (emoji yok: fontlarda karşılığı yok)
+      meta: [
+        KISA_TARIH.format(e.startsAt),
+        `${trSaat(e.startsAt)}–${trSaat(etkinlikBitis(e))}`,
+        e.kind && TUR_AD[e.kind],
+        (e.location ?? e.il ?? "").slice(0, 40),
+      ].filter((m): m is string => !!m),
+      cagri: "Tara, yerini ayır",
+    };
+  }
 
   const girdi: KartGirdi = {
     format,
-    baslik: kurs.title,
-    vaat: kurs.summary,
-    // ⏱ emoji fontlarda yok (Inter/Fraunces) → düz "N dk"
-    meta: [kurs.level && SEVIYE_AD[kurs.level], kurs.estMinutes && `${kurs.estMinutes} dk`, Number(n) > 0 && `${n} öğe`].filter(
-      (m): m is string => !!m,
-    ),
+    ...icerik,
     davetEden: { ad: davetEden.name, avatarUrl: davetEden.avatarUrl },
     not: kod.note,
     kapakUrl: kapak && URL.canParse(kapak, kok) ? new URL(kapak, kok).toString() : null,

@@ -1,0 +1,42 @@
+---
+/**
+ * Bilet QR'ının indiği sayfa: QR içeriği HTTPS://HOST/T/{TOKEN} → astro.config 301 → burası.
+ * (Hedef /t/[token] OLAMAZ: Vercel kenarı harf duyarsız eşleştirir, aynı yola 301 sonsuz döngü.)
+ * Bu sayfa giriş YAZMAZ (GET durum değiştirmez): görevliyi giriş ekranına taşır, okutma
+ * oradan POST edilir. Görevli olmayan yalnız "Bu bir etkinlik biletidir" görür.
+ */
+import { eq } from "drizzle-orm";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { okutabilirMi, slugGaranti } from "@/lib/etkinlik.ts";
+import { biletCoz } from "@/lib/etkinlik-kural.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { R } from "@/lib/routes.ts";
+
+export const prerender = false;
+
+const token = (Astro.params.token ?? "").toUpperCase();
+const rsvpId = biletCoz(token);
+const rsvp = rsvpId ? await db.query.eventRsvps.findFirst({ where: eq(schema.eventRsvps.id, rsvpId) }) : undefined;
+const e = rsvp ? await db.query.events.findFirst({ where: eq(schema.events.id, rsvp.eventId) }) : undefined;
+// Bozuk imza / olmayan kayıt: bilet değil
+if (!rsvp || !e) return new Response("Bilet bulunamadı", { status: 404 });
+
+const member = await getOrCreateMember(Astro);
+if (await okutabilirMi(e, member))
+  return Astro.redirect(`${R.etkinlikGiris(await slugGaranti(e))}?bilet=${encodeURIComponent(token)}`);
+const sahibi = member?.id === rsvp.userId;
+---
+
+<Base title="Etkinlik bileti" description="Bu bir etkinlik biletidir." seo={{ noindex: true }}>
+  <section class="mx-auto mt-16 max-w-md rounded-2xl border border-line bg-surface-raised px-6 py-10 text-center">
+    <p class="text-4xl" aria-hidden="true">🎟️</p>
+    <h1 class="mt-3 font-display text-2xl font-semibold text-ink">Bu bir etkinlik biletidir</h1>
+    <p class="mt-2 text-sm text-ink-muted">
+      Giriş, etkinlik kapısındaki görevli tarafından okutularak doğrulanır.
+    </p>
+    {sahibi && (
+      <a href={R.uye.biletler} class="mt-5 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface">Biletlerim</a>
+    )}
+  </section>
+</Base>

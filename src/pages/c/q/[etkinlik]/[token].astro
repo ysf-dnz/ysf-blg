@@ -1,0 +1,61 @@
+---
+/**
+ * Dönen QR'ın indiği sayfa (F3-05): girişteki ekranda 30 sn'de bir yenilenen QR
+ * HTTPS://HOST/C/{events.id}/{TOKEN} → astro.config 301 → burası. Katılımcı kendi
+ * telefonuyla okutur; girişli olmalı. Kayıtsızsa kayıt otomatik açılır (kontenjan varsa).
+ * GET durum değiştirdiği için yalnız aynı site / doğrudan gezinme (sec-fetch-site); iş bitince
+ * etkinlik sayfasına yönlenir (yenilemede bayat token'la tekrar denenmesin).
+ */
+import { eq } from "drizzle-orm";
+import { SignInButton } from "@clerk/astro/components";
+import Base from "@/layouts/Base.astro";
+import { db, schema } from "@/db/client.ts";
+import { donenGiris, etkinlikGorunurMu, slugGaranti } from "@/lib/etkinlik.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { R } from "@/lib/routes.ts";
+
+export const prerender = false;
+
+const eventId = /^\d{1,9}$/.test(Astro.params.etkinlik ?? "") ? Number(Astro.params.etkinlik) : 0;
+const e = eventId ? await db.query.events.findFirst({ where: eq(schema.events.id, eventId) }) : undefined;
+const kulup = e?.clubId ? await db.query.clubs.findFirst({ where: eq(schema.clubs.id, e.clubId) }) : null;
+if (!e || !etkinlikGorunurMu(e, kulup)) return new Response("Etkinlik bulunamadı", { status: 404 });
+const sayfa = R.etkinlik(await slugGaranti(e));
+
+const member = await getOrCreateMember(Astro);
+const buSayfa = Astro.url.pathname;
+const ayniSite = Astro.request.headers.get("sec-fetch-site") !== "cross-site";
+let durum: "giris" | "capraz" | "sure" | "pencere" | "dolu" | "kapali" = "giris";
+if (member && !ayniSite) durum = "capraz";
+else if (member) {
+  const s = await donenGiris(e, member, Astro.params.token ?? "", Astro.cookies);
+  if (s.durum === "geldi") return Astro.redirect(`${sayfa}?giris=geldi&puan=${s.puan}`);
+  if (s.durum === "zaten") return Astro.redirect(`${sayfa}?giris=zaten`);
+  durum = s.durum;
+}
+const METIN = {
+  giris: ["Girişini doğrulamak için giriş yap", "Giriş yaptıktan sonra ekrandaki QR'ı yeniden okut (QR 30 saniyede bir yenilenir)."],
+  capraz: ["Girişini doğrula", "Güvenlik için bu bağlantı başka bir siteden açılamaz. Ekrandaki QR'ı telefonunun kamerasıyla okut."],
+  sure: ["Bu QR'ın süresi doldu", "Girişteki ekranda QR 30 saniyede bir yenilenir. Güncel QR'ı yeniden okut."],
+  pencere: ["Giriş şu an kapalı", "Giriş doğrulaması kapı açılışından etkinlik bitişine kadar yapılır."],
+  dolu: ["Kontenjan dolu", "Bu etkinliğe önceden kayıt gerekiyordu ve kontenjan doldu."],
+  kapali: ["Kayıtlar kapandı", "Bu etkinliğe önceden kayıt gerekiyordu; kayıtlar kapanmış."],
+} as const;
+const [baslik, aciklama] = METIN[durum];
+---
+
+<Base title={`Giriş · ${e.title}`} description="Etkinlik giriş doğrulaması" seo={{ noindex: true }}>
+  <section class="mx-auto mt-16 max-w-md rounded-2xl border border-line bg-surface-raised px-6 py-10 text-center" data-donen={durum}>
+    <p class="text-4xl" aria-hidden="true">{durum === "giris" ? "🎟️" : "⏳"}</p>
+    <p class="mt-3 text-sm text-ink-muted">{e.title}</p>
+    <h1 class="mt-1 font-display text-2xl font-semibold text-ink">{baslik}</h1>
+    <p class="mt-2 text-sm text-ink-muted">{aciklama}</p>
+    {durum === "giris" ? (
+      <SignInButton mode="modal" forceRedirectUrl={buSayfa} signUpForceRedirectUrl={buSayfa} asChild>
+        <button type="button" class="mt-5 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Giriş yap</button>
+      </SignInButton>
+    ) : (
+      <a href={sayfa} class="mt-5 inline-block rounded-full border border-accent px-6 py-3 font-medium text-accent hover:bg-accent hover:text-surface">Etkinlik sayfası</a>
+    )}
+  </section>
+</Base>

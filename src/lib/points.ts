@@ -18,8 +18,34 @@ export const PUAN = {
   referralActivated: 75,
   /** Beğeni alındı (Skool kuralı: 1 beğeni = 1 puan) */
   likeReceived: 1,
-  /** Etkinlik katılımı */
+  /** Etkinlik: DOĞRULANMIŞ girişte katılımcıya (Faz 3 — RSVP artık puan üretmez) */
   eventAttended: 10,
+  /** Etkinlik daveti: davetli, davetle geldiği etkinlikte giriş yapınca (anında) */
+  eventInviteWelcome: 5,
+  /** Etkinlik daveti: davet eden, davetlisi giriş yapınca (bekleyen → girişte; bitişte düşer) */
+  eventInviteAttended: 10,
+  /** Düzenleyenler: doğrulanmış katılımcı başına; host'lar arasında eşit bölünür */
+  eventHostedPerAttendee: 5,
+  /** event_hosted yalnız ilk bu kadar katılımcıdan hesaplanır (etkinlik başına en çok 500) */
+  eventHostedMaxAttendees: 100,
+  /** event_hosted dağıtımı bitişten bu kadar saat sonra (günlük cron) */
+  eventHostedDelayHours: 48,
+  /** İyi değerlendirilen etkinlik: host'lar arasında bölünür (konferans en çok 500 + 50) */
+  eventWellRated: 50,
+  eventWellRatedMinAvg: 4,
+  eventWellRatedMinCount: 10,
+  /** Etkinlik değerlendirme penceresi: bitişten sonra bu kadar gün (yalnız giriş yapanlar) */
+  eventRatingDays: 7,
+  /** Etkinliği açan + en çok bu kadar ortak düzenleyen (host) */
+  eventMaxCoHosts: 3,
+  /** Etkinlik başına en çok görevli (host + scanner) — sınırsız atama/bildirim freni */
+  eventMaxStaff: 20,
+  /** Katılım puanının (event_attended) kişi başı KAYAN 7 GÜN tavanı: günde bir etkinlik.
+   *  Etkinlik başına fren (idem) etkinlikler arası çiftliği sınırlamıyordu. */
+  eventAttendedWeeklyCap: 70,
+  /** Düzenleyen puanlarının (event_hosted + event_well_rated) kişi başı KAYAN 7 GÜN tavanı —
+   *  kulüp görev bütçesiyle aynı ölçek (haftada ~2 büyük konferans). */
+  eventHostWeeklyCap: 1000,
   /** 7 günlük seri kilometre taşı */
   streak7: 25,
   /** 30 günlük seri kilometre taşı */

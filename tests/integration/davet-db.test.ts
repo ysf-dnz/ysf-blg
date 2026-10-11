@@ -38,9 +38,11 @@ describe.skipIf(!URL)("kurs daveti — gerçek DB", { timeout: 120_000 }, () => 
   afterAll(async () => {
     if (uyeler.length === 0) return;
     if (kursId) {
-      const kodlar = await db.query.inviteCodes.findMany({ where: eq(schema.inviteCodes.targetId, kursId) });
+      // Tür filtresi ŞART: aynı sayısal id'li (gerçek) etkinliğin davet kodları silinmesin
+      const kursKodu = and(eq(schema.inviteCodes.targetType, "course"), eq(schema.inviteCodes.targetId, kursId));
+      const kodlar = await db.query.inviteCodes.findMany({ where: kursKodu });
       if (kodlar.length) await db.delete(schema.inviteVisits).where(inArray(schema.inviteVisits.inviteCodeId, kodlar.map((k) => k.id)));
-      await db.delete(schema.inviteCodes).where(eq(schema.inviteCodes.targetId, kursId));
+      await db.delete(schema.inviteCodes).where(kursKodu);
       await db.delete(schema.courseProgress).where(eq(schema.courseProgress.courseId, kursId));
       await db.delete(schema.courseEnrollments).where(eq(schema.courseEnrollments.courseId, kursId));
       await db.delete(schema.courseItems).where(eq(schema.courseItems.courseId, kursId));

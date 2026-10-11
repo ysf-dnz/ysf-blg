@@ -56,6 +56,22 @@ test.describe("kurslar — misafir (mıknatıs) ve yönlendirmeler", () => {
     expect(xml).not.toContain("/uye");
   });
 
+  test("AC-5 niyet: misafir 'Katıl' düğmesine dokununca sessionStorage'a katil:{id} yazılır (dönüşte betik POST'lar)", async ({ page }) => {
+    await page.goto(KURS, { waitUntil: "domcontentloaded" });
+    const id = await page.locator("header[data-kurs-id]").getAttribute("data-kurs-id");
+    expect(await page.evaluate(() => sessionStorage.getItem("ysf_niyet"))).toBeNull();
+    const btn = page.getByRole("button", { name: /Katıl, ilk kitabın hediye/ });
+    await btn.click(); // Clerk modalı açılsa da açılmasa da niyet yazılır
+    await expect.poll(async () => {
+      const v = await page.evaluate(() => sessionStorage.getItem("ysf_niyet"));
+      if (!v) await btn.dispatchEvent("click"); // soğuk dev sunucusunda betik tıklamadan sonra yüklenebilir → yeniden dene (modal örtüsünü aşar)
+      return v;
+    }).toMatch(new RegExp(`^katil:${id}:\\d+$`)); // katil:{id}:{ms} — 30 dk geçerli
+    // Niyet başka kursa taşınmaz: farklı sayfa aynı anahtarı tüketmez (kurs id eşleşmez)
+    await page.goto("/kurslar", { waitUntil: "domcontentloaded" });
+    expect(await page.evaluate(() => sessionStorage.getItem("ysf_niyet"))).toMatch(new RegExp(`^katil:${id}:\\d+$`));
+  });
+
   test("375px'te kurs sayfasında yatay taşma yok", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(KURS, { waitUntil: "domcontentloaded" });

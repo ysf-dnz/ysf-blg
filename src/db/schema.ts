@@ -83,6 +83,11 @@ export const pointsLedger = pgTable(
         "course_invite_welcome", // davetli: davetle katıldığı kursta aktive oldu (course:{id})
         "course_invite_activated", // davet eden: davetlisi aktive oldu (course:{id}:u:{invitee})
         "course_invite_completed", // davet eden: davetlisi bitirdi (course:{id}:u:{invitee})
+        // Etkinlik (Faz 3) — event_attended refId'si String(eventId) AYNEN kalır (ADR K1.4)
+        "event_invite_welcome", // davetli: davetle geldiği etkinlikte giriş yaptı (event:{id}) — anında
+        "event_invite_attended", // davet eden: davetlisi giriş yaptı (event:{id}:u:{invitee}) — bekleyen, ends_at'te düşer
+        "event_hosted", // her host: ends_at+48s cron'u, min(giriş,100)×5 eşit bölünür (event:{id}) — bekleyen satır YOK
+        "event_well_rated", // her host: ort ≥ 4,0 ve ≥ 10 değerlendirme, 7. gün cron'u (event:{id})
       ],
     }).notNull(),
     refId: text("ref_id"),
@@ -293,17 +298,36 @@ export const applications = pgTable("applications", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-/** Etkinlikler */
-export const events = pgTable("events", {
-  id: serial("id").primaryKey(),
-  campaignId: integer("campaign_id"),
-  clubId: integer("club_id"),
-  title: text("title").notNull(),
-  description: text("description"),
-  startsAt: timestamp("starts_at").notNull(),
-  location: text("location"),
-  createdBy: integer("created_by").references(() => users.id),
-});
+/**
+ * Etkinlikler. Herkese açık SSR sayfası /etkinlik/[slug].
+ * slug NULLABLE kalır: şema canlıya Faz 3 kodundan ÖNCE push'lanır ve o aradaki eski kod
+ * slug'sız insert eder; boş slug ilk görüntülemede atanır (lib/etkinlik.ts slugGaranti).
+ * NOT NULL adımı deploy sonrası: drizzle/canli-index-uygula.sql.
+ */
+export const events = pgTable(
+  "events",
+  {
+    id: serial("id").primaryKey(),
+    campaignId: integer("campaign_id"),
+    clubId: integer("club_id"),
+    slug: text("slug"),
+    title: text("title").notNull(),
+    description: text("description"),
+    startsAt: timestamp("starts_at").notNull(),
+    /** Boşsa starts_at + 2 saat sayılır (lib/etkinlik.ts etkinlikBitis) */
+    endsAt: timestamp("ends_at"),
+    kind: text("kind", { enum: ["bulusma", "atolye", "konferans", "cevrimici"] }),
+    location: text("location"),
+    /** Harita pini; kulüp etkinliğinde kulübün ili */
+    il: text("il"),
+    /** Boş = sınırsız. RSVP tek SQL'de count < capacity koşuluyla yazılır */
+    capacity: integer("capacity"),
+    rsvpClosesAt: timestamp("rsvp_closes_at"),
+    coverUrl: text("cover_url"),
+    createdBy: integer("created_by").references(() => users.id),
+  },
+  (t) => [uniqueIndex("events_slug_idx").on(t.slug)],
+);
 
 export const eventRsvps = pgTable(
   "event_rsvps",
@@ -318,8 +342,39 @@ export const eventRsvps = pgTable(
     /** Puanla alınan öncelikli koltuk (listede üstte ⭐) */
     priority: boolean("priority").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    /**
+     * Giriş doğrulaması (ADR K1.4): tek SQL UPDATE … WHERE checked_in_at IS NULL RETURNING —
+     * satır döndüyse girişi BU istek yaptı (puanlar yalnız o zaman). Bilet kolonsuz:
+     * token = {rsvpId}.{base32(HMAC("t:"+rsvpId))}.
+     */
+    checkedInAt: timestamp("checked_in_at"),
+    checkinMethod: text("checkin_method", { enum: ["ticket", "rotating", "manual"] }),
+    /** Okutan görevli (dönen QR'da katılımcının kendisi) — 120/dk freni ve denetim */
+    checkedInBy: integer("checked_in_by").references(() => users.id),
+    /** Davetle kayıt olduysa kod (atıf; "ilk geçerli davet kazanır") */
+    inviteCodeId: integer("invite_code_id"),
   },
   (t) => [uniqueIndex("event_rsvps_idx").on(t.eventId, t.userId)],
+);
+
+/**
+ * Etkinlik görevlileri. host: düzenleyen (event_hosted payı; açan + en çok 3 ortak);
+ * scanner: yalnız bilet okutur, puan almaz. Etkinliği açan otomatik host yazılır.
+ */
+export const eventStaff = pgTable(
+  "event_staff",
+  {
+    id: serial("id").primaryKey(),
+    eventId: integer("event_id")
+      .notNull()
+      .references(() => events.id),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    role: text("role", { enum: ["host", "scanner"] }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("event_staff_idx").on(t.eventId, t.userId)],
 );
 
 /** Takip (Medium tarzı): yazarını takip et, yeni yazısında bildirim al */
@@ -360,7 +415,9 @@ export const clubs = pgTable(
     id: serial("id").primaryKey(),
     slug: text("slug").notNull(),
     name: text("name").notNull(),
-    kind: text("kind", { enum: ["universite", "lise", "sehir"] }).notNull(),
+    kind: text("kind", {
+      enum: ["universite", "lise", "sehir", "vakif", "dernek", "kurum"],
+    }).notNull(),
     place: text("place").notNull(),
     il: text("il").notNull(),
     description: text("description"),
@@ -626,7 +683,10 @@ export const courseResources = pgTable(
   (t) => [index("course_resources_course_status_idx").on(t.courseId, t.status)],
 );
 
-/** Değerlendirme (1-5): yalnız aktive olmuş katılımcı; puan üretmez. Faz 3: +event_id */
+/**
+ * Değerlendirme (1-5), puan üretmez. Kurs: yalnız aktive olmuş katılımcı.
+ * Etkinlik: yalnız giriş yapan, bitişten sonraki 7 gün ("tam biri dolu" kodda doğrulanır).
+ */
 export const ratings = pgTable(
   "ratings",
   {
@@ -635,11 +695,15 @@ export const ratings = pgTable(
       .notNull()
       .references(() => users.id),
     courseId: integer("course_id").references(() => courses.id),
+    eventId: integer("event_id").references(() => events.id),
     stars: integer("stars").notNull(),
     body: text("body"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("ratings_user_course_idx").on(t.userId, t.courseId)],
+  (t) => [
+    uniqueIndex("ratings_user_course_idx").on(t.userId, t.courseId),
+    uniqueIndex("ratings_user_event_idx").on(t.userId, t.eventId),
+  ],
 );
 
 /**

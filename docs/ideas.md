@@ -13,3 +13,7 @@ PRD §0.7: belgede olmayan fikirler burada bekler; hiçbiri onaysız uygulanmaz.
 | 7 | 2026-10-11 | `events.club_id` ve `campaign_id`'ye FK eklemek. | Mevcut veride yetim kontrolü gerekir; F3-02'de isteğe bağlı. |
 | 8 | 2026-10-11 | `@lhci/cli` ile LCP bütçesini `npm run qa`'ya bağlamak (PRD §4.3 performans ölçütü). | Kurulu ama bağlı değil; ayrı iş. |
 | 9 | 2026-10-11 | PostToolUse/Stop hook ile `graphify update .` otomasyonu. | Bugün yalnız elle; CLAUDE.md talimatı yeter. |
+| 10 | 2026-10-11 | Etkinlik kaydını iptal etme (kontenjanlı etkinlikte gelmeyecek üye yerini bıraksın) ve bekleme listesi. | PRD'de yok; Faz 3'te kayıt tek yönlü. |
+| 11 | 2026-10-11 | Görevli tarayıcısına JS QR çözücü (iOS Safari'de `BarcodeDetector` yok) ya da PWA + native kamera. | Faz 3'te sistem kamerası akışı + elle kod (assumptions #27); gerçek cihaz ölçümüne göre. |
+| 12 | 2026-10-11 | Etkinlik şikâyeti / moderasyonu (`reports.target_type += event`) ve `events.status` (iptal, taslak). | Bugün görünürlük topluluğun onayına bağlı (assumptions #26). |
+| 13 | 2026-10-11 | Çevrimdışı okutmada tarama anını (istemci saati) güvenli biçimde taşıyıp bitişten sonra senkron olan girişleri kabul etmek. | Bugün bitişten sonra giriş yazılmaz (assumptions #21). |

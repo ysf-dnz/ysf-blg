@@ -16,15 +16,14 @@ import { getBookMap } from "@/lib/books-lookup.ts";
 import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
 import { R } from "@/lib/routes.ts";
 import { PUAN } from "@/lib/points.ts";
-import { siteKok } from "@/lib/urls.ts";
+import { belgeGezintisiMi, siteKok } from "@/lib/urls.ts";
 import { formatDate } from "@/lib/dates.ts";
 import {
-  DAVET_CEREZ,
   davetCereziKur,
+  davetCereziOku,
   davetHedefi,
   davetKoduUret,
   kartSurumu,
-  kursaKatil,
   qrIcerigi,
   uygulamaIciTarayici,
 } from "@/lib/davet.ts";
@@ -49,28 +48,24 @@ const davet =
   davetHam && davetHam.kurs.id === course.id && !uretici && (!member || davetHam.davetEden.id !== member.id)
     ? davetHam
     : null;
-// "Tarayıcıda aç" ile çerezsiz gelen davetli: çerez yoksa burada kur (var olan ezilmez → ilk davet kazanır)
-if (davet && !Astro.cookies.has(DAVET_CEREZ)) davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
+// "Tarayıcıda aç" ile /d/'den geçmeden gelen davetli: çerezi burada kur. Yalnız belge gezintisinde
+// (aynı kökenli <img src="…?d=KOD"> atfı çalamasın) ve BU kursun çerezi yoksa (aynı kursta ilk davet
+// kazanır; başka hedefin bayat çerezi ise ezilir — yoksa bant puan vaat edip atıf yazılmıyordu).
+if (davet && belgeGezintisiMi(Astro.request) && davetCereziOku(Astro.cookies, course.id) === null)
+  davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
 
-// Girişten dönüşte otomatik katılım (karşılama akışı: ek dokunuş yok — AC-5).
-// GET durum değiştirdiği için yalnız aynı site: başka siteden açılan ?katil=1 (CSRF) işlemez;
-// Clerk dönüşü aynı origin (modal) ya da aynı site (accounts.yusufdeniz.com) olur.
-if (
-  member &&
-  Astro.url.searchParams.get("katil") === "1" &&
-  course.status === "published" &&
-  Astro.request.headers.get("sec-fetch-site") !== "cross-site"
-) {
-  const k = await kursaKatil(member, course, Astro.cookies);
-  const p = new URLSearchParams();
-  if (k.yeni) p.set("katildin", "1");
-  if (k.davetli) p.set("davet", "1");
-  const b = Astro.url.searchParams.get("b");
-  if (b) p.set("b", b);
-  return Astro.redirect(`${R.kurs(course.slug)}${p.size ? `?${p}` : ""}`);
-}
 const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));
-/** Giriş sonrası dönüş: aynı sayfa (b ve d korunur) + otomatik katılım */
+/**
+ * Giriş sonrası dönüş: aynı sayfa (b ve d korunur). `katil=1` sunucuda HİÇBİR ŞEY yazmaz — GET ile
+ * katılım yazan eski akış (Faz 2) kaldırıldı: fetch-metadata frenleri aynı kökenli prefetch'i
+ * (Safari'de bağlantının üzerine gelmek) ve uygulamadan açılan bağlantıyı durduramıyordu (rızasız,
+ * atıflı katılım). Parametrenin tek işi "girişten döndün" işareti: ipucu bandı (katilIpucu). Astro
+ * yönlendiricisi hash'siz aynı adrese de gezinir (router.js samePage yalnız hash'te kısa devre), yani
+ * yeniden render için gerekmez. Ek dokunuşsuz katılım (AC-5) NİYETLE: "Katıl" düğmesi
+ * `sessionStorage ysf_niyet = katil:{id}:{ms}` yazar (30 dk geçerli), dönüşte sayfa betiği katılım
+ * formunu POST'lar (Astro köken kontrolü korur; <img>/prefetch betik çalıştırmaz, başka sayfadan
+ * gelen bağlantı niyet yazamaz). Niyet yoksa (yeni sekme, JS kapalı, süresi dolmuş) bant + bir dokunuş.
+ */
 const girisDonus = (() => {
   const p = new URLSearchParams(Astro.url.search);
   p.set("katil", "1");
@@ -233,6 +228,9 @@ const bant = Astro.url.searchParams.has("davet")
       : Astro.url.searchParams.has("sikayet")
         ? "Şikâyetin alındı. İncelenecek; teşekkürler."
         : null;
+// Girişten dönen üye (?katil=1): GET yazmaz; betik niyeti bulursa formu gönderir, yoksa bir dokunuş
+const katilIpucu =
+  !!member && !katilim && !uretici && course.status === "published" && Astro.url.searchParams.get("katil") === "1";
 
 const aciklama = course.summary ?? course.description ?? `${items.length} öğelik kurs`;
 const ld = {
@@ -276,7 +274,7 @@ const ld = {
   {davet && !katilim && (
     <div class="menu-pop mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-accent bg-accent-soft px-4 py-4">
       <Avatar name={davet.davetEden.name} avatarUrl={davet.davetEden.avatarUrl} size="lg" />
-      <div class="min-w-0 flex-1">
+      <div class="min-w-48 flex-1">
         <p class="font-display text-lg font-semibold text-ink">{davet.davetEden.name} seni bu kursa davet ediyor 🎓</p>
         {davet.kod.note && <p class="mt-0.5 text-sm italic text-ink">“{davet.kod.note}”</p>}
         <p class="mt-1 text-sm text-ink-muted">
@@ -285,14 +283,15 @@ const ld = {
         </p>
       </div>
       {member ? (
-        <form method="post" action="/api/uye/egitim">
+        <form method="post" action="/api/uye/egitim" data-katil-formu>
           <input type="hidden" name="action" value="join" />
+          <input type="hidden" name="b" value={aktifIndex} />
           <input type="hidden" name="courseId" value={course.id} />
           <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
         </form>
       ) : (
         <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
-          <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
+          <button type="button" data-niyet={course.id} class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
         </SignInButton>
       )}
     </div>
@@ -304,6 +303,11 @@ const ld = {
   )}
   {bant && (
     <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>
+  )}
+  {katilIpucu && !davet && (
+    <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink" data-katil-ipucu>
+      Girişin tamam ✓ Katılmak için <strong>Kursa katıl</strong>'a dokun.
+    </div>
   )}
   {course.status !== "published" && (
     <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
@@ -340,14 +344,15 @@ const ld = {
         <div class="mt-5 flex flex-wrap items-center gap-3">
           {!member && (
             <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
-              <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+              <button type="button" data-niyet={course.id} class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                 Katıl, ilk kitabın hediye 🎁
               </button>
             </SignInButton>
           )}
           {member && !katilim && !uretici && course.status === "published" && (
-            <form method="post" action="/api/uye/egitim">
+            <form method="post" action="/api/uye/egitim" data-katil-formu>
               <input type="hidden" name="action" value="join" />
+              <input type="hidden" name="b" value={aktifIndex} />
               <input type="hidden" name="courseId" value={course.id} />
               <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                 Kursa katıl <span class="arrow-slide">→</span>
@@ -449,7 +454,7 @@ const ld = {
           <p class="mt-2 font-display text-xl font-semibold text-ink">{aktif.title}</p>
           <p class="mt-2 text-ink-muted">Bu öğe üyelere açık. İlk öğeyi ücretsiz izledin; devamı için katıl — ilk kitabın hediye.</p>
           <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
-            <button type="button" class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl ve devam et 🎁</button>
+            <button type="button" data-niyet={course.id} class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl ve devam et 🎁</button>
           </SignInButton>
         </div>
       )}
@@ -511,8 +516,9 @@ const ld = {
           ) : uretici ? (
             <span class="text-sm text-ink-muted">Kursun üreticisisin — ilerleme sayılmaz.</span>
           ) : (
-            <form method="post" action="/api/uye/egitim">
+            <form method="post" action="/api/uye/egitim" data-katil-formu>
               <input type="hidden" name="action" value="join" />
+              <input type="hidden" name="b" value={aktifIndex} />
               <input type="hidden" name="courseId" value={course.id} />
               <button class="cursor-pointer rounded-full border border-accent px-5 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">
                 İlerlemeyi kaydetmek için kursa katıl
@@ -667,7 +673,32 @@ const ld = {
 </ToplulukLayout>
 
 <script>
+  const NIYET = "ysf_niyet"; // katil:{kursId}:{ms} — "Katıl" dokunuşu yazar, girişten dönüşte tüketilir (AC-5)
+  const NIYET_OMRU = 30 * 60_000; // kapatılan modal / başka yoldan giriş sonrası sekmede bayat niyet kalmasın
+  const niyetSil = () => { try { sessionStorage.removeItem(NIYET); } catch { /* gizli pencere */ } };
+  /** Niyet BU kursa ait ve taze mi? Bayatsa siler. */
+  const niyetGecerli = (kursId: string) => {
+    let v: string | null = null;
+    try { v = sessionStorage.getItem(NIYET); } catch { return false; }
+    if (!v) return false;
+    const [, id, ms] = v.split(":");
+    if (!(Date.now() - Number(ms) <= NIYET_OMRU)) { niyetSil(); return false; } // ms yok/bozuk (NaN) → bayat
+    return id === kursId;
+  };
+  // Misafirin "Katıl" (giriş) düğmesi: niyeti yaz (delegasyon — gezintiler arası yeniden bağlama yok);
+  // Clerk modalı / Google OAuth aynı sekmede döner, sessionStorage korunur
+  document.addEventListener("click", (e) => {
+    const btn = (e.target as Element | null)?.closest<HTMLElement>("[data-niyet]");
+    if (btn) try { sessionStorage.setItem(NIYET, `katil:${btn.dataset.niyet}:${Date.now()}`); } catch { /* gizli pencere */ }
+  });
   document.addEventListener("astro:page-load", () => {
+    const kursId = document.querySelector<HTMLElement>("header[data-kurs-id]")?.dataset.kursId;
+    // Girişten dönüş: niyet BU kursa aitse katılım formunu POST'la (sunucu GET'te hiçbir şey yazmaz)
+    if (kursId && niyetGecerli(kursId)) {
+      const form = document.querySelector<HTMLFormElement>("form[data-katil-formu]");
+      if (form) { niyetSil(); document.querySelector("[data-katil-ipucu]")?.remove(); form.requestSubmit(); }
+      else if (!document.querySelector("[data-niyet]")) niyetSil(); // üye ama form yok (zaten katılmış / üretici)
+    }
     for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-kopyala]")) {
       if (btn.dataset.init) continue;
       btn.dataset.init = "1";

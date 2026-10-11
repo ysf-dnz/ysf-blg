@@ -16,6 +16,11 @@ export const R = {
   kurs: (slug: string) => `/kurslar/${slug}`,
   lider: "/lider",
   etkinlikler: "/etkinlikler",
+  etkinlik: (slug: string) => `/etkinlik/${slug}`,
+  etkinlikGiris: (slug: string) => `/etkinlik/${slug}/giris`,
+  etkinlikEkran: (slug: string) => `/etkinlik/${slug}/ekran`,
+  etkinlikTakvim: (slug: string) => `/etkinlik/${slug}/takvim.ics`,
+  etkinlikCsv: (slug: string) => `/etkinlik/${slug}/katilimcilar.csv`,
   uyeler: "/uyeler",
   harita: "/harita",
   aramizaKatil: "/aramiza-katil",
@@ -29,6 +34,7 @@ export const R = {
     admin: "/uye/admin",
     quizOlustur: "/uye/quiz-olustur",
     egitimOlustur: "/uye/egitim-olustur",
+    biletler: "/uye/biletler",
   },
 } as const;
 

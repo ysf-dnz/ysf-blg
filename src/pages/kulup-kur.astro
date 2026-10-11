@@ -2,12 +2,13 @@
 /** Kulüp kuruluş başvurusu: üniversite kulüp başkanları + lise temsilcileri. */
 import Base from "@/layouts/Base.astro";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { ILLER, KULUP_TUR } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 const member = await getOrCreateMember(Astro);
 ---
 
-<Base title="Kulüp kur" description="Şehrinde veya okulunda okuma topluluğu kur.">
+<Base title="Topluluk kur" description="Şehrinde, okulunda ya da kurumunda okuma topluluğu kur.">
   <section class="girih-texture -mx-4 px-4 py-12 text-center">
     <h1 class="word-reveal font-display text-3xl font-semibold text-ink sm:text-4xl">
       <span style="--i:0">Topluluğunu</span>
@@ -16,8 +17,8 @@ const member = await getOrCreateMember(Astro);
       <span style="--i:3">büyüyün.</span>
     </h1>
     <p class="hero-sub mx-auto mt-3 max-w-lg text-ink-muted">
-      Üniversite kulübü başkanıysan veya lisende temsilci olmak istiyorsan başvur;
-      onaylanınca kendi panonla görev dağıt, etkinlik ve eğitim aç, haritada görün.
+      Üniversite kulübü, lise temsilciliği, şehir topluluğu, vakıf, dernek ya da kurum — başvur;
+      onaylanınca kendi panonla görev dağıt, etkinlik ve kurs aç, haritada görün.
     </p>
   </section>
 
@@ -30,15 +31,13 @@ const member = await getOrCreateMember(Astro);
       <form method="post" action="/api/uye/kulup" class="mx-auto mt-8 grid max-w-lg gap-4" data-reveal>
         <input type="hidden" name="action" value="apply" />
         <label class="grid gap-1">
-          <span class="text-sm font-medium text-ink">Kulüp adı</span>
+          <span class="text-sm font-medium text-ink">Topluluk adı</span>
           <input name="name" required maxlength="60" placeholder="Örn. ODTÜ Yapay Zekâ Okuma Kulübü" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
         </label>
         <label class="grid gap-1">
           <span class="text-sm font-medium text-ink">Tür</span>
-          <select name="kind" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
-            <option value="universite">Üniversite kulübü</option>
-            <option value="lise">Lise temsilciliği</option>
-            <option value="sehir">Şehir topluluğu</option>
+          <select name="kind" required class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+            {Object.entries(KULUP_TUR).map(([k, ad]) => <option value={k}>{ad}</option>)}
           </select>
         </label>
         <div class="grid gap-4 sm:grid-cols-2">
@@ -48,7 +47,10 @@ const member = await getOrCreateMember(Astro);
           </label>
           <label class="grid gap-1">
             <span class="text-sm font-medium text-ink">İl</span>
-            <input name="il" required maxlength="30" placeholder="Ankara" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+            <select name="il" required class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+              <option value="">Seç…</option>
+              {ILLER.map((il) => <option value={il} selected={il === member.city}>{il}</option>)}
+            </select>
           </label>
         </div>
         <label class="grid gap-1">

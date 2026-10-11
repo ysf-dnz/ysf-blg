@@ -13,6 +13,16 @@ export function siteKok(site: URL | undefined, requestUrl: URL): string {
   return (site ?? requestUrl).origin;
 }
 
+/**
+ * Üst düzey belge gezintisi mi? Davet çerezi yalnız böyle isteklerde kurulur: aynı kökenli
+ * <img>/prefetch/fetch gibi alt kaynak istekleri çerezi kuramaz (atıf hırsızlığı). Başlığı
+ * göndermeyen eski tarayıcı geçer (karsilama.ts ile aynı kural).
+ */
+export function belgeGezintisiMi(request: Request): boolean {
+  const dest = request.headers.get("sec-fetch-dest");
+  return !dest || dest === "document";
+}
+
 export const KUTUPHANEM_URL = "https://ysf-dnz.github.io/kutuphanem";
 
 /**

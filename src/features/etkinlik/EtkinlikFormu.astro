@@ -1,0 +1,47 @@
+---
+/**
+ * Etkinlik açma formu — /etkinlikler (site geneli) ve topluluk sayfasının Etkinlik
+ * sekmesinde aynı alanlar. Tarihler TR saatiyle girilir (sunucu +03:00 olarak okur).
+ */
+import { ETKINLIK_TURLERI, TUR_AD } from "@/lib/etkinlik-kural.ts";
+import { ILLER } from "@/lib/topluluk.ts";
+
+interface Props {
+  /** Topluluk etkinliği: il topluluktan gelir, seçim gösterilmez */
+  clubId?: number;
+}
+const { clubId } = Astro.props;
+const alan = "rounded-lg border border-line bg-surface px-3 py-2 text-sm";
+---
+
+<form method="post" action="/api/uye/etkinlik" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-2" data-etkinlik-formu>
+  <input type="hidden" name="action" value="create" />
+  {clubId && <input type="hidden" name="clubId" value={clubId} />}
+  <input name="title" required maxlength="80" placeholder="Etkinlik başlığı" class={alan} />
+  <select name="kind" class={alan} aria-label="Tür">
+    {ETKINLIK_TURLERI.map((k) => <option value={k}>{TUR_AD[k]}</option>)}
+  </select>
+  <label class="grid gap-1 text-xs text-ink-muted">
+    Başlangıç (TR saati)
+    <input name="startsAt" required type="datetime-local" class={alan} />
+  </label>
+  <label class="grid gap-1 text-xs text-ink-muted">
+    Bitiş (boşsa +2 saat)
+    <input name="endsAt" type="datetime-local" class={alan} />
+  </label>
+  <input name="location" maxlength="120" placeholder="Yer / bağlantı" class={alan} />
+  {!clubId && (
+    <select name="il" class={alan} aria-label="İl">
+      <option value="">İl (isteğe bağlı)</option>
+      {ILLER.map((il) => <option value={il}>{il}</option>)}
+    </select>
+  )}
+  <input name="capacity" type="number" min="1" max="100000" inputmode="numeric" placeholder="Kontenjan (boş = sınırsız)" class={alan} />
+  <label class="grid gap-1 text-xs text-ink-muted">
+    Kayıt kapanışı (isteğe bağlı)
+    <input name="rsvpClosesAt" type="datetime-local" class={alan} />
+  </label>
+  <input name="description" maxlength="500" placeholder="Kısa açıklama" class:list={[alan, "sm:col-span-2"]} />
+  <input name="coverUrl" type="url" maxlength="300" placeholder="Kapak görseli (https://…, isteğe bağlı)" class:list={[alan, "sm:col-span-2"]} />
+  <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97] sm:col-span-2">Etkinlik aç</button>
+</form>
