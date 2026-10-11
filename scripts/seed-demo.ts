@@ -224,6 +224,15 @@ async function kur() {
     { clubId: kulup!.id, userId: U.mehmet!.id, role: "member" },
     { clubId: kulup!.id, userId: U.can!.id, role: "member" },
   ]);
+  // İkinci topluluk (Faz 3): farklı tür + il → Topluluklarımız filtreleri görünür/test edilir
+  const [vakif] = await db
+    .insert(schema.clubs)
+    .values({ slug: "izmir-okuma-vakfi-demo", name: "İzmir Okuma Vakfı", kind: "vakif", place: "Konak", il: "İzmir", presidentId: U.zeynep!.id, status: "approved", description: "Mahalle kütüphanelerinde gönüllü okuma halkaları." })
+    .returning();
+  await db.insert(schema.clubMembers).values([
+    { clubId: vakif!.id, userId: U.zeynep!.id, role: "president" },
+    { clubId: vakif!.id, userId: U.elif!.id, role: "member" },
+  ]);
   await db.insert(schema.clubBooks).values([
     { clubId: kulup!.id, bookId: LEARNING_GO, addedBy: U.ayse!.id, note: "Bu ayın ana kitabı — kampanya buradan yürüyor." },
     { clubId: kulup!.id, bookId: MINDSET, addedBy: U.elif!.id, note: "Dönem başı motivasyonu için birebir." },
@@ -427,7 +436,7 @@ async function kur() {
 
   console.log(`✓ Numune veri kuruldu:
   üyeler: 5 (ayse-demir 🔥 rep, mehmet-kaya, zeynep-arslan 📚, can-yildiz, elif-celik 🚀)
-  kulüp: /kulup/${kulup!.slug} (pano+kitaplık+etkinlik+üyeler dolu)
+  topluluklar: /kulupler (2 tür, 2 il) · /kulup/${kulup!.slug} (pano+kitaplık+kurslar+etkinlik+üyeler dolu) · /kulup/${vakif!.slug}
   kampanya: /kampanya/${kampanya!.id} (6 görev, her Kanban durumu)
   quiz: /kitap/${MINDSET}/quiz (yayında) + 1 bekleyen (admin kuyruğu)
   kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)

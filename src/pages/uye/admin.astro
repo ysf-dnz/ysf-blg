@@ -4,6 +4,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { turEtiketi } from "@/lib/topluluk.ts";
 import { renderMemberMarkdown } from "@/lib/markdown.ts";
 
 export const prerender = false;
@@ -120,7 +121,7 @@ const pendingApps = await db.query.applications.findMany({
         pendingClubs.map((c) => (
           <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3">
             <span class="text-sm text-ink">
-              <strong>{c.name}</strong> — {c.kind} · {c.place}, {c.il} · 👑 @{authors.get(c.presidentId)?.handle}
+              <strong>{c.name}</strong> — {turEtiketi(c.kind)} · {c.place}, {c.il} · 👑 @{authors.get(c.presidentId)?.handle}
               {c.description && <span class="block text-ink-muted">{c.description}</span>}
             </span>
             <form method="post" action="/api/uye/admin" class="flex gap-2">

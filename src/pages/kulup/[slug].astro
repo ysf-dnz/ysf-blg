@@ -1,6 +1,6 @@
 ---
 /**
- * Kulüp sayfası — sekmeler: Pano · Etkinlikler · Üyeler.
+ * Topluluk (kulüp) sayfası — sekmeler: Pano · Kitaplık · Kurslar · Etkinlikler · Lig · Üyeler.
  * Pano = kulübün kampanyaları; kampanya detayında Kanban görev panosu.
  */
 import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
@@ -13,6 +13,8 @@ import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
 import { formatDate } from "@/lib/dates.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
 import { groupByCategory } from "@/lib/books-lookup.ts";
+import { R } from "@/lib/routes.ts";
+import { turEtiketi } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 
@@ -27,7 +29,7 @@ const myRole = await clubRoleOf(member, club.id);
 if (club.status !== "approved" && !myRole && member?.role !== "admin")
   return Astro.redirect("/kulupler");
 
-const tab = Astro.url.searchParams.get("t") ?? "pano";
+const tabHam = Astro.url.searchParams.get("t") ?? "pano";
 
 const members = await db.query.clubMembers.findMany({
   where: eq(schema.clubMembers.clubId, club.id),
@@ -71,10 +73,22 @@ const myBookOptions = member
 const tabs = [
   { key: "pano", label: "📋 Pano" },
   { key: "kitaplik", label: "📚 Kitaplık" },
+  { key: "kurslar", label: "🎓 Kurslar" },
   { key: "etkinlik", label: "📅 Etkinlikler" },
   { key: "lig", label: "🏟️ Lig" },
   { key: "uyeler", label: "👥 Üyeler" },
 ];
+// Bilinmeyen ?t= boş gövde bırakıyordu → panoya düş
+const tab = tabs.some((x) => x.key === tabHam) ? tabHam : "pano";
+
+// Kurslar sekmesi: yalnız yayındakiler (pending/hidden kurs sayfası yabancıya 404 verir)
+const clubCourses =
+  tab === "kurslar"
+    ? await db.query.courses.findMany({
+        where: and(eq(schema.courses.clubId, club.id), eq(schema.courses.status, "published")),
+        orderBy: desc(schema.courses.createdAt),
+      })
+    : [];
 
 // Ortak kütüphane — seçici kategoriye göre gruplu (400+ kitap kataloğu)
 const kitapGruplari = groupByCategory(
@@ -148,12 +162,13 @@ if (groups.length && tab === "uyeler") {
 ---
 
 <Base title={club.name} description={`${club.place} okuma topluluğu`}>
+  <p class="pt-4 text-sm"><a href={R.kulupler} class="text-ink-muted hover:text-accent">← Topluluklarımız</a></p>
   <section class="girih-texture -mx-4 px-4 py-10">
     <div class="flex flex-wrap items-center gap-4">
       <div class="min-w-0 flex-1">
         <h1 class="font-display text-3xl font-semibold text-ink">{club.name}</h1>
         <p class="mt-1 text-ink-muted">
-          {club.place} · {club.il} · 👑 {president?.name}
+          {turEtiketi(club.kind)} · {club.place} · {club.il} · 👑 {president?.name}
           {club.status === "pending" && (
             <span class="ml-2 rounded bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">Onay bekliyor</span>
           )}
@@ -292,6 +307,29 @@ if (groups.length && tab === "uyeler") {
               </li>
             );
           })}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    tab === "kurslar" && (
+      <section class="mt-6">
+        {canManage(myRole) && (
+          <a href={`${R.uye.egitimOlustur}?kulup=${club.id}`} class="inline-block rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+            Topluluk kursu oluştur <span class="arrow-slide">→</span>
+          </a>
+        )}
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2" data-kulup-kurslar>
+          {clubCourses.length === 0 && <p class="text-ink-muted">Bu topluluğun yayında kursu yok{canManage(myRole) ? " — ilkini sen aç." : "."}</p>}
+          {clubCourses.map((k) => (
+            <li>
+              <a href={R.kurs(k.slug)} class="hover-lift block h-full rounded-xl border border-line bg-surface-raised px-5 py-4 hover:border-accent/50">
+                <strong class="font-display text-ink">🎓 {k.title}</strong>
+                {k.summary && <span class="mt-1 block text-sm text-ink-muted">{k.summary}</span>}
+              </a>
+            </li>
+          ))}
         </ul>
       </section>
     )
