@@ -5,15 +5,56 @@
  * awardBadge(): rozeti bir kez verir (unique) ve bildirim bırakır.
  * Tasarım: kullanıcıyı asla bloklamaz — ödül yan etkileri best-effort.
  */
-import { and, eq, gt, gte, inArray } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lt, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { LEVEL_THRESHOLDS, levelFor } from "@/lib/levels.ts";
-import { likePuaniVerilirMi } from "@/lib/economy.ts";
+import { hesapGencMi, likePuaniVerilirMi, olgunlasmaAni } from "@/lib/economy.ts";
 import { PUAN } from "@/lib/points.ts";
 
-type Reason = (typeof schema.pointsLedger.$inferInsert)["reason"];
+export type Reason = (typeof schema.pointsLedger.$inferInsert)["reason"];
 type BadgeKind = (typeof schema.badges.$inferInsert)["kind"];
+
+/**
+ * Tavan: `reasons` toplamı `since`'ten beri `limit`'i aşamaz. Koşul INSERT'in
+ * içinde çalışır (ADR 0001 K1.3) — "önce oku sonra yaz" yarışı yok.
+ */
+export type Tavan = { reasons: Reason[]; since: Date; limit: number };
+
+/** Kayan 7 günün başı (mevcut "haftalık" tavanların penceresi) */
+export function yediGunOnce(simdi: Date = new Date()): Date {
+  return new Date(simdi.getTime() - 7 * 864e5);
+}
+
+/**
+ * Reason'a bağlı varsayılan tavan — awardPoints çağıranı tavanı unutamaz.
+ * Üretici günlük 100 (TR günü), ek kaynak günde 45, kurs bitirme kayan 7 günde 100.
+ * Davet tavanı (300/7 gün) Faz 2'de buraya eklenir.
+ */
+export function tavanIcin(reason: Reason): Tavan | undefined {
+  switch (reason) {
+    case "course_learner_activated":
+    case "course_learner_completed":
+      return {
+        reasons: ["course_learner_activated", "course_learner_completed"],
+        since: gunBaslangici(),
+        limit: PUAN.courseProducerDailyCap,
+      };
+    case "resource_accepted":
+      return { reasons: ["resource_accepted"], since: gunBaslangici(), limit: PUAN.resourceDailyCap };
+    case "answer_accepted":
+      return { reasons: ["answer_accepted"], since: gunBaslangici(), limit: PUAN.answerDailyCap };
+    case "course_completed":
+      return { reasons: ["course_completed"], since: yediGunOnce(), limit: PUAN.courseWeeklyCap };
+    default:
+      return undefined;
+  }
+}
+
+/** db.execute sonucu sürücüye göre dizi ya da {rows} gelir */
+function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {
+  return (Array.isArray(sonuc) ? sonuc : ((sonuc as { rows?: T[] })?.rows ?? [])) as T[];
+}
 
 /** Seviye açılımları — panoda "sıradaki seviyede seni ne bekliyor" bununla çizilir */
 export const UNLOCKS: Record<number, string> = {
@@ -229,36 +270,227 @@ async function streakIlerlet(userId: number) {
  * Yan etkiler kullanıcı akışını asla düşürmez.
  *
  * Idempotent: aynı (userId, reason, refId) daha önce yazıldıysa hiçbir şey
- * yapmaz ve false döner (points_ledger_idem_idx). Çift tık / paralel istek
+ * yapmaz ve 0 döner (points_ledger_idem_idx). Çift tık / paralel istek
  * / yeniden gönderim böylece çift ödül üretemez.
- * @returns ledger'a GERÇEKTEN yazıldıysa true
+ *
+ * Tavan: `opts.tavan` ya da reason'ın varsayılanı (tavanIcin) varsa INSERT
+ * tek SQL'de `least(delta, kalan)` yazar, kalan yoksa hiç yazmaz (kırpma).
+ * @returns ledger'a GERÇEKTEN yazılan delta (0 = yazılmadı: idem ya da tavan)
  */
 export async function awardPoints(opts: {
   userId: number;
   delta: number;
   reason: Reason;
   refId?: string;
-}): Promise<boolean> {
+  tavan?: Tavan;
+}): Promise<number> {
   const onceki = opts.delta > 0 ? await kazanilan(opts.userId) : 0;
+  const tavan = opts.tavan ?? tavanIcin(opts.reason);
+  let yazilan = 0;
+  if (tavan && opts.delta > 0) {
+    // Tek HTTP transaction'ı (db.batch, etkileşimsiz): önce üye başına danışma kilidi,
+    // sonra INSERT…SELECT. READ COMMITTED'da her ifade yeni anlık görüntü alır; kilit
+    // olmadan paralel N istek aynı toplamı görüp tavanı N kez aşabiliyordu (ADR K1.5).
+    const [, sonuc] = await db.batch([
+      db.execute(sql`select pg_advisory_xact_lock(${opts.userId})`),
+      db.execute(sql`
+      insert into points_ledger (user_id, delta, reason, ref_id)
+      select ${opts.userId}, least(${opts.delta}, ${tavan.limit} - s.t)::int, ${opts.reason}, ${opts.refId ?? null}
+      from (
+        select coalesce(sum(delta), 0)::int as t from points_ledger
+        where user_id = ${opts.userId}
+          and reason in (${sql.join(tavan.reasons.map((r) => sql`${r}`), sql`, `)})
+          and created_at >= ${tavan.since.toISOString()}::timestamp
+      ) s
+      where ${tavan.limit} - s.t > 0
+      on conflict do nothing
+      returning delta
+    `),
+    ]);
+    yazilan = Number(satirlar<{ delta: number }>(sonuc)[0]?.delta ?? 0);
+  } else {
+    const [row] = await db
+      .insert(schema.pointsLedger)
+      .values({
+        userId: opts.userId,
+        delta: opts.delta,
+        reason: opts.reason,
+        refId: opts.refId,
+      })
+      .onConflictDoNothing()
+      .returning({ id: schema.pointsLedger.id });
+    yazilan = row ? opts.delta : 0;
+  }
+  if (yazilan <= 0) return yazilan;
+  try {
+    await streakIlerlet(opts.userId);
+    await seviyeAcilimi(opts.userId, onceki, onceki + yazilan);
+  } catch {
+    /* ödül süsleri asla ana akışı düşürmesin */
+  }
+  return yazilan;
+}
+
+/**
+ * Verilmiş bir ödülü geri al (ADR 0001 K5): negatif `admin_adjust`, tek SQL.
+ * Ödül yoksa yazmaz; iki kez çağrılırsa idem index yutar; miktar orijinal
+ * satırdan okunur. Seviye/lider/lig DÜŞMEZ (toplamlar delta>0), bakiye düşer.
+ */
+export async function revokePoints(opts: {
+  userId: number;
+  reason: Reason;
+  refId: string;
+}): Promise<boolean> {
+  const sonuc = await db.execute(sql`
+    insert into points_ledger (user_id, delta, reason, ref_id)
+    select user_id, -delta, 'admin_adjust', 'iade:' || reason || ':' || ref_id
+    from points_ledger
+    where user_id = ${opts.userId} and reason = ${opts.reason} and ref_id = ${opts.refId} and delta > 0
+    on conflict do nothing
+    returning id
+  `);
+  return satirlar(sonuc).length > 0;
+}
+
+/* ---------------- Bekleyen puan (ADR 0001 K2) ---------------- */
+
+type Bekleyen = typeof schema.pendingPoints.$inferSelect;
+
+/** Ledger'daki (user, reason, ref) satırının delta'sı — kesinleşme onarımı için */
+function ledgerDeltaSql(userId: number, reason: string, refId: string) {
+  return sql<number>`coalesce((select delta from points_ledger
+    where user_id = ${userId} and reason = ${reason} and ref_id = ${refId} limit 1), 0)`;
+}
+
+/**
+ * Bekleyen satır yaz (idempotent). expiresAt: olay gelmezse düşer;
+ * maturesAt: zamanla kesinleşir. Ledger'a dokunmaz.
+ */
+export async function bekleyenYaz(opts: {
+  userId: number;
+  delta: number;
+  reason: Reason;
+  refId: string;
+  note?: string;
+  expiresAt?: Date;
+  maturesAt?: Date;
+}): Promise<boolean> {
   const [row] = await db
-    .insert(schema.pointsLedger)
+    .insert(schema.pendingPoints)
     .values({
       userId: opts.userId,
       delta: opts.delta,
       reason: opts.reason,
       refId: opts.refId,
+      note: opts.note,
+      expiresAt: opts.expiresAt,
+      maturesAt: opts.maturesAt,
     })
     .onConflictDoNothing()
-    .returning({ id: schema.pointsLedger.id });
-  if (!row) return false;
-  if (opts.delta <= 0) return true;
-  try {
-    await streakIlerlet(opts.userId);
-    await seviyeAcilimi(opts.userId, onceki, onceki + opts.delta);
-  } catch {
-    /* ödül süsleri asla ana akışı düşürmesin */
+    .returning({ id: schema.pendingPoints.id });
+  return !!row;
+}
+
+/**
+ * Bekleyeni kesinleştir — sıra ZORUNLU: ÖNCE ledger (idempotent), SONRA status.
+ * Arada çökülürse sonraki koşumda awardPoints 0 döner, `yazilan` ledger'dan
+ * okunur ve status tamamlanır; ters sıra "confirmed ama ledger'da yok" bırakırdı.
+ */
+export async function bekleyeniKesinlestir(b: Bekleyen): Promise<number> {
+  const n = await awardPoints({
+    userId: b.userId,
+    delta: b.delta,
+    reason: b.reason as Reason,
+    refId: b.refId,
+  });
+  await db
+    .update(schema.pendingPoints)
+    .set({
+      status: "confirmed",
+      yazilan: n > 0 ? n : ledgerDeltaSql(b.userId, b.reason, b.refId),
+      resolvedAt: new Date(),
+    })
+    .where(and(eq(schema.pendingPoints.id, b.id), eq(schema.pendingPoints.status, "pending")));
+  return n;
+}
+
+/**
+ * Puan OLAYI geldi (aktivasyon, giriş…): puanı doğuran hesap 24 saatten
+ * gençse ledger'a değil bekleyene (matures_at) yazılır; değilse awardPoints.
+ * Varsa aynı (user, reason, ref) bekleyen satırı da kapatır (Faz 2 davetleri).
+ * @returns ledger'a yazılan delta (bekleyene gittiyse 0)
+ */
+export async function puanOlayi(opts: {
+  userId: number;
+  delta: number;
+  reason: Reason;
+  refId: string;
+  /** puanı doğuran (kaynak) hesabın açılış anı — alıcı değil */
+  kaynakOlusturulma: Date;
+  note?: string;
+}): Promise<number> {
+  if (hesapGencMi(opts.kaynakOlusturulma)) {
+    const olgun = olgunlasmaAni(opts.kaynakOlusturulma);
+    await db
+      .insert(schema.pendingPoints)
+      .values({
+        userId: opts.userId,
+        delta: opts.delta,
+        reason: opts.reason,
+        refId: opts.refId,
+        note: opts.note,
+        maturesAt: olgun,
+      })
+      .onConflictDoUpdate({
+        target: [schema.pendingPoints.userId, schema.pendingPoints.reason, schema.pendingPoints.refId],
+        set: { maturesAt: olgun, expiresAt: null },
+        setWhere: sql`${schema.pendingPoints.status} = 'pending'`,
+      });
+    return 0;
   }
-  return true;
+  const n = await awardPoints({
+    userId: opts.userId,
+    delta: opts.delta,
+    reason: opts.reason,
+    refId: opts.refId,
+  });
+  await db
+    .update(schema.pendingPoints)
+    .set({
+      status: "confirmed",
+      yazilan: n > 0 ? n : ledgerDeltaSql(opts.userId, opts.reason, opts.refId),
+      resolvedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(schema.pendingPoints.userId, opts.userId),
+        eq(schema.pendingPoints.reason, opts.reason),
+        eq(schema.pendingPoints.refId, opts.refId),
+        eq(schema.pendingPoints.status, "pending"),
+      ),
+    );
+  return n;
+}
+
+/**
+ * Olgunlaşanları kesinleştir, süresi dolanları düşür. Günlük cron'da tümü;
+ * /uye panosunda yalnız o üye için (userId) — "anında his" günlük cron'u beklemez.
+ */
+export async function bekleyenleriIsle(
+  simdi: Date = new Date(),
+  userId?: number,
+): Promise<{ kesinlesen: number; dusen: number }> {
+  const kime = userId ? eq(schema.pendingPoints.userId, userId) : undefined;
+  const olgunlar = await db.query.pendingPoints.findMany({
+    where: and(eq(schema.pendingPoints.status, "pending"), lte(schema.pendingPoints.maturesAt, simdi), kime),
+  });
+  for (const b of olgunlar) await bekleyeniKesinlestir(b);
+  const dusenler = await db
+    .update(schema.pendingPoints)
+    .set({ status: "expired", resolvedAt: simdi })
+    .where(and(eq(schema.pendingPoints.status, "pending"), lt(schema.pendingPoints.expiresAt, simdi), kime))
+    .returning({ id: schema.pendingPoints.id });
+  return { kesinlesen: olgunlar.length, dusen: dusenler.length };
 }
 
 /**
@@ -289,10 +521,7 @@ export async function spendPoints(opts: {
     on conflict do nothing
     returning id
   `);
-  const satirlar = Array.isArray(sonuc)
-    ? sonuc
-    : ((sonuc as { rows?: unknown[] })?.rows ?? []);
-  return satirlar.length > 0;
+  return satirlar(sonuc).length > 0;
 }
 
 /** TR gününün başlangıcı (Türkiye kalıcı UTC+3, yaz saati yok) */
@@ -316,7 +545,7 @@ export async function begeniPuaniVer(opts: {
   refId: string;
 }): Promise<boolean> {
   const bugun = gunBaslangici();
-  const [feedSayi, yaziSayi] = await Promise.all([
+  const [feedSayi, yaziSayi, yorumSayi] = await Promise.all([
     db
       .select({ c: sql<number>`count(*)` })
       .from(schema.likes)
@@ -339,16 +568,31 @@ export async function begeniPuaniVer(opts: {
           gte(schema.likes.createdAt, bugun),
         ),
       ),
+    // Kurs soru-cevabındaki yorum beğenileri de AYNI günlük sayaca girer
+    db
+      .select({ c: sql<number>`count(*)` })
+      .from(schema.likes)
+      .innerJoin(schema.comments, eq(schema.likes.commentId, schema.comments.id))
+      .where(
+        and(
+          eq(schema.likes.userId, opts.begenenId),
+          eq(schema.comments.userId, opts.yazarId),
+          gte(schema.likes.createdAt, bugun),
+        ),
+      ),
   ]);
   // Yeni eklenen beğeni de sayıma dahil → daha önceki sayı = toplam - 1
-  const toplam = Number(feedSayi[0]?.c ?? 0) + Number(yaziSayi[0]?.c ?? 0);
+  const toplam =
+    Number(feedSayi[0]?.c ?? 0) + Number(yaziSayi[0]?.c ?? 0) + Number(yorumSayi[0]?.c ?? 0);
   if (!likePuaniVerilirMi(Math.max(0, toplam - 1))) return false;
-  return awardPoints({
-    userId: opts.yazarId,
-    delta: PUAN.likeReceived,
-    reason: "like_received",
-    refId: opts.refId,
-  });
+  return (
+    (await awardPoints({
+      userId: opts.yazarId,
+      delta: PUAN.likeReceived,
+      reason: "like_received",
+      refId: opts.refId,
+    })) > 0
+  );
 }
 
 /** Sayaç rozetleri: 10 görev, 5 quiz, 5 aktif davet */

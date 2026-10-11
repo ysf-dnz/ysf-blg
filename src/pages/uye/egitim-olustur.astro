@@ -1,7 +1,8 @@
 ---
 /**
- * Eğitim oluşturucu: YouTube videoları + kendi yayınlanmış yazıların +
+ * Kurs oluşturucu: YouTube videoları + kendi yayınlanmış yazıların +
  * kitap quiz'leri tek müfredat sırasında. Video barındırılmaz.
+ * Yayın için en az 3 geçerli öğe (sunucu doğrular).
  */
 import { and, eq } from "drizzle-orm";
 import { getCollection } from "astro:content";
@@ -34,18 +35,19 @@ const myBooks = access
   .filter(Boolean);
 ---
 
-<Base title="Eğitim oluştur">
+<Base title="Kurs oluştur">
   <div class="mx-auto max-w-2xl">
-    <h1 class="font-display text-3xl font-semibold text-ink">🎓 Eğitim oluştur</h1>
+    <h1 class="font-display text-3xl font-semibold text-ink">🎓 Kurs oluştur</h1>
     <p class="mt-2 text-ink-muted">
-      YouTube videolarını, kendi yazılarını ve quiz'leri tek müfredatta sırala.
-      Yayınlanan eğitim üreticisine <strong class="text-accent">kitap ödülü</strong> kazandırır.
+      YouTube videolarını, kendi yazılarını ve quiz'leri tek müfredatta sırala (en az 3 öğe).
+      Kursun herkese açık sayfası olur; ilk 3 katılımcı aktive olunca
+      <strong class="text-accent">+50</strong>, her aktive olan katılımcı <strong class="text-accent">+5</strong>, her bitiren <strong class="text-accent">+10</strong> kazandırır.
     </p>
 
     <form method="post" action="/api/uye/egitim" class="mt-6 grid gap-4">
       <input type="hidden" name="clubId" value={clubIdParam ?? ""} />
       <label class="grid gap-1">
-        <span class="text-sm font-medium text-ink">Eğitim başlığı</span>
+        <span class="text-sm font-medium text-ink">Kurs başlığı</span>
         <input name="title" required maxlength="90" placeholder='Örn. "Sıfırdan Go: Learning Go yol haritası"' class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
       </label>
       <div class="grid gap-4 sm:grid-cols-2">
@@ -59,6 +61,28 @@ const myBooks = access
         <label class="grid gap-1">
           <span class="text-sm font-medium text-ink">Kısa açıklama</span>
           <input name="description" maxlength="200" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+        </label>
+      </div>
+      <label class="grid gap-1">
+        <span class="text-sm font-medium text-ink">Kısa vaat <span class="text-ink-muted">(kartta görünür, ≤140)</span></span>
+        <input name="summary" maxlength="140" placeholder='Örn. "3 saatte Go ile ilk CLI aracını yaz."' class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+      </label>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Seviye</span>
+          <select name="level" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
+            <option value="baslangic">Başlangıç</option>
+            <option value="orta">Orta</option>
+            <option value="ileri">İleri</option>
+          </select>
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Tahmini süre (dk)</span>
+          <input name="estMinutes" type="number" min="5" max="6000" step="5" placeholder="90" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Kapak <span class="text-ink-muted">(https, boşsa kitap kapağı)</span></span>
+          <input name="coverUrl" type="url" pattern="https://.*" placeholder="https://…" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
         </label>
       </div>
 
@@ -93,6 +117,7 @@ const myBooks = access
         </div>
       </template>
 
+      <p class="text-xs text-ink-muted">En az 3 geçerli öğe gerekir. Kulüp kursları, admin ve Seviye 7+ üreticiler doğrudan yayınlanır; diğerleri admin onayından geçer.</p>
       <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
         Yayınla
       </button>

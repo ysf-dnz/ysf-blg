@@ -48,6 +48,13 @@ export default defineConfig({
     ],
   },
   trailingSlash: "never",
+  // Yönlendirmeler adapter çıktısına rota olarak yazılır (Vercel harf duyarlı,
+  // middleware'e ulaşmayan yollar burada çözülür — ADR 0001 K3.3).
+  // Dinamik hedef yalnız VAR OLAN bir rota anahtarıyla birebir eşleşirse çalışır;
+  // query taşıyamaz.
+  redirects: {
+    "/dersler": { status: 301, destination: "/kurslar" },
+  },
   i18n: {
     defaultLocale: "tr",
     locales: ["tr", "en"],
@@ -73,6 +80,11 @@ export default defineConfig({
         defaultLocale: "tr",
         locales: { tr: "tr", en: "en" },
       },
+      // Statik yollu SSR sayfalar da sitemap'e girer; üye alanı girmesin
+      // (/uyeler herkese açık, kalır). Dinamik [slug] sayfaları girmez →
+      // kurslar için SSR sitemap ayrıca listelenir (F1-04).
+      filter: (page) => !/\/uye(\/|$)/.test(new URL(page).pathname),
+      customSitemaps: [`${SITE}/sitemap-kurslar.xml`],
     }),
     ...adminIntegrations,
   ],

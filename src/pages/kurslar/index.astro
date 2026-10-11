@@ -1,0 +1,223 @@
+---
+/**
+ * Kurslar vitrini — herkese açık (mıknatıs). Filtre: ?kulup=slug ?kitap=id ?seviye=
+ * Sıralama: ?sira=yeni|populer|tamamlanan|canli. Üye için ilerleme çubukları.
+ */
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { getBookMap } from "@/lib/books-lookup.ts";
+import { R } from "@/lib/routes.ts";
+import { PUAN } from "@/lib/points.ts";
+import { yediGunOnce } from "@/lib/rewards.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+const q = Astro.url.searchParams;
+const kulupSlug = q.get("kulup");
+const kitapId = q.get("kitap");
+const seviye = q.get("seviye");
+const sira = q.get("sira") ?? "yeni";
+
+const kulup = kulupSlug
+  ? await db.query.clubs.findFirst({ where: eq(schema.clubs.slug, kulupSlug) })
+  : null;
+
+const kosullar = [eq(schema.courses.status, "published")];
+if (kulup) kosullar.push(eq(schema.courses.clubId, kulup.id));
+if (kitapId) kosullar.push(eq(schema.courses.bookId, kitapId));
+if (seviye === "baslangic" || seviye === "orta" || seviye === "ileri")
+  kosullar.push(eq(schema.courses.level, seviye));
+
+const courses = await db.query.courses.findMany({
+  where: and(...kosullar),
+  orderBy: desc(schema.courses.createdAt),
+});
+const courseIds = courses.map((c) => c.id);
+
+// Tek tek sorgu değil, kurs başına GRUPLU sayımlar
+const [ogeSayilari, katilimlar, canlilar, puanlar, ilerlemem, clubs, creators, books] =
+  await Promise.all([
+    courseIds.length
+      ? db
+          .select({ courseId: schema.courseItems.courseId, n: sql<number>`count(*)` })
+          .from(schema.courseItems)
+          .where(inArray(schema.courseItems.courseId, courseIds))
+          .groupBy(schema.courseItems.courseId)
+      : [],
+    courseIds.length
+      ? db
+          .select({
+            courseId: schema.courseEnrollments.courseId,
+            katilimci: sql<number>`count(*)`,
+            bitiren: sql<number>`count(${schema.courseEnrollments.completedAt})`,
+          })
+          .from(schema.courseEnrollments)
+          .where(inArray(schema.courseEnrollments.courseId, courseIds))
+          .groupBy(schema.courseEnrollments.courseId)
+      : [],
+    courseIds.length
+      ? db
+          .select({
+            courseId: schema.courseProgress.courseId,
+            n: sql<number>`count(distinct ${schema.courseProgress.userId})`,
+          })
+          .from(schema.courseProgress)
+          .where(
+            and(
+              inArray(schema.courseProgress.courseId, courseIds),
+              gte(schema.courseProgress.completedAt, yediGunOnce()),
+            ),
+          )
+          .groupBy(schema.courseProgress.courseId)
+      : [],
+    courseIds.length
+      ? db
+          .select({
+            courseId: schema.ratings.courseId,
+            ort: sql<number>`avg(${schema.ratings.stars})`,
+            n: sql<number>`count(*)`,
+          })
+          .from(schema.ratings)
+          .where(inArray(schema.ratings.courseId, courseIds))
+          .groupBy(schema.ratings.courseId)
+      : [],
+    member && courseIds.length
+      ? db
+          .select({ courseId: schema.courseProgress.courseId, n: sql<number>`count(*)` })
+          .from(schema.courseProgress)
+          .where(
+            and(
+              inArray(schema.courseProgress.courseId, courseIds),
+              eq(schema.courseProgress.userId, member.id),
+            ),
+          )
+          .groupBy(schema.courseProgress.courseId)
+      : [],
+    db.query.clubs.findMany(),
+    courseIds.length
+      ? db.query.users.findMany({
+          where: inArray(schema.users.id, [...new Set(courses.map((c) => c.createdBy))]),
+        })
+      : [],
+    getBookMap(),
+  ]);
+
+const oge = new Map(ogeSayilari.map((r) => [r.courseId, Number(r.n)]));
+const kat = new Map(katilimlar.map((r) => [r.courseId, { katilimci: Number(r.katilimci), bitiren: Number(r.bitiren) }]));
+const canli = new Map(canlilar.map((r) => [r.courseId, Number(r.n)]));
+const puan = new Map(puanlar.map((r) => [r.courseId, { ort: Number(r.ort), n: Number(r.n) }]));
+const benim = new Map(ilerlemem.map((r) => [r.courseId, Number(r.n)]));
+const clubMap = new Map(clubs.map((c) => [c.id, c]));
+const creatorMap = new Map(creators.map((u) => [u.id, u]));
+
+const sirali = [...courses].sort((a, b) => {
+  if (sira === "populer") return (kat.get(b.id)?.katilimci ?? 0) - (kat.get(a.id)?.katilimci ?? 0);
+  if (sira === "tamamlanan") return (kat.get(b.id)?.bitiren ?? 0) - (kat.get(a.id)?.bitiren ?? 0);
+  if (sira === "canli") return (canli.get(b.id) ?? 0) - (canli.get(a.id) ?? 0);
+  return b.createdAt.getTime() - a.createdAt.getTime();
+});
+
+const SIRALAR = [
+  ["yeni", "Yeni"],
+  ["populer", "Popüler"],
+  ["tamamlanan", "En çok bitirilen"],
+  ["canli", "En canlı"],
+] as const;
+const SEVIYE_AD = { baslangic: "Başlangıç", orta: "Orta", ileri: "İleri" } as const;
+const link = (ek: Record<string, string | null>) => {
+  const p = new URLSearchParams(q);
+  for (const [k, v] of Object.entries(ek)) v ? p.set(k, v) : p.delete(k);
+  const s = p.toString();
+  return `${R.kurslar}${s ? `?${s}` : ""}`;
+};
+const toplamKatilimci = [...kat.values()].reduce((t, k) => t + k.katilimci, 0);
+---
+
+<ToplulukLayout
+  title="Kurslar"
+  description="Topluluğun hazırladığı kurslar: video + yazı + quiz karışık müfredatlar. İlk öğe herkese açık; bitirenler puan kazanır."
+>
+  <section class="girih-texture -mx-4 px-4 py-10">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">🎓 Kurslar</h1>
+        <p class="mt-2 text-ink-muted">
+          Video izle, yazı oku, quiz çöz — hepsi tek yol haritasında. {courses.length} kurs · {toplamKatilimci} katılım.
+        </p>
+      </div>
+      {member ? (
+        <a href={R.uye.egitimOlustur} class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+          Kurs oluştur <span class="arrow-slide">→</span>
+        </a>
+      ) : (
+        <p class="rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">
+          Her kursun ilk öğesi açık. Üye ol: ilerlemen kaydedilir, bitirince <strong class="text-accent">+{PUAN.courseCompleted}</strong>, ilk kitabın hediye 🎁
+        </p>
+      )}
+    </div>
+  </section>
+
+  <div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
+    {SIRALAR.map(([k, ad]) => (
+      <a href={link({ sira: k })} aria-current={sira === k ? "page" : undefined} class:list={["rounded-full px-3.5 py-1.5 transition-colors", sira === k ? "bg-accent font-semibold text-surface" : "border border-line text-ink-muted hover:border-accent hover:text-accent"]}>{ad}</a>
+    ))}
+    <span class="mx-1 h-5 w-px bg-line" aria-hidden="true"></span>
+    {(["baslangic", "orta", "ileri"] as const).map((s) => (
+      <a href={link({ seviye: seviye === s ? null : s })} class:list={["rounded-full px-3 py-1.5 text-xs transition-colors", seviye === s ? "bg-accent-soft font-semibold text-accent" : "border border-line text-ink-muted hover:text-accent"]}>{SEVIYE_AD[s]}</a>
+    ))}
+    {kulup && <a href={link({ kulup: null })} class="rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent">🏛️ {kulup.name} ✕</a>}
+    {kitapId && <a href={link({ kitap: null })} class="rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent">📖 {books.get(kitapId)?.titleTr ?? books.get(kitapId)?.title ?? "kitap"} ✕</a>}
+  </div>
+
+  {sirali.length === 0 ? (
+    <div class="mt-10 rounded-xl border border-line bg-surface-raised px-6 py-10 text-center" data-reveal>
+      <p class="empty-float text-ink-muted">{courses.length === 0 && !kulup && !kitapId && !seviye ? "İlk kursu sen oluştur — ilk 3 katılımcı aktive olunca +50 puan." : "Bu filtrede kurs yok."}</p>
+    </div>
+  ) : (
+    <ul class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+      {sirali.map((c) => {
+        const total = oge.get(c.id) ?? 0;
+        const done = benim.get(c.id) ?? 0;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const k = kat.get(c.id);
+        const p = puan.get(c.id);
+        const kitap = c.bookId ? books.get(c.bookId) : undefined;
+        const kapak = c.coverUrl ?? kitap?.cover;
+        return (
+          <li>
+            <a href={R.kurs(c.slug)} class="hover-lift shine flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface-raised hover:border-accent/50">
+              {kapak ? (
+                <img src={kapak} alt="" class="aspect-[16/9] w-full object-cover" loading="lazy" />
+              ) : (
+                <div class="flex aspect-[16/9] w-full items-center justify-center bg-accent-soft text-4xl">🎓</div>
+              )}
+              <div class="flex flex-1 flex-col p-5">
+                <p class="flex flex-wrap gap-1.5 text-[11px] text-ink-muted">
+                  {c.level && <span class="rounded-full border border-line px-2 py-0.5">{SEVIYE_AD[c.level]}</span>}
+                  {c.estMinutes && <span class="rounded-full border border-line px-2 py-0.5">⏱ {c.estMinutes} dk</span>}
+                  <span class="rounded-full border border-line px-2 py-0.5">{total} öğe</span>
+                </p>
+                <h2 class="mt-2 font-display text-lg font-semibold leading-snug text-ink">{c.title}</h2>
+                {(c.summary ?? c.description) && <p class="mt-1 line-clamp-2 text-sm text-ink-muted">{c.summary ?? c.description}</p>}
+                <p class="mt-auto pt-3 text-xs text-ink-muted">
+                  {c.clubId ? clubMap.get(c.clubId)?.name : `@${creatorMap.get(c.createdBy)?.handle}`} · 👥 {k?.katilimci ?? 0}
+                  {p && p.n > 0 && <> · ⭐ {p.ort.toFixed(1)}</>}
+                  {(canli.get(c.id) ?? 0) > 0 && <> · 🔥 {canli.get(c.id)} aktif</>}
+                </p>
+                {member && done > 0 && (
+                  <>
+                    <div class="mt-3 h-2 overflow-hidden rounded-full bg-accent-soft"><div class="h-full bg-accent" style={`width:${pct}%`} /></div>
+                    <p class="mt-1 text-xs text-ink-muted">%{pct}</p>
+                  </>
+                )}
+              </div>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</ToplulukLayout>

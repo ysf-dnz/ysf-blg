@@ -14,13 +14,16 @@ import {
 } from "@/lib/member.ts";
 import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { PUAN } from "@/lib/points.ts";
-import { UNLOCKS } from "@/lib/rewards.ts";
+import { UNLOCKS, bekleyenleriIsle } from "@/lib/rewards.ts";
 
 export const prerender = false;
 
 const t = useTranslations(langFromUrl(Astro.url.pathname));
 const member = await getOrCreateMember(Astro);
 if (!member) return Astro.redirect("/");
+
+// ⏳ Olgunlaşan bekleyen puanlar ÖNCE kesinleşir ki bakiye/seviye bu görüntülemede doğru olsun
+await bekleyenleriIsle(new Date(), member.id);
 
 const [balance, earned, access, notifs, yaziSayisi, kulubum] = await Promise.all([
   pointBalance(member.id),
@@ -92,6 +95,28 @@ const gorevler = [
 const tamamlanan = gorevler.filter((g) => g.ok).length;
 const level = levelFor(earned);
 const toNext = pointsToNextLevel(earned);
+
+// ⏳ Bekleyen puan (ADR 0001 K2): bekleyenler + son 7 günde kırpılanlar
+const bekleyenler = await db.query.pendingPoints.findMany({
+  where: and(eq(schema.pendingPoints.userId, member.id), eq(schema.pendingPoints.status, "pending")),
+  orderBy: desc(schema.pendingPoints.createdAt),
+  limit: 10,
+});
+const kirpilanlar = (
+  await db.query.pendingPoints.findMany({
+    where: and(eq(schema.pendingPoints.userId, member.id), eq(schema.pendingPoints.status, "confirmed")),
+    orderBy: desc(schema.pendingPoints.resolvedAt),
+    limit: 20,
+  })
+).filter((b) => b.yazilan < b.delta && b.resolvedAt && b.resolvedAt.getTime() > Date.now() - 7 * 864e5);
+const bekleyenToplam = bekleyenler.reduce((t, b) => t + b.delta, 0);
+const tarihKisa = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
+  b.maturesAt
+    ? `${tarihKisa(b.maturesAt)} kesinleşir (hesap yaşı 24 s)`
+    : b.expiresAt
+      ? `son gün ${tarihKisa(b.expiresAt)}`
+      : "koşul bekliyor";
 
 // 🔨 Görevlerim: üstlenilen kampanya görevleri + son tarih
 const uzerimdeki = await db
@@ -341,6 +366,27 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
       </section>
     )
   }
+
+      {(bekleyenler.length > 0 || kirpilanlar.length > 0) && (
+      <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5" data-reveal aria-label="Bekleyen puan">
+        <h2 class="font-display text-xl font-semibold text-ink">⏳ Bekleyen puan {bekleyenToplam > 0 && <span class="text-accent">+{bekleyenToplam}</span>}</h2>
+        <p class="mt-1 text-xs text-ink-muted">Ledger'a henüz girmedi, seviyeye sayılmaz; koşulu gerçekleşince kesinleşir.</p>
+        <ul class="mt-3 space-y-2 text-sm">
+          {bekleyenler.map((b) => (
+            <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line px-3 py-2">
+              <span class="text-ink">{b.note ?? b.reason}</span>
+              <span class="text-xs text-ink-muted">+{b.delta} · {bekleyenZaman(b)}</span>
+            </li>
+          ))}
+          {kirpilanlar.map((b) => (
+            <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dashed border-line px-3 py-2 text-ink-muted">
+              <span>{b.note ?? b.reason}</span>
+              <span class="text-xs">+{b.yazilan} yazıldı / +{b.delta} ({b.yazilan === 0 ? "tavan dolu, kırpıldı" : "tavana kırpıldı"})</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
 
   {
     uzerimdeki.length > 0 && (

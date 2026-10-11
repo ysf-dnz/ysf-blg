@@ -26,3 +26,29 @@ export function gorevOdulKirp(
   const verilecek = Math.min(Math.max(istenen, 0), kalan);
   return { verilecek, kirpildi: verilecek < istenen };
 }
+
+/** Kurs öğesi başına asgari okuma/izleme süresi (sn) — tıklama çiftliği freni */
+export const OGE_ASGARI_SN = 60;
+
+/**
+ * Kurs tamamlama puanı için asgari süre geçti mi? (öğe sayısı × 60 sn, katılımdan
+ * itibaren). Geçmediyse ilerleme yine kaydedilir, yalnız puan yazılmaz.
+ */
+export function asgariSureGectiMi(
+  ogeSayisi: number,
+  joinedAt: Date,
+  simdi: Date = new Date(),
+): boolean {
+  return simdi.getTime() - joinedAt.getTime() >= ogeSayisi * OGE_ASGARI_SN * 1000;
+}
+
+/** Hesap yaşı freni: 24 saatten genç hesaptan gelen puan bekleyene yazılır */
+export const HESAP_YASI_SAAT = 24;
+export function hesapGencMi(createdAt: Date, simdi: Date = new Date()): boolean {
+  return simdi.getTime() - createdAt.getTime() < HESAP_YASI_SAAT * 3600 * 1000;
+}
+/** Genç hesabın puanının kesinleşeceği an */
+export function olgunlasmaAni(createdAt: Date): Date {
+  return new Date(createdAt.getTime() + HESAP_YASI_SAAT * 3600 * 1000);
+}
+

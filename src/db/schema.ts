@@ -73,6 +73,12 @@ export const pointsLedger = pgTable(
         "streak_bonus", // 7/30 gün seri ödülü
         "season_reward", // sezon sonu ödülü
         "level_reward", // seviye atlama ödülü
+        // Kurslar (ADR 0001 §7 — her yeni reason refId TAŞIR, idem index öyle çalışır)
+        "course_launched", // üretici: ilk 3 katılımcı aktive oldu (course:{id})
+        "course_learner_activated", // üretici: katılımcı aktive oldu (course:{id}:u:{learner})
+        "course_learner_completed", // üretici: katılımcı bitirdi (course:{id}:u:{learner})
+        "answer_accepted", // cevap yazarı: en iyi cevap (yorum:{id})
+        "resource_accepted", // öneren: ek kaynak kabul (kaynak:{id})
       ],
     }).notNull(),
     refId: text("ref_id"),
@@ -169,12 +175,22 @@ export const comments = pgTable(
       .references(() => users.id),
     feedPostId: integer("feed_post_id").references(() => feedPosts.id),
     memberPostId: integer("member_post_id").references(() => memberPosts.id),
+    /** Kurs öğesi altı soru-cevap (3. nullable hedef; "tam biri dolu" kodda doğrulanır) */
+    courseItemId: integer("course_item_id").references(() => courseItems.id),
     body: text("body").notNull(),
+    /** Üretici "en iyi cevap" seçti (öğe başına tek — kısmi unique) */
+    acceptedAt: timestamp("accepted_at"),
+    /** Şikâyetle gizlendi (moderasyon) */
+    hiddenAt: timestamp("hidden_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     index("comments_feed_post_idx").on(t.feedPostId),
+    index("comments_course_item_idx").on(t.courseItemId),
     index("comments_user_created_idx").on(t.userId, t.createdAt),
+    uniqueIndex("comments_accepted_idx")
+      .on(t.courseItemId)
+      .where(sql`${t.acceptedAt} is not null`),
   ],
 );
 
@@ -188,11 +204,14 @@ export const likes = pgTable(
       .references(() => users.id),
     feedPostId: integer("feed_post_id").references(() => feedPosts.id),
     memberPostId: integer("member_post_id").references(() => memberPosts.id),
+    /** Kurs soru-cevabındaki yoruma beğeni (puan: begeniPuaniVer, refId yorum:{id}) */
+    commentId: integer("comment_id").references(() => comments.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     uniqueIndex("likes_user_feed_idx").on(t.userId, t.feedPostId),
     uniqueIndex("likes_user_member_idx").on(t.userId, t.memberPostId),
+    uniqueIndex("likes_user_comment_idx").on(t.userId, t.commentId),
   ],
 );
 
@@ -487,20 +506,38 @@ export const notifications = pgTable(
 );
 
 /** Eğitimler: YouTube-gömülü müfredat (video barındırılmaz) */
-export const courses = pgTable("courses", {
-  id: serial("id").primaryKey(),
-  clubId: integer("club_id").references(() => clubs.id),
-  bookId: text("book_id"),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: text("status", { enum: ["draft", "pending", "published"] })
-    .notNull()
-    .default("published"),
-  createdBy: integer("created_by")
-    .notNull()
-    .references(() => users.id),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+/**
+ * Kurs (eski "eğitim/ders" — CONTEXT.md). Herkese açık SSR sayfası /kurslar/[slug].
+ * slug: canlı backfill'den sonra NOT NULL'a çekilir (drizzle/canli-index-uygula.sql).
+ */
+export const courses = pgTable(
+  "courses",
+  {
+    id: serial("id").primaryKey(),
+    clubId: integer("club_id").references(() => clubs.id),
+    bookId: text("book_id"),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    /** Kısa vaat (≤140): kartta "bu kurs sana ne katar" */
+    summary: text("summary"),
+    /** Boşsa bağlı kitabın kapağı kullanılır */
+    coverUrl: text("cover_url"),
+    level: text("level", { enum: ["baslangic", "orta", "ileri"] }),
+    estMinutes: integer("est_minutes"),
+    /** hidden: 3 farklı Sv4+ şikâyetiyle inceleme gizlemesi; rejected: admin reddi */
+    status: text("status", {
+      enum: ["draft", "pending", "published", "rejected", "hidden"],
+    })
+      .notNull()
+      .default("published"),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("courses_slug_idx").on(t.slug)],
+);
 
 /** Müfredat öğesi: YouTube videosu, üye yazısı veya quiz — tek karışık sıra */
 export const courseItems = pgTable("course_items", {
@@ -533,6 +570,133 @@ export const courseProgress = pgTable(
     completedAt: timestamp("completed_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("course_progress_idx").on(t.userId, t.itemId)],
+);
+
+/**
+ * Kurs katılımı. Kurs aktivasyonu = ilk öğe tamamlandı (activated_at);
+ * bitirme = tüm öğeler (completed_at). İki geçiş de tek SQL UPDATE … WHERE … IS NULL
+ * RETURNING ile "bu istek mi yaptı?" sorusunu yarışsız cevaplar (ADR 0001 K1 C).
+ * joined_at asgari süre (öğe × 60 sn) için şart.
+ */
+export const courseEnrollments = pgTable(
+  "course_enrollments",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+    joinedAt: timestamp("joined_at").notNull().defaultNow(),
+    activatedAt: timestamp("activated_at"),
+    completedAt: timestamp("completed_at"),
+    /** Faz 2: davetle katıldıysa kod (atıf; "ilk geçerli davet kazanır") */
+    inviteCodeId: integer("invite_code_id"),
+  },
+  (t) => [
+    uniqueIndex("course_enrollments_idx").on(t.userId, t.courseId),
+    index("course_enrollments_course_act_idx").on(t.courseId, t.activatedAt),
+  ],
+);
+
+/** Ek kaynak önerisi: katılımcı bağlantı + not önerir, üretici onaylar (+15 önerene) */
+export const courseResources = pgTable(
+  "course_resources",
+  {
+    id: serial("id").primaryKey(),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    url: text("url").notNull(),
+    note: text("note"),
+    status: text("status", { enum: ["pending", "accepted", "rejected"] })
+      .notNull()
+      .default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    acceptedAt: timestamp("accepted_at"),
+  },
+  (t) => [index("course_resources_course_status_idx").on(t.courseId, t.status)],
+);
+
+/** Değerlendirme (1-5): yalnız aktive olmuş katılımcı; puan üretmez. Faz 3: +event_id */
+export const ratings = pgTable(
+  "ratings",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    courseId: integer("course_id").references(() => courses.id),
+    stars: integer("stars").notNull(),
+    body: text("body"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("ratings_user_course_idx").on(t.userId, t.courseId)],
+);
+
+/**
+ * Şikâyet kuyruğu — polimorfik hedef (course | comment | user | message).
+ * FK yok (bilinçli): moderasyon kuyruğunda bütünlük değil, izlenebilirlik gerekir.
+ */
+export const reports = pgTable(
+  "reports",
+  {
+    id: serial("id").primaryKey(),
+    reporterId: integer("reporter_id")
+      .notNull()
+      .references(() => users.id),
+    targetType: text("target_type", {
+      enum: ["course", "comment", "user", "message"],
+    }).notNull(),
+    targetId: integer("target_id").notNull(),
+    reason: text("reason"),
+    status: text("status", { enum: ["open", "resolved", "dismissed"] })
+      .notNull()
+      .default("open"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("reports_idx").on(t.reporterId, t.targetType, t.targetId),
+    index("reports_status_idx").on(t.status, t.createdAt),
+  ],
+);
+
+/**
+ * Bekleyen puan (ADR 0001 K2): ledger'a GİRMEZ → seviyeye sayılmaz.
+ * matures_at: zamanla kesinleşir (hesap yaşı 24 s); expires_at: olay gelmezse düşer.
+ * Kesinleşme sırası ZORUNLU: önce awardPoints (idempotent), sonra status=confirmed.
+ * Kırpma ayrı status değil: confirmed + yazilan < delta.
+ */
+export const pendingPoints = pgTable(
+  "pending_points",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    reason: text("reason").notNull(),
+    refId: text("ref_id").notNull(),
+    delta: integer("delta").notNull(),
+    yazilan: integer("yazilan").notNull().default(0),
+    status: text("status", { enum: ["pending", "confirmed", "expired"] })
+      .notNull()
+      .default("pending"),
+    /** Panoda "neye bağlı" metni (ör. "Elif ilk öğeyi bitirince") */
+    note: text("note"),
+    maturesAt: timestamp("matures_at"),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at"),
+  },
+  (t) => [
+    uniqueIndex("pending_points_idx").on(t.userId, t.reason, t.refId),
+    index("pending_points_matures_idx").on(t.status, t.maturesAt),
+    index("pending_points_expires_idx").on(t.status, t.expiresAt),
+  ],
 );
 
 /* ============================================================

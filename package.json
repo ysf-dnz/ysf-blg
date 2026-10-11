@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@clerk/testing": "^2.2.45",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.1",
     "@resvg/resvg-js": "^2.6.0",

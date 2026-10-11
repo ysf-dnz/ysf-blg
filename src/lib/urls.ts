@@ -14,3 +14,12 @@ export function siteKok(site: URL | undefined, requestUrl: URL): string {
 }
 
 export const KUTUPHANEM_URL = "https://ysf-dnz.github.io/kutuphanem";
+
+/**
+ * Form'daki `next` yalnız site içi bir yol ise onu, değilse varsayılanı döner
+ * (open redirect yok: `//`, `/\` ve kontrol karakterleri reddedilir).
+ */
+export function guvenliYol(form: FormData, varsayilan: string): string {
+  const n = String(form.get("next") ?? "");
+  return /^\/(?![\/\\])/.test(n) && !/[\\\x00-\x1f]/.test(n) ? n : varsayilan;
+}

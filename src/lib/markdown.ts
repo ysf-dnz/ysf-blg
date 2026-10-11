@@ -12,7 +12,7 @@ export function renderMemberMarkdown(src: string): string {
 export function slugifyTitle(title: string): string {
   return (
     title
-      .toLowerCase()
+      .toLocaleLowerCase("tr")
       .replace(/[ışğüöç]/g, (c) =>
         ({ ı: "i", ş: "s", ğ: "g", ü: "u", ö: "o", ç: "c" })[c] ?? c,
       )

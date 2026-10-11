@@ -69,6 +69,28 @@ if (sizanKitap.length) {
   hata++;
 }
 
+// 3) Sitemap bekçisi: üye alanı (/uye/*) sitemap'e girmez (/uyeler herkese açık, kalır);
+// kurs sitemap'i index'te; /dersler → /kurslar 301 adapter rotasında.
+const sitemap0 = `${STATIK}/sitemap-0.xml`;
+if (existsSync(sitemap0) && /\/uye(\/|<)/.test(readFileSync(sitemap0, "utf8"))) {
+  console.error("✗ SITEMAP: /uye/* üye alanı sitemap-0.xml'e sızdı (astro.config sitemap.filter)");
+  hata++;
+}
+const sitemapIndex = `${STATIK}/sitemap-index.xml`;
+if (existsSync(sitemapIndex) && !readFileSync(sitemapIndex, "utf8").includes("sitemap-kurslar.xml")) {
+  console.error("✗ SITEMAP: sitemap-kurslar.xml index'te yok (customSitemaps)");
+  hata++;
+}
+const vercelConfig = ".vercel/output/config.json";
+if (existsSync(vercelConfig)) {
+  const routes = JSON.parse(readFileSync(vercelConfig, "utf8")).routes ?? [];
+  const dersler = routes.find((r) => r.src === "^/dersler$" || r.src === "^/dersler/?$");
+  if (!dersler || dersler.status !== 301) {
+    console.error("✗ REDIRECT: /dersler → /kurslar 301 rotası adapter çıktısında yok");
+    hata++;
+  }
+}
+
 const fonksiyonlar = existsSync(".vercel/output/functions")
   ? readdirSync(".vercel/output/functions")
   : [];
