@@ -1,18 +1,25 @@
 ---
 /**
  * Profil düzenleme: şehir + üniversite — harita pinleri ve üniversite
- * ligi bu veriden beslenir (IA'daki kritik köprü).
+ * ligi bu veriden beslenir (IA'daki kritik köprü). Haritada BİREYSEL görünme açık rızayla
+ * (varsayılan kapalı, F4-02); "kimden mesaj alırım" ayarı (F4-03).
  */
 import Base from "@/layouts/Base.astro";
 import { getOrCreateMember } from "@/lib/member.ts";
-import iller from "@/data/il-koordinatlari.json";
+import { ILLER } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 
 const member = await getOrCreateMember(Astro);
 if (!member) return Astro.redirect("/");
 const kaydedildi = Astro.url.searchParams.get("durum") === "ok";
-const ilListesi = Object.keys(iller).sort((a, b) => a.localeCompare(b, "tr"));
+const ilListesi = ILLER;
+const dmPolitika = member.dmPolicy ?? "mutual";
+const DM_SECENEKLERI = [
+  { deger: "mutual", ad: "Ortak topluluğum olanlar ve karşılıklı takipleştiklerim (önerilen)" },
+  { deger: "everyone", ad: "Herkes — bağım olmayanlardan yalnız Seviye 4 ve üstü" },
+  { deger: "nobody", ad: "Kimse — yalnız benim yazdığım kişiler yanıtlayabilir" },
+];
 
 const socials = (() => {
   try {
@@ -36,8 +43,12 @@ const PLATFORMLAR = [
     {
       kaydedildi && (
         <div class="menu-pop mb-6 rounded-2xl border border-accent bg-accent-soft p-4 text-center text-sm text-ink">
-          Profilin güncellendi ✓ Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> ve
-          <a href="/lider" class="font-medium text-accent hover:underline"> üniversite liginde</a> yerin var.
+          Profilin güncellendi ✓{" "}
+          {member.mapVisibleAt ? (
+            <>Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> üyelere görünüyorsun.</>
+          ) : (
+            <>Haritada adınla görünmüyorsun; şehrin yalnız anonim il sayımına eklenir.</>
+          )}
         </div>
       )
     }
@@ -95,6 +106,28 @@ const PLATFORMLAR = [
             </label>
           ))
         }
+      </fieldset>
+
+      <fieldset class="grid gap-4 rounded-2xl border border-line bg-surface-raised p-4">
+        <legend class="px-1 text-sm font-medium text-ink">🗺️ Harita ve mesaj</legend>
+        <label class="flex items-start gap-3 text-sm text-ink">
+          <input type="checkbox" name="mapVisible" value="1" checked={!!member.mapVisibleAt} class="mt-1 size-4 accent-[var(--accent)]" />
+          <span>
+            <strong>Haritada görün.</strong>
+            <span class="text-ink-muted">
+              Onaylıyorum: adım, profil fotoğrafım ve seviyem, seçtiğim şehirde (yalnız il düzeyinde) haritada
+              giriş yapmış üyelere gösterilsin; topluluk, kurs ve takip filtrelerinde yer alayım. Bu kutuyu
+              kaldırdığım an haritadan çıkarım. Şehir seçili değilse haritada görünmem.
+            </span>
+          </span>
+        </label>
+        <label class="grid gap-1">
+          <span class="text-sm font-medium text-ink">Kimden mesaj alırım</span>
+          <select name="dmPolicy" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+            {DM_SECENEKLERI.map((s) => <option value={s.deger} selected={dmPolitika === s.deger}>{s.ad}</option>)}
+          </select>
+          <span class="text-xs text-ink-muted">Seni rahatsız eden birini profilinden ya da konuşmadan engelleyebilirsin.</span>
+        </label>
       </fieldset>
       <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
         Kaydet

@@ -1,50 +1,79 @@
 ---
 /**
  * Türkiye haritası — Leaflet + OpenStreetMap karoları (başlangıç görünümü zoom 6, 39.03/35.25).
- * Sunucu: il başına üye sayısı (yalnız il düzeyi) + onaylı kulüpler → JSON veri bloğu.
- * İstemci: il rozet işaretçileri (kulüp sayısı; kulüp yoksa üye sayısı), DOM ile kurulan popup
- * (kullanıcı metni yalnız textContent — innerHTML YOK, F4-01) ve autoPan: popup daima görünür
- * (mobilde kesilme yok). Karolar ziyaretçinin tarayıcısından tile.openstreetmap.org'a gider
- * (OSMF karo politikası: hafif kullanım + atıf; ağır kullanımda bir karo sağlayıcısına geçilir).
+ * Sunucu: il başına ANONİM üye sayısı + onaylı kulüpler + ildeki yaklaşan etkinlikler → JSON veri bloğu.
+ * Üye ızgarası (F4-02): yalnız "Haritada görün" rızası vermiş üyeler ve YALNIZ girişli üyeye
+ * (lib/harita.ts haritaUyeleri: rıza + iki yönlü engel SQL'de — AC-21/AC-22). Filtreler sorgu
+ * parametresi: ?topluluk=<slug> · ?kurs=<slug> · ?takip=1 (ızgarayı süzer; anonim sayım süzülmez).
+ * Sayfa bakana özeldir: CDN'de paylaşımlı önbelleğe ALINMAZ (cache başlığı ekleme).
+ * İstemci: il rozet işaretçileri, DOM ile kurulan popup (kullanıcı metni yalnız textContent —
+ * innerHTML YOK) ve autoPan: popup daima görünür (mobilde kesilme yok). Karolar ziyaretçinin
+ * tarayıcısından tile.openstreetmap.org'a gider (OSMF karo politikası: hafif kullanım + atıf).
  * İl sınırları: src/data/il-sinirlari.json (OSM/Nominatim, ODbL; scripts/il-sinirlari-cek.ts) → ton = kulüp sayısı.
  * JS'siz yedek: kulüp olan illerin listesi (/kulupler?il=).
  */
-import { eq, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
+import { SignInButton } from "@clerk/astro/components";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
+import { haritaEtkinlikleri, haritaUyeleri } from "@/lib/harita.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { R } from "@/lib/routes.ts";
+import { ilBul } from "@/lib/topluluk.ts";
 import iller from "@/data/il-koordinatlari.json";
 import "leaflet/dist/leaflet.css";
 
 export const prerender = false;
 
-const normalize = (s: string) => s.trim().toLocaleLowerCase("tr");
-const ilAdlari = Object.keys(iller);
-const ilEsle = (s: string | null | undefined) => (s ? ilAdlari.find((il) => normalize(il) === normalize(s)) : undefined);
+const member = await getOrCreateMember(Astro);
 
-// İl başına üye sayısı (gizlilik: yalnızca il düzeyi)
+// İl başına üye sayısı (gizlilik: yalnızca il düzeyi, anonim — filtreden bağımsız)
 const cityRows = await db
   .select({ city: schema.users.city, c: sql<number>`count(*)` })
   .from(schema.users)
   .groupBy(schema.users.city);
 const memberByIl = new Map<string, number>();
 for (const r of cityRows) {
-  const match = ilEsle(r.city);
+  const match = ilBul(r.city);
   if (match) memberByIl.set(match, (memberByIl.get(match) ?? 0) + Number(r.c));
 }
 
 const memberCount = sql<number>`(select count(*) from ${schema.clubMembers} where ${schema.clubMembers.clubId} = ${schema.clubs.id})`;
 const clubs = await db
-  .select({ slug: schema.clubs.slug, name: schema.clubs.name, il: schema.clubs.il, members: memberCount })
+  .select({ id: schema.clubs.id, slug: schema.clubs.slug, name: schema.clubs.name, il: schema.clubs.il, members: memberCount })
   .from(schema.clubs)
-  .where(eq(schema.clubs.status, "approved"));
+  .where(eq(schema.clubs.status, "approved"))
+  .orderBy(asc(schema.clubs.name));
 
 const clubsByIl = new Map<string, { slug: string; name: string; members: number }[]>();
 for (const c of clubs) {
-  const match = ilEsle(c.il);
+  const match = ilBul(c.il);
   if (!match) continue;
   if (!clubsByIl.has(match)) clubsByIl.set(match, []);
   clubsByIl.get(match)!.push({ slug: c.slug, name: c.name, members: Number(c.members) });
 }
+
+// Filtreler yalnız üyede (ızgara misafire üretilmez). Seçenekler: onaylı topluluklar, yayındaki kurslar
+const q = Astro.url.searchParams;
+const kurslar = member
+  ? await db
+      .select({ id: schema.courses.id, slug: schema.courses.slug, title: schema.courses.title })
+      .from(schema.courses)
+      .where(eq(schema.courses.status, "published"))
+      .orderBy(asc(schema.courses.title))
+      .limit(200)
+  : [];
+const seciliKulup = member ? clubs.find((c) => c.slug === q.get("topluluk")) : undefined;
+const seciliKurs = kurslar.find((k) => k.slug === q.get("kurs"));
+const takip = !!member && q.get("takip") === "1";
+const filtreli = !!(seciliKulup || seciliKurs || takip);
+
+const [gorunenler, etkinlikler] = await Promise.all([
+  member
+    ? haritaUyeleri(member.id, { kulupId: seciliKulup?.id, kursId: seciliKurs?.id, takip })
+    : new Map<string, Awaited<ReturnType<typeof haritaUyeleri>> extends Map<string, infer V> ? V : never>(),
+  haritaEtkinlikleri(),
+]);
 
 // 81 ilin tamamı (sınır tonu için sıfırlar da gerekli); rozet yalnız veri olan illerde (istemci süzer)
 const pinler = Object.entries(iller as unknown as Record<string, [number, number]>).map(([il, [lon, lat]]) => ({
@@ -53,8 +82,13 @@ const pinler = Object.entries(iller as unknown as Record<string, [number, number
   lon,
   uye: memberByIl.get(il) ?? 0,
   kulupler: clubsByIl.get(il) ?? [],
+  uyeler: gorunenler.get(il)?.uyeler ?? [],
+  gorunen: gorunenler.get(il)?.toplam ?? 0,
+  etkinlikler: etkinlikler.get(il) ?? [],
 }));
 const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
+const toplamGorunen = pinler.reduce((a, p) => a + p.gorunen, 0);
+const veri = { pinler, bakan: member?.handle ?? null, filtreli };
 ---
 
 <ToplulukLayout title="Harita" description="Türkiye'de okuma toplulukları — şehrinde kulüp kur.">
@@ -73,12 +107,52 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
     </div>
   </section>
 
-  <div class="mt-6 overflow-hidden rounded-2xl border border-line bg-surface-raised" data-reveal>
+  {member ? (
+    <form method="get" action={R.harita} class="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-surface-raised p-4 text-sm" data-harita-filtre>
+      <label class="grid gap-1">
+        <span class="text-ink-muted">Topluluk</span>
+        <select name="topluluk" class="max-w-52 rounded-lg border border-line bg-surface px-3 py-2">
+          <option value="">Tümü</option>
+          {clubs.map((c) => <option value={c.slug} selected={c.slug === seciliKulup?.slug}>{c.name}</option>)}
+        </select>
+      </label>
+      <label class="grid gap-1">
+        <span class="text-ink-muted">Bu kursu alanlar</span>
+        <select name="kurs" class="max-w-52 rounded-lg border border-line bg-surface px-3 py-2">
+          <option value="">Tümü</option>
+          {kurslar.map((k) => <option value={k.slug} selected={k.slug === seciliKurs?.slug}>{k.title}</option>)}
+        </select>
+      </label>
+      <label class="flex min-h-10 items-center gap-2 text-ink">
+        <input type="checkbox" name="takip" value="1" checked={takip} class="size-4 accent-[var(--accent)]" />
+        Takip ettiklerim
+      </label>
+      <button class="cursor-pointer rounded-full bg-accent px-5 py-2 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Uygula</button>
+      {filtreli && <a href={R.harita} class="py-2 text-ink-muted hover:text-accent">Temizle</a>}
+      <p class="w-full text-xs text-ink-muted" data-harita-gorunen>
+        {filtreli ? "Filtreye uyan" : "Haritada görünen"} <strong class="text-ink">{toplamGorunen}</strong> üye.
+        {!member.mapVisibleAt && (
+          <>
+            {" "}Sen görünmüyorsun — <a href={R.uye.profil} class="text-accent hover:underline">profilinden "Haritada görün"ü aç</a>.
+          </>
+        )}
+      </p>
+    </form>
+  ) : (
+    <p class="mt-6 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-ink-muted" data-harita-misafir>
+      Haritada görünmeyi seçen üyeleri görmek ve onlara mesaj göndermek için{" "}
+      <SignInButton mode="modal" forceRedirectUrl={R.harita} signUpForceRedirectUrl={R.harita} asChild>
+        <button type="button" class="cursor-pointer font-medium text-accent hover:underline">giriş yap</button>
+      </SignInButton>.
+    </p>
+  )}
+
+  <div class="mt-4 overflow-hidden rounded-2xl border border-line bg-surface-raised" data-reveal>
     <div id="harita" class="h-[60vh] min-h-80 w-full sm:h-[70vh]" role="region" aria-label="Türkiye üye ve kulüp haritası"></div>
     <noscript><p class="p-4 text-sm text-ink-muted">Harita için JavaScript gerekir; aşağıdaki şehir listesini kullan.</p></noscript>
   </div>
-  {/* `<` kaçışı ZORUNLU: kulüp adı kullanıcı metni, </script> ile bloktan kaçabilir */}
-  <script type="application/json" id="harita-veri" set:html={JSON.stringify(pinler).replace(/</g, "\\u003c")} />
+  {/* `<` kaçışı ZORUNLU: kulüp/üye adı kullanıcı metni, kapanış etiketiyle bloktan kaçabilir */}
+  <script type="application/json" id="harita-veri" set:html={JSON.stringify(veri).replace(/</g, "\\u003c")} />
 
   {pinler.some((p) => p.kulupler.length > 0) && (
     <ul class="mt-4 flex flex-wrap gap-2 text-sm" aria-label="Kulüp olan şehirler">
@@ -95,7 +169,8 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
   )}
 
   <p class="mt-4 text-sm text-ink-muted">
-    Konumlar il düzeyindedir; profilindeki şehir alanından beslenir. İl tonu kulüp sayısını gösterir; rozete ya da ile dokun, kulübe katıl —
+    Konumlar il düzeyindedir; profilindeki şehir alanından beslenir. İl sayıları anonimdir: bir üye yalnız profilinde
+    "Haritada görün"ü açtıysa, o da yalnız giriş yapmış üyelere adıyla gösterilir. İl tonu kulüp sayısını gösterir; rozete ya da ile dokun, kulübe katıl —
     <a href="/kulupler" class="text-accent hover:underline">tüm kulüpler</a>.
   </p>
 </ToplulukLayout>
@@ -111,6 +186,8 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
     transition: transform 0.15s;
   }
   .harita-rozet-kulup { background: var(--accent); }
+  /* Filtre açıkken rozet = filtreye uyan görünen üye sayısı */
+  .harita-rozet-filtre { background: var(--surface); color: var(--accent); border-color: var(--accent); }
   .leaflet-marker-icon:hover .harita-rozet, .leaflet-marker-icon:focus-visible .harita-rozet { transform: scale(1.15); }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip {
     background: var(--surface-raised); color: var(--ink); border: 1px solid var(--line);
@@ -138,53 +215,103 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
   import sinirlar from "@/data/il-sinirlari.json";
 
   type Kulup = { slug: string; name: string; members: number };
-  type Pin = { il: string; lat: number; lon: number; uye: number; kulupler: Kulup[] };
+  type Uye = { h: string; ad: string; av: string | null; sv: number };
+  type Etkinlik = { yol: string; ad: string; zaman: string };
+  type Pin = { il: string; lat: number; lon: number; uye: number; kulupler: Kulup[]; uyeler: Uye[]; gorunen: number; etkinlikler: Etkinlik[] };
+  type Veri = { pinler: Pin[]; bakan: string | null; filtreli: boolean };
 
-  /** Popup içeriği DOM ile kurulur: kulüp adı kullanıcı metnidir → textContent (innerHTML yok) */
-  function popupIcerigi(p: Pin): HTMLElement {
-    const el = document.createElement("div");
-    const baslik = document.createElement("p");
-    baslik.className = "font-display text-lg font-semibold text-ink";
-    baslik.textContent = p.il;
-    const ozet = document.createElement("p");
-    ozet.className = "mt-0.5 text-sm text-ink-muted";
-    ozet.textContent = `${p.uye} üye · ${p.kulupler.length} kulüp`;
-    el.append(baslik, ozet);
-    if (p.kulupler.length === 0) {
-      const kur = document.createElement("a");
-      kur.href = "/kulup-kur";
-      kur.className = "mt-3 inline-block text-sm font-medium text-accent hover:underline";
-      kur.textContent = "Bu şehirde kulüp kur →";
-      el.append(kur);
-      return el;
+  const el = <K extends keyof HTMLElementTagNameMap>(etiket: K, sinif: string, metin?: string) => {
+    const e = document.createElement(etiket);
+    e.className = sinif;
+    if (metin !== undefined) e.textContent = metin;
+    return e;
+  };
+  const baglanti = (href: string, sinif: string, metin: string) => {
+    const a = el("a", sinif, metin);
+    a.href = href;
+    return a;
+  };
+  const bolum = (metin: string) => el("p", "mt-3 text-xs font-semibold uppercase tracking-wide text-ink-muted", metin);
+
+  /** Popup içeriği DOM ile kurulur: kulüp/üye/etkinlik adı kullanıcı metnidir → textContent (innerHTML yok) */
+  function popupIcerigi(p: Pin, bakan: string | null): HTMLElement {
+    const kap = document.createElement("div");
+    kap.append(
+      el("p", "font-display text-lg font-semibold text-ink", p.il),
+      el("p", "mt-0.5 text-sm text-ink-muted", `${p.uye} üye · ${p.kulupler.length} kulüp`),
+    );
+    if (p.kulupler.length > 0) {
+      const liste = el("div", "mt-2 space-y-1.5 text-sm");
+      for (const k of p.kulupler) {
+        const a = baglanti(`/kulup/${encodeURIComponent(k.slug)}`, "block rounded-lg border border-line px-3 py-2 text-ink hover:border-accent hover:text-accent", k.name);
+        a.append(el("span", "text-xs text-ink-muted", ` · ${k.members} üye`));
+        liste.append(a);
+      }
+      kap.append(liste);
     }
-    const liste = document.createElement("div");
-    liste.className = "mt-2 space-y-1.5 text-sm";
-    for (const k of p.kulupler) {
-      const a = document.createElement("a");
-      a.href = `/kulup/${encodeURIComponent(k.slug)}`;
-      a.className = "block rounded-lg border border-line px-3 py-2 text-ink hover:border-accent hover:text-accent";
-      a.textContent = k.name;
-      const n = document.createElement("span");
-      n.className = "text-xs text-ink-muted";
-      n.textContent = ` · ${k.members} üye`;
-      a.append(n);
-      liste.append(a);
+    // Üye ızgarası: yalnız "Haritada görün" rızası verenler; sunucu yalnız girişli üyeye gönderir
+    if (p.uyeler.length > 0) {
+      kap.append(bolum(`Haritada görünenler (${p.gorunen})`));
+      const izgara = el("div", "mt-1.5 space-y-1.5 text-sm");
+      izgara.dataset.haritaUyeler = p.il;
+      for (const u of p.uyeler) {
+        const satir = el("div", "flex items-center gap-2");
+        satir.dataset.uye = u.h;
+        if (u.av && u.av.startsWith("https://")) {
+          const img = el("img", "size-7 shrink-0 rounded-full border border-line object-cover");
+          img.src = u.av;
+          img.alt = "";
+          img.loading = "lazy";
+          img.referrerPolicy = "no-referrer";
+          satir.append(img);
+        } else {
+          satir.append(el("span", "flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent", (u.ad[0] ?? "?").toLocaleUpperCase("tr")));
+        }
+        satir.append(
+          baglanti(`/u/${encodeURIComponent(u.h)}`, "min-w-0 flex-1 truncate font-medium text-ink hover:text-accent", u.ad),
+          el("span", "shrink-0 text-xs text-ink-muted", `Sv ${u.sv}`),
+        );
+        if (bakan && u.h !== bakan)
+          satir.append(baglanti(`/uye/mesajlar/${encodeURIComponent(u.h)}`, "shrink-0 rounded-full border border-line px-2 py-0.5 text-xs text-accent hover:border-accent", "Mesaj"));
+        izgara.append(satir);
+      }
+      kap.append(izgara);
+      if (p.gorunen > p.uyeler.length) kap.append(el("p", "mt-1 text-xs text-ink-muted", `+${p.gorunen - p.uyeler.length} üye daha`));
     }
-    el.append(liste);
-    return el;
+    if (p.etkinlikler.length > 0) {
+      kap.append(bolum("Yaklaşan etkinlikler"));
+      const liste = el("div", "mt-1.5 space-y-1.5 text-sm");
+      for (const e of p.etkinlikler) {
+        const a = baglanti(e.yol, "block rounded-lg border border-line px-3 py-2 text-ink hover:border-accent hover:text-accent", e.ad);
+        a.append(el("span", "block text-xs text-ink-muted", e.zaman));
+        liste.append(a);
+      }
+      kap.append(liste);
+    }
+    if (p.kulupler.length === 0)
+      kap.append(baglanti("/kulup-kur", "mt-3 inline-block text-sm font-medium text-accent hover:underline", "Bu şehirde kulüp kur →"));
+    return kap;
   }
+
+  let harita: L.Map | undefined;
+  // ClientRouter gezintisinde (filtre formu dahil) eski harita bırakılır: dinleyici/karo sızıntısı olmasın
+  document.addEventListener("astro:before-swap", () => {
+    harita?.remove();
+    harita = undefined;
+  });
 
   document.addEventListener("astro:page-load", () => {
     const kap = document.getElementById("harita");
     if (!kap || kap.dataset.init) return;
     kap.dataset.init = "1";
-    const pinler = JSON.parse(document.getElementById("harita-veri")?.textContent ?? "[]") as Pin[];
+    const { pinler, bakan, filtreli } = JSON.parse(document.getElementById("harita-veri")?.textContent ?? '{"pinler":[]}') as Veri;
     const pinMap = new Map(pinler.map((p) => [p.il, p]));
-    const POPUP: L.PopupOptions = { maxWidth: 280, maxHeight: 260, autoPanPadding: [16, 16] };
+    const bosPin = (il: string): Pin => ({ il, lat: 0, lon: 0, uye: 0, kulupler: [], uyeler: [], gorunen: 0, etkinlikler: [] });
+    // Dar ekranda popup harita kutusundan geniş olmasın (autoPan iki kenarı birden sığdıramaz → kırpılır)
+    const POPUP: L.PopupOptions = { maxWidth: Math.min(280, kap.clientWidth - 76), maxHeight: 260, autoPanPadding: [16, 16] };
 
     const TURKIYE: L.LatLngBoundsLiteral = [[35.8, 25.6], [42.2, 44.9]];
-    const map = L.map(kap, {
+    const map = (harita = L.map(kap, {
       center: [39.03, 35.25], // openstreetmap.org/#map=6/39.03/35.25
       zoom: 6,
       minZoom: 5,
@@ -192,10 +319,11 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
       zoomControl: false, // sol üstte popup'la çakışıyordu → sağ alta (popup yukarı açılır)
       scrollWheelZoom: false, // sayfa kaydırmasını çalmasın; haritaya odaklanınca açılır
       // Gevşek sınır: dar/dikey ekranda zoom 5 görünümü Türkiye'den geniştir; sıkı sınır popup'ın
-      // autoPan'ını moveend'de geri alıp popup'ı kırpıyordu (ölçüldü)
-      maxBounds: [[30, 18], [48, 52]],
+      // autoPan'ını moveend'de geri alıp popup'ı kırpıyordu (ölçüldü). Kuzey payı geniş: popup yukarı
+      // açılır ve üye ızgarası + etkinliklerle 260 px'e uzar (kuzey illerinde ~5° kaydırma gerekir).
+      maxBounds: [[30, 18], [54, 52]],
       maxBoundsViscosity: 0.8,
-    });
+    }));
     map.fitBounds(TURKIYE, { padding: [8, 8] }); // dar ekranda da tüm ülke görünsün (zoom konteynere göre)
     L.control.zoom({ position: "bottomright" }).addTo(map);
     map.on("focus", () => map.scrollWheelZoom.enable());
@@ -214,23 +342,24 @@ const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
         const k = p?.kulupler.length ?? 0;
         return { className: `il-sinir il-sinir-${Math.min(k, 2)}${!k && (p?.uye ?? 0) > 0 ? " il-sinir-uye" : ""}` };
       },
-      onEachFeature: (f, layer) =>
-        layer.bindPopup(() => popupIcerigi(pinMap.get(f.properties.il) ?? { il: f.properties.il, lat: 0, lon: 0, uye: 0, kulupler: [] }), POPUP),
+      onEachFeature: (f, layer) => layer.bindPopup(() => popupIcerigi(pinMap.get(f.properties.il) ?? bosPin(f.properties.il), bakan), POPUP),
     }).addTo(map);
 
     for (const p of pinler) {
-      if (p.uye === 0 && p.kulupler.length === 0) continue; // rozet yalnız veri olan ilde
+      // Filtre açıkken rozet yalnız filtreye uyan görünen üyesi olan ilde; değilse veri olan her ilde
+      if (filtreli ? p.gorunen === 0 : p.uye === 0 && p.kulupler.length === 0 && p.etkinlikler.length === 0) continue;
       const kulup = p.kulupler.length > 0;
-      const sayi = kulup ? p.kulupler.length : p.uye; // sayı: güvenli HTML
+      const sayi = filtreli ? p.gorunen : kulup ? p.kulupler.length : p.uye || p.etkinlikler.length; // sayı: güvenli HTML
+      const sinif = filtreli ? " harita-rozet-filtre" : kulup ? " harita-rozet-kulup" : "";
       const icon = L.divIcon({
         className: "",
-        html: `<span class="harita-rozet${kulup ? " harita-rozet-kulup" : ""}">${sayi}</span>`,
+        html: `<span class="harita-rozet${sinif}">${Number(sayi)}</span>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
         popupAnchor: [0, -14],
       });
       L.marker([p.lat, p.lon], { icon, title: `${p.il}: ${p.uye} üye, ${p.kulupler.length} kulüp` })
-        .bindPopup(() => popupIcerigi(p), POPUP)
+        .bindPopup(() => popupIcerigi(p, bakan), POPUP)
         .addTo(map);
     }
   });
