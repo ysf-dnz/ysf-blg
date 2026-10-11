@@ -224,6 +224,11 @@ const GIRIS: Record<string, string> = {
       ? `Girişin doğrulandı ✓ +${Math.trunc(Number(q.get("puan")))} puan. İyi etkinlikler!`
       : "Girişin doğrulandı ✓ İyi etkinlikler!",
   zaten: "Girişin daha önce doğrulanmıştı ✓",
+  // Dönen QR POST'unun (F4-05) başarısız sonuçları da buraya döner
+  sure: "QR'ın süresi doldu — girişteki ekranda güncel QR'ı yeniden okut (30 saniyede bir yenilenir).",
+  pencere: "Giriş şu an kapalı: giriş doğrulaması kapı açılışından etkinlik bitişine kadar yapılır.",
+  dolu: "Kontenjan dolu: bu etkinliğe önceden kayıt gerekiyordu.",
+  kapali: "Kayıtlar kapandı: bu etkinliğe önceden kayıt gerekiyordu.",
 };
 const bant = q.has("yeni")
   ? "Etkinliğin yayında 🎉 Topluluğunla paylaş."
