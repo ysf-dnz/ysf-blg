@@ -20,6 +20,21 @@ export const kulupTuruMu = (s: string): s is KulupTuru => Object.hasOwn(KULUP_TU
 /** Bilinmeyen (beyaz liste öncesi yazılmış) değerde ham metne düşer */
 export const turEtiketi = (s: string): string => (KULUP_TUR as Record<string, string>)[s] ?? s;
 
+export const KULUP_ADI_ASGARI = 3;
+export const KULUP_ADI_AZAMI = 60;
+/**
+ * Topluluk adı (F4-01): boşluklar tekilleştirilir; 3–60 karakter, en az bir harf. `<` `>`,
+ * kontrol ve biçim karakterleri (sıfır genişlik, bidi yön değiştirici → görsel taklit) reddedilir.
+ * Ad bildirimlere, haritaya ve JSON-LD'ye gömülür: render kaçışlı olsa da kaynağı temiz tutar.
+ * Geçersizse null.
+ */
+export function kulupAdiTemizle(girdi: string | null | undefined): string | null {
+  const ad = String(girdi ?? "").replace(/\s+/g, " ").trim();
+  if (ad.length < KULUP_ADI_ASGARI || ad.length > KULUP_ADI_AZAMI) return null;
+  if (/[<>\p{Cc}\p{Cf}]/u.test(ad) || !/\p{L}/u.test(ad)) return null;
+  return ad;
+}
+
 // Türkçe küçültme + ı→i katlama: "Istanbul"/"IZMIR" (ASCII klavye) de "İstanbul"/"İzmir" ile eşleşir
 const normalize = (s: string) => s.trim().toLocaleLowerCase("tr").replace(/ı/g, "i");
 /** 81 il, Türkçe alfabetik (JSON plaka sırasında) */
