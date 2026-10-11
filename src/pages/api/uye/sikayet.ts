@@ -1,12 +1,14 @@
 /**
- * POST /api/uye/sikayet — kurs ya da yorum şikâyeti (F1-10).
- * Üç FARKLI Sv4+ üye şikâyet ettiyse içerik incelemeye kadar gizlenir;
- * sayım gizleme UPDATE'inin WHERE'inde (tek SQL, yarışsız). Admin kuyruğu /uye/admin.
+ * POST /api/uye/sikayet — kurs, yorum (F1-10), üye ya da mesaj (F4-04) şikâyeti.
+ * Kurs/yorum: üç FARKLI Sv4+ üye şikâyet ettiyse içerik incelemeye kadar gizlenir;
+ * sayım gizleme UPDATE'inin WHERE'inde (tek SQL, yarışsız). Üye/mesaj: otomatik etki YOK,
+ * yalnız admin kuyruğu (/uye/admin). Mesajı yalnız ALICISI şikâyet eder (başkasının
+ * yazışması id deneyerek kuyruğa düşürülemesin); engel şikâyeti kapatmaz.
  */
 import type { APIRoute } from "astro";
 import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { LEVEL_THRESHOLDS } from "@/lib/levels.ts";
+import { SV4_PUAN } from "@/lib/levels.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { guvenliYol } from "@/lib/urls.ts";
 
@@ -14,7 +16,9 @@ export const prerender = false;
 
 /** Gizleme eşiği: bu kadar farklı Sv4+ üye */
 export const SIKAYET_ESIGI = 3;
-const SV4_PUAN = LEVEL_THRESHOLDS[3]!; // seviye 4 eşiği (kazanılan toplam)
+const TURLER = ["course", "comment", "user", "message"] as const;
+type SikayetTuru = (typeof TURLER)[number];
+const sikayetTuruMu = (s: string): s is SikayetTuru => (TURLER as readonly string[]).includes(s);
 
 export const POST: APIRoute = async (context) => {
   const member = await getOrCreateMember(context);
@@ -25,19 +29,34 @@ export const POST: APIRoute = async (context) => {
   const targetId = Number(form.get("targetId") ?? 0);
   const reason = String(form.get("reason") ?? "").trim().slice(0, 300) || null;
   const geri = guvenliYol(form, "/kurslar");
-  if (!(targetType === "course" || targetType === "comment") || !targetId)
+  if (!sikayetTuruMu(targetType) || !Number.isSafeInteger(targetId) || targetId <= 0)
     return new Response("Geçersiz hedef", { status: 400 });
 
-  // Hedef var ve şikâyet edilebilir durumda mı (kuyruk olmayan/zaten kapalı hedeflerle dolmasın)
-  const hedefVar =
-    targetType === "course"
-      ? await db.query.courses.findFirst({
-          where: and(eq(schema.courses.id, targetId), inArray(schema.courses.status, ["published", "hidden"])),
-        })
-      : await db.query.comments.findFirst({
-          where: and(eq(schema.comments.id, targetId), isNull(schema.comments.hiddenAt)),
-        });
+  // Hedef var ve şikâyet edilebilir durumda mı (kuyruk olmayan/zaten kapalı hedeflerle dolmasın).
+  // Her tür KENDİ tablosunda aranır: id'ler tablolar arasında çakışır.
+  const hedefVar = await {
+    course: () =>
+      db.query.courses.findFirst({
+        where: and(eq(schema.courses.id, targetId), inArray(schema.courses.status, ["published", "hidden"])),
+        columns: { id: true },
+      }),
+    comment: () =>
+      db.query.comments.findFirst({
+        where: and(eq(schema.comments.id, targetId), isNull(schema.comments.hiddenAt)),
+        columns: { id: true },
+      }),
+    user: () =>
+      targetId === member.id
+        ? Promise.resolve(undefined)
+        : db.query.users.findFirst({ where: eq(schema.users.id, targetId), columns: { id: true } }),
+    message: () =>
+      db.query.messages.findFirst({
+        where: and(eq(schema.messages.id, targetId), eq(schema.messages.recipientId, member.id)),
+        columns: { id: true },
+      }),
+  }[targetType]();
   if (!hedefVar) return new Response("Hedef bulunamadı", { status: 404 });
+  const don = (durum: string) => context.redirect(`${geri}${geri.includes("?") ? "&" : "?"}sikayet=${durum}`);
 
   // Hız sınırı: şikâyetçi başına saatte 10
   const [sonSaat] = await db
@@ -49,8 +68,8 @@ export const POST: APIRoute = async (context) => {
         gte(schema.reports.createdAt, new Date(Date.now() - 3600_000)),
       ),
     );
-  if (Number(sonSaat?.n ?? 0) >= 10)
-    return new Response("Saatte en çok 10 şikâyet", { status: 429 });
+  // Düz metin 429 değil yönlendirme: ClientRouter HTML olmayan yanıtta kullanıcıya 404 gösterirdi
+  if (Number(sonSaat?.n ?? 0) >= 10) return don("hiz");
 
   await db
     .insert(schema.reports)
@@ -68,10 +87,11 @@ export const POST: APIRoute = async (context) => {
     await db.execute(
       sql`update courses set status = 'hidden' where id = ${targetId} and status = 'published' and ${sayim}`,
     );
-  } else {
+  } else if (targetType === "comment") {
     await db.execute(
       sql`update comments set hidden_at = now() where id = ${targetId} and hidden_at is null and ${sayim}`,
     );
   }
-  return context.redirect(`${geri}${geri.includes("?") ? "&" : "?"}sikayet=1`);
+  // user | message: otomatik gizleme yok (aynı id'li yorumu gizleme tuzağı — dal AÇIKÇA comment)
+  return don("1");
 };

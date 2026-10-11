@@ -67,6 +67,32 @@ const sikayetliYorumlar = new Map(
     })
   ).map((c) => [c.id, c]),
 );
+// Üye / mesaj şikâyetleri (F4-04): yalnız ŞİKÂYET EDİLEN mesajın gövdesi okunur (konuşmanın tamamı değil)
+const sikayetliMesajlar = new Map(
+  (
+    await db.query.messages.findMany({
+      where: inArray(
+        schema.messages.id,
+        sikayetGruplari.filter((g) => g.targetType === "message").map((g) => g.targetId).concat([0]),
+      ),
+    })
+  ).map((m) => [m.id, m]),
+);
+const sikayetliUyeler = new Map(
+  (
+    await db.query.users.findMany({
+      where: inArray(
+        schema.users.id,
+        sikayetGruplari
+          .filter((g) => g.targetType === "user")
+          .map((g) => g.targetId)
+          .concat([...sikayetliMesajlar.values()].map((m) => m.senderId), [0]),
+      ),
+      columns: { id: true, handle: true, name: true },
+    })
+  ).map((u) => [u.id, u]),
+);
+const SIKAYET_TURU: Record<string, string> = { course: "Kurs", comment: "Yorum", user: "Üye", message: "Mesaj" };
 const pendingApps = await db.query.applications.findMany({
   where: eq(schema.applications.status, "pending"),
   orderBy: desc(schema.applications.createdAt),
@@ -212,21 +238,35 @@ const pendingApps = await db.query.applications.findMany({
         const kurs = g.targetType === "course" ? sikayetliKurslar.get(g.targetId) : undefined;
         const yorum = g.targetType === "comment" ? sikayetliYorumlar.get(g.targetId) : undefined;
         const gizli = kurs ? kurs.status === "hidden" : !!yorum?.hiddenAt;
+        const mesaj = g.targetType === "message" ? sikayetliMesajlar.get(g.targetId) : undefined;
+        const uye = sikayetliUyeler.get(g.targetType === "user" ? g.targetId : (mesaj?.senderId ?? 0));
+        // Üye/mesajda otomatik etki yok: düğmeler yalnız kuyruk kaydını kapatır
+        const kisisel = g.targetType === "user" || g.targetType === "message";
         return (
           <article class="rounded-2xl border border-line bg-surface-raised p-5">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs text-ink-muted">{g.targetType === "course" ? "Kurs" : "Yorum"} · {g.adet} şikâyet {gizli && <span class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">gizlendi</span>}</p>
+                <p class="text-xs text-ink-muted">{SIKAYET_TURU[g.targetType] ?? g.targetType} · {g.adet} şikâyet {gizli && <span class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">gizlendi</span>}</p>
                 <p class="mt-1 font-medium text-ink">
-                  {kurs ? <a href={`/kurslar/${kurs.slug}`} class="hover:text-accent">{kurs.title}</a> : yorum ? yorum.body.slice(0, 160) : `#${g.targetId}`}
+                  {kurs ? (
+                    <a href={`/kurslar/${kurs.slug}`} class="hover:text-accent">{kurs.title}</a>
+                  ) : yorum ? (
+                    yorum.body.slice(0, 160)
+                  ) : uye ? (
+                    <a href={`/u/${uye.handle}`} class="hover:text-accent">{uye.name} (@{uye.handle})</a>
+                  ) : (
+                    `#${g.targetId}`
+                  )}
                 </p>
+                {/* Mesaj gövdesi düz metin: yalnız Astro kaçışı, bağlantıya ÇEVRİLMEZ (admin oturumu) */}
+                {mesaj && <p class="mt-1 whitespace-pre-wrap break-words rounded-lg bg-surface p-2 text-sm text-ink">{mesaj.body.slice(0, 500)}</p>}
                 {g.nedenler.length > 0 && <p class="mt-1 text-sm text-ink-muted">{g.nedenler.slice(0, 3).join(" · ")}</p>}
               </div>
               <form method="post" action="/api/uye/admin" class="flex gap-2">
                 <input type="hidden" name="reportTarget" value={g.targetType} />
                 <input type="hidden" name="reportTargetId" value={g.targetId} />
-                <button name="action" value="report_remove" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">Kaldır{g.targetType === "course" && " (+iade)"}</button>
-                <button name="action" value="report_restore" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">Geri aç</button>
+                <button name="action" value="report_remove" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">{kisisel ? "Haklı (çözüldü)" : "Kaldır"}{g.targetType === "course" && " (+iade)"}</button>
+                <button name="action" value="report_restore" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">{kisisel ? "Reddet" : "Geri aç"}</button>
               </form>
             </div>
           </article>

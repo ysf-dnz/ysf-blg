@@ -110,7 +110,13 @@ export const POST: APIRoute = async (context) => {
   // comment → gizli kalır) ya da geri aç (course → published; comment → görünür).
   const reportTarget = String(form.get("reportTarget") ?? "");
   const reportTargetId = Number(form.get("reportTargetId") ?? 0);
-  if ((action === "report_remove" || action === "report_restore") && reportTargetId) {
+  // Üye/mesaj şikâyetinde (F4-04) içerik etkisi yok: yalnız kuyruk kaydı kapanır (çözüldü / reddedildi).
+  const SIKAYET_TURLERI = ["course", "comment", "user", "message"] as const;
+  if (
+    (action === "report_remove" || action === "report_restore") &&
+    reportTargetId &&
+    (SIKAYET_TURLERI as readonly string[]).includes(reportTarget)
+  ) {
     const kaldir = action === "report_remove";
     if (reportTarget === "course") {
       // Durum kapısı: "geri aç" yalnız gizleneni yayına döndürür (pending/rejected
@@ -162,7 +168,7 @@ export const POST: APIRoute = async (context) => {
       .set({ status: kaldir ? "resolved" : "dismissed" })
       .where(
         and(
-          eq(schema.reports.targetType, reportTarget as "course" | "comment"),
+          eq(schema.reports.targetType, reportTarget as (typeof SIKAYET_TURLERI)[number]),
           eq(schema.reports.targetId, reportTargetId),
           eq(schema.reports.status, "open"),
         ),

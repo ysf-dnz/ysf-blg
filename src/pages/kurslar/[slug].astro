@@ -226,7 +226,9 @@ const bant = Astro.url.searchParams.has("davet")
     : Astro.url.searchParams.has("onay")
       ? "Kursun admin onayına gitti. Onaylanınca bildirim alırsın; sayfa şimdilik yalnız sana görünür."
       : Astro.url.searchParams.has("sikayet")
-        ? "Şikâyetin alındı. İncelenecek; teşekkürler."
+        ? Astro.url.searchParams.get("sikayet") === "hiz"
+          ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene."
+          : "Şikâyetin alındı. İncelenecek; teşekkürler."
         : null;
 // Girişten dönen üye (?katil=1): GET yazmaz; betik niyeti bulursa formu gönderir, yoksa bir dokunuş
 const katilIpucu =
