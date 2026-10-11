@@ -1,16 +1,16 @@
-# Graph Report - ysf-blog  (2026-08-31)
+# Graph Report - ysf-blog  (2026-10-11)
 
 ## Corpus Check
-- 268 files · ~725,442 words
+- 283 files · ~749,579 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1253 nodes · 1979 edges · 112 communities (93 shown, 19 thin omitted)
+- 1410 nodes · 2222 edges · 127 communities (105 shown, 22 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e4baf1b0`
+- Built from commit: `e61c0dd6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - dependencies
 - client.ts
 - db/schema.ts
-- topluluk/index.astro
+- kurslar/[slug].astro
 - initStories
 - CLAUDE.md — Mimari Anayasa
 - sync-drive-books.ts
@@ -29,7 +29,7 @@
 - gorev.ts
 - rewards.ts
 - getOrCreateMember
-- kulup/[slug].astro
+- gunluk.ts
 - levelFor
 - Organizations (B2B SaaS)
 - index.ts
@@ -101,18 +101,29 @@
 - proxy.ts
 - CLAUDE.md
 - extraction-spec.md
+- Faz 1 — Kurslar (13 issue)
+- ADR 0001 — Kurslar · Davet kartı/QR · Etkinlik girişi · Harita/DM
+- 4. Özellikler
+- egitim.ts
+- economy.ts
+- awardPoints
+- feed.ts
+- quiz.ts
+- kitap-onizleme.ts
+- assumptions.md
+- ideas.md
 
 ## God Nodes (most connected - your core abstractions)
-1. `getOrCreateMember()` - 65 edges
-2. `Db` - 48 edges
+1. `getOrCreateMember()` - 67 edges
+2. `Db` - 51 edges
 3. `useTranslations()` - 28 edges
 4. `getPublishedPosts()` - 23 edges
-5. `levelFor()` - 18 edges
-6. `awardPoints()` - 18 edges
-7. `Organizations (B2B SaaS)` - 17 edges
-8. `compilerOptions` - 16 edges
-9. `Webhooks` - 16 edges
-10. `clubRoleOf()` - 15 edges
+5. `awardPoints()` - 23 edges
+6. `levelFor()` - 18 edges
+7. `PUAN` - 18 edges
+8. `Organizations (B2B SaaS)` - 17 edges
+9. `compilerOptions` - 16 edges
+10. `Webhooks` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `CI Pipeline (test + build + Lighthouse + Playwright)` --semantically_similar_to--> `npm run qa Kalite Kapısı`  [INFERRED] [semantically similar]
@@ -136,11 +147,11 @@
 - **Homepage story ring feed** — src_content_stories_yeni_yazi_notebooklm, src_content_stories_astro_video, src_content_stories_kutuphane_grafigi [INFERRED 0.75]
 - **Kütüphanem NotebookLM knowledge ecosystem** — src_content_projeler_kutuphanem, src_content_posts_tr_notebooklm_ile_ogrenme, src_content_stories_kutuphane_grafigi, src_content_posts_tr_merhaba_dunya, src_content_posts_en_hello_world, src_content_posts_tr_notebooklm_ile_ogrenme_notebooklm [INFERRED 0.85]
 
-## Communities (112 total, 19 thin omitted)
+## Communities (127 total, 22 thin omitted)
 
 ### Community 0 - "devDependencies"
 Cohesion: 0.04
-Nodes (45): @astrojs/check, drizzle-kit, @lhci/cli, devDependencies, @astrojs/check, drizzle-kit, @lhci/cli, pagefind (+37 more)
+Nodes (47): @astrojs/check, @clerk/testing, drizzle-kit, @lhci/cli, devDependencies, @astrojs/check, @clerk/testing, drizzle-kit (+39 more)
 
 ### Community 1 - "Base.astro"
 Cohesion: 0.09
@@ -152,19 +163,19 @@ Nodes (23): styles, enabled, t, Lang, findTranslation(), getPublishedPosts(), Po
 
 ### Community 3 - "dependencies"
 Cohesion: 0.05
-Nodes (41): @astrojs/mdx, @astrojs/react, @astrojs/rss, @astrojs/sitemap, @astrojs/vercel, @clerk/astro, @clerk/localizations, @keystatic/astro (+33 more)
+Nodes (43): @astrojs/mdx, @astrojs/react, @astrojs/rss, @astrojs/sitemap, @astrojs/vercel, @clerk/astro, @clerk/localizations, @keystatic/astro (+35 more)
 
 ### Community 4 - "client.ts"
-Cohesion: 0.10
-Nodes (19): Db, sekmeler, formatDate(), renderMemberMarkdown(), slugifyTitle(), POST(), prerender, POST() (+11 more)
+Cohesion: 0.15
+Nodes (11): Db, groupByCategory(), formatDate(), eventIds, prerender, prerender, string, myBooks (+3 more)
 
 ### Community 5 - "db/schema.ts"
 Cohesion: 0.05
-Nodes (36): booksJson, db, kitapId(), kur(), tumKitaplar, applications, badges, bookAccess (+28 more)
+Nodes (42): booksJson, db, kitapId(), kur(), tumKitaplar, applications, badges, bookAccess (+34 more)
 
-### Community 6 - "topluluk/index.astro"
-Cohesion: 0.15
-Nodes (11): BookData, bookTitle(), getBookMap(), groupByCategory(), R, getEarnedMap(), getLevelsMap(), getUsersMap() (+3 more)
+### Community 6 - "kurslar/[slug].astro"
+Cohesion: 0.14
+Nodes (12): sekmeler, BookData, bookTitle(), getBookMap(), R, getEarnedMap(), getLevelsMap(), getUsersMap() (+4 more)
 
 ### Community 7 - "initStories"
 Cohesion: 0.11
@@ -183,24 +194,24 @@ Cohesion: 0.06
 Nodes (27): bookExtras, books, booksQa, collections, libraryCategories, libraryNotebooks, notebookIds, posts (+19 more)
 
 ### Community 11 - "gorev.ts"
-Cohesion: 0.18
-Nodes (18): gorevOdulKirp(), GUNLUK_BEGENI_PUAN_SINIRI, KULUP_HAFTALIK_TAVAN, likePuaniVerilirMi(), canManage(), canManageGlobal(), ClubRole, clubRoleOf() (+10 more)
+Cohesion: 0.22
+Nodes (13): canManage(), canManageGlobal(), ClubRole, clubRoleOf(), POST(), prerender, haftalikGorevHarcamasi(), POST() (+5 more)
 
 ### Community 12 - "rewards.ts"
-Cohesion: 0.11
-Nodes (27): activateReferralIfFirstPost(), scoreQuiz(), awardPoints(), BadgeKind, begeniPuaniVer(), gunBaslangici(), gunBicimi, kazanilan() (+19 more)
+Cohesion: 0.13
+Nodes (17): BadgeKind, Bekleyen, bekleyeniKesinlestir(), gunBaslangici(), gunBicimi, kazanilan(), ledgerDeltaSql(), Reason (+9 more)
 
 ### Community 13 - "getOrCreateMember"
-Cohesion: 0.14
-Nodes (18): getOrCreateMember(), hasBookAccess(), spendPoints(), POST(), prerender, POST(), prerender, POST() (+10 more)
+Cohesion: 0.10
+Nodes (18): renderMemberMarkdown(), slugifyTitle(), getOrCreateMember(), slugifyHandle(), POST(), prerender, POST(), prerender (+10 more)
 
-### Community 14 - "kulup/[slug].astro"
-Cohesion: 0.17
-Nodes (21): aktifSezon(), ayPenceresi(), kulupIciSiralama(), kulupSiralamasi(), KulupSkoru, normalizeSkor(), pozitifPuanlar(), sezonAdi() (+13 more)
+### Community 14 - "gunluk.ts"
+Cohesion: 0.15
+Nodes (23): aktifSezon(), ayPenceresi(), kulupIciSiralama(), kulupSiralamasi(), KulupSkoru, normalizeSkor(), pozitifPuanlar(), sezonAdi() (+15 more)
 
 ### Community 15 - "levelFor"
 Cohesion: 0.25
-Nodes (10): LEVEL_THRESHOLDS, levelFor(), pointsToNextLevel(), earnedPoints(), kursOduluVer(), parseYoutubeId(), POST(), prerender (+2 more)
+Nodes (9): LEVEL_THRESHOLDS, levelFor(), pointsToNextLevel(), earnedPoints(), POST(), prerender, POST(), prerender (+1 more)
 
 ### Community 16 - "Organizations (B2B SaaS)"
 Cohesion: 0.06
@@ -296,7 +307,7 @@ Nodes (21): dependencies, @clerk/nextjs, next, react, react-dom, devDependencies
 
 ### Community 70 - "member.ts"
 Cohesion: 0.11
-Nodes (15): Ctx, Member, OWNER_EMAILS, pointBalance(), slugifyHandle(), FEATURED_GIFT_BOOK_ID, prerender, prerender (+7 more)
+Nodes (25): Ctx, hasBookAccess(), Member, OWNER_EMAILS, pointBalance(), FEATURED_GIFT_BOOK_ID, PUAN, spendPoints() (+17 more)
 
 ### Community 71 - "Webhooks"
 Cohesion: 0.10
@@ -387,8 +398,8 @@ Cohesion: 0.40
 Nodes (4): Basic Protection, Org + Role Check (B2B), Permission Check (RBAC), Server Actions
 
 ### Community 93 - "Language"
-Cohesion: 0.40
-Nodes (4): Bilgi Ödüldür, Büyüme, Kütüphane, Language
+Cohesion: 0.33
+Nodes (5): Bilgi Ödüldür, Büyüme, Kurs ve etkinlik, Kütüphane, Language
 
 ### Community 94 - "graphify reference: add a URL and watch a folder"
 Cohesion: 0.50
@@ -406,24 +417,56 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (3): Adımlar, Kitap Analizi (NotebookLM → books-qa), Sabit soru seti (4 katman × 3 soru)
 
+### Community 112 - "Faz 1 — Kurslar (13 issue)"
+Cohesion: 0.05
+Nodes (41): F1-00 · Davet çerezi hotfix (canlı bug), F1-01 · Kurs görünürlük ve onay kapıları (güvenlik önkoşulu), F1-02 · `courses` yeni alanlar, slug, "en az 3 geçerli öğe", F1-03 · Rotalar: `/kurslar`, `/kurslar/[slug]`, 301'ler, sekme adı, F1-04 · Herkese açık SSR/SEO, F1-05 · Katılım: `course_enrollments`, "Kursa katıl", aktivasyon, F1-06 · Üretici puanları, asgari süre, atomik tavan, bekleyen puan, F1-07 · Soru-cevap: öğe altı yorum, cevap beğenisi, en iyi cevap (+33 more)
+
+### Community 113 - "ADR 0001 — Kurslar · Davet kartı/QR · Etkinlik girişi · Harita/DM"
+Cohesion: 0.08
+Nodes (24): 0. Bağlam: PRD'nin kodla çelişen ya da yanlış varsayan noktaları, 7. reason → refId tablosu (tek kaynak), 8. Faz 0 kapanışında doğrulanmış / bekleyen, ADR 0001 — Kurslar · Davet kartı/QR · Etkinlik girişi · Harita/DM, Belirsiz (çalıştırılmadı), Faz başına şema dilimi, K1.1 Üç ilkel, öncelik sırasıyla (yeni ilkel yok), K1.2 `db.batch` (+16 more)
+
+### Community 114 - "4. Özellikler"
+Cohesion: 0.10
+Nodes (19): 0. Rolün ve kuralların, 1. Mevcut durum ve hedef, 2. Ürün ilkeleri (belirsiz durumda bunlara göre karar ver), 3. Önce kapatılacak açıklar, 4.1 Kurslar (Dersler'in evrimi), 4.2 Puan kuralları, 4.3 Davet kartı ve QR (kurs ve etkinlik için ortak), 4.4 Topluluklarımız (+11 more)
+
+### Community 115 - "egitim.ts"
+Cohesion: 0.19
+Nodes (15): asgariSureGectiMi(), bildir(), bitirmeOdulleri(), geriDon(), Katilim, katilimBul(), Kurs, KURS_ACILIS_ESIGI (+7 more)
+
+### Community 116 - "economy.ts"
+Cohesion: 0.24
+Nodes (10): gorevOdulKirp(), GUNLUK_BEGENI_PUAN_SINIRI, HESAP_YASI_SAAT, hesapGencMi(), KULUP_HAFTALIK_TAVAN, likePuaniVerilirMi(), OGE_ASGARI_SN, olgunlasmaAni() (+2 more)
+
+### Community 117 - "awardPoints"
+Cohesion: 0.33
+Nodes (11): activateReferralIfFirstPost(), awardBadge(), awardPoints(), revokePoints(), satirlar(), sayacRozetleri(), seviyeAcilimi(), streakIlerlet() (+3 more)
+
+### Community 118 - "feed.ts"
+Cohesion: 0.33
+Nodes (7): begeniPuaniVer(), geriDon(), POST(), prerender, sonSaniyelerdeVarMi(), POST(), prerender
+
+### Community 119 - "quiz.ts"
+Cohesion: 0.67
+Nodes (3): scoreQuiz(), POST(), prerender
+
 ## Knowledge Gaps
-- **638 isolated node(s):** `api-specs-context.sh script`, `execute-request.sh script`, `extract-endpoint-detail.sh script`, `extract-tag-endpoints.sh script`, `name` (+633 more)
+- **739 isolated node(s):** `api-specs-context.sh script`, `execute-request.sh script`, `extract-endpoint-detail.sh script`, `extract-tag-endpoints.sh script`, `name` (+734 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `getOrCreateMember()` connect `getOrCreateMember` to `client.ts`, `member.ts`, `topluluk/index.astro`, `gorev.ts`, `rewards.ts`, `kulup/[slug].astro`, `levelFor`, `[]`, `profil.astro`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `Db` connect `client.ts` to `member.ts`, `topluluk/index.astro`, `gorev.ts`, `rewards.ts`, `getOrCreateMember`, `kulup/[slug].astro`, `levelFor`, `[]`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `[]` connect `[]` to `Base.astro`, `client.ts`, `getOrCreateMember`, `member.ts`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `getOrCreateMember()` connect `getOrCreateMember` to `client.ts`, `member.ts`, `kurslar/[slug].astro`, `gorev.ts`, `levelFor`, `egitim.ts`, `awardPoints`, `feed.ts`, `quiz.ts`, `[]`, `profil.astro`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `Db` connect `client.ts` to `kurslar/[slug].astro`, `member.ts`, `gorev.ts`, `rewards.ts`, `getOrCreateMember`, `gunluk.ts`, `levelFor`, `egitim.ts`, `awardPoints`, `feed.ts`, `quiz.ts`, `[]`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **Why does `[]` connect `en/index.astro` to `index.ts`?**
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `api-specs-context.sh script`, `execute-request.sh script`, `extract-endpoint-detail.sh script` to the rest of the system?**
-  _638 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _739 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.041666666666666664 - nodes in this community are weakly interconnected._
 - **Should `Base.astro` be split into smaller, more focused modules?**
   _Cohesion score 0.09059233449477352 - nodes in this community are weakly interconnected._
 - **Should `posts.ts` be split into smaller, more focused modules?**

@@ -3,6 +3,14 @@
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
 > Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
 
+## 🎴 FAZ 2 — Davet kartı + QR + karşılama (2026-10-11, dal `faz2-davet`, SÜRÜYOR)
+İssue'lar GitHub #18–#24 (F2-01…F2-06, F2-H human).
+- **Çekirdek (commit bdb4ce1)**: `invite_codes` + `invite_visits` (push'landı), `lib/davet.ts` (Crockford kod, `ysf_davet` çerezi, `kursaKatil` atıf + 14 gün bekleyen çifti, `davetAktivasyonu`/`davetBitirme` → `puanOlayi`), `/d/[...kod]` + `/d/q/[kod]` → `karsilama.ts` (ziyaret, IP 60/dk, çerezler, 302 `?d=KOD`), `astro.config` `/D/[kod]` → `/d/q/[kod]` 301 + `includeFiles`; kurs sayfasında davet bandı + `katil=1` otomatik katılım + uygulama içi tarayıcı ipucu + üye Davet kartı bölümü (uqr QR SVG, not, indirme linkleri); davet tavanı 300 (`tavanIcin`), pano Davetlerim hunisi; `/api/uye/davet` (not).
+- **TUZAK (ADR K3.3'e işlendi)**: Astro redirect anahtarını küçük harfe çevirip aynı anahtarlı sayfayı rota listesinden düşürüyor → `/d/[kod].astro` 404 oldu; çözüm rest param `[...kod]`.
+- **Testler**: `davet.test` (Crockford/UA, 19), `davet-db` entegrasyon 5/5 gerçek Neon (AC-5/7/8/9/11), e2e `davet.spec` (AC-12, geçersiz kod, karşılama bandı, OG kart, uygulama içi tarayıcı) + `kurs.spec` davet kartı/not/Davetlerim.
+- **Kart (F2-05, ajan)**: `features/davet/kart.ts` + `/api/kart/[kod]/[dosya]` (story/kare/og PNG + A6 PDF) — rapor bekleniyor; resvg linux binary + `includeFiles` yalnız preview deploy'da doğrulanır.
+- **Kalan**: ajan raporu → inceleme → preview deploy smoke → qa → merge/push; F2-H (Clerk production) Yusuf.
+
 ## 🎓 FAZ 1 TAMAM — Kurslar (2026-10-11, dal `faz1-kurslar`, push EDİLMEDİ)
 İssue'lar GitHub #1–#13 (F1-00, F1-0T, F1-01…F1-11). Kod: 3 commit (hotfix+test altyapısı · motor · sayfalar).
 - **Canlı bug onarımı (F1-00)**: `/?ref=` statik sayfada çerez kurmuyordu → `Base.astro` inline script. **search.spec kök nedeni** D3Chart yorumundaki literal `<script>` (Vite dep-scan) — düzeltildi.

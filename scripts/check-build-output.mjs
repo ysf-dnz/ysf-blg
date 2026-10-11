@@ -99,6 +99,17 @@ if (fonksiyonlar.length === 0) {
   hata++;
 }
 
+// 4) Davet kartı bekçisi: /api/kart satori+resvg'yi ÇALIŞMA ZAMANINDA koşturur →
+// fonksiyon paketinde 3 marka fontu (astro.config includeFiles) ve resvg native
+// binary'si olmalı; yoksa canlıda kart 500 verir (ADR 0001 K3.1).
+const renderFunc = ".vercel/output/functions/_render.func";
+const ttf = dosyalar(renderFunc, ".ttf").length;
+const resvgNode = dosyalar(renderFunc, ".node").filter((d) => /resvg/i.test(d)).length;
+if (ttf < 3 || resvgNode < 1) {
+  console.error(`✗ KART: ${renderFunc} içinde ${ttf}/3 .ttf ve ${resvgNode}/1 resvg .node var`);
+  hata++;
+}
+
 if (hata) {
   console.error(`\nBuild çıktısı doğrulaması BAŞARISIZ (${hata} sorun).`);
   process.exit(1);

@@ -4,7 +4,7 @@
  */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import satori from "satori";
+import satori, { type SatoriOptions } from "satori";
 import { Resvg } from "@resvg/resvg-js";
 
 // Build bundle'ı dist/ altından çalışır; fontlar proje kökünden okunur
@@ -24,6 +24,16 @@ const KATEGORI_RENK: Record<string, string> = {
   kisisel: "#db2777",
 };
 
+/** Satori font listesi — OG görseli ve davet kartı (features/davet/kart.ts) aynı markayı paylaşır */
+export async function ogFontlari(): Promise<SatoriOptions["fonts"]> {
+  const [fraunces, inter, interBold] = await fonts;
+  return [
+    { name: "Fraunces", data: fraunces, weight: 600, style: "normal" },
+    { name: "Inter", data: inter, weight: 400, style: "normal" },
+    { name: "Inter", data: interBold, weight: 700, style: "normal" },
+  ];
+}
+
 export interface OgInput {
   title: string;
   category?: string;
@@ -31,7 +41,6 @@ export interface OgInput {
 }
 
 export async function renderOgImage(input: OgInput): Promise<Buffer> {
-  const [fraunces, inter, interBold] = await fonts;
   const accent = KATEGORI_RENK[input.category ?? ""] ?? "#3fb8bc";
 
   const tree = {
@@ -116,11 +125,7 @@ export async function renderOgImage(input: OgInput): Promise<Buffer> {
     {
       width: 1200,
       height: 630,
-      fonts: [
-        { name: "Fraunces", data: fraunces, weight: 600, style: "normal" },
-        { name: "Inter", data: inter, weight: 400, style: "normal" },
-        { name: "Inter", data: interBold, weight: 700, style: "normal" },
-      ],
+      fonts: await ogFontlari(),
     },
   );
 
