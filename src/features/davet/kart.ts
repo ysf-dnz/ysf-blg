@@ -4,6 +4,7 @@
  * Düzen: kapak → başlık → vaat → meta → "{Ad} seni davet ediyor" → en altta QR + kısa link.
  */
 import satori from "satori";
+import sharp from "sharp";
 import { Resvg } from "@resvg/resvg-js";
 import { ogFontlari } from "@/features/seo/og/render.ts";
 
@@ -29,16 +30,29 @@ export interface KartGirdi {
 }
 
 const RENK = { zemin: "#0a2b33", metin: "#fdfcfa", soluk: "#93a5a8", vurgu: "#3fb8bc", kart: "#123b44" };
-const GORSEL_TIP = /^image\/(png|jpeg|gif|webp|avif|svg\+xml)/;
+// SVG yok (resvg'de ağır filtre bombası); webp/avif sharp ile PNG'ye çevrilir (satori yalnız png/jpeg/gif çözer)
+const GORSEL_TIP = /^image\/(png|jpeg|gif|webp|avif)\b/;
+const EN_COK_BAYT = 2_000_000;
 
-/** Dış görseli data-URI'ye çevirir; 3 sn / hata / görsel olmayan yanıt → null (kart görselsiz üretilir) */
+/**
+ * Dış görseli data-URI'ye çevirir. Kullanıcı verisi URL'dir (kurs kapağı): yönlendirme
+ * izlenmez (SSRF), 2 MB ve 4096² piksel üstü atılır, sharp ile 1080 px PNG'ye normalize
+ * edilir. 3 sn / hata / görsel olmayan yanıt → null (kart görselsiz üretilir).
+ */
 async function dataUri(url: string | null | undefined): Promise<string | null> {
-  if (!url || !/^https?:\/\//.test(url)) return null;
+  if (!url || !/^https:\/\//.test(url)) return null;
   try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(url, { signal: AbortSignal.timeout(3000), redirect: "error" });
     const tip = r.headers.get("content-type") ?? "";
     if (!r.ok || !GORSEL_TIP.test(tip)) return null;
-    return `data:${tip.split(";")[0]};base64,${Buffer.from(await r.arrayBuffer()).toString("base64")}`;
+    if (Number(r.headers.get("content-length") ?? 0) > EN_COK_BAYT) return null;
+    const ham = Buffer.from(await r.arrayBuffer());
+    if (ham.byteLength > EN_COK_BAYT) return null;
+    const png = await sharp(ham, { limitInputPixels: 4096 * 4096 })
+      .resize({ width: 1080, withoutEnlargement: true })
+      .png()
+      .toBuffer();
+    return `data:image/png;base64,${png.toString("base64")}`;
   } catch {
     return null;
   }
@@ -49,18 +63,26 @@ const el = (type: string, style: Record<string, unknown>, children?: unknown): A
   type,
   props: { style: { display: "flex", ...style }, ...(children === undefined ? {} : { children }) },
 });
-// Inter/Fraunces Latin Extended: Türkçe tam, emoji yok → tofu yerine düşürülür (🚀 notta görüldü)
-const temiz = (s: string) => s.replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, "").replace(/\s+/g, " ").trim();
+// Inter/Fraunces Latin Extended: Türkçe tam, emoji yok → tofu yerine düşürülür (🚀 notta görüldü).
+// Bayrak (Regional_Indicator), ten rengi (Emoji_Modifier), keycap (U+20E3) ve tag karakterleri de.
+const temiz = (s: string) =>
+  s
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u20e3\u200d\ufe0f\u{E0020}-\u{E007F}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+// display:block ŞART: satori lineClamp'i yalnız block'ta uygular (flex'te taşma sınırsız)
 const yazi = (metin: string, style: Record<string, unknown>) =>
-  el("div", { textOverflow: "ellipsis", ...style }, temiz(metin));
+  el("div", { textOverflow: "ellipsis", ...style, display: "block" }, temiz(metin));
 
-export async function renderDavetKarti(g: KartGirdi): Promise<Buffer> {
+/** Kart PNG'si; `eksik` = istenen kapak/avatar getirilemedi (kısa cache için) */
+export async function renderDavetKartiDetay(g: KartGirdi): Promise<{ png: Buffer; eksik: boolean }> {
   const [w, h] = KART_BOYUT[g.format];
   const og = g.format === "og";
   // Ölçek: story 1080 geniş sütun; kare aynı genişlik, kısa boy; og yatay üç sütun
   const k = og ? 0.78 : g.format === "kare" ? 0.78 : 1;
   const px = (n: number) => `${Math.round(n * k)}px`;
   const [kapak, avatar] = await Promise.all([dataUri(g.kapakUrl), dataUri(g.davetEden.avatarUrl)]);
+  const eksik = (!!g.kapakUrl && !kapak) || (!!g.davetEden.avatarUrl && !avatar);
   const qr = `data:image/svg+xml;base64,${Buffer.from(g.qrSvg).toString("base64")}`;
 
   const kapakKutu = kapak
@@ -121,5 +143,9 @@ export async function renderDavetKarti(g: KartGirdi): Promise<Buffer> {
     height: h,
     fonts: await ogFontlari(),
   });
-  return new Resvg(svg, { fitTo: { mode: "width", value: w } }).render().asPng();
+  return { png: new Resvg(svg, { fitTo: { mode: "width", value: w } }).render().asPng(), eksik };
+}
+
+export async function renderDavetKarti(g: KartGirdi): Promise<Buffer> {
+  return (await renderDavetKartiDetay(g)).png;
 }

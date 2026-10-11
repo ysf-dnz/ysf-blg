@@ -11,6 +11,8 @@ export interface SeoProps {
   /** Diğer dildeki karşılık path'i (varsa hreflang çifti üretilir) */
   translationPath?: string;
   ogImagePath?: string;
+  /** og:url canonical'dan farklı olacaksa (ör. davet ?d= — Meta tarayıcısı og:url'yi yeniden tarar) */
+  ogUrl?: string;
   article?: {
     publishedTime: Date;
     modifiedTime?: Date;
@@ -21,7 +23,7 @@ export interface SeoProps {
 
 type Props = SeoProps;
 
-const { title, description, translationPath, ogImagePath, article, noindex } =
+const { title, description, translationPath, ogImagePath, ogUrl, article, noindex } =
   Astro.props;
 
 const site = Astro.site!;
@@ -56,7 +58,7 @@ const hreflangs = translationPath
 <meta property="og:type" content={article ? "article" : "website"} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
+<meta property="og:url" content={ogUrl ? new URL(ogUrl, site).toString() : canonical} />
 <meta property="og:image" content={ogImage} />
 {
   /* Boyut yalnız bilinen varsayılan görsel için; sayfa özel görsel (ör. dikey

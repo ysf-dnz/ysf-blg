@@ -17,6 +17,11 @@ test.describe("kurs daveti — misafir karşılama (Faz 2)", () => {
     expect(r2.headers()["location"]).toBe(`/d/q/${KOD}`);
     const r3 = await request.get(`/d/q/${KOD}`, { maxRedirects: 0 });
     expect(r3.status()).toBe(302);
+    expect(r3.headers()["location"]).toBe(`${KURS}?d=${KOD}`);
+    // Alt-kaynak isteği (img) çerez kuramaz ve ziyaret sayılmaz
+    const r5 = await request.get(`/d/${KOD}`, { maxRedirects: 0, headers: { "sec-fetch-dest": "image" } });
+    expect(r5.status()).toBe(204);
+    expect(r5.headersArray().some((h) => h.name.toLowerCase() === "set-cookie")).toBe(false);
     // O→0, I→1 normalizasyonu: "DEMO7KQ" da aynı koda çözülür
     const r4 = await request.get(`/d/DEMO7KQ`, { maxRedirects: 0 });
     expect(r4.headers()["location"]).toBe(`${KURS}?d=${KOD}`);

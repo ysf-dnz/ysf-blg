@@ -26,4 +26,19 @@ describe("davet kartı — satori + resvg (fontlar diskten, DB yok, dış URL yo
     },
     15_000,
   );
+
+  it("uzun BÜYÜK HARF başlık ve 140 karakter vaat taşmaz (lineClamp block'ta çalışır), emoji/bayrak temizlenir", async () => {
+    const png = await renderDavetKarti({
+      format: "kare",
+      baslik: "GİRİŞİMCİLİK VE İNOVASYON: SIFIRDAN ŞİRKET KURMANIN BÜTÜN AŞAMALARI, ÖĞRENİLEN DERSLER VE YOL HARİTASI",
+      vaat: "Fikirden ilk müşteriye kadar yol haritası; her öğe bir görevle biter ve topluluktan geri bildirim alırsın, sonunda ürünün yayında olur.",
+      meta: ["İleri", "180 dk", "12 öğe"],
+      davetEden: { ad: "Ş. Çağlayan 🇹🇷" },
+      not: "Hadi başlayalım 🇹🇷👍🏽 1️⃣ — ilk öğe on dakika sürüyor, gerisi akar",
+      qrSvg: renderSVG("HTTPS://YUSUFDENIZ.COM/D/7KQ2MXA", { ecc: "M", border: 4 }),
+      kisaLink: "yusufdeniz.com/d/7kq2mxa",
+    });
+    expect(png.readUInt32BE(16)).toBe(1080);
+    expect(png.readUInt32BE(20)).toBe(1080);
+  }, 15_000);
 });

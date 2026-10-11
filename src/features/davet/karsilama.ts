@@ -13,6 +13,10 @@ import { R } from "@/lib/routes.ts";
 export const DAKIKADA_ISTEK = 60;
 
 export async function karsila(Astro: AstroGlobal, kanal: "qr" | "link"): Promise<Response> {
+  // Yalnız üst düzey gezinme: <img src="/d/KOD"> gibi alt-kaynak istekleri çerezleri EZEMEZ
+  // (atıf hırsızlığı) ve ziyaret sayılmaz. Başlığı olmayan eski tarayıcılar geçer.
+  const dest = Astro.request.headers.get("sec-fetch-dest");
+  if (dest && dest !== "document") return new Response(null, { status: 204 });
   const hedef = await davetHedefi(Astro.params.kod ?? "");
   if (!hedef) return Astro.redirect(`${R.kurslar}?davet=gecersiz`);
 

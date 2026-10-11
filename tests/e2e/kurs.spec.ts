@@ -69,6 +69,23 @@ test.describe("kurs daveti — üye (Faz 2)", () => {
     await expect(page.locator('#davet input[name="note"]')).toHaveValue("e2e notu");
   });
 
+  test("AC-5: /d/{kod} → giriş → ?katil=1 ile ek dokunuşsuz katılım; bekleyen +10 panoda", async ({ page }) => {
+    const KURS2 = "/kurslar/go-ile-cli-araclari-demo"; // seed: Elif'in daveti DEM0C21
+    const r = await page.request.get("/d/dem0c21", { maxRedirects: 0 }); // çerez bu context'e
+    expect(r.status()).toBe(302);
+    await page.goto(`${KURS2}?d=DEM0C21&katil=1`, { waitUntil: "domcontentloaded" });
+    if (page.url().includes("davet=1")) {
+      await expect(page.getByText(/Davetle katıldın/)).toBeVisible();
+      await page.goto("/uye", { waitUntil: "domcontentloaded" });
+      await expect(page.getByText(/Bekleyen puan/)).toBeVisible();
+      await expect(page.getByText(/CLI Araçları/).first()).toBeVisible();
+    } else {
+      // Daha önceki koşumda katılmıştı: davet bandı yok, ilerleme var
+      await expect(page.getByText(/seni bu kursa davet ediyor/)).toHaveCount(0);
+      await expect(page.getByText(/\d+\/\d+ öğe/)).toBeVisible();
+    }
+  });
+
   test("Davetlerim panoda görünür", async ({ page }) => {
     await page.goto("/uye", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { level: 2, name: /Davetlerim/ })).toBeVisible();

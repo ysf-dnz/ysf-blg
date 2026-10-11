@@ -54,6 +54,7 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - **DİKKAT dev = canlı Neon DB** (`.env.local` = `vercel env pull`): `drizzle-kit push` ve backfill DOĞRUDAN canlıya uygulanır; yalnız ek (additive) değişiklik, `slug` NOT NULL'a geçiş backfill sonrası ikinci push'la yapıldı (`canli-index-uygula.sql` ADIM 5).
 - **Testler**: `tests/unit/kurs-ekonomi.test.ts` (saf), `tests/integration/ekonomi-db.test.ts` (yalnız `POSTGRES_URL_TEST` ile: tavan SQL yarışı, idem, kesinleşme onarımı, iade — 7/7 gerçek Neon'da), e2e `kurslar.spec` (misafir) + `kurs.spec` (auth). **Vite tuzağı**: `.astro` yorumuna literal `<script>` yazma — bağımlılık taraması çöker, ~60 sn sonra tam sayfa reload testleri düşürür (D3Chart'ta yaşandı).
 - Davet çerezi hotfix: `Base.astro` inline script `?ref=` → `ysf_ref` (statik sayfalarda middleware koşmaz; canlıda davet zinciri kırıktı).
+- **Davet (Faz 2) güvenlik kuralları**: `/d/` çerezleri yalnız `sec-fetch-dest: document`; `?katil=1` gibi GET ile durum değiştiren akışlar `sec-fetch-site !== "cross-site"` şartlı; kullanıcı URL'sinden görsel çeken her yer `kart.ts dataUri` desenini kullanır (redirect error, 2 MB, sharp normalize). IP hash'i `CRON_SECRET` HMAC'li.
 - **JSON-LD `set:html` KURALI**: `JSON.stringify(x).replace(/</g, "\\u003c")` — kullanıcı metni `</script>` ile bloktan kaçar (kurs başlığında stored XSS inceleme ile yakalandı). Form `next` alanı yalnız `guvenliYol()` (`lib/urls.ts`) ile okunur.
 
 ## Deploy (2026-08-31 CANLI)

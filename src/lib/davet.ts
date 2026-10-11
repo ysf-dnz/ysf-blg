@@ -3,13 +3,14 @@
  * çerezi, atıflı katılım ve bekleyen davet puanları. Davet mantığının TEK kaynağı;
  * /d/[kod], /kurslar/[slug], api/uye/egitim ve api/kart bunu çağırır.
  */
-import { createHash, randomInt } from "node:crypto";
+import { createHash, createHmac, randomInt } from "node:crypto";
 import type { AstroCookies } from "astro";
 import { and, eq, isNull } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
 import { bekleyenYaz, puanOlayi } from "./rewards.ts";
+import { hesapGencMi } from "./economy.ts";
 import { R } from "./routes.ts";
 
 export type InviteCode = typeof schema.inviteCodes.$inferSelect;
@@ -39,9 +40,18 @@ export function kodNormalize(girdi: string): string | null {
   return k;
 }
 
-/** IP/UA takma adı: ham değer saklanmaz. shortcut: sabit tuz; gereksinim çıkarsa env'e taşınır */
+/**
+ * IP/UA takma adı: ham değer saklanmaz; HMAC anahtarı gizli (CRON_SECRET her ortamda var)
+ * — sabit tuzlu SHA-256 IPv4 uzayını dakikalar içinde geri çevirtirdi.
+ */
 export function kisaHash(deger: string): string {
-  return createHash("sha256").update(`ysf-davet:${deger}`).digest("hex").slice(0, 32);
+  const anahtar = process.env.CRON_SECRET ?? import.meta.env.CRON_SECRET ?? "ysf-davet-dev";
+  return createHmac("sha256", anahtar).update(deger).digest("hex").slice(0, 32);
+}
+
+/** Davet süresi: katılımdan bu yana 14 gün geçtiyse davet puanları artık ödenmez (AC-8) */
+export function davetSuresiDoldu(katilim: Katilim, simdi: Date = new Date()): boolean {
+  return simdi.getTime() - katilim.joinedAt.getTime() > PUAN.inviteExpiryDays * 864e5;
 }
 
 /** Instagram/Telegram/Facebook içi tarayıcı: Google OAuth engellenir → e-posta kodu önerilir */
@@ -197,7 +207,7 @@ export async function kursaKatil(
 
 /** Kurs aktivasyonunda (ilk öğe) davet puanları kesinleşir — genç hesap → matures_at (ADR K2) */
 export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Member) {
-  if (!katilim.inviteCodeId) return;
+  if (!katilim.inviteCodeId || davetSuresiDoldu(katilim)) return;
   const kod = await db.query.inviteCodes.findFirst({
     where: eq(schema.inviteCodes.id, katilim.inviteCodeId),
   });
@@ -221,19 +231,29 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
   await bildir(
     kod.inviterId,
     n > 0
-      ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ +${n} puan`
-      : `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Puan hesap yaşı/tavan nedeniyle bekliyor.`,
+      ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ +${n} puan${n < PUAN.inviteActivated ? " (haftalık davet tavanına kırpıldı)" : ""}`
+      : hesapGencMi(davetli.createdAt)
+        ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Puan hesap 24 saatlik olunca kesinleşir.`
+        : `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
     R.kurs(kurs.slug),
   );
 }
 
 /** Kurs bitirmede davet edene +10 (asgari süre geçtiyse çağrılır) */
 export async function davetBitirme(katilim: Katilim, kurs: Kurs, davetli: Member) {
-  if (!katilim.inviteCodeId) return;
+  if (!katilim.inviteCodeId || davetSuresiDoldu(katilim)) return;
   const kod = await db.query.inviteCodes.findFirst({
     where: eq(schema.inviteCodes.id, katilim.inviteCodeId),
   });
   if (!kod || kod.inviterId === davetli.id) return;
+  // Önce bekleyen satır: tavana kırpılırsa pano "kırpıldı" gerekçesini gösterebilsin
+  await bekleyenYaz({
+    userId: kod.inviterId,
+    delta: PUAN.inviteCompleted,
+    reason: "course_invite_completed",
+    refId: `course:${kurs.id}:u:${davetli.id}`,
+    note: `${davetli.name} "${kurs.title}" kursunu bitirdi`,
+  });
   await puanOlayi({
     userId: kod.inviterId,
     delta: PUAN.inviteCompleted,

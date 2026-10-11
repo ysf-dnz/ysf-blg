@@ -19,6 +19,8 @@ import { PUAN } from "@/lib/points.ts";
 import { siteKok } from "@/lib/urls.ts";
 import { formatDate } from "@/lib/dates.ts";
 import {
+  DAVET_CEREZ,
+  davetCereziKur,
   davetHedefi,
   davetKoduUret,
   kartSurumu,
@@ -44,24 +46,37 @@ if (course.status !== "published" && !yonetici)
 const dKod = Astro.url.searchParams.get("d");
 const davetHam = dKod ? await davetHedefi(dKod) : null;
 const davet =
-  davetHam && davetHam.kurs.id === course.id && (!member || davetHam.davetEden.id !== member.id)
+  davetHam && davetHam.kurs.id === course.id && !uretici && (!member || davetHam.davetEden.id !== member.id)
     ? davetHam
     : null;
+// "Tarayıcıda aç" ile çerezsiz gelen davetli: çerez yoksa burada kur (var olan ezilmez → ilk davet kazanır)
+if (davet && !Astro.cookies.has(DAVET_CEREZ)) davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
 
-// Girişten dönüşte otomatik katılım (karşılama akışı: ek dokunuş yok — AC-5)
-if (member && Astro.url.searchParams.get("katil") === "1" && course.status === "published") {
+// Girişten dönüşte otomatik katılım (karşılama akışı: ek dokunuş yok — AC-5).
+// GET durum değiştirdiği için yalnız aynı site: başka siteden açılan ?katil=1 (CSRF) işlemez;
+// Clerk dönüşü aynı origin (modal) ya da aynı site (accounts.yusufdeniz.com) olur.
+if (
+  member &&
+  Astro.url.searchParams.get("katil") === "1" &&
+  course.status === "published" &&
+  Astro.request.headers.get("sec-fetch-site") !== "cross-site"
+) {
   const k = await kursaKatil(member, course, Astro.cookies);
   const p = new URLSearchParams();
   if (k.yeni) p.set("katildin", "1");
   if (k.davetli) p.set("davet", "1");
+  const b = Astro.url.searchParams.get("b");
+  if (b) p.set("b", b);
   return Astro.redirect(`${R.kurs(course.slug)}${p.size ? `?${p}` : ""}`);
 }
 const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));
-/** Giriş sonrası dönüş: aynı sayfa + otomatik katılım (+ davet kodu korunur) */
-const girisDonus = `${Astro.url.pathname}?${new URLSearchParams({
-  ...(davet ? { d: davet.kod.code } : {}),
-  katil: "1",
-})}`;
+/** Giriş sonrası dönüş: aynı sayfa (b ve d korunur) + otomatik katılım */
+const girisDonus = (() => {
+  const p = new URLSearchParams(Astro.url.search);
+  p.set("katil", "1");
+  if (davet) p.set("d", davet.kod.code);
+  return `${Astro.url.pathname}?${p}`;
+})();
 
 const buSayfa = `${Astro.url.pathname}${Astro.url.search}`;
 const items = await db.query.courseItems.findMany({
@@ -250,6 +265,8 @@ const ld = {
   seo={{
     // Davet linkinde paylaşım önizlemesi kişisel karttır (WhatsApp/Telegram kartı görür)
     ogImagePath: davet ? `/api/kart/${davet.kod.code}/og.png?v=${kartSurumu(davet)}` : kapak,
+    // Meta (FB/Messenger) og:url'yi yeniden tarar: ?d= korunmazsa kişisel kart yerine kapak çıkar
+    ogUrl: davet ? `${Astro.url.pathname}?d=${davet.kod.code}` : undefined,
     noindex: course.status !== "published" || !!davet,
   }}
 >
@@ -274,7 +291,7 @@ const ld = {
           <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
         </form>
       ) : (
-        <SignInButton mode="modal" forceRedirectUrl={girisDonus} asChild>
+        <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
           <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Kursa katıl 🎁</button>
         </SignInButton>
       )}
@@ -322,7 +339,7 @@ const ld = {
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
           {!member && (
-            <SignInButton mode="modal" forceRedirectUrl={girisDonus} asChild>
+            <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
               <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
                 Katıl, ilk kitabın hediye 🎁
               </button>
@@ -431,7 +448,7 @@ const ld = {
           <p class="text-3xl">🔒</p>
           <p class="mt-2 font-display text-xl font-semibold text-ink">{aktif.title}</p>
           <p class="mt-2 text-ink-muted">Bu öğe üyelere açık. İlk öğeyi ücretsiz izledin; devamı için katıl — ilk kitabın hediye.</p>
-          <SignInButton mode="modal" forceRedirectUrl={girisDonus} asChild>
+          <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
             <button type="button" class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl ve devam et 🎁</button>
           </SignInButton>
         </div>

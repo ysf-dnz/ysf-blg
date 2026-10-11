@@ -119,6 +119,8 @@ const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
       : "koşul bekliyor";
 
 // 🤝 Davetlerim (Faz 2): kod başına görüntülenme (kanal) → katılım → aktivasyon; kazanılan/bekleyen
+// (yalnız davet EDEN olarak kazanılanlar: welcome davetlinin kendi puanıdır, tavan listesinde kalır)
+const DAVET_EDEN_REASONLARI = DAVET_REASONLARI.filter((r) => r !== "course_invite_welcome");
 const davetKodlarim = await db.query.inviteCodes.findMany({
   where: and(eq(schema.inviteCodes.inviterId, member.id), isNull(schema.inviteCodes.revokedAt)),
 });
@@ -149,7 +151,7 @@ const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]]
   db
     .select({ t: sql<number>`coalesce(sum(${schema.pointsLedger.delta}), 0)` })
     .from(schema.pointsLedger)
-    .where(and(eq(schema.pointsLedger.userId, member.id), inArray(schema.pointsLedger.reason, DAVET_REASONLARI))),
+    .where(and(eq(schema.pointsLedger.userId, member.id), inArray(schema.pointsLedger.reason, DAVET_EDEN_REASONLARI))),
   db
     .select({ t: sql<number>`coalesce(sum(${schema.pendingPoints.delta}), 0)` })
     .from(schema.pendingPoints)
@@ -157,7 +159,7 @@ const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]]
       and(
         eq(schema.pendingPoints.userId, member.id),
         eq(schema.pendingPoints.status, "pending"),
-        inArray(schema.pendingPoints.reason, DAVET_REASONLARI),
+        inArray(schema.pendingPoints.reason, DAVET_EDEN_REASONLARI),
       ),
     ),
 ]);

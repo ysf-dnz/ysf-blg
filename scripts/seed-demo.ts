@@ -133,7 +133,7 @@ async function kur() {
       { clerkId: "demo_ayse", handle: "ayse-demir", name: "Ayşe Demir", avatarUrl: avatar(47), university: "ODTÜ", city: "Ankara", role: "rep", flair: "🔥", bio: "YZ okuma kulübü başkanı. Öğrenmenin en iyi yolu öğretmektir.", socials: JSON.stringify({ linkedin: "https://linkedin.com/in/ayse-demo", github: "https://github.com/ayse-demo" }) },
       { clerkId: "demo_mehmet", handle: "mehmet-kaya", name: "Mehmet Kaya", avatarUrl: avatar(12), university: "İTÜ", city: "İstanbul", role: "member" },
       { clerkId: "demo_zeynep", handle: "zeynep-arslan", name: "Zeynep Arslan", avatarUrl: avatar(32), university: "Ege Üniversitesi", city: "İzmir", role: "member", flair: "📚", socials: JSON.stringify({ youtube: "https://youtube.com/@zeynep-demo" }) },
-      { clerkId: "demo_can", handle: "can-yildiz", name: "Can Yıldız", avatarUrl: avatar(59), city: "Konya", role: "member", bio: "Lise son. Go öğreniyorum." },
+      { clerkId: "demo_can", handle: "can-yildiz", name: "Can Yıldız", avatarUrl: avatar(59), city: "Konya", role: "member", bio: "Lise son. Go öğreniyorum.", createdAt: new Date(Date.now() - 3 * 864e5) },
       { clerkId: "demo_elif", handle: "elif-celik", name: "Elif Çelik", avatarUrl: avatar(25), university: "Boğaziçi", city: "İstanbul", role: "member", flair: "🚀", bio: "Yazdıkça öğreniyorum." },
     ])
     .returning();
@@ -322,6 +322,32 @@ async function kur() {
     { userId: U.elif!.id, courseId: kurs!.id, itemId: kursOgeleri[1]!.id },
     { userId: U.can!.id, courseId: kurs!.id, itemId: kursOgeleri[0]!.id },
   ]);
+  // Can davetle aktive oldu → davet puanları kesinleşmiş (tutarlı demo: Davetlerim "Aktive 1, +15")
+  await db.insert(schema.pointsLedger).values([
+    { userId: U.can!.id, delta: 10, reason: "course_invite_welcome", refId: `course:${kurs!.id}` },
+    { userId: U.ayse!.id, delta: 15, reason: "course_invite_activated", refId: `course:${kurs!.id}:u:${U.can!.id}` },
+  ]);
+  // İkinci kurs (Elif, kulüp dışı, yayında): e2e davet akışı test üyesi için (henüz katılmamış)
+  const [kurs2] = await db
+    .insert(schema.courses)
+    .values({
+      bookId: LEARNING_GO,
+      slug: "go-ile-cli-araclari-demo",
+      title: "Go ile Küçük CLI Araçları",
+      summary: "Üç kısa videoda flag, dosya ve HTTP ile ilk aracını yaz.",
+      level: "orta",
+      estMinutes: 45,
+      status: "published",
+      createdBy: U.elif!.id,
+    })
+    .returning();
+  await db.insert(schema.courseItems).values([
+    { courseId: kurs2!.id, order: 0, kind: "youtube", title: "flag paketi ile argümanlar", youtubeId: "446E-r0rXHI" },
+    { courseId: kurs2!.id, order: 1, kind: "youtube", title: "Dosya okuma-yazma", youtubeId: "f6kdp27TYZs" },
+    { courseId: kurs2!.id, order: 2, kind: "youtube", title: "HTTP istemcisi", youtubeId: "446E-r0rXHI" },
+  ]);
+  await db.insert(schema.inviteCodes).values({ code: "DEM0C21", inviterId: U.elif!.id, targetType: "course", targetId: kurs2!.id, note: "CLI yazmayı birlikte öğrenelim" });
+
   // Soru-cevap + ek kaynak + değerlendirme (kurs sayfası boş görünmesin)
   const [soru] = await db
     .insert(schema.comments)
@@ -405,7 +431,7 @@ async function kur() {
   kampanya: /kampanya/${kampanya!.id} (6 görev, her Kanban durumu)
   quiz: /kitap/${MINDSET}/quiz (yayında) + 1 bekleyen (admin kuyruğu)
   kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)
-  davet: /d/dem07kq (Ayşe'nin kurs daveti; 3 ziyaret, Can davetle katıldı)
+  davet: /d/dem07kq (Ayşe'nin kurs daveti; 3 ziyaret, Can davetle katıldı) · /d/dem0c21 (Elif → /kurslar/go-ile-cli-araclari-demo)
   yazılar: /topluluk (3 yayında — 1'i yalnız-üyeler, 1 bekleyen)
   etkinlik: /etkinlikler (yarın, ⭐ öncelikli koltuklu)
   profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);

@@ -160,6 +160,11 @@ const toplamKatilimci = [...kat.values()].reduce((t, k) => t + k.katilimci, 0);
     </div>
   </section>
 
+  {q.get("davet") === "gecersiz" && (
+    <div class="menu-pop mt-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Bu davet artık geçerli değil (kod iptal edilmiş ya da kurs yayında olmayabilir). Kursları aşağıdan keşfedebilirsin.
+    </div>
+  )}
   <div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
     {SIRALAR.map(([k, ad]) => (
       <a href={link({ sira: k })} aria-current={sira === k ? "page" : undefined} class:list={["rounded-full px-3.5 py-1.5 transition-colors", sira === k ? "bg-accent font-semibold text-surface" : "border border-line text-ink-muted hover:border-accent hover:text-accent"]}>{ad}</a>

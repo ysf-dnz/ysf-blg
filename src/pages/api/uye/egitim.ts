@@ -117,7 +117,10 @@ export const POST: APIRoute = async (context) => {
       return new Response("Kurs yayında değil", { status: 404 });
     // Atıflı katılım: karşılama çerezi bu kursa aitse davet bekleyenleri açılır
     const k = await kursaKatil(member, kurs, context.cookies);
-    return context.redirect(`${R.kurs(kurs.slug)}?katildin=1${k.davetli ? "&davet=1" : ""}`);
+    const p = new URLSearchParams();
+    if (k.yeni) p.set("katildin", "1");
+    if (k.davetli) p.set("davet", "1");
+    return context.redirect(`${R.kurs(kurs.slug)}${p.size ? `?${p}` : ""}`);
   }
 
   // ---------------- Öğe tamamla ----------------
