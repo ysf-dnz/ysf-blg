@@ -35,6 +35,13 @@ export const users = pgTable(
     /** 🔥 Günlük seri: ardışık aktif gün sayısı ve son aktif günü (YYYY-MM-DD) */
     streakCount: integer("streak_count").notNull().default(0),
     streakLastDay: text("streak_last_day"),
+    /** Haritada görünme rızası (F4-02): NULL = görünmez, dolu = açık rızanın verildiği an */
+    mapVisibleAt: timestamp("map_visible_at"),
+    /**
+     * Kimden mesaj alınır (F4-03). NULL = mutual: kolon canlıya koddan ÖNCE çıktığı için
+     * nullable + varsayılan (eski kodun insert'i kırılmaz).
+     */
+    dmPolicy: text("dm_policy", { enum: ["everyone", "mutual", "nobody"] }).default("mutual"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
@@ -731,6 +738,49 @@ export const reports = pgTable(
     uniqueIndex("reports_idx").on(t.reporterId, t.targetType, t.targetId),
     index("reports_status_idx").on(t.status, t.createdAt),
   ],
+);
+
+/**
+ * Birebir mesaj (DM v1, ADR K6): tek tablo; konuşma = (gönderen, alıcı) çiftinin iki yönü.
+ * Gövde DÜZ METİN (markdown yok); okundu = read_at. Puan üretmez, notifications'a yazılmaz.
+ * Gönderim tek SQL (lib/mesaj.ts): engel, hız ve izin koşulları INSERT'in WHERE'inde.
+ */
+export const messages = pgTable(
+  "messages",
+  {
+    id: serial("id").primaryKey(),
+    senderId: integer("sender_id")
+      .notNull()
+      .references(() => users.id),
+    recipientId: integer("recipient_id")
+      .notNull()
+      .references(() => users.id),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    readAt: timestamp("read_at"),
+  },
+  (t) => [
+    // Bildirim zili her sayfa görüntülemesinde okunmamış mesaj sayar → index şart
+    index("messages_recipient_read_idx").on(t.recipientId, t.readAt),
+    index("messages_pair_idx").on(t.senderId, t.recipientId, t.createdAt),
+    index("messages_pair_rev_idx").on(t.recipientId, t.senderId, t.createdAt),
+  ],
+);
+
+/** Engel: etkisi İKİ YÖNLÜ (mesaj, harita üye ızgarası, Mesaj düğmesi) — sorgular iki yöne de bakar */
+export const blocks = pgTable(
+  "blocks",
+  {
+    id: serial("id").primaryKey(),
+    blockerId: integer("blocker_id")
+      .notNull()
+      .references(() => users.id),
+    blockedId: integer("blocked_id")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("blocks_idx").on(t.blockerId, t.blockedId)],
 );
 
 /**
