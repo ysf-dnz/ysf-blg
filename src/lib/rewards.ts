@@ -28,8 +28,8 @@ export function yediGunOnce(simdi: Date = new Date()): Date {
 
 /**
  * Reason'a bağlı varsayılan tavan — awardPoints çağıranı tavanı unutamaz.
- * Üretici günlük 100 (TR günü), ek kaynak günde 45, kurs bitirme kayan 7 günde 100.
- * Davet tavanı (300/7 gün) Faz 2'de buraya eklenir.
+ * Üretici günlük 100 (TR günü), ek kaynak günde 45, kurs bitirme kayan 7 günde 100,
+ * davet havuzu kayan 7 günde 300.
  */
 export function tavanIcin(reason: Reason): Tavan | undefined {
   switch (reason) {
@@ -47,11 +47,13 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
     case "course_completed":
       return { reasons: ["course_completed"], since: yediGunOnce(), limit: PUAN.courseWeeklyCap };
     // Davet tavanı (PRD §4.2): tüm davet kaynaklı puanlar tek havuzda, kayan 7 gün 300.
-    // referral_activated HARİÇ (admin onaylı). Faz 5: invite_second_level, Faz 3: event_invite_attended.
+    // referral_activated (admin onaylı) ve event_invite_welcome (PRD listesinde yok) HARİÇ.
+    // Faz 5: invite_second_level.
     case "referral_joined":
     case "course_invite_welcome":
     case "course_invite_activated":
     case "course_invite_completed":
+    case "event_invite_attended":
       return { reasons: DAVET_REASONLARI, since: yediGunOnce(), limit: PUAN.inviteWeeklyCap };
     default:
       return undefined;
@@ -64,10 +66,11 @@ export const DAVET_REASONLARI: Reason[] = [
   "course_invite_welcome",
   "course_invite_activated",
   "course_invite_completed",
+  "event_invite_attended",
 ];
 
 /** db.execute sonucu sürücüye göre dizi ya da {rows} gelir */
-function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {
+export function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {
   return (Array.isArray(sonuc) ? sonuc : ((sonuc as { rows?: T[] })?.rows ?? [])) as T[];
 }
 
