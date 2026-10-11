@@ -390,11 +390,15 @@ async function kur() {
   // ---- Etkinlikler (Faz 3): yaklaşan + devam eden + bitmiş ----
   const SAAT = 3600e3;
   const simdi = Date.now();
+  // 6 gün sonraki günün TR 19:00'u (Türkiye kalıcı UTC+3)
+  const trGun = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(new Date(simdi + 144 * SAAT));
+  const yaklasanBaslangic = new Date(`${trGun}T19:00:00+03:00`);
+  const yaklasanBitis = new Date(yaklasanBaslangic.getTime() + 2 * SAAT);
   // 1) Yaklaşan (6 gün sonra, 2 saat, kontenjan 40): kayıt + etkinlik daveti (Elif → Can, bekleyen).
   // e2e bu etkinliğin BİTMEMİŞ olmasına dayanır → seed'den sonra 6 gün geçerli (maraton 13 gün).
   const [etkinlik] = await db
     .insert(schema.events)
-    .values({ clubId: kulup!.id, campaignId: kampanya!.id, slug: "canli-quiz-gecesi-demo", title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", kind: "bulusma", startsAt: new Date(simdi + 144 * SAAT), endsAt: new Date(simdi + 146 * SAAT), location: "ODTÜ Kütüphane B1", il: "Ankara", capacity: 40, createdBy: U.ayse!.id })
+    .values({ clubId: kulup!.id, campaignId: kampanya!.id, slug: "canli-quiz-gecesi-demo", title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", kind: "bulusma", startsAt: yaklasanBaslangic, endsAt: yaklasanBitis, location: "ODTÜ Kütüphane B1", il: "Ankara", capacity: 40, createdBy: U.ayse!.id })
     .returning();
   await db.insert(schema.eventStaff).values([
     { eventId: etkinlik!.id, userId: U.ayse!.id, role: "host" },
@@ -415,7 +419,7 @@ async function kur() {
   ]);
   await db.insert(schema.pendingPoints).values({
     userId: U.elif!.id, delta: 10, reason: "event_invite_attended", refId: `event:${etkinlik!.id}:u:${U.can!.id}`,
-    note: 'Can Yıldız "Canlı Quiz Gecesi: Learning Go" etkinliğinde giriş yapınca', expiresAt: new Date(simdi + 146 * SAAT),
+    note: 'Can Yıldız "Canlı Quiz Gecesi: Learning Go" etkinliğinde giriş yapınca', expiresAt: yaklasanBitis,
   });
 
   // 2) Devam eden (çevrimiçi maraton, 14 gün): giriş doğrulaması bugün denenebilir (e2e dönen QR)

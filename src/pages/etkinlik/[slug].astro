@@ -250,7 +250,7 @@ const oncelikYok = q.get("oncelik") === "yok";
   {davet && !kaydim && !bitti && (
     <div class="menu-pop mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-accent bg-accent-soft px-4 py-4" data-davet-bandi>
       <Avatar name={davet.davetEden.name} avatarUrl={davet.davetEden.avatarUrl} size="lg" />
-      <div class="min-w-0 flex-1">
+      <div class="min-w-48 flex-1">
         <p class="font-display text-lg font-semibold text-ink">{davet.davetEden.name} seni bu etkinliğe davet ediyor 📅</p>
         {davet.kod.note && <p class="mt-0.5 text-sm italic text-ink">“{davet.kod.note}”</p>}
         <p class="mt-1 text-sm text-ink-muted">
@@ -261,14 +261,14 @@ const oncelikYok = q.get("oncelik") === "yok";
       {!kayitAcik || dolu ? (
         <p class="text-sm font-medium text-ink">{dolu ? "Kontenjan doldu" : "Kayıtlar kapandı"}</p>
       ) : member ? (
-        <form method="post" action="/api/uye/etkinlik">
+        <form method="post" action="/api/uye/etkinlik" class="w-full sm:w-auto">
           <input type="hidden" name="action" value="rsvp" />
           <input type="hidden" name="eventId" value={e.id} />
-          <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎁</button>
+          <button class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97] sm:w-auto">Yerimi ayır 🎁</button>
         </form>
       ) : (
         <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
-          <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎁</button>
+          <button type="button" class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97] sm:w-auto">Yerimi ayır 🎁</button>
         </SignInButton>
       )}
     </div>

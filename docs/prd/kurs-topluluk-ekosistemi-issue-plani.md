@@ -1,6 +1,6 @@
 # Issue planı — Kurslar · Davet QR'ı · Topluluklarımız · Etkinlik girişi · Harita/DM
 
-**Kaynak:** `docs/prd/kurs-topluluk-ekosistemi.md` + `docs/adr/0001-kurs-davet-etkinlik-harita.md` · **Durum:** 7 soru varsayılanlarıyla kabul edildi (2026-10-11). GitHub: Faz 1 issue'ları #1–#13, faz epikleri #14–#17. **Faz 1 uygulandı** (dal `faz1-kurslar`; `pending_points` Faz 1'de; `F1-0T` qa önkoşulu eklendi). **Faz 2 uygulandı** (dal `faz2-davet`, GitHub #18–#24; F2-H human). Sapmalar: bağlantı kanalı sayfası `/d/[...kod]` (rest param — redirect anahtarı tuzağı), kart CDN 1 gün, `invite_codes.note`, `/kurslar?davet=gecersiz` bandı.
+**Kaynak:** `docs/prd/kurs-topluluk-ekosistemi.md` + `docs/adr/0001-kurs-davet-etkinlik-harita.md` · **Durum:** 7 soru varsayılanlarıyla kabul edildi (2026-10-11). GitHub: Faz 1 issue'ları #1–#13, faz epikleri #14–#17. **Faz 1 uygulandı** (dal `faz1-kurslar`; `pending_points` Faz 1'de; `F1-0T` qa önkoşulu eklendi). **Faz 2 uygulandı** (dal `faz2-davet`, GitHub #18–#24; F2-H human). Sapmalar: bağlantı kanalı sayfası `/d/[...kod]` (rest param — redirect anahtarı tuzağı), kart CDN 1 gün, `invite_codes.note`, `/kurslar?davet=gecersiz` bandı. **Faz 3 uygulandı** (dal `faz3-etkinlik`, GitHub #25–#30; merge kararı Yusuf'ta). Sapmalar (`docs/assumptions.md` #18–#35): QR hedefleri `/t/q/[token]`, `/c/q/[etkinlik]/[token]` (Vercel kenarı harf duyarsız — ADR K3.3 düzeltmesi); `events.slug` nullable + ilk görüntülemede atama; çerez `event:{id}:{codeId}`; giriş penceresi kapı −60 dk → bitiş; kontenjan `db.batch` + danışma kilidi; JS QR çözücü yerine telefon kamerası akışı; `event_well_rated` düzenleyenler arasında bölünür.
 
 **Her issue'nun ortak bitti-tanımı:** `npm run qa` yeşil (postbuild dahil) · yeni fren `economy.ts`'te saf + `it.each` testli · yeni `reason` `schema.ts` enum'unda, refId ADR §7'den · `canli-index-uygula.sql` gerekiyorsa güncel · `npm run seed:demo` yeni veriyi kapsıyor · `CLAUDE.md`/`CONTEXT.md`/`PROGRESS.md` güncel · `graphify update .` koşuldu.
 **Etiketler:** `ready-for-agent` varsayılan; Yusuf'un elle yapacakları `ready-for-human`.
@@ -116,6 +116,8 @@ Google OAuth custom credential (redirect `https://clerk.yusufdeniz.com/v1/oauth_
 ---
 
 ## Faz 3 — Topluluklarımız, etkinlik, giriş doğrulaması (6)
+
+> **Uygulandı (2026-10-11).** Aşağıdaki metin Faz 0 planıdır; uygulamadaki farklar için `docs/assumptions.md` #18–#35 ve ADR K3.3 "Düzeltme" bağlayıcıdır (özellikle F3-04/F3-05 sayfa yolları: `src/pages/t/q/[token].astro`, `src/pages/c/q/[etkinlik]/[token].astro`).
 
 ### F3-01 · Topluluklarımız
 `clubs.kind` += vakıf · dernek · kurum; `kulup.ts:20-23`'e beyaz liste (bugün doğrulamasız cast); etiket haritaları (`kulupler.astro:24-28`, `kulup-kur.astro:39-41`, `seed-demo.ts:199`); ToplulukLayout sekmesi "Topluluklarımız" (URL'ler aynı); kart ızgarası (tür, il, üye sayısı, sıradaki etkinlik, kurs sayısı) + tür/il filtresi; kulüp sayfasına "Kurslar" sekmesi. **Bağımlı:** F1-03.

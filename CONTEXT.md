@@ -80,20 +80,32 @@ _Avoid_: limit, cap, ceza
 Etkinliğe gelen üyenin biletinin görevlice okutulması ya da dönen QR'ı kendi okutmasıyla fiziksel katılımının kaydedilmesi. Katılım puanı yalnız buradan doğar; kayıt (RSVP) puan üretmez. Arayüz metninde "geldi" kullanılır ("Zaten geldi (09:41)"): "giriş" kelimesi Clerk'in "Giriş yap"ıyla (oturum açma) karışır.
 _Avoid_: check-in, yoklama, giriş yaptı (oturum açmayla karışır)
 
+**Etkinlik kaydı**:
+Üyenin bir etkinlikte yerini ayırması (`event_rsvps`; arayüzde "Yerimi ayır", "Kayıtlısın"). Kontenjan ve kayıt kapanışı burada uygulanır. Puan üretmez; puan *giriş doğrulaması*ndan doğar.
+_Avoid_: RSVP, katılım (kursa katılımla karışır), katılıyorum
+
 **Bilet**:
-Etkinliğe kayıtlı üyenin kişisel giriş QR'ı (`/t/{token}`); yalnız görevli okutur. Davet QR'ından farklıdır: bilet giriş doğrular, davet QR'ı kayıt yaptırır.
+Etkinliğe kayıtlı üyenin kişisel giriş QR'ı (içerik `/T/{token}`, iniş sayfası `/t/q/{token}`; "Biletlerim"de durur); yalnız görevli okutur. Davet QR'ından farklıdır: bilet giriş doğrular, davet QR'ı kayıt yaptırır.
 _Avoid_: ticket, QR kod (hangi QR olduğunu belirt)
 
+**Giriş penceresi**:
+Giriş doğrulamasının yazılabildiği aralık: kapı açılışından (başlangıçtan 60 dakika önce) etkinlik bitişine kadar. Bitişten sonra giriş yazılmaz; gelmeyen davetlinin bekleyen puanı o anda düşer.
+_Avoid_: check-in süresi
+
 **Dönen QR**:
-Kalabalık etkinliklerde girişteki ekranda 30 saniyede bir yenilenen, katılımcının kendi telefonuyla okuttuğu giriş QR'ı (`/c/{etkinlik}/{token}`; `{etkinlik}` = etkinlik id'si, davet koduyla ilgisi yoktur). Biletin alternatifidir, varsayılan değildir.
+Kalabalık etkinliklerde girişteki ekranda 30 saniyede bir yenilenen, katılımcının kendi telefonuyla okuttuğu giriş QR'ı (içerik `/C/{etkinlik}/{token}`, iniş sayfası `/c/q/…`; `{etkinlik}` = etkinlik id'si, davet koduyla ilgisi yoktur). Kayıtsız gelen üyeyi kontenjan varsa kaydeder. Biletin alternatifidir, varsayılan değildir.
 _Avoid_: dinamik QR, canlı QR
 
 **Düzenleyen**:
-Etkinliği açan üye ve eklediği en fazla 3 ortak düzenleyen (`event_staff.role = host`). Düzenleme puanı aralarında eşit bölünür; kendi etkinliklerinde davet puanı almazlar.
+Etkinliği açan üye ve eklediği en fazla 3 ortak düzenleyen (`event_staff.role = host`). *Düzenleyen payı* aralarında eşit bölünür; kendi etkinliklerinde giriş ve davet puanı almazlar, etkinliklerini değerlendiremezler.
 _Avoid_: organizatör, host (kodda kalır, arayüzde kullanılmaz)
 
+**Düzenleyen payı**:
+Etkinlik bitişinden 48 saat sonra, girişi doğrulanan katılımcı başına 5 puanın (ilk 100 katılımcı) düzenleyenlere dağıtılması; iyi değerlendirilen etkinlikte ayrıca 50. Bekleyen puan satırı yoktur: panodaki "≈" tahmini canlı giriş sayımıdır.
+_Avoid_: host puanı, organizasyon bonusu
+
 **Görevli**:
-Etkinlik girişinde bilet okutan üye (`event_staff.role = scanner`). Puan almaz.
+Etkinlik girişinde bilet okutan üye (`event_staff.role = scanner`). Düzenleyen payı almaz; katılımcı olarak geldiyse katılım ve davet puanını herkes gibi alır.
 _Avoid_: scanner, staff
 
 **Topluluk**:

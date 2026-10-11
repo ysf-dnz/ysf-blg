@@ -109,19 +109,6 @@
       "source_location": "L6"
     },
     {
-      "id": "src_lib_davet_davethedefi",
-      "label": "davetHedefi",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "davethedefi",
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L68"
-    },
-    {
       "id": "src_lib_davet_invitecode",
       "label": "InviteCode",
       "_callable": true,
@@ -132,7 +119,7 @@
       "file_type": "code",
       "norm_label": "invitecode",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L15"
+      "source_location": "L16"
     },
     {
       "id": "src_lib_davet_katilim",
@@ -145,7 +132,7 @@
       "file_type": "code",
       "norm_label": "katilim",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L17"
+      "source_location": "L18"
     },
     {
       "id": "src_lib_davet_kisi",
@@ -158,7 +145,7 @@
       "file_type": "code",
       "norm_label": "kisi",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L18"
+      "source_location": "L19"
     },
     {
       "id": "src_lib_davet_kurs",
@@ -171,7 +158,7 @@
       "file_type": "code",
       "norm_label": "kurs",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L16"
+      "source_location": "L17"
     },
     {
       "id": "src_lib_member_member",
@@ -187,30 +174,30 @@
       "source_location": "L17"
     },
     {
-      "id": "src_pages_api_uye_egitim_katilim",
-      "label": "Katilim",
+      "id": "src_lib_books_lookup_bookdata",
+      "label": "BookData",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "katilim",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L32"
+      "norm_label": "bookdata",
+      "source_file": "src/lib/books-lookup.ts",
+      "source_location": "L5"
     },
     {
-      "id": "src_pages_api_uye_egitim_kurs",
-      "label": "Kurs",
+      "id": "src_lib_social_user",
+      "label": "User",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "kurs",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L31"
+      "norm_label": "user",
+      "source_file": "src/lib/social.ts",
+      "source_location": "L6"
     },
     {
       "id": "src_lib_rewards_badgekind",
@@ -356,6 +343,71 @@
       "source_location": "L17"
     },
     {
+      "id": "src_pages_api_uye_egitim_katilim",
+      "label": "Katilim",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "katilim",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_kurs",
+      "label": "Kurs",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "kurs",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_lib_davet_davethedefi",
+      "label": "davetHedefi",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "davethedefi",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L78"
+    },
+    {
+      "id": "src_features_seo_og_render_oginput",
+      "label": "OgInput",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "oginput",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_db_client_db",
+      "label": "Db",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "db",
+      "source_file": "src/db/client.ts",
+      "source_location": "L5"
+    },
+    {
       "id": "src_lib_i18n_index_lang",
       "label": "Lang",
       "_callable": true,
@@ -387,12 +439,25 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 2,
-      "community_name": "posts.ts",
+      "community": 19,
+      "community_name": "PostCard.astro",
       "file_type": "code",
       "norm_label": "post",
       "source_file": "src/lib/posts.ts",
       "source_location": "L4"
+    },
+    {
+      "id": "src_features_stories_stories_story",
+      "label": "Story",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 21,
+      "community_name": "en/index.astro",
+      "file_type": "code",
+      "norm_label": "story",
+      "source_file": "src/features/stories/stories.ts",
+      "source_location": "L3"
     },
     {
       "id": "src_lib_types_category",
@@ -509,7 +574,7 @@
       "file_type": "code",
       "norm_label": "agac",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L47"
+      "source_location": "L61"
     },
     {
       "id": "src_features_davet_kart_kartformat",
@@ -522,7 +587,7 @@
       "file_type": "code",
       "norm_label": "kartformat",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L10"
+      "source_location": "L11"
     },
     {
       "id": "src_features_davet_kart_kartgirdi",
@@ -530,77 +595,38 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "kartgirdi",
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_features_seo_og_render_oginput",
-      "label": "OgInput",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "oginput",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_lib_books_lookup_bookdata",
-      "label": "BookData",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
       "community": 4,
       "community_name": "[dosya].ts",
       "file_type": "code",
-      "norm_label": "bookdata",
-      "source_file": "src/lib/books-lookup.ts",
-      "source_location": "L5"
+      "norm_label": "kartgirdi",
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L18"
     },
     {
-      "id": "src_db_client_db",
-      "label": "Db",
+      "id": "src_lib_kategorize_kategori",
+      "label": "Kategori",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
+      "community": 52,
+      "community_name": "LibraryView.astro",
       "file_type": "code",
-      "norm_label": "db",
-      "source_file": "src/db/client.ts",
-      "source_location": "L5"
+      "norm_label": "kategori",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L11"
     },
     {
-      "id": "src_lib_social_user",
-      "label": "User",
+      "id": "src_lib_kategorize_kategorikaydi",
+      "label": "KategoriKaydi",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
+      "community": 52,
+      "community_name": "LibraryView.astro",
       "file_type": "code",
-      "norm_label": "user",
-      "source_file": "src/lib/social.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_features_stories_stories_story",
-      "label": "Story",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "initStories",
-      "file_type": "code",
-      "norm_label": "story",
-      "source_file": "src/features/stories/stories.ts",
-      "source_location": "L3"
+      "norm_label": "kategorikaydi",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L17"
     },
     {
       "id": "src_features_stories_story_viewer_slide",
@@ -622,7 +648,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "ctx",
       "source_file": "src/lib/member.ts",
@@ -655,32 +681,6 @@
       "source_location": "L28"
     },
     {
-      "id": "src_lib_kategorize_kategori",
-      "label": "Kategori",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kategori",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_lib_kategorize_kategorikaydi",
-      "label": "KategoriKaydi",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kategorikaydi",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L17"
-    },
-    {
       "id": "src_features_library_bookdetail_if",
       "label": "if()",
       "_callable": true,
@@ -703,6 +703,18 @@
       "norm_label": "localizepath()",
       "source_file": "src/lib/i18n/index.ts",
       "source_location": "L23"
+    },
+    {
+      "id": "src_lib_i18n_index_usetranslations",
+      "label": "useTranslations()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "Base.astro",
+      "file_type": "code",
+      "norm_label": "usetranslations()",
+      "source_file": "src/lib/i18n/index.ts",
+      "source_location": "L10"
     },
     {
       "id": "src_pages_en_kutuphane_kitap_id_getstaticpaths",
@@ -813,18 +825,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_economy_gorevodulkirp",
-      "label": "gorevOdulKirp()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "gorev.ts",
-      "file_type": "code",
-      "norm_label": "gorevodulkirp()",
-      "source_file": "src/lib/economy.ts",
-      "source_location": "L20"
-    },
-    {
       "id": "src_lib_permissions_canmanage",
       "label": "canManage()",
       "_callable": true,
@@ -921,18 +921,6 @@
       "source_location": "L13"
     },
     {
-      "id": "src_features_davet_karsilama_karsila",
-      "label": "karsila()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "karsila()",
-      "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L15"
-    },
-    {
       "id": "src_lib_davet_bildir",
       "label": "bildir()",
       "_callable": true,
@@ -942,43 +930,7 @@
       "file_type": "code",
       "norm_label": "bildir()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L133"
-    },
-    {
-      "id": "src_lib_davet_davetaktivasyonu",
-      "label": "davetAktivasyonu()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "davetaktivasyonu()",
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L199"
-    },
-    {
-      "id": "src_lib_davet_davetbitirme",
-      "label": "davetBitirme()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "davetbitirme()",
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L231"
-    },
-    {
-      "id": "src_lib_davet_davetcerezikur",
-      "label": "davetCereziKur()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "davetcerezikur()",
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L111"
+      "source_location": "L143"
     },
     {
       "id": "src_lib_davet_davetcerezioku",
@@ -990,7 +942,7 @@
       "file_type": "code",
       "norm_label": "davetcerezioku()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L122"
+      "source_location": "L132"
     },
     {
       "id": "src_lib_davet_davetcerezisil",
@@ -1002,19 +954,19 @@
       "file_type": "code",
       "norm_label": "davetcerezisil()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L127"
+      "source_location": "L137"
     },
     {
-      "id": "src_lib_davet_kisahash",
-      "label": "kisaHash()",
+      "id": "src_lib_davet_kartsurumu",
+      "label": "kartSurumu()",
       "_callable": true,
       "_origin": "ast",
       "community": 115,
       "community_name": "lib/davet.ts",
       "file_type": "code",
-      "norm_label": "kisahash()",
+      "norm_label": "kartsurumu()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L43"
+      "source_location": "L68"
     },
     {
       "id": "src_lib_davet_kodnormalize",
@@ -1026,7 +978,7 @@
       "file_type": "code",
       "norm_label": "kodnormalize()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L31"
+      "source_location": "L32"
     },
     {
       "id": "src_lib_davet_koduret",
@@ -1038,7 +990,7 @@
       "file_type": "code",
       "norm_label": "koduret()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L24"
+      "source_location": "L25"
     },
     {
       "id": "src_lib_davet_kursakatil",
@@ -1050,7 +1002,7 @@
       "file_type": "code",
       "norm_label": "kursakatil()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L143"
+      "source_location": "L153"
     },
     {
       "id": "src_lib_davet_uygulamaicitarayici",
@@ -1062,7 +1014,7 @@
       "file_type": "code",
       "norm_label": "uygulamaicitarayici()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L48"
+      "source_location": "L58"
     },
     {
       "id": "src_lib_rewards_bekleyenyaz",
@@ -1077,112 +1029,16 @@
       "source_location": "L384"
     },
     {
-      "id": "src_lib_rewards_puanolayi",
-      "label": "puanOlayi()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "puanolayi()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L438"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_bildir",
-      "label": "bildir()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "bildir()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L43"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_bitirmeodulleri",
-      "label": "bitirmeOdulleri()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "bitirmeodulleri()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L65"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_katilimbul",
-      "label": "katilimBul()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "katilimbul()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L51"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_kursbul",
-      "label": "kursBul()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "kursbul()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L47"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_parseyoutubeid",
-      "label": "parseYoutubeId()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "parseyoutubeid()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L106"
-    },
-    {
-      "id": "src_lib_economy_asgarisuregectimi",
-      "label": "asgariSureGectiMi()",
+      "id": "src_lib_economy_gorevodulkirp",
+      "label": "gorevOdulKirp()",
       "_callable": true,
       "_origin": "ast",
       "community": 116,
       "community_name": "economy.ts",
       "file_type": "code",
-      "norm_label": "asgarisuregectimi()",
+      "norm_label": "gorevodulkirp()",
       "source_file": "src/lib/economy.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_lib_economy_hesapgencmi",
-      "label": "hesapGencMi()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 116,
-      "community_name": "economy.ts",
-      "file_type": "code",
-      "norm_label": "hesapgencmi()",
-      "source_file": "src/lib/economy.ts",
-      "source_location": "L47"
+      "source_location": "L20"
     },
     {
       "id": "src_lib_economy_likepuaniverilirmi",
@@ -1209,30 +1065,6 @@
       "source_location": "L51"
     },
     {
-      "id": "src_lib_rewards_tavanicin",
-      "label": "tavanIcin()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 116,
-      "community_name": "economy.ts",
-      "file_type": "code",
-      "norm_label": "tavanicin()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_lib_rewards_yedigunonce",
-      "label": "yediGunOnce()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 116,
-      "community_name": "economy.ts",
-      "file_type": "code",
-      "norm_label": "yedigunonce()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L25"
-    },
-    {
       "id": "tests_unit_kurs_ekonomi_test_sn",
       "label": "sn()",
       "_callable": true,
@@ -1245,100 +1077,88 @@
       "source_location": "L13"
     },
     {
-      "id": "src_lib_member_activatereferraliffirstpost",
-      "label": "activateReferralIfFirstPost()",
+      "id": "src_lib_books_lookup_booktitle",
+      "label": "bookTitle()",
       "_callable": true,
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "activatereferraliffirstpost()",
-      "source_file": "src/lib/member.ts",
-      "source_location": "L115"
-    },
-    {
-      "id": "src_lib_quiz_score_scorequiz",
-      "label": "scoreQuiz()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "scorequiz()",
-      "source_file": "src/lib/quiz-score.ts",
-      "source_location": "L21"
-    },
-    {
-      "id": "src_lib_rewards_awardpoints",
-      "label": "awardPoints()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "awardpoints()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L295"
-    },
-    {
-      "id": "src_lib_rewards_revokepoints",
-      "label": "revokePoints()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "revokepoints()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L354"
-    },
-    {
-      "id": "src_lib_rewards_satirlar",
-      "label": "satirlar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "satirlar()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L70"
-    },
-    {
-      "id": "src_lib_rewards_sayacrozetleri",
-      "label": "sayacRozetleri()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "sayacrozetleri()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L614"
-    },
-    {
-      "id": "src_pages_api_uye_admin_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/admin.ts",
+      "norm_label": "booktitle()",
+      "source_file": "src/lib/books-lookup.ts",
       "source_location": "L12"
     },
     {
-      "id": "src_pages_api_uye_quiz_post",
-      "label": "POST()",
+      "id": "src_lib_books_lookup_getbookmap",
+      "label": "getBookMap()",
       "_callable": true,
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/quiz.ts",
-      "source_location": "L15"
+      "norm_label": "getbookmap()",
+      "source_file": "src/lib/books-lookup.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_lib_member_pointbalance",
+      "label": "pointBalance()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "pointbalance()",
+      "source_file": "src/lib/member.ts",
+      "source_location": "L139"
+    },
+    {
+      "id": "src_lib_social_getearnedmap",
+      "label": "getEarnedMap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "getearnedmap()",
+      "source_file": "src/lib/social.ts",
+      "source_location": "L18"
+    },
+    {
+      "id": "src_lib_social_getlevelsmap",
+      "label": "getLevelsMap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "getlevelsmap()",
+      "source_file": "src/lib/social.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_lib_social_getusersmap",
+      "label": "getUsersMap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "getusersmap()",
+      "source_file": "src/lib/social.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_pages_kurslar_slug_for",
+      "label": "for()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "for()",
+      "source_file": "src/pages/kurslar/[slug].astro",
+      "source_location": "L671"
     },
     {
       "id": "src_lib_davet_davetkoduuret",
@@ -1346,23 +1166,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "davetkoduuret()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L84"
+      "source_location": "L94"
     },
     {
-      "id": "src_lib_urls_absoluteurl",
-      "label": "absoluteUrl()",
+      "id": "src_lib_rewards_begenipuaniver",
+      "label": "begeniPuaniVer()",
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
-      "norm_label": "absoluteurl()",
-      "source_file": "src/lib/urls.ts",
-      "source_location": "L2"
+      "norm_label": "begenipuaniver()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L557"
     },
     {
       "id": "src_lib_urls_guvenliyol",
@@ -1370,7 +1190,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "guvenliyol()",
       "source_file": "src/lib/urls.ts",
@@ -1382,7 +1202,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/davet.ts",
@@ -1394,7 +1214,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/feed.ts",
@@ -1406,7 +1226,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "sonsaniyelerdevarmi()",
       "source_file": "src/pages/api/uye/feed.ts",
@@ -1418,11 +1238,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/sikayet.ts",
       "source_location": "L19"
+    },
+    {
+      "id": "src_pages_api_uye_takip_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 118,
+      "community_name": "feed.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/takip.ts",
+      "source_location": "L10"
     },
     {
       "id": "src_features_modules_parse_drivefileid",
@@ -1461,6 +1293,42 @@
       "source_location": "L7"
     },
     {
+      "id": "src_lib_member_activatereferraliffirstpost",
+      "label": "activateReferralIfFirstPost()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "activatereferraliffirstpost()",
+      "source_file": "src/lib/member.ts",
+      "source_location": "L115"
+    },
+    {
+      "id": "src_lib_rewards_awardbadge",
+      "label": "awardBadge()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "awardbadge()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L114"
+    },
+    {
+      "id": "src_lib_rewards_awardpoints",
+      "label": "awardPoints()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "awardpoints()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L295"
+    },
+    {
       "id": "src_lib_rewards_bekleyenikesinlestir",
       "label": "bekleyeniKesinlestir()",
       "_callable": true,
@@ -1471,6 +1339,18 @@
       "norm_label": "bekleyenikesinlestir()",
       "source_file": "src/lib/rewards.ts",
       "source_location": "L414"
+    },
+    {
+      "id": "src_lib_rewards_gunbaslangici",
+      "label": "gunBaslangici()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "gunbaslangici()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L543"
     },
     {
       "id": "src_lib_rewards_kazanilan",
@@ -1495,6 +1375,42 @@
       "norm_label": "ledgerdeltasql()",
       "source_file": "src/lib/rewards.ts",
       "source_location": "L375"
+    },
+    {
+      "id": "src_lib_rewards_revokepoints",
+      "label": "revokePoints()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "revokepoints()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L354"
+    },
+    {
+      "id": "src_lib_rewards_satirlar",
+      "label": "satirlar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "satirlar()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L70"
+    },
+    {
+      "id": "src_lib_rewards_sayacrozetleri",
+      "label": "sayacRozetleri()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "sayacrozetleri()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L614"
     },
     {
       "id": "src_lib_rewards_seviyeacilimi",
@@ -1531,6 +1447,54 @@
       "norm_label": "seviyehediyeleriniuygula()",
       "source_file": "src/lib/rewards.ts",
       "source_location": "L184"
+    },
+    {
+      "id": "src_lib_rewards_streakilerlet",
+      "label": "streakIlerlet()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "streakilerlet()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L251"
+    },
+    {
+      "id": "src_lib_rewards_tavanicin",
+      "label": "tavanIcin()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "tavanicin()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_lib_rewards_yedigunonce",
+      "label": "yediGunOnce()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "yedigunonce()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_pages_api_uye_admin_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "rewards.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/admin.ts",
+      "source_location": "L12"
     },
     {
       "id": "src_pages_api_kitap_onizleme_get",
@@ -1581,30 +1545,6 @@
       "source_location": "L36"
     },
     {
-      "id": "src_lib_league_kulupicisiralama",
-      "label": "kulupIciSiralama()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 127,
-      "community_name": "league.ts",
-      "file_type": "code",
-      "norm_label": "kulupicisiralama()",
-      "source_file": "src/lib/league.ts",
-      "source_location": "L113"
-    },
-    {
-      "id": "src_lib_league_kulupsiralamasi",
-      "label": "kulupSiralamasi()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 127,
-      "community_name": "league.ts",
-      "file_type": "code",
-      "norm_label": "kulupsiralamasi()",
-      "source_file": "src/lib/league.ts",
-      "source_location": "L86"
-    },
-    {
       "id": "src_lib_league_normalizeskor",
       "label": "normalizeSkor()",
       "_callable": true,
@@ -1617,18 +1557,6 @@
       "source_location": "L140"
     },
     {
-      "id": "src_lib_league_pozitifpuanlar",
-      "label": "pozitifPuanlar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 127,
-      "community_name": "league.ts",
-      "file_type": "code",
-      "norm_label": "pozitifpuanlar()",
-      "source_file": "src/lib/league.ts",
-      "source_location": "L61"
-    },
-    {
       "id": "src_lib_league_sezonadi",
       "label": "sezonAdi()",
       "_callable": true,
@@ -1639,6 +1567,30 @@
       "norm_label": "sezonadi()",
       "source_file": "src/lib/league.ts",
       "source_location": "L31"
+    },
+    {
+      "id": "src_lib_rewards_gunkey",
+      "label": "gunKey()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 127,
+      "community_name": "league.ts",
+      "file_type": "code",
+      "norm_label": "gunkey()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L94"
+    },
+    {
+      "id": "src_lib_rewards_sonrakistreak",
+      "label": "sonrakiStreak()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 127,
+      "community_name": "league.ts",
+      "file_type": "code",
+      "norm_label": "sonrakistreak()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L99"
     },
     {
       "id": "tests_integration_davet_db_test_cerez",
@@ -1665,40 +1617,148 @@
       "source_location": "L23"
     },
     {
-      "id": "src_lib_rewards_begenipuaniver",
-      "label": "begeniPuaniVer()",
+      "id": "src_lib_davet_davetaktivasyonu",
+      "label": "davetAktivasyonu()",
       "_callable": true,
       "_origin": "ast",
       "community": 129,
-      "community_name": "begeniPuaniVer",
+      "community_name": "egitim.ts",
       "file_type": "code",
-      "norm_label": "begenipuaniver()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L557"
+      "norm_label": "davetaktivasyonu()",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L209"
     },
     {
-      "id": "src_lib_rewards_gunbaslangici",
-      "label": "gunBaslangici()",
+      "id": "src_lib_davet_davetbitirme",
+      "label": "davetBitirme()",
       "_callable": true,
       "_origin": "ast",
       "community": 129,
-      "community_name": "begeniPuaniVer",
+      "community_name": "egitim.ts",
       "file_type": "code",
-      "norm_label": "gunbaslangici()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L543"
+      "norm_label": "davetbitirme()",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L243"
     },
     {
-      "id": "src_pages_api_uye_takip_post",
+      "id": "src_lib_davet_davetsuresidoldu",
+      "label": "davetSuresiDoldu()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "davetsuresidoldu()",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L53"
+    },
+    {
+      "id": "src_lib_economy_asgarisuregectimi",
+      "label": "asgariSureGectiMi()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "asgarisuregectimi()",
+      "source_file": "src/lib/economy.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_lib_economy_hesapgencmi",
+      "label": "hesapGencMi()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "hesapgencmi()",
+      "source_file": "src/lib/economy.ts",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_lib_rewards_puanolayi",
+      "label": "puanOlayi()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "puanolayi()",
+      "source_file": "src/lib/rewards.ts",
+      "source_location": "L438"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_bildir",
+      "label": "bildir()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "bildir()",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_bitirmeodulleri",
+      "label": "bitirmeOdulleri()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "bitirmeodulleri()",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L65"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_katilimbul",
+      "label": "katilimBul()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "katilimbul()",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L51"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_kursbul",
+      "label": "kursBul()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "kursbul()",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_parseyoutubeid",
+      "label": "parseYoutubeId()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "parseyoutubeid()",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_post",
       "label": "POST()",
       "_callable": true,
       "_origin": "ast",
       "community": 129,
-      "community_name": "begeniPuaniVer",
+      "community_name": "egitim.ts",
       "file_type": "code",
       "norm_label": "post()",
-      "source_file": "src/pages/api/uye/takip.ts",
-      "source_location": "L10"
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L106"
     },
     {
       "id": "src_lib_markdown_rendermembermarkdown",
@@ -1706,7 +1766,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "rendermembermarkdown()",
       "source_file": "src/lib/markdown.ts",
@@ -1718,47 +1778,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "slugifytitle()",
       "source_file": "src/lib/markdown.ts",
       "source_location": "L12"
-    },
-    {
-      "id": "src_lib_member_getorcreatemember",
-      "label": "getOrCreateMember()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "getorcreatemember()",
-      "source_file": "src/lib/member.ts",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_lib_member_slugifyhandle",
-      "label": "slugifyHandle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "slugifyhandle()",
-      "source_file": "src/lib/member.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_pages_api_uye_basvuru_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/basvuru.ts",
-      "source_location": "L8"
     },
     {
       "id": "src_pages_api_uye_kulup_post",
@@ -1766,35 +1790,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/kulup.ts",
       "source_location": "L11"
-    },
-    {
-      "id": "src_pages_api_uye_oy_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/oy.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_pages_api_uye_profil_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/pages/api/uye/profil.ts",
-      "source_location": "L9"
     },
     {
       "id": "src_pages_api_uye_yazi_post",
@@ -1802,23 +1802,143 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/yazi.ts",
       "source_location": "L9"
     },
     {
-      "id": "src_lib_rewards_awardbadge",
-      "label": "awardBadge()",
+      "id": "src_features_davet_karsilama_karsila",
+      "label": "karsila()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "karsila()",
+      "source_file": "src/features/davet/karsilama.ts",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_lib_davet_davetcerezikur",
+      "label": "davetCereziKur()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "davetcerezikur()",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L121"
+    },
+    {
+      "id": "src_lib_davet_kisahash",
+      "label": "kisaHash()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "kisahash()",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_lib_books_lookup_groupbycategory",
+      "label": "groupByCategory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "groupbycategory()",
+      "source_file": "src/lib/books-lookup.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_lib_dates_formatdate",
+      "label": "formatDate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "formatdate()",
+      "source_file": "src/lib/dates.ts",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_lib_urls_absoluteurl",
+      "label": "absoluteUrl()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "absoluteurl()",
+      "source_file": "src/lib/urls.ts",
+      "source_location": "L2"
+    },
+    {
+      "id": "src_features_seo_og_render_renderogimage",
+      "label": "renderOgImage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "renderogimage()",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_pages_og_slug_png_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/pages/og/[...slug].png.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_lib_league_kulupicisiralama",
+      "label": "kulupIciSiralama()",
       "_callable": true,
       "_origin": "ast",
       "community": 14,
       "community_name": "gunluk.ts",
       "file_type": "code",
-      "norm_label": "awardbadge()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L114"
+      "norm_label": "kulupicisiralama()",
+      "source_file": "src/lib/league.ts",
+      "source_location": "L113"
+    },
+    {
+      "id": "src_lib_league_kulupsiralamasi",
+      "label": "kulupSiralamasi()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 14,
+      "community_name": "gunluk.ts",
+      "file_type": "code",
+      "norm_label": "kulupsiralamasi()",
+      "source_file": "src/lib/league.ts",
+      "source_location": "L86"
+    },
+    {
+      "id": "src_lib_league_pozitifpuanlar",
+      "label": "pozitifPuanlar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 14,
+      "community_name": "gunluk.ts",
+      "file_type": "code",
+      "norm_label": "pozitifpuanlar()",
+      "source_file": "src/lib/league.ts",
+      "source_location": "L61"
     },
     {
       "id": "src_lib_rewards_bekleyenleriisle",
@@ -1833,18 +1953,6 @@
       "source_location": "L494"
     },
     {
-      "id": "src_lib_rewards_gunkey",
-      "label": "gunKey()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "gunluk.ts",
-      "file_type": "code",
-      "norm_label": "gunkey()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L94"
-    },
-    {
       "id": "src_lib_rewards_hazinekitabiac",
       "label": "hazineKitabiAc()",
       "_callable": true,
@@ -1855,30 +1963,6 @@
       "norm_label": "hazinekitabiac()",
       "source_file": "src/lib/rewards.ts",
       "source_location": "L136"
-    },
-    {
-      "id": "src_lib_rewards_sonrakistreak",
-      "label": "sonrakiStreak()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "gunluk.ts",
-      "file_type": "code",
-      "norm_label": "sonrakistreak()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L99"
-    },
-    {
-      "id": "src_lib_rewards_streakilerlet",
-      "label": "streakIlerlet()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "gunluk.ts",
-      "file_type": "code",
-      "norm_label": "streakilerlet()",
-      "source_file": "src/lib/rewards.ts",
-      "source_location": "L251"
     },
     {
       "id": "src_pages_api_cron_gunluk_ayinkitabi",
@@ -1965,12 +2049,24 @@
       "source_location": "L62"
     },
     {
+      "id": "src_db_client_create",
+      "label": "create()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "create()",
+      "source_file": "src/db/client.ts",
+      "source_location": "L7"
+    },
+    {
       "id": "src_lib_levels_levelfor",
       "label": "levelFor()",
       "_callable": true,
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "levelfor()",
       "source_file": "src/lib/levels.ts",
@@ -1982,7 +2078,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "pointstonextlevel()",
       "source_file": "src/lib/levels.ts",
@@ -1994,7 +2090,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "earnedpoints()",
       "source_file": "src/lib/member.ts",
@@ -2006,7 +2102,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/quiz-olustur.ts",
@@ -2030,7 +2126,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 19,
-      "community_name": "PostLayout.astro",
+      "community_name": "PostCard.astro",
       "file_type": "code",
       "norm_label": "readingtimeminutes()",
       "source_file": "src/lib/reading-time.ts",
@@ -2169,6 +2265,18 @@
       "source_location": "L7"
     },
     {
+      "id": "src_pages_og_slug_png_getstaticpaths",
+      "label": "getStaticPaths()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "getstaticpaths()",
+      "source_file": "src/pages/og/[...slug].png.ts",
+      "source_location": "L7"
+    },
+    {
       "id": "src_pages_rss_xml_get",
       "label": "GET()",
       "_callable": true,
@@ -2227,6 +2335,30 @@
       "norm_label": "bilesenfor()",
       "source_file": "src/features/modules/ModuleList.astro",
       "source_location": "L31"
+    },
+    {
+      "id": "src_features_stories_stories_getactivestories",
+      "label": "getActiveStories()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 21,
+      "community_name": "en/index.astro",
+      "file_type": "code",
+      "norm_label": "getactivestories()",
+      "source_file": "src/features/stories/stories.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_features_stories_stories_hasslides",
+      "label": "hasSlides()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 21,
+      "community_name": "en/index.astro",
+      "file_type": "code",
+      "norm_label": "hasslides()",
+      "source_file": "src/features/stories/stories.ts",
+      "source_location": "L18"
     },
     {
       "id": "scripts_generate_llms_txt_collectposts",
@@ -2382,7 +2514,7 @@
       "file_type": "code",
       "norm_label": "datauri()",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L35"
+      "source_location": "L42"
     },
     {
       "id": "src_features_davet_kart_el",
@@ -2394,7 +2526,7 @@
       "file_type": "code",
       "norm_label": "el()",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L48"
+      "source_location": "L62"
     },
     {
       "id": "src_features_davet_kart_renderdavetkarti",
@@ -2406,7 +2538,19 @@
       "file_type": "code",
       "norm_label": "renderdavetkarti()",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L57"
+      "source_location": "L149"
+    },
+    {
+      "id": "src_features_davet_kart_renderdavetkartidetay",
+      "label": "renderDavetKartiDetay()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 28,
+      "community_name": "kart.ts",
+      "file_type": "code",
+      "norm_label": "renderdavetkartidetay()",
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L78"
     },
     {
       "id": "src_features_davet_kart_temiz",
@@ -2418,7 +2562,7 @@
       "file_type": "code",
       "norm_label": "temiz()",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L53"
+      "source_location": "L68"
     },
     {
       "id": "src_features_davet_kart_yazi",
@@ -2430,7 +2574,7 @@
       "file_type": "code",
       "norm_label": "yazi()",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L54"
+      "source_location": "L74"
     },
     {
       "id": "src_features_seo_og_render_ogfontlari",
@@ -2493,42 +2637,6 @@
       "source_location": "L26"
     },
     {
-      "id": "src_lib_books_lookup_booktitle",
-      "label": "bookTitle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "booktitle()",
-      "source_file": "src/lib/books-lookup.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_lib_books_lookup_getbookmap",
-      "label": "getBookMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "getbookmap()",
-      "source_file": "src/lib/books-lookup.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_lib_books_lookup_groupbycategory",
-      "label": "groupByCategory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "groupbycategory()",
-      "source_file": "src/lib/books-lookup.ts",
-      "source_location": "L17"
-    },
-    {
       "id": "src_lib_davet_qricerigi",
       "label": "qrIcerigi()",
       "_callable": true,
@@ -2538,7 +2646,7 @@
       "file_type": "code",
       "norm_label": "qricerigi()",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L53"
+      "source_location": "L63"
     },
     {
       "id": "src_pages_api_kart_kod_dosya_get",
@@ -2589,64 +2697,16 @@
       "source_location": "L33"
     },
     {
-      "id": "src_features_seo_og_render_renderogimage",
-      "label": "renderOgImage()",
+      "id": "src_lib_kategorize_kategorile",
+      "label": "kategorile()",
       "_callable": true,
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
-      "norm_label": "renderogimage()",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L43"
-    },
-    {
-      "id": "src_lib_i18n_index_usetranslations",
-      "label": "useTranslations()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 52,
-      "community_name": "useTranslations",
-      "file_type": "code",
-      "norm_label": "usetranslations()",
-      "source_file": "src/lib/i18n/index.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_pages_og_slug_png_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 52,
-      "community_name": "useTranslations",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/pages/og/[...slug].png.ts",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_pages_og_slug_png_getstaticpaths",
-      "label": "getStaticPaths()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 52,
-      "community_name": "useTranslations",
-      "file_type": "code",
-      "norm_label": "getstaticpaths()",
-      "source_file": "src/pages/og/[...slug].png.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_db_client_create",
-      "label": "create()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "create()",
-      "source_file": "src/db/client.ts",
-      "source_location": "L7"
+      "norm_label": "kategorile()",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L36"
     },
     {
       "id": "src_layouts_topluluklayout_aktifmi",
@@ -2654,35 +2714,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "aktifmi()",
       "source_file": "src/layouts/ToplulukLayout.astro",
       "source_location": "L30"
-    },
-    {
-      "id": "src_lib_dates_formatdate",
-      "label": "formatDate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "formatdate()",
-      "source_file": "src/lib/dates.ts",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_lib_davet_kartsurumu",
-      "label": "kartSurumu()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "kartsurumu()",
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L58"
     },
     {
       "id": "src_lib_routes_driveviewurl",
@@ -2690,47 +2726,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "driveviewurl()",
       "source_file": "src/lib/routes.ts",
       "source_location": "L36"
-    },
-    {
-      "id": "src_lib_social_getearnedmap",
-      "label": "getEarnedMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "getearnedmap()",
-      "source_file": "src/lib/social.ts",
-      "source_location": "L18"
-    },
-    {
-      "id": "src_lib_social_getlevelsmap",
-      "label": "getLevelsMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "getlevelsmap()",
-      "source_file": "src/lib/social.ts",
-      "source_location": "L32"
-    },
-    {
-      "id": "src_lib_social_getusersmap",
-      "label": "getUsersMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "getusersmap()",
-      "source_file": "src/lib/social.ts",
-      "source_location": "L8"
     },
     {
       "id": "src_pages_api_uye_hediye_sec_get",
@@ -2738,7 +2738,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "get()",
       "source_file": "src/pages/api/uye/hediye-sec.ts",
@@ -2750,23 +2750,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/hediye-sec.ts",
       "source_location": "L20"
-    },
-    {
-      "id": "src_pages_kurslar_slug_for",
-      "label": "for()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "for()",
-      "source_file": "src/pages/kurslar/[slug].astro",
-      "source_location": "L654"
     },
     {
       "id": "src_pages_sitemap_kurslar_xml_get",
@@ -2774,7 +2762,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "get()",
       "source_file": "src/pages/sitemap-kurslar.xml.ts",
@@ -2911,30 +2899,6 @@
       "norm_label": "safeanimate()",
       "source_file": "src/features/motion/waapi.ts",
       "source_location": "L14"
-    },
-    {
-      "id": "src_features_stories_stories_getactivestories",
-      "label": "getActiveStories()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "initStories",
-      "file_type": "code",
-      "norm_label": "getactivestories()",
-      "source_file": "src/features/stories/stories.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_features_stories_stories_hasslides",
-      "label": "hasSlides()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "initStories",
-      "file_type": "code",
-      "norm_label": "hasslides()",
-      "source_file": "src/features/stories/stories.ts",
-      "source_location": "L18"
     },
     {
       "id": "src_features_stories_story_viewer_builddialog",
@@ -3117,28 +3081,52 @@
       "source_location": "L25"
     },
     {
+      "id": "src_lib_member_getorcreatemember",
+      "label": "getOrCreateMember()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "getorcreatemember()",
+      "source_file": "src/lib/member.ts",
+      "source_location": "L34"
+    },
+    {
       "id": "src_lib_member_hasbookaccess",
       "label": "hasBookAccess()",
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "hasbookaccess()",
       "source_file": "src/lib/member.ts",
       "source_location": "L158"
     },
     {
-      "id": "src_lib_member_pointbalance",
-      "label": "pointBalance()",
+      "id": "src_lib_member_slugifyhandle",
+      "label": "slugifyHandle()",
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
-      "norm_label": "pointbalance()",
+      "norm_label": "slugifyhandle()",
       "source_file": "src/lib/member.ts",
-      "source_location": "L139"
+      "source_location": "L19"
+    },
+    {
+      "id": "src_lib_quiz_score_scorequiz",
+      "label": "scoreQuiz()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "scorequiz()",
+      "source_file": "src/lib/quiz-score.ts",
+      "source_location": "L21"
     },
     {
       "id": "src_lib_rewards_spendpoints",
@@ -3146,7 +3134,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "spendpoints()",
       "source_file": "src/lib/rewards.ts",
@@ -3158,11 +3146,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "sitekok()",
       "source_file": "src/lib/urls.ts",
       "source_location": "L12"
+    },
+    {
+      "id": "src_pages_api_uye_basvuru_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/basvuru.ts",
+      "source_location": "L8"
     },
     {
       "id": "src_pages_api_uye_hediye_et_post",
@@ -3170,7 +3170,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/hediye-et.ts",
@@ -3182,7 +3182,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/kitap-ac.ts",
@@ -3194,7 +3194,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "get()",
       "source_file": "src/pages/api/uye/kitap-linkler.ts",
@@ -3206,11 +3206,47 @@
       "_callable": true,
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "post()",
       "source_file": "src/pages/api/uye/magaza.ts",
       "source_location": "L13"
+    },
+    {
+      "id": "src_pages_api_uye_oy_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/oy.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_pages_api_uye_profil_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/profil.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_pages_api_uye_quiz_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/pages/api/uye/quiz.ts",
+      "source_location": "L15"
     },
     {
       "id": "scripts_lib_book_title_dedupekey",
@@ -3319,18 +3355,6 @@
       "norm_label": "noisescore()",
       "source_file": "scripts/sync-drive-books.ts",
       "source_location": "L135"
-    },
-    {
-      "id": "src_lib_kategorize_kategorile",
-      "label": "kategorile()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kategorile()",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L36"
     },
     {
       "id": "package",
@@ -4312,6 +4336,17 @@
       "source_location": "L28"
     },
     {
+      "id": "src_lib_types_kaynak_turleri",
+      "label": "KAYNAK_TURLERI",
+      "_origin": "ast",
+      "community": 10,
+      "community_name": "content.config.ts",
+      "file_type": "code",
+      "norm_label": "kaynak_turleri",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L11"
+    },
+    {
       "id": "claude_skills_kitaplik_sync_skill",
       "label": "kitaplik-sync/SKILL.md",
       "_origin": "ast",
@@ -4591,6 +4626,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_pages_api_uye_etkinlik",
+      "label": "etkinlik.ts",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "gorev.ts",
+      "file_type": "code",
+      "norm_label": "etkinlik.ts",
+      "source_file": "src/pages/api/uye/etkinlik.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_api_uye_etkinlik_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "gorev.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/api/uye/etkinlik.ts",
+      "source_location": "L10"
+    },
+    {
       "id": "src_pages_api_uye_gorev",
       "label": "gorev.ts",
       "_origin": "ast",
@@ -4657,6 +4714,17 @@
       "source_location": "L11"
     },
     {
+      "id": "src_pages_gundem",
+      "label": "gundem.astro",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "gorev.ts",
+      "file_type": "code",
+      "norm_label": "gundem.astro",
+      "source_file": "src/pages/gundem.astro",
+      "source_location": "L1"
+    },
+    {
       "id": "src_pages_kampanya_id",
       "label": "kampanya/[id].astro",
       "_origin": "ast",
@@ -4665,17 +4733,6 @@
       "file_type": "code",
       "norm_label": "kampanya/[id].astro",
       "source_file": "src/pages/kampanya/[id].astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_kulup_slug",
-      "label": "kulup/[slug].astro",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "gorev.ts",
-      "file_type": "code",
-      "norm_label": "kulup/[slug].astro",
-      "source_file": "src/pages/kulup/[slug].astro",
       "source_location": "L1"
     },
     {
@@ -5769,28 +5826,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_features_davet_karsilama",
-      "label": "karsilama.ts",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "karsilama.ts",
-      "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_features_davet_karsilama_dakikada_istek",
-      "label": "DAKIKADA_ISTEK",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "dakikada_istek",
-      "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L13"
-    },
-    {
       "id": "src_lib_davet",
       "label": "lib/davet.ts",
       "_origin": "ast",
@@ -5810,7 +5845,7 @@
       "file_type": "code",
       "norm_label": "crockford",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L21"
+      "source_location": "L22"
     },
     {
       "id": "src_lib_davet_davet_cerez",
@@ -5821,7 +5856,7 @@
       "file_type": "code",
       "norm_label": "davet_cerez",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L107"
+      "source_location": "L117"
     },
     {
       "id": "src_lib_davet_kod_uzunluk",
@@ -5832,106 +5867,7 @@
       "file_type": "code",
       "norm_label": "kod_uzunluk",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_pages_api_uye_egitim",
-      "label": "egitim.ts",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "egitim.ts",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_kurs_acilis_esigi",
-      "label": "KURS_ACILIS_ESIGI",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "kurs_acilis_esigi",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L28"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_kurs_asgari_oge",
-      "label": "KURS_ASGARI_OGE",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "kurs_asgari_oge",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L26"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/egitim.ts",
       "source_location": "L23"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_seviyeler",
-      "label": "SEVIYELER",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "seviyeler",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L29"
-    },
-    {
-      "id": "src_pages_d_kod",
-      "label": "[...kod].astro",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "[...kod].astro",
-      "source_file": "src/pages/d/[...kod].astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_d_kod_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/d/[...kod].astro",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_pages_d_q_kod",
-      "label": "[kod].astro",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "[kod].astro",
-      "source_file": "src/pages/d/q/[kod].astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_d_q_kod_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/d/q/[kod].astro",
-      "source_location": "L4"
     },
     {
       "id": "tests_unit_davet_test",
@@ -5954,17 +5890,6 @@
       "norm_label": "adr-0001",
       "source_file": "src/lib/davet.ts",
       "source_location": "L2"
-    },
-    {
-      "id": "src_pages_api_uye_egitim_ts_docref_adr_0001",
-      "label": "ADR-0001",
-      "_origin": "ast",
-      "community": 115,
-      "community_name": "lib/davet.ts",
-      "file_type": "concept",
-      "norm_label": "adr-0001",
-      "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L5"
     },
     {
       "id": "src_lib_economy",
@@ -6055,69 +5980,201 @@
       "source_location": "L12"
     },
     {
-      "id": "src_pages_api_uye_admin",
-      "label": "admin.ts",
+      "id": "src_features_library_okumakapisi",
+      "label": "OkumaKapisi.astro",
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "admin.ts",
-      "source_file": "src/pages/api/uye/admin.ts",
+      "norm_label": "okumakapisi.astro",
+      "source_file": "src/features/library/OkumaKapisi.astro",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_api_uye_admin_prerender",
-      "label": "prerender",
+      "id": "src_lib_books_lookup",
+      "label": "books-lookup.ts",
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/admin.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_pages_api_uye_quiz",
-      "label": "quiz.ts",
-      "_origin": "ast",
-      "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "code",
-      "norm_label": "quiz.ts",
-      "source_file": "src/pages/api/uye/quiz.ts",
+      "norm_label": "books-lookup.ts",
+      "source_file": "src/lib/books-lookup.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_api_uye_quiz_prerender",
+      "id": "src_lib_points",
+      "label": "points.ts",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "points.ts",
+      "source_file": "src/lib/points.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_points_featured_gift_book_id",
+      "label": "FEATURED_GIFT_BOOK_ID",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "featured_gift_book_id",
+      "source_file": "src/lib/points.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "src_lib_points_puan",
+      "label": "PUAN",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "puan",
+      "source_file": "src/lib/points.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_lib_social",
+      "label": "social.ts",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "social.ts",
+      "source_file": "src/lib/social.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_kurslar_index",
+      "label": "kurslar/index.astro",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "kurslar/index.astro",
+      "source_file": "src/pages/kurslar/index.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_kurslar_slug",
+      "label": "kurslar/[slug].astro",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "kurslar/[slug].astro",
+      "source_file": "src/pages/kurslar/[slug].astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_hosgeldin",
+      "label": "hosgeldin.astro",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "hosgeldin.astro",
+      "source_file": "src/pages/uye/hosgeldin.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_hosgeldin_books",
+      "label": "books",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "books",
+      "source_file": "src/pages/uye/hosgeldin.astro",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_pages_uye_hosgeldin_featured",
+      "label": "featured",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "featured",
+      "source_file": "src/pages/uye/hosgeldin.astro",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_pages_uye_hosgeldin_prerender",
       "label": "prerender",
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
       "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/quiz.ts",
-      "source_location": "L13"
+      "source_file": "src/pages/uye/hosgeldin.astro",
+      "source_location": "L15"
     },
     {
-      "id": "src_pages_api_uye_admin_ts_docref_adr_0001",
-      "label": "ADR-0001",
+      "id": "src_pages_uye_hosgeldin_vitrindekiler",
+      "label": "vitrindekiler",
       "_origin": "ast",
       "community": 117,
-      "community_name": "awardPoints",
-      "file_type": "concept",
-      "norm_label": "adr-0001",
-      "source_file": "src/pages/api/uye/admin.ts",
-      "source_location": "L131"
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "vitrindekiler",
+      "source_file": "src/pages/uye/hosgeldin.astro",
+      "source_location": "L36"
     },
     {
-      "id": "src_lib_urls",
-      "label": "urls.ts",
+      "id": "src_pages_uye_magaza",
+      "label": "magaza.astro",
       "_origin": "ast",
-      "community": 118,
-      "community_name": "urls.ts",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
       "file_type": "code",
-      "norm_label": "urls.ts",
-      "source_file": "src/lib/urls.ts",
+      "norm_label": "magaza.astro",
+      "source_file": "src/pages/uye/magaza.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_magaza_durum",
+      "label": "durum",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "durum",
+      "source_file": "src/pages/uye/magaza.astro",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_pages_uye_magaza_flairler",
+      "label": "FLAIRLER",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "flairler",
+      "source_file": "src/pages/uye/magaza.astro",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_pages_uye_magaza_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/uye/magaza.astro",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_pages_uye_yaz",
+      "label": "yaz.astro",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "kurslar/[slug].astro",
+      "file_type": "code",
+      "norm_label": "yaz.astro",
+      "source_file": "src/pages/uye/yaz.astro",
       "source_location": "L1"
     },
     {
@@ -6125,7 +6182,7 @@
       "label": "uye/davet.ts",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "uye/davet.ts",
       "source_file": "src/pages/api/uye/davet.ts",
@@ -6136,7 +6193,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/davet.ts",
@@ -6147,7 +6204,7 @@
       "label": "feed.ts",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "feed.ts",
       "source_file": "src/pages/api/uye/feed.ts",
@@ -6158,7 +6215,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/feed.ts",
@@ -6169,7 +6226,7 @@
       "label": "sikayet.ts",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "sikayet.ts",
       "source_file": "src/pages/api/uye/sikayet.ts",
@@ -6180,7 +6237,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/sikayet.ts",
@@ -6191,11 +6248,33 @@
       "label": "SIKAYET_ESIGI",
       "_origin": "ast",
       "community": 118,
-      "community_name": "urls.ts",
+      "community_name": "feed.ts",
       "file_type": "code",
       "norm_label": "sikayet_esigi",
       "source_file": "src/pages/api/uye/sikayet.ts",
       "source_location": "L16"
+    },
+    {
+      "id": "src_pages_api_uye_takip",
+      "label": "takip.ts",
+      "_origin": "ast",
+      "community": 118,
+      "community_name": "feed.ts",
+      "file_type": "code",
+      "norm_label": "takip.ts",
+      "source_file": "src/pages/api/uye/takip.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_api_uye_takip_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 118,
+      "community_name": "feed.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/api/uye/takip.ts",
+      "source_location": "L8"
     },
     {
       "id": "src_features_library_driveembed",
@@ -6521,17 +6600,6 @@
       "source_location": "L75"
     },
     {
-      "id": "src_pages_lider",
-      "label": "lider.astro",
-      "_origin": "ast",
-      "community": 127,
-      "community_name": "league.ts",
-      "file_type": "code",
-      "norm_label": "lider.astro",
-      "source_file": "src/pages/lider.astro",
-      "source_location": "L1"
-    },
-    {
       "id": "tests_unit_league_rewards_test",
       "label": "league-rewards.test.ts",
       "_origin": "ast",
@@ -6554,66 +6622,88 @@
       "source_location": "L1"
     },
     {
-      "id": "src_pages_api_uye_takip",
-      "label": "takip.ts",
+      "id": "src_pages_api_uye_egitim",
+      "label": "egitim.ts",
       "_origin": "ast",
       "community": 129,
-      "community_name": "begeniPuaniVer",
+      "community_name": "egitim.ts",
       "file_type": "code",
-      "norm_label": "takip.ts",
-      "source_file": "src/pages/api/uye/takip.ts",
+      "norm_label": "egitim.ts",
+      "source_file": "src/pages/api/uye/egitim.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_api_uye_takip_prerender",
+      "id": "src_pages_api_uye_egitim_kurs_acilis_esigi",
+      "label": "KURS_ACILIS_ESIGI",
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "kurs_acilis_esigi",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_kurs_asgari_oge",
+      "label": "KURS_ASGARI_OGE",
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "kurs_asgari_oge",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L26"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_prerender",
       "label": "prerender",
       "_origin": "ast",
       "community": 129,
-      "community_name": "begeniPuaniVer",
+      "community_name": "egitim.ts",
       "file_type": "code",
       "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/takip.ts",
-      "source_location": "L8"
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_seviyeler",
+      "label": "SEVIYELER",
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "code",
+      "norm_label": "seviyeler",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_pages_api_uye_egitim_ts_docref_adr_0001",
+      "label": "ADR-0001",
+      "_origin": "ast",
+      "community": 129,
+      "community_name": "egitim.ts",
+      "file_type": "concept",
+      "norm_label": "adr-0001",
+      "source_file": "src/pages/api/uye/egitim.ts",
+      "source_location": "L5"
     },
     {
       "id": "src_lib_markdown",
       "label": "markdown.ts",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "markdown.ts",
       "source_file": "src/lib/markdown.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_api_uye_basvuru",
-      "label": "basvuru.ts",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "basvuru.ts",
-      "source_file": "src/pages/api/uye/basvuru.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_api_uye_basvuru_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/basvuru.ts",
-      "source_location": "L6"
-    },
-    {
       "id": "src_pages_api_uye_kulup",
       "label": "kulup.ts",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "kulup.ts",
       "source_file": "src/pages/api/uye/kulup.ts",
@@ -6624,62 +6714,18 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/kulup.ts",
       "source_location": "L9"
     },
     {
-      "id": "src_pages_api_uye_oy",
-      "label": "oy.ts",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "oy.ts",
-      "source_file": "src/pages/api/uye/oy.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_api_uye_oy_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/oy.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_pages_api_uye_profil",
-      "label": "profil.ts",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "profil.ts",
-      "source_file": "src/pages/api/uye/profil.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_api_uye_profil_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/profil.ts",
-      "source_location": "L7"
-    },
-    {
       "id": "src_pages_api_uye_yazi",
       "label": "yazi.ts",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "yazi.ts",
       "source_file": "src/pages/api/uye/yazi.ts",
@@ -6690,73 +6736,18 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/yazi.ts",
       "source_location": "L7"
     },
     {
-      "id": "src_pages_aramiza_katil",
-      "label": "aramiza-katil.astro",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "aramiza-katil.astro",
-      "source_file": "src/pages/aramiza-katil.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_aramiza_katil_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/aramiza-katil.astro",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_pages_kulup_kur",
-      "label": "kulup-kur.astro",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "kulup-kur.astro",
-      "source_file": "src/pages/kulup-kur.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_kulup_kur_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/kulup-kur.astro",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_pages_topluluk_slug",
-      "label": "topluluk/[slug].astro",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "getOrCreateMember",
-      "file_type": "code",
-      "norm_label": "topluluk/[slug].astro",
-      "source_file": "src/pages/topluluk/[slug].astro",
-      "source_location": "L1"
-    },
-    {
       "id": "src_pages_uye_admin",
       "label": "admin.astro",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "admin.astro",
       "source_file": "src/pages/uye/admin.astro",
@@ -6767,7 +6758,7 @@
       "label": "markdown.test.ts",
       "_origin": "ast",
       "community": 13,
-      "community_name": "getOrCreateMember",
+      "community_name": "kulup.ts",
       "file_type": "code",
       "norm_label": "markdown.test.ts",
       "source_file": "tests/unit/markdown.test.ts",
@@ -6794,6 +6785,292 @@
       "file_type": "code",
       "norm_label": "uqr",
       "source_file": "uqr"
+    },
+    {
+      "id": "src_features_davet_karsilama",
+      "label": "karsilama.ts",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "karsilama.ts",
+      "source_file": "src/features/davet/karsilama.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_davet_karsilama_dakikada_istek",
+      "label": "DAKIKADA_ISTEK",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "dakikada_istek",
+      "source_file": "src/features/davet/karsilama.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_pages_d_kod",
+      "label": "[...kod].astro",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "[...kod].astro",
+      "source_file": "src/pages/d/[...kod].astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_d_kod_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/d/[...kod].astro",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_pages_d_q_kod",
+      "label": "[kod].astro",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "[kod].astro",
+      "source_file": "src/pages/d/q/[kod].astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_d_q_kod_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 132,
+      "community_name": "karsilama.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/d/q/[kod].astro",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_lib_dates",
+      "label": "dates.ts",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "dates.ts",
+      "source_file": "src/lib/dates.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_etkinlikler",
+      "label": "etkinlikler.astro",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "etkinlikler.astro",
+      "source_file": "src/pages/etkinlikler.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_etkinlikler_eventids",
+      "label": "eventIds",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "eventids",
+      "source_file": "src/pages/etkinlikler.astro",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_pages_etkinlikler_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/etkinlikler.astro",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_pages_kulup_slug",
+      "label": "kulup/[slug].astro",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "kulup/[slug].astro",
+      "source_file": "src/pages/kulup/[slug].astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_quiz_olustur",
+      "label": "quiz-olustur.astro",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "quiz-olustur.astro",
+      "source_file": "src/pages/uye/quiz-olustur.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_quiz_olustur_mybooks",
+      "label": "myBooks",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "mybooks",
+      "source_file": "src/pages/uye/quiz-olustur.astro",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_pages_uye_quiz_olustur_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 133,
+      "community_name": "kulup/[slug].astro",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/uye/quiz-olustur.astro",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_features_library_mindmapmini",
+      "label": "[]",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "[]",
+      "source_file": "src/features/library/MindMapMini.astro",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_features_library_mindmapmini_nodes",
+      "label": "nodes",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "nodes",
+      "source_file": "src/features/library/MindMapMini.astro",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_features_library_mindmapmini_t",
+      "label": "t",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "t",
+      "source_file": "src/features/library/MindMapMini.astro",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_features_posts_kaynaklar",
+      "label": "Kaynaklar.astro",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "kaynaklar.astro",
+      "source_file": "src/features/posts/Kaynaklar.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_seo_jsonld",
+      "label": "JsonLd.astro",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "jsonld.astro",
+      "source_file": "src/features/seo/JsonLd.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_urls",
+      "label": "urls.ts",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "urls.ts",
+      "source_file": "src/lib/urls.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_urls_kutuphanem_url",
+      "label": "KUTUPHANEM_URL",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "kutuphanem_url",
+      "source_file": "src/lib/urls.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "tests_component_kaynaklar_test",
+      "label": "kaynaklar.test.ts",
+      "_origin": "ast",
+      "community": 134,
+      "community_name": "urls.ts",
+      "file_type": "code",
+      "norm_label": "kaynaklar.test.ts",
+      "source_file": "tests/component/kaynaklar.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_seo_og_render",
+      "label": "render.ts",
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "render.ts",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_seo_og_render_fontdir",
+      "label": "fontDir",
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "fontdir",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_features_seo_og_render_fonts",
+      "label": "fonts",
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "fonts",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_features_seo_og_render_kategori_renk",
+      "label": "KATEGORI_RENK",
+      "_origin": "ast",
+      "community": 135,
+      "community_name": "render.ts",
+      "file_type": "code",
+      "norm_label": "kategori_renk",
+      "source_file": "src/features/seo/og/render.ts",
+      "source_location": "L19"
     },
     {
       "id": "src_pages_api_cron_gunluk",
@@ -6829,11 +7106,33 @@
       "source_location": "L210"
     },
     {
+      "id": "src_db_client",
+      "label": "client.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "client.ts",
+      "source_file": "src/db/client.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_community_bildirimzili",
+      "label": "BildirimZili.astro",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "bildirimzili.astro",
+      "source_file": "src/features/community/BildirimZili.astro",
+      "source_location": "L1"
+    },
+    {
       "id": "src_lib_levels",
       "label": "levels.ts",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "levels.ts",
       "source_file": "src/lib/levels.ts",
@@ -6844,7 +7143,7 @@
       "label": "LEVEL_THRESHOLDS",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "level_thresholds",
       "source_file": "src/lib/levels.ts",
@@ -6855,7 +7154,7 @@
       "label": "quiz-olustur.ts",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "quiz-olustur.ts",
       "source_file": "src/pages/api/uye/quiz-olustur.ts",
@@ -6866,29 +7165,117 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/quiz-olustur.ts",
       "source_location": "L7"
     },
     {
+      "id": "src_pages_kulupler",
+      "label": "kulupler.astro",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "kulupler.astro",
+      "source_file": "src/pages/kulupler.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_kulupler_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/kulupler.astro",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_pages_kulupler_string",
+      "label": "string",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "string",
+      "source_file": "src/pages/kulupler.astro",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_pages_lider",
+      "label": "lider.astro",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "lider.astro",
+      "source_file": "src/pages/lider.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_topluluk_slug",
+      "label": "topluluk/[slug].astro",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "topluluk/[slug].astro",
+      "source_file": "src/pages/topluluk/[slug].astro",
+      "source_location": "L1"
+    },
+    {
       "id": "src_pages_u_handle",
       "label": "[handle].astro",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "[handle].astro",
       "source_file": "src/pages/u/[handle].astro",
       "source_location": "L1"
     },
     {
+      "id": "src_pages_uye_egitim_olustur",
+      "label": "egitim-olustur.astro",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "egitim-olustur.astro",
+      "source_file": "src/pages/uye/egitim-olustur.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_uye_egitim_olustur_mybooks",
+      "label": "myBooks",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "mybooks",
+      "source_file": "src/pages/uye/egitim-olustur.astro",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_pages_uye_egitim_olustur_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "client.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/uye/egitim-olustur.astro",
+      "source_location": "L13"
+    },
+    {
       "id": "src_pages_uye_index",
       "label": "uye/index.astro",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "uye/index.astro",
       "source_file": "src/pages/uye/index.astro",
@@ -6899,7 +7286,7 @@
       "label": "uyeler.astro",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "uyeler.astro",
       "source_file": "src/pages/uyeler.astro",
@@ -6910,7 +7297,7 @@
       "label": "levels.test.ts",
       "_origin": "ast",
       "community": 15,
-      "community_name": "uye/index.astro",
+      "community_name": "client.ts",
       "file_type": "code",
       "norm_label": "levels.test.ts",
       "source_file": "tests/unit/levels.test.ts",
@@ -7319,26 +7706,48 @@
       "source_location": "L1"
     },
     {
-      "id": "src_features_posts_prevnext",
-      "label": "PrevNext.astro",
+      "id": "src_features_posts_sharelinks",
+      "label": "ShareLinks.astro",
       "_origin": "ast",
       "community": 17,
       "community_name": "index.ts",
       "file_type": "code",
-      "norm_label": "prevnext.astro",
-      "source_file": "src/features/posts/PrevNext.astro",
+      "norm_label": "sharelinks.astro",
+      "source_file": "src/features/posts/ShareLinks.astro",
       "source_location": "L1"
     },
     {
-      "id": "src_features_posts_prevnext_t",
+      "id": "src_features_posts_sharelinks_encoded",
+      "label": "encoded",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "index.ts",
+      "file_type": "code",
+      "norm_label": "encoded",
+      "source_file": "src/features/posts/ShareLinks.astro",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_features_posts_sharelinks_t",
       "label": "t",
       "_origin": "ast",
       "community": 17,
       "community_name": "index.ts",
       "file_type": "code",
       "norm_label": "t",
-      "source_file": "src/features/posts/PrevNext.astro",
-      "source_location": "L11"
+      "source_file": "src/features/posts/ShareLinks.astro",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_features_posts_sharelinks_targets",
+      "label": "targets",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "index.ts",
+      "file_type": "code",
+      "norm_label": "targets",
+      "source_file": "src/features/posts/ShareLinks.astro",
+      "source_location": "L17"
     },
     {
       "id": "src_features_posts_toc",
@@ -7451,132 +7860,44 @@
       "source_location": "L1"
     },
     {
+      "id": "src_features_library_notebookdetail",
+      "label": "NotebookDetail.astro",
+      "_origin": "ast",
+      "community": 19,
+      "community_name": "PostCard.astro",
+      "file_type": "code",
+      "norm_label": "notebookdetail.astro",
+      "source_file": "src/features/library/NotebookDetail.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_features_library_notebookdetail_t",
+      "label": "t",
+      "_origin": "ast",
+      "community": 19,
+      "community_name": "PostCard.astro",
+      "file_type": "code",
+      "norm_label": "t",
+      "source_file": "src/features/library/NotebookDetail.astro",
+      "source_location": "L15"
+    },
+    {
       "id": "src_features_posts_postcard",
       "label": "PostCard.astro",
       "_origin": "ast",
       "community": 19,
-      "community_name": "PostLayout.astro",
+      "community_name": "PostCard.astro",
       "file_type": "code",
       "norm_label": "postcard.astro",
       "source_file": "src/features/posts/PostCard.astro",
       "source_location": "L1"
     },
     {
-      "id": "src_features_posts_sharelinks",
-      "label": "ShareLinks.astro",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "sharelinks.astro",
-      "source_file": "src/features/posts/ShareLinks.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_features_posts_sharelinks_encoded",
-      "label": "encoded",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "encoded",
-      "source_file": "src/features/posts/ShareLinks.astro",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_features_posts_sharelinks_t",
-      "label": "t",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "t",
-      "source_file": "src/features/posts/ShareLinks.astro",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_features_posts_sharelinks_targets",
-      "label": "targets",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "targets",
-      "source_file": "src/features/posts/ShareLinks.astro",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_features_seo_jsonld",
-      "label": "JsonLd.astro",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "jsonld.astro",
-      "source_file": "src/features/seo/JsonLd.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_layouts_postlayout",
-      "label": "PostLayout.astro",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "postlayout.astro",
-      "source_file": "src/layouts/PostLayout.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_layouts_postlayout_canonicalurl",
-      "label": "canonicalUrl",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "canonicalurl",
-      "source_file": "src/layouts/PostLayout.astro",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_layouts_postlayout_okumasuresi",
-      "label": "okumaSuresi",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "okumasuresi",
-      "source_file": "src/layouts/PostLayout.astro",
-      "source_location": "L28"
-    },
-    {
-      "id": "src_layouts_postlayout_t",
-      "label": "t",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "t",
-      "source_file": "src/layouts/PostLayout.astro",
-      "source_location": "L27"
-    },
-    {
-      "id": "src_layouts_postlayout_translation",
-      "label": "translation",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "PostLayout.astro",
-      "file_type": "code",
-      "norm_label": "translation",
-      "source_file": "src/layouts/PostLayout.astro",
-      "source_location": "L29"
-    },
-    {
       "id": "src_lib_reading_time",
       "label": "reading-time.ts",
       "_origin": "ast",
       "community": 19,
-      "community_name": "PostLayout.astro",
+      "community_name": "PostCard.astro",
       "file_type": "code",
       "norm_label": "reading-time.ts",
       "source_file": "src/lib/reading-time.ts",
@@ -7587,7 +7908,7 @@
       "label": "reading-time.test.ts",
       "_origin": "ast",
       "community": 19,
-      "community_name": "PostLayout.astro",
+      "community_name": "PostCard.astro",
       "file_type": "code",
       "norm_label": "reading-time.test.ts",
       "source_file": "tests/unit/reading-time.test.ts",
@@ -7671,26 +7992,81 @@
       "source_location": "L12"
     },
     {
-      "id": "src_features_library_notebookdetail",
-      "label": "NotebookDetail.astro",
+      "id": "src_features_posts_prevnext",
+      "label": "PrevNext.astro",
       "_origin": "ast",
       "community": 2,
       "community_name": "posts.ts",
       "file_type": "code",
-      "norm_label": "notebookdetail.astro",
-      "source_file": "src/features/library/NotebookDetail.astro",
+      "norm_label": "prevnext.astro",
+      "source_file": "src/features/posts/PrevNext.astro",
       "source_location": "L1"
     },
     {
-      "id": "src_features_library_notebookdetail_t",
+      "id": "src_features_posts_prevnext_t",
       "label": "t",
       "_origin": "ast",
       "community": 2,
       "community_name": "posts.ts",
       "file_type": "code",
       "norm_label": "t",
-      "source_file": "src/features/library/NotebookDetail.astro",
-      "source_location": "L15"
+      "source_file": "src/features/posts/PrevNext.astro",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_layouts_postlayout",
+      "label": "PostLayout.astro",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "postlayout.astro",
+      "source_file": "src/layouts/PostLayout.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_layouts_postlayout_canonicalurl",
+      "label": "canonicalUrl",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "canonicalurl",
+      "source_file": "src/layouts/PostLayout.astro",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_layouts_postlayout_okumasuresi",
+      "label": "okumaSuresi",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "okumasuresi",
+      "source_file": "src/layouts/PostLayout.astro",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_layouts_postlayout_t",
+      "label": "t",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "t",
+      "source_file": "src/layouts/PostLayout.astro",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_layouts_postlayout_translation",
+      "label": "translation",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "translation",
+      "source_file": "src/layouts/PostLayout.astro",
+      "source_location": "L29"
     },
     {
       "id": "src_lib_posts",
@@ -7767,6 +8143,28 @@
       "file_type": "code",
       "norm_label": "pages/kutuphane/[notebookid].astro",
       "source_file": "src/pages/kutuphane/[notebookId].astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_og_slug_png",
+      "label": "[...slug].png.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "[...slug].png.ts",
+      "source_file": "src/pages/og/[...slug].png.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_og_slug_png_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "posts.ts",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/og/[...slug].png.ts",
       "source_location": "L1"
     },
     {
@@ -8012,39 +8410,6 @@
       "source_location": "L3"
     },
     {
-      "id": "src_features_library_mindmapmini",
-      "label": "[]",
-      "_origin": "ast",
-      "community": 21,
-      "community_name": "en/index.astro",
-      "file_type": "code",
-      "norm_label": "[]",
-      "source_file": "src/features/library/MindMapMini.astro",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_features_library_mindmapmini_nodes",
-      "label": "nodes",
-      "_origin": "ast",
-      "community": 21,
-      "community_name": "en/index.astro",
-      "file_type": "code",
-      "norm_label": "nodes",
-      "source_file": "src/features/library/MindMapMini.astro",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_features_library_mindmapmini_t",
-      "label": "t",
-      "_origin": "ast",
-      "community": 21,
-      "community_name": "en/index.astro",
-      "file_type": "code",
-      "norm_label": "t",
-      "source_file": "src/features/library/MindMapMini.astro",
-      "source_location": "L9"
-    },
-    {
       "id": "src_features_modules_halkamodule",
       "label": "HalkaModule.astro",
       "_origin": "ast",
@@ -8089,26 +8454,26 @@
       "source_location": "L19"
     },
     {
-      "id": "src_features_posts_kaynaklar",
-      "label": "Kaynaklar.astro",
+      "id": "src_features_stories_stories",
+      "label": "stories.ts",
       "_origin": "ast",
       "community": 21,
       "community_name": "en/index.astro",
       "file_type": "code",
-      "norm_label": "kaynaklar.astro",
-      "source_file": "src/features/posts/Kaynaklar.astro",
+      "norm_label": "stories.ts",
+      "source_file": "src/features/stories/stories.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_urls_kutuphanem_url",
-      "label": "KUTUPHANEM_URL",
+      "id": "src_features_stories_storyring",
+      "label": "StoryRing.astro",
       "_origin": "ast",
       "community": 21,
       "community_name": "en/index.astro",
       "file_type": "code",
-      "norm_label": "kutuphanem_url",
-      "source_file": "src/lib/urls.ts",
-      "source_location": "L16"
+      "norm_label": "storyring.astro",
+      "source_file": "src/features/stories/StoryRing.astro",
+      "source_location": "L1"
     },
     {
       "id": "src_pages_en_index",
@@ -8177,17 +8542,6 @@
       "source_location": "L11"
     },
     {
-      "id": "tests_component_kaynaklar_test",
-      "label": "kaynaklar.test.ts",
-      "_origin": "ast",
-      "community": 21,
-      "community_name": "en/index.astro",
-      "file_type": "code",
-      "norm_label": "kaynaklar.test.ts",
-      "source_file": "tests/component/kaynaklar.test.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_features_posts_archiveview",
       "label": "ArchiveView.astro",
       "_origin": "ast",
@@ -8230,17 +8584,6 @@
       "norm_label": "categories",
       "source_file": "src/lib/types.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_lib_types_kaynak_turleri",
-      "label": "KAYNAK_TURLERI",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "ArchiveView.astro",
-      "file_type": "code",
-      "norm_label": "kaynak_turleri",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L11"
     },
     {
       "id": "src_pages_en_kategori_kategori_page",
@@ -8614,7 +8957,7 @@
       "file_type": "code",
       "norm_label": "kart_boyut",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L11"
+      "source_location": "L12"
     },
     {
       "id": "src_features_davet_kart_renk",
@@ -8625,51 +8968,7 @@
       "file_type": "code",
       "norm_label": "renk",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_features_seo_og_render",
-      "label": "render.ts",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "render.ts",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_features_seo_og_render_fontdir",
-      "label": "fontDir",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "fontdir",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_features_seo_og_render_fonts",
-      "label": "fonts",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "fonts",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_features_seo_og_render_kategori_renk",
-      "label": "KATEGORI_RENK",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "kart.ts",
-      "file_type": "code",
-      "norm_label": "kategori_renk",
-      "source_file": "src/features/seo/og/render.ts",
-      "source_location": "L19"
+      "source_location": "L32"
     },
     {
       "id": "tests_unit_kart_test",
@@ -9697,7 +9996,7 @@
       "file_type": "code",
       "norm_label": "canonical",
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L29"
+      "source_location": "L31"
     },
     {
       "id": "src_features_seo_seo_lang",
@@ -9708,7 +10007,7 @@
       "file_type": "code",
       "norm_label": "lang",
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L28"
+      "source_location": "L30"
     },
     {
       "id": "src_features_seo_seo_ogimage",
@@ -9719,7 +10018,7 @@
       "file_type": "code",
       "norm_label": "ogimage",
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L30"
+      "source_location": "L32"
     },
     {
       "id": "src_lib_slugs",
@@ -9942,17 +10241,6 @@
       "source_file": "astro"
     },
     {
-      "id": "src_lib_books_lookup",
-      "label": "books-lookup.ts",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "books-lookup.ts",
-      "source_file": "src/lib/books-lookup.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_pages_api_kart_kod_dosya",
       "label": "[dosya].ts",
       "_origin": "ast",
@@ -10006,61 +10294,6 @@
       "norm_label": "seviye_ad",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
       "source_location": "L19"
-    },
-    {
-      "id": "src_pages_kurslar_index",
-      "label": "kurslar/index.astro",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "kurslar/index.astro",
-      "source_file": "src/pages/kurslar/index.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_uye_quiz_olustur",
-      "label": "quiz-olustur.astro",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "quiz-olustur.astro",
-      "source_file": "src/pages/uye/quiz-olustur.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_uye_quiz_olustur_mybooks",
-      "label": "myBooks",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "mybooks",
-      "source_file": "src/pages/uye/quiz-olustur.astro",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_pages_uye_quiz_olustur_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/uye/quiz-olustur.astro",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_pages_uye_yaz",
-      "label": "yaz.astro",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "[dosya].ts",
-      "file_type": "code",
-      "norm_label": "yaz.astro",
-      "source_file": "src/pages/uye/yaz.astro",
-      "source_location": "L1"
     },
     {
       "id": "astrojs_react_react",
@@ -10661,7 +10894,7 @@
       "label": "LibraryGraph.astro",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "librarygraph.astro",
       "source_file": "src/features/library/LibraryGraph.astro",
@@ -10672,7 +10905,7 @@
       "label": "data",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "data",
       "source_file": "src/features/library/LibraryGraph.astro",
@@ -10683,7 +10916,7 @@
       "label": "LibraryView.astro",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "libraryview.astro",
       "source_file": "src/features/library/LibraryView.astro",
@@ -10694,7 +10927,7 @@
       "label": "NotebookCard.astro",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "notebookcard.astro",
       "source_file": "src/features/library/NotebookCard.astro",
@@ -10705,7 +10938,7 @@
       "label": "lang",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "lang",
       "source_file": "src/features/library/NotebookCard.astro",
@@ -10716,29 +10949,62 @@
       "label": "t",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "t",
       "source_file": "src/features/library/NotebookCard.astro",
       "source_location": "L19"
     },
     {
+      "id": "src_lib_kategorize",
+      "label": "kategorize.ts",
+      "_origin": "ast",
+      "community": 52,
+      "community_name": "LibraryView.astro",
+      "file_type": "code",
+      "norm_label": "kategorize.ts",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_lib_kategorize_kategoriler",
       "label": "KATEGORILER",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "kategoriler",
       "source_file": "src/lib/kategorize.ts",
       "source_location": "L25"
     },
     {
+      "id": "src_lib_kategorize_kayitlar",
+      "label": "kayitlar",
+      "_origin": "ast",
+      "community": 52,
+      "community_name": "LibraryView.astro",
+      "file_type": "code",
+      "norm_label": "kayitlar",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_lib_kategorize_kurallar",
+      "label": "KURALLAR",
+      "_origin": "ast",
+      "community": 52,
+      "community_name": "LibraryView.astro",
+      "file_type": "code",
+      "norm_label": "kurallar",
+      "source_file": "src/lib/kategorize.ts",
+      "source_location": "L31"
+    },
+    {
       "id": "src_pages_en_kutuphane_index",
       "label": "en/kutuphane/index.astro",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "en/kutuphane/index.astro",
       "source_file": "src/pages/en/kutuphane/index.astro",
@@ -10749,7 +11015,7 @@
       "label": "t",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "t",
       "source_file": "src/pages/en/kutuphane/index.astro",
@@ -10760,7 +11026,7 @@
       "label": "pages/kutuphane/index.astro",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "pages/kutuphane/index.astro",
       "source_file": "src/pages/kutuphane/index.astro",
@@ -10771,33 +11037,11 @@
       "label": "t",
       "_origin": "ast",
       "community": 52,
-      "community_name": "useTranslations",
+      "community_name": "LibraryView.astro",
       "file_type": "code",
       "norm_label": "t",
       "source_file": "src/pages/kutuphane/index.astro",
       "source_location": "L6"
-    },
-    {
-      "id": "src_pages_og_slug_png",
-      "label": "[...slug].png.ts",
-      "_origin": "ast",
-      "community": 52,
-      "community_name": "useTranslations",
-      "file_type": "code",
-      "norm_label": "[...slug].png.ts",
-      "source_file": "src/pages/og/[...slug].png.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_og_slug_png_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 52,
-      "community_name": "useTranslations",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/og/[...slug].png.ts",
-      "source_location": "L1"
     },
     {
       "id": "tests_e2e_books_spec",
@@ -10870,7 +11114,7 @@
       "label": "Avatar.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "avatar.astro",
       "source_file": "src/components/ui/Avatar.astro",
@@ -10881,32 +11125,10 @@
       "label": "EmptyState.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "emptystate.astro",
       "source_file": "src/components/ui/EmptyState.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_db_client",
-      "label": "client.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "client.ts",
-      "source_file": "src/db/client.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_features_community_bildirimzili",
-      "label": "BildirimZili.astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "bildirimzili.astro",
-      "source_file": "src/features/community/BildirimZili.astro",
       "source_location": "L1"
     },
     {
@@ -10914,7 +11136,7 @@
       "label": "FeedCard.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "feedcard.astro",
       "source_file": "src/features/community/FeedCard.astro",
@@ -10925,7 +11147,7 @@
       "label": "ToplulukLayout.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "topluluklayout.astro",
       "source_file": "src/layouts/ToplulukLayout.astro",
@@ -10936,40 +11158,18 @@
       "label": "sekmeler",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "sekmeler",
       "source_file": "src/layouts/ToplulukLayout.astro",
       "source_location": "L19"
     },
     {
-      "id": "src_lib_dates",
-      "label": "dates.ts",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "dates.ts",
-      "source_file": "src/lib/dates.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_points_featured_gift_book_id",
-      "label": "FEATURED_GIFT_BOOK_ID",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "featured_gift_book_id",
-      "source_file": "src/lib/points.ts",
-      "source_location": "L75"
-    },
-    {
       "id": "src_lib_routes",
       "label": "routes.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "routes.ts",
       "source_file": "src/lib/routes.ts",
@@ -10980,29 +11180,40 @@
       "label": "R",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "r",
       "source_file": "src/lib/routes.ts",
       "source_location": "L2"
     },
     {
-      "id": "src_lib_social",
-      "label": "social.ts",
+      "id": "src_pages_api_uye_admin",
+      "label": "admin.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
-      "norm_label": "social.ts",
-      "source_file": "src/lib/social.ts",
+      "norm_label": "admin.ts",
+      "source_file": "src/pages/api/uye/admin.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_pages_api_uye_admin_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "topluluk/index.astro",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/api/uye/admin.ts",
+      "source_location": "L10"
     },
     {
       "id": "src_pages_api_uye_hediye_sec",
       "label": "hediye-sec.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "hediye-sec.ts",
       "source_file": "src/pages/api/uye/hediye-sec.ts",
@@ -11013,7 +11224,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/hediye-sec.ts",
@@ -11024,7 +11235,7 @@
       "label": "egitim/[id].astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "egitim/[id].astro",
       "source_file": "src/pages/egitim/[id].astro",
@@ -11035,109 +11246,21 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/egitim/[id].astro",
       "source_location": "L7"
     },
     {
-      "id": "src_pages_etkinlikler",
-      "label": "etkinlikler.astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "etkinlikler.astro",
-      "source_file": "src/pages/etkinlikler.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_etkinlikler_eventids",
-      "label": "eventIds",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "eventids",
-      "source_file": "src/pages/etkinlikler.astro",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_pages_etkinlikler_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/etkinlikler.astro",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_pages_gundem",
-      "label": "gundem.astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "gundem.astro",
-      "source_file": "src/pages/gundem.astro",
-      "source_location": "L1"
-    },
-    {
       "id": "src_pages_harita",
       "label": "harita.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "harita.astro",
       "source_file": "src/pages/harita.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_kulupler",
-      "label": "kulupler.astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "kulupler.astro",
-      "source_file": "src/pages/kulupler.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_kulupler_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/kulupler.astro",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_pages_kulupler_string",
-      "label": "string",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "string",
-      "source_file": "src/pages/kulupler.astro",
-      "source_location": "L24"
-    },
-    {
-      "id": "src_pages_kurslar_slug",
-      "label": "kurslar/[slug].astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "kurslar/[slug].astro",
-      "source_file": "src/pages/kurslar/[slug].astro",
       "source_location": "L1"
     },
     {
@@ -11145,7 +11268,7 @@
       "label": "sitemap-kurslar.xml.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "sitemap-kurslar.xml.ts",
       "source_file": "src/pages/sitemap-kurslar.xml.ts",
@@ -11156,7 +11279,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/sitemap-kurslar.xml.ts",
@@ -11167,99 +11290,22 @@
       "label": "topluluk/index.astro",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
+      "community_name": "topluluk/index.astro",
       "file_type": "code",
       "norm_label": "topluluk/index.astro",
       "source_file": "src/pages/topluluk/index.astro",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_uye_egitim_olustur",
-      "label": "egitim-olustur.astro",
+      "id": "src_pages_api_uye_admin_ts_docref_adr_0001",
+      "label": "ADR-0001",
       "_origin": "ast",
       "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "egitim-olustur.astro",
-      "source_file": "src/pages/uye/egitim-olustur.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_uye_egitim_olustur_mybooks",
-      "label": "myBooks",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "mybooks",
-      "source_file": "src/pages/uye/egitim-olustur.astro",
-      "source_location": "L33"
-    },
-    {
-      "id": "src_pages_uye_egitim_olustur_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/uye/egitim-olustur.astro",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_pages_uye_hosgeldin",
-      "label": "hosgeldin.astro",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "hosgeldin.astro",
-      "source_file": "src/pages/uye/hosgeldin.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_uye_hosgeldin_books",
-      "label": "books",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "books",
-      "source_file": "src/pages/uye/hosgeldin.astro",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_pages_uye_hosgeldin_featured",
-      "label": "featured",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "featured",
-      "source_file": "src/pages/uye/hosgeldin.astro",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_pages_uye_hosgeldin_prerender",
-      "label": "prerender",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "prerender",
-      "source_file": "src/pages/uye/hosgeldin.astro",
-      "source_location": "L15"
-    },
-    {
-      "id": "src_pages_uye_hosgeldin_vitrindekiler",
-      "label": "vitrindekiler",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "client.ts",
-      "file_type": "code",
-      "norm_label": "vitrindekiler",
-      "source_file": "src/pages/uye/hosgeldin.astro",
-      "source_location": "L36"
+      "community_name": "topluluk/index.astro",
+      "file_type": "concept",
+      "norm_label": "adr-0001",
+      "source_file": "src/pages/api/uye/admin.ts",
+      "source_location": "L131"
     },
     {
       "id": "tests_e2e_projects_spec",
@@ -12851,17 +12897,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_features_stories_stories",
-      "label": "stories.ts",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "initStories",
-      "file_type": "code",
-      "norm_label": "stories.ts",
-      "source_file": "src/features/stories/stories.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_features_stories_story_viewer",
       "label": "story-viewer.ts",
       "_origin": "ast",
@@ -12873,33 +12908,11 @@
       "source_location": "L1"
     },
     {
-      "id": "src_features_stories_storyring",
-      "label": "StoryRing.astro",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "initStories",
-      "file_type": "code",
-      "norm_label": "storyring.astro",
-      "source_file": "src/features/stories/StoryRing.astro",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_features_library_okumakapisi",
-      "label": "OkumaKapisi.astro",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "member.ts",
-      "file_type": "code",
-      "norm_label": "okumakapisi.astro",
-      "source_file": "src/features/library/OkumaKapisi.astro",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_member",
       "label": "member.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "member.ts",
       "source_file": "src/lib/member.ts",
@@ -12910,62 +12923,40 @@
       "label": "OWNER_EMAILS",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "owner_emails",
       "source_file": "src/lib/member.ts",
       "source_location": "L15"
     },
     {
-      "id": "src_lib_points",
-      "label": "points.ts",
+      "id": "src_pages_api_uye_basvuru",
+      "label": "basvuru.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
-      "norm_label": "points.ts",
-      "source_file": "src/lib/points.ts",
+      "norm_label": "basvuru.ts",
+      "source_file": "src/pages/api/uye/basvuru.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_points_puan",
-      "label": "PUAN",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "member.ts",
-      "file_type": "code",
-      "norm_label": "puan",
-      "source_file": "src/lib/points.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_pages_api_uye_etkinlik",
-      "label": "etkinlik.ts",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "member.ts",
-      "file_type": "code",
-      "norm_label": "etkinlik.ts",
-      "source_file": "src/pages/api/uye/etkinlik.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_pages_api_uye_etkinlik_prerender",
+      "id": "src_pages_api_uye_basvuru_prerender",
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
-      "source_file": "src/pages/api/uye/etkinlik.ts",
-      "source_location": "L10"
+      "source_file": "src/pages/api/uye/basvuru.ts",
+      "source_location": "L6"
     },
     {
       "id": "src_pages_api_uye_hediye_et",
       "label": "hediye-et.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "hediye-et.ts",
       "source_file": "src/pages/api/uye/hediye-et.ts",
@@ -12976,7 +12967,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/hediye-et.ts",
@@ -12987,7 +12978,7 @@
       "label": "kitap-ac.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "kitap-ac.ts",
       "source_file": "src/pages/api/uye/kitap-ac.ts",
@@ -12998,7 +12989,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/kitap-ac.ts",
@@ -13009,7 +13000,7 @@
       "label": "kitap-linkler.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "kitap-linkler.ts",
       "source_file": "src/pages/api/uye/kitap-linkler.ts",
@@ -13020,7 +13011,7 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/kitap-linkler.ts",
@@ -13031,7 +13022,7 @@
       "label": "magaza.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "magaza.ts",
       "source_file": "src/pages/api/uye/magaza.ts",
@@ -13042,7 +13033,7 @@
       "label": "FLAIRLER",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "flairler",
       "source_file": "src/pages/api/uye/magaza.ts",
@@ -13053,55 +13044,121 @@
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
       "source_file": "src/pages/api/uye/magaza.ts",
       "source_location": "L9"
     },
     {
-      "id": "src_pages_uye_magaza",
-      "label": "magaza.astro",
+      "id": "src_pages_api_uye_oy",
+      "label": "oy.ts",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
-      "norm_label": "magaza.astro",
-      "source_file": "src/pages/uye/magaza.astro",
+      "norm_label": "oy.ts",
+      "source_file": "src/pages/api/uye/oy.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_pages_uye_magaza_durum",
-      "label": "durum",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "member.ts",
-      "file_type": "code",
-      "norm_label": "durum",
-      "source_file": "src/pages/uye/magaza.astro",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_pages_uye_magaza_flairler",
-      "label": "FLAIRLER",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "member.ts",
-      "file_type": "code",
-      "norm_label": "flairler",
-      "source_file": "src/pages/uye/magaza.astro",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_pages_uye_magaza_prerender",
+      "id": "src_pages_api_uye_oy_prerender",
       "label": "prerender",
       "_origin": "ast",
       "community": 70,
-      "community_name": "member.ts",
+      "community_name": "getOrCreateMember",
       "file_type": "code",
       "norm_label": "prerender",
-      "source_file": "src/pages/uye/magaza.astro",
+      "source_file": "src/pages/api/uye/oy.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_pages_api_uye_profil",
+      "label": "profil.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "profil.ts",
+      "source_file": "src/pages/api/uye/profil.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_api_uye_profil_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/api/uye/profil.ts",
       "source_location": "L7"
+    },
+    {
+      "id": "src_pages_api_uye_quiz",
+      "label": "quiz.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "quiz.ts",
+      "source_file": "src/pages/api/uye/quiz.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_api_uye_quiz_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/api/uye/quiz.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_pages_aramiza_katil",
+      "label": "aramiza-katil.astro",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "aramiza-katil.astro",
+      "source_file": "src/pages/aramiza-katil.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_aramiza_katil_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/aramiza-katil.astro",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_pages_kulup_kur",
+      "label": "kulup-kur.astro",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "kulup-kur.astro",
+      "source_file": "src/pages/kulup-kur.astro",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_pages_kulup_kur_prerender",
+      "label": "prerender",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "getOrCreateMember",
+      "file_type": "code",
+      "norm_label": "prerender",
+      "source_file": "src/pages/kulup-kur.astro",
+      "source_location": "L6"
     },
     {
       "id": "agents_skills_clerk_webhooks_skill",
@@ -16032,39 +16089,6 @@
       "source_location": "L180"
     },
     {
-      "id": "src_lib_kategorize",
-      "label": "kategorize.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kategorize.ts",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_kategorize_kayitlar",
-      "label": "kayitlar",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kayitlar",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_lib_kategorize_kurallar",
-      "label": "KURALLAR",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "sync-drive-books.ts",
-      "file_type": "code",
-      "norm_label": "kurallar",
-      "source_file": "src/lib/kategorize.ts",
-      "source_location": "L31"
-    },
-    {
       "id": "tests_unit_book_title_test",
       "label": "book-title.test.ts",
       "_origin": "ast",
@@ -17634,7 +17658,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L16",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -17646,7 +17670,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L25",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -17658,11 +17682,35 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/karsilama.ts",
-      "source_location": "L51",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
       "source": "src_features_davet_kart_renderdavetkarti",
+      "target": "src_features_davet_kart_renderdavetkartidetay",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart_renderdavetkartidetay",
+      "target": "src_features_davet_kart_temiz",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart_renderdavetkartidetay",
       "target": "src_features_seo_og_render_ogfontlari",
       "relation": "calls",
       "_origin": "ast",
@@ -17670,11 +17718,11 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L122",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
-      "source": "src_features_davet_kart_renderdavetkarti",
+      "source": "src_features_davet_kart_renderdavetkartidetay",
       "target": "src_features_davet_kart_datauri",
       "relation": "calls",
       "_origin": "ast",
@@ -17682,11 +17730,11 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L63",
+      "source_location": "L84",
       "weight": 1.0
     },
     {
-      "source": "src_features_davet_kart_renderdavetkarti",
+      "source": "src_features_davet_kart_renderdavetkartidetay",
       "target": "src_features_davet_kart_el",
       "relation": "calls",
       "_origin": "ast",
@@ -17694,11 +17742,11 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L67",
+      "source_location": "L89",
       "weight": 1.0
     },
     {
-      "source": "src_features_davet_kart_renderdavetkarti",
+      "source": "src_features_davet_kart_renderdavetkartidetay",
       "target": "src_features_davet_kart_yazi",
       "relation": "calls",
       "_origin": "ast",
@@ -17706,19 +17754,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L72",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart_renderdavetkarti",
-      "target": "src_features_davet_kart_temiz",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L82",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -17730,7 +17766,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L55",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -17742,7 +17778,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L55",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -18107,6 +18143,18 @@
     },
     {
       "source": "src_lib_davet_davetaktivasyonu",
+      "target": "src_lib_davet_davetsuresidoldu",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet_davetaktivasyonu",
       "target": "src_lib_rewards_puanolayi",
       "relation": "calls",
       "_origin": "ast",
@@ -18114,7 +18162,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L205",
+      "source_location": "L215",
       "weight": 1.0
     },
     {
@@ -18126,7 +18174,43 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L221",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet_davetaktivasyonu",
+      "target": "src_lib_economy_hesapgencmi",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet_davetbitirme",
+      "target": "src_lib_davet_davetsuresidoldu",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L244",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet_davetbitirme",
+      "target": "src_lib_rewards_bekleyenyaz",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -18138,7 +18222,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L237",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -18150,7 +18234,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L69",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -18162,7 +18246,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L96",
+      "source_location": "L106",
       "weight": 1.0
     },
     {
@@ -18174,7 +18258,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L150",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -18186,7 +18270,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L168",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
@@ -18198,7 +18282,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L174",
+      "source_location": "L184",
       "weight": 1.0
     },
     {
@@ -18210,7 +18294,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/davet.ts",
-      "source_location": "L190",
+      "source_location": "L200",
       "weight": 1.0
     },
     {
@@ -18942,7 +19026,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -18954,7 +19038,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -18966,7 +19050,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
-      "source_location": "L33",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -18978,19 +19062,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
-      "source_location": "L48",
+      "source_location": "L50",
       "weight": 1.0
     },
     {
       "source": "src_pages_api_kart_kod_dosya_get",
-      "target": "src_features_davet_kart_renderdavetkarti",
+      "target": "src_features_davet_kart_renderdavetkartidetay",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/kart/[kod]/[dosya].ts",
-      "source_location": "L54",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -19098,7 +19182,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/davet.ts",
-      "source_location": "L21",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -19110,7 +19194,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/davet.ts",
-      "source_location": "L24",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -19218,7 +19302,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L132",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -19230,7 +19314,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L150",
+      "source_location": "L153",
       "weight": 1.0
     },
     {
@@ -19242,7 +19326,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L184",
+      "source_location": "L187",
       "weight": 1.0
     },
     {
@@ -19254,7 +19338,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L193",
+      "source_location": "L196",
       "weight": 1.0
     },
     {
@@ -19266,7 +19350,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L222",
+      "source_location": "L225",
       "weight": 1.0
     },
     {
@@ -19278,7 +19362,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L225",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -19290,7 +19374,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L246",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -19302,7 +19386,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L364",
+      "source_location": "L367",
       "weight": 1.0
     },
     {
@@ -19314,7 +19398,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L364",
+      "source_location": "L367",
       "weight": 1.0
     },
     {
@@ -19326,7 +19410,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L378",
+      "source_location": "L381",
       "weight": 1.0
     },
     {
@@ -19338,7 +19422,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L406",
+      "source_location": "L409",
       "weight": 1.0
     },
     {
@@ -19350,7 +19434,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L425",
+      "source_location": "L428",
       "weight": 1.0
     },
     {
@@ -19362,7 +19446,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/pages/api/uye/egitim.ts",
-      "source_location": "L425",
+      "source_location": "L428",
       "weight": 1.0
     },
     {
@@ -21162,7 +21246,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -21899,7 +21983,7 @@
     },
     {
       "source": "src_lib_davet",
-      "target": "src_lib_routes_r",
+      "target": "src_lib_economy_hesapgencmi",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -21907,6 +21991,18 @@
       "context": "import",
       "source_file": "src/lib/davet.ts",
       "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet",
+      "target": "src_lib_routes_r",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -22355,7 +22451,7 @@
     },
     {
       "source": "src_pages_api_kart_kod_dosya",
-      "target": "src_features_davet_kart_renderdavetkarti",
+      "target": "src_features_davet_kart_renderdavetkartidetay",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -24563,6 +24659,30 @@
     },
     {
       "source": "src_pages_kurslar_slug",
+      "target": "src_lib_davet_davet_cerez",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/pages/kurslar/[slug].astro",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_pages_kurslar_slug",
+      "target": "src_lib_davet_davetcerezikur",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/pages/kurslar/[slug].astro",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_pages_kurslar_slug",
       "target": "src_lib_davet_davethedefi",
       "relation": "imports",
       "_origin": "ast",
@@ -26358,7 +26478,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -27217,7 +27337,7 @@
     },
     {
       "source": "src_lib_davet",
-      "target": "src_lib_routes",
+      "target": "src_lib_economy",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -27225,6 +27345,18 @@
       "context": "import",
       "source_file": "src/lib/davet.ts",
       "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet",
+      "target": "src_lib_routes",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -38786,7 +38918,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
@@ -38797,84 +38929,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L11",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_kartgirdi",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L17",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_renk",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L31",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_datauri",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L35",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_agac",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L47",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_el",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L48",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_temiz",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L53",
-      "weight": 1.0
-    },
-    {
-      "source": "src_features_davet_kart",
-      "target": "src_features_davet_kart_yazi",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/features/davet/kart.ts",
-      "source_location": "L54",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -38885,7 +38940,95 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/davet/kart.ts",
-      "source_location": "L57",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_kartgirdi",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_renk",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_datauri",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_agac",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_el",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_temiz",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_yazi",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "src_features_davet_kart",
+      "target": "src_features_davet_kart_renderdavetkartidetay",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/features/davet/kart.ts",
+      "source_location": "L78",
       "weight": 1.0
     },
     {
@@ -39413,7 +39556,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -39424,7 +39567,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -39435,7 +39578,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/features/seo/Seo.astro",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -39787,7 +39930,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L107",
+      "source_location": "L117",
       "weight": 1.0
     },
     {
@@ -39798,7 +39941,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L111",
+      "source_location": "L121",
       "weight": 1.0
     },
     {
@@ -39809,7 +39952,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L122",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -39820,7 +39963,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L127",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -39831,7 +39974,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L133",
+      "source_location": "L143",
       "weight": 1.0
     },
     {
@@ -39842,7 +39985,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L143",
+      "source_location": "L153",
       "weight": 1.0
     },
     {
@@ -39853,7 +39996,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -39864,7 +40007,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -39875,7 +40018,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -39886,7 +40029,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -39897,7 +40040,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L199",
+      "source_location": "L209",
       "weight": 1.0
     },
     {
@@ -39908,7 +40051,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -39919,7 +40062,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -39930,7 +40073,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L231",
+      "source_location": "L243",
       "weight": 1.0
     },
     {
@@ -39941,7 +40084,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L24",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -39952,7 +40095,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -39963,23 +40106,12 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L43",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
       "source": "src_lib_davet",
-      "target": "src_lib_davet_uygulamaicitarayici",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/lib/davet.ts",
-      "source_location": "L48",
-      "weight": 1.0
-    },
-    {
-      "source": "src_lib_davet",
-      "target": "src_lib_davet_qricerigi",
+      "target": "src_lib_davet_davetsuresidoldu",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -39990,7 +40122,7 @@
     },
     {
       "source": "src_lib_davet",
-      "target": "src_lib_davet_kartsurumu",
+      "target": "src_lib_davet_uygulamaicitarayici",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -40001,7 +40133,18 @@
     },
     {
       "source": "src_lib_davet",
-      "target": "src_lib_davet_davethedefi",
+      "target": "src_lib_davet_qricerigi",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet",
+      "target": "src_lib_davet_kartsurumu",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -40012,13 +40155,24 @@
     },
     {
       "source": "src_lib_davet",
+      "target": "src_lib_davet_davethedefi",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/davet.ts",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_davet",
       "target": "src_lib_davet_davetkoduuret",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/davet.ts",
-      "source_location": "L84",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -42471,7 +42625,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/pages/kurslar/[slug].astro",
-      "source_location": "L654",
+      "source_location": "L671",
       "weight": 1.0
     },
     {
@@ -44858,5 +45012,5 @@
       "source_file": "src/content/projeler/kutuphanem.yaml"
     }
   ],
-  "built_at_commit": "bdb4ce15c003153295bfa734b302b6ada7036d16"
+  "built_at_commit": "bd3e8240fe00e37fe5ee36f76c45832d9abf74ff"
 }
