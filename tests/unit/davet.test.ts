@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CROCKFORD, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
+import { CROCKFORD, davetKanali, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
 
 describe("davet kodu — Crockford Base32", () => {
   it("alfabe I, L, O, U içermez; 32 karakter", () => {
@@ -30,6 +30,16 @@ describe("davet kodu — Crockford Base32", () => {
   });
   it("QR içeriği tamamen büyük harf, /D/ yolu", () => {
     expect(qrIcerigi("https://yusufdeniz.com", "7KQ2MXA")).toBe("HTTPS://YUSUFDENIZ.COM/D/7KQ2MXA");
+  });
+  // Canlıda /d/kod da /d/q/'ya iner (Vercel harf duyarsız) → kanal kodun yazımından
+  it.each([
+    ["DEM07KQ", "qr"],
+    ["dem07kq", "link"],
+    ["Dem07kq", "link"],
+    ["1234567", "qr"],
+    ["", "qr"],
+  ] as const)("kanal %j → %s", (ham, kanal) => {
+    expect(davetKanali(ham)).toBe(kanal);
   });
 });
 

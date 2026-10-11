@@ -5,6 +5,8 @@
  * çevrilmiş "/d/[kod]" anahtarını alır ve AYNI anahtarlı sayfa dosyasını rota
  * listesinden düşürür (create.js joinSegments + filteredFiledBasedRoutes); deseni
  * büyük harfe özel kaldığı için /d/x 404 oluyordu. "/d/[...kod]" farklı anahtardır.
+ * Bu sayfaya yalnız dev'de ulaşılır: Vercel kenarı harf duyarsız eşleştiği için canlıda
+ * /d/kod da "/D/[kod]" 301'ine takılıp /d/q/'ya iner (kanalı orada davetKanali ayırır).
  */
 import { karsila } from "@/features/davet/karsilama.ts";
 export const prerender = false;

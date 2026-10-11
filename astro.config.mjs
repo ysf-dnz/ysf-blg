@@ -63,8 +63,10 @@ export default defineConfig({
   // query taşıyamaz.
   redirects: {
     "/dersler": { status: 301, destination: "/kurslar" },
-    // QR içeriği büyük harf (alfanümerik mod); Vercel harf duyarlı → açık 301.
-    // Hedef VAR OLAN rota anahtarı olmalı (query taşıyamaz); kanal ayrımı /d/q/ yolundan.
+    // QR içeriği büyük harf (alfanümerik mod); Astro yönlendiricisi harf duyarlı → açık 301.
+    // Hedef VAR OLAN rota anahtarı olmalı (query taşıyamaz). DİKKAT: Vercel kenarı bu deseni
+    // harf DUYARSIZ eşleştirir (/d/kod da buraya düşer) → hedef, kaynağın küçük harfli hâliyle
+    // ASLA aynı yol olmamalı ("/T/[x]" → "/t/[x]" canlıda sonsuz döngü); kanal davetKanali'nden.
     "/D/[kod]": { status: 301, destination: "/d/q/[kod]" },
   },
   i18n: {

@@ -64,6 +64,17 @@ export function qrIcerigi(kok: string, code: string): string {
   return `${kok}/D/${code}`.toUpperCase();
 }
 
+/**
+ * /d/q/'ya inen isteğin kanalı. Vercel kenarında rota eşleşmesi harf DUYARSIZ: "/D/[kod]"
+ * 301'i paylaşım bağlantısını (/d/kod) da buraya getirir, yol kanalı ayırt etmez. Ayrım kodun
+ * yazımından: QR içeriği hep büyük harf (qrIcerigi), bağlantı hep küçük harf üretilir.
+ * shortcut: yalnız rakamdan oluşan kod (~%0,03) bağlantıdan gelse de "qr" sayılır; kanal
+ * istatistiği kesinlik isterse bağlantıya ayrı yol (/d/l/) açılır.
+ */
+export function davetKanali(kodHam: string): "qr" | "link" {
+  return /[a-z]/.test(kodHam) ? "link" : "qr";
+}
+
 /** Kart önbellek sürümü: nota/ada/başlığa bağlı 8 karakter (?v=) — değişince CDN girdisi doğal düşer */
 export function kartSurumu(h: DavetHedefi): string {
   return createHash("sha256")

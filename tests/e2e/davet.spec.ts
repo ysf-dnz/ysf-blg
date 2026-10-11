@@ -18,6 +18,9 @@ test.describe("kurs daveti — misafir karşılama (Faz 2)", () => {
     const r3 = await request.get(`/d/q/${KOD}`, { maxRedirects: 0 });
     expect(r3.status()).toBe(302);
     expect(r3.headers()["location"]).toBe(`${KURS}?d=${KOD}`);
+    // Canlı yolu: Vercel /d/kod'u da /d/q/kod'a indirir (harf duyarsız 301) — küçük harf de çözülür
+    const r6 = await request.get(`/d/q/${KOD.toLowerCase()}`, { maxRedirects: 0 });
+    expect(r6.headers()["location"]).toBe(`${KURS}?d=${KOD}`);
     // Alt-kaynak isteği (img) çerez kuramaz ve ziyaret sayılmaz
     const r5 = await request.get(`/d/${KOD}`, { maxRedirects: 0, headers: { "sec-fetch-dest": "image" } });
     expect(r5.status()).toBe(204);

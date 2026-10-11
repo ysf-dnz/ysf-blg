@@ -1,6 +1,10 @@
 ---
-/** QR kanalı: QR içeriği HTTPS://HOST/D/KOD → astro.config 301 → burası (kanal ayrımı yoldan). */
+/**
+ * QR içeriği HTTPS://HOST/D/KOD → astro.config 301 → burası. Canlıda (Vercel, harf duyarsız
+ * eşleşme) /d/kod bağlantısı da aynı 301'le buraya iner → kanal yoldan değil kodun yazımından.
+ */
 import { karsila } from "@/features/davet/karsilama.ts";
+import { davetKanali } from "@/lib/davet.ts";
 export const prerender = false;
-return await karsila(Astro, "qr");
+return await karsila(Astro, davetKanali(Astro.params.kod ?? ""));
 ---
