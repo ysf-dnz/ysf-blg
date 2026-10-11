@@ -1,0 +1,72 @@
+---
+/**
+ * Mesajlarım — gelen kutusu (DM v1, F4-03): konuşma başına son mesaj + okunmamış sayısı.
+ * Sayfa hiçbir şey yazmaz; "okundu" konuşma sayfasının POST'udur.
+ */
+import Base from "@/layouts/Base.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import EmptyState from "@/components/ui/EmptyState.astro";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { gelenKutusu } from "@/lib/mesaj.ts";
+import { mesajZamani } from "@/lib/mesaj-kural.ts";
+import { R } from "@/lib/routes.ts";
+import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
+
+export const prerender = false;
+
+const member = await getOrCreateMember(Astro);
+if (!member) return Astro.redirect("/");
+
+const kutular = await gelenKutusu(member.id);
+const ids = kutular.map((k) => k.kisiId);
+const [kisiler, seviyeler] = await Promise.all([getUsersMap(ids), getLevelsMap(ids)]);
+const POLITIKA = {
+  mutual: "ortak topluluğun olanlar ve karşılıklı takipleştiklerin",
+  everyone: "herkes (bağın olmayanlardan yalnız Seviye 4+)",
+  nobody: "kimse",
+} as const;
+---
+
+<Base title="Mesajlarım" description="Birebir mesajların." seo={{ noindex: true }}>
+  <div class="mx-auto max-w-2xl">
+    <section class="girih-texture -mx-4 px-4 py-10">
+      <h1 class="font-display text-3xl font-semibold text-ink">✉️ Mesajlarım</h1>
+      <p class="mt-2 text-sm text-ink-muted">
+        Sana yazabilenler: <strong class="text-ink">{POLITIKA[member.dmPolicy ?? "mutual"]}</strong> ·
+        <a href={R.uye.profil} class="text-accent hover:underline">değiştir</a>
+      </p>
+    </section>
+
+    {
+      kutular.length === 0 ? (
+        <div class="mt-8">
+          <EmptyState ikon="✉️" mesaj="Henüz mesajın yok. Haritadan ya da bir üyenin profilinden yazabilirsin." ctaHref={R.harita} ctaLabel="Haritaya git" />
+        </div>
+      ) : (
+        <ul class="mt-8 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised" data-gelen-kutusu>
+          {kutular.map((k) => {
+            const u = kisiler.get(k.kisiId);
+            if (!u) return null;
+            return (
+              <li>
+                <a href={R.uye.mesaj(u.handle)} class="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent-soft" data-konusma={u.handle}>
+                  <Avatar name={u.name} avatarUrl={u.avatarUrl} level={seviyeler.get(u.id)} />
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline justify-between gap-2">
+                      <span class:list={["truncate text-ink", k.okunmamis > 0 ? "font-semibold" : "font-medium"]}>{u.name}</span>
+                      <span class="shrink-0 text-xs text-ink-muted">{mesajZamani(k.son.createdAt)}</span>
+                    </span>
+                    <span class="block truncate text-sm text-ink-muted">{k.son.senderId === member.id && "Sen: "}{k.son.body}</span>
+                  </span>
+                  {k.okunmamis > 0 && (
+                    <span class="shrink-0 rounded-full bg-accent px-2 text-xs font-bold leading-5 text-surface" data-okunmamis>{k.okunmamis}</span>
+                  )}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </div>
+</Base>
