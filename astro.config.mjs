@@ -108,13 +108,16 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
-    ...(keystaticEnabled && {
-      // Keystatic'in admin sayfası CJS bağımlılıklarıyla (lodash) birlikte
-      // ön-paketlenmeli; yoksa tarayıcıda hydration hatası verir
-      optimizeDeps: {
-        include: ["@keystatic/astro/ui", "@keystatic/core/ui", "lodash/debounce"],
-      },
-    }),
+    optimizeDeps: {
+      include: [
+        // leaflet: dev sunucusu yeni bağımlılığı koşum ortasında optimize edince "optimized dependencies
+        // changed → reloading" tam sayfa yenilemesi üretiyor (qa e2e zaman aşımları) → baştan paketle
+        "leaflet",
+        // Keystatic'in admin sayfası CJS bağımlılıklarıyla (lodash) birlikte
+        // ön-paketlenmeli; yoksa tarayıcıda hydration hatası verir
+        ...(keystaticEnabled ? ["@keystatic/astro/ui", "@keystatic/core/ui", "lodash/debounce"] : []),
+      ],
+    },
   },
   markdown: {
     shikiConfig: {

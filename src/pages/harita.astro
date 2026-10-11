@@ -1,22 +1,25 @@
 ---
 /**
- * Türkiye haritası — Skool map'in sıfır bağımlılık karşılığı.
- * İl merkezleri lat/lon'dan basit doğrusal projeksiyonla yerleşir;
- * kulüp pinleri + il başına üye kümeleri, tıklanınca popover.
+ * Türkiye haritası — Leaflet + OpenStreetMap karoları (başlangıç görünümü zoom 6, 39.03/35.25).
+ * Sunucu: il başına üye sayısı (yalnız il düzeyi) + onaylı kulüpler → JSON veri bloğu.
+ * İstemci: il rozet işaretçileri (kulüp sayısı; kulüp yoksa üye sayısı), DOM ile kurulan popup
+ * (kullanıcı metni yalnız textContent — innerHTML YOK, F4-01) ve autoPan: popup daima görünür
+ * (mobilde kesilme yok). Karolar ziyaretçinin tarayıcısından tile.openstreetmap.org'a gider
+ * (OSMF karo politikası: hafif kullanım + atıf; ağır kullanımda bir karo sağlayıcısına geçilir).
+ * İl sınırları: src/data/il-sinirlari.json (OSM/Nominatim, ODbL; scripts/il-sinirlari-cek.ts) → ton = kulüp sayısı.
+ * JS'siz yedek: kulüp olan illerin listesi (/kulupler?il=).
  */
 import { eq, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
 import iller from "@/data/il-koordinatlari.json";
+import "leaflet/dist/leaflet.css";
 
 export const prerender = false;
 
-// Projeksiyon: lon 25.5–45.5 → x 20–980; lat 42.5–35.5 → y 20–420
-const W = 1000;
-const H = 440;
-const px = (lon: number) => 20 + ((lon - 25.5) / 20) * (W - 40);
-const py = (lat: number) => 20 + ((42.5 - lat) / 7) * (H - 40);
 const normalize = (s: string) => s.trim().toLocaleLowerCase("tr");
+const ilAdlari = Object.keys(iller);
+const ilEsle = (s: string | null | undefined) => (s ? ilAdlari.find((il) => normalize(il) === normalize(s)) : undefined);
 
 // İl başına üye sayısı (gizlilik: yalnızca il düzeyi)
 const cityRows = await db
@@ -25,41 +28,33 @@ const cityRows = await db
   .groupBy(schema.users.city);
 const memberByIl = new Map<string, number>();
 for (const r of cityRows) {
-  if (!r.city) continue;
-  const match = Object.keys(iller).find((il) => normalize(il) === normalize(r.city!));
+  const match = ilEsle(r.city);
   if (match) memberByIl.set(match, (memberByIl.get(match) ?? 0) + Number(r.c));
 }
 
 const memberCount = sql<number>`(select count(*) from ${schema.clubMembers} where ${schema.clubMembers.clubId} = ${schema.clubs.id})`;
 const clubs = await db
-  .select({
-    slug: schema.clubs.slug,
-    name: schema.clubs.name,
-    kind: schema.clubs.kind,
-    place: schema.clubs.place,
-    il: schema.clubs.il,
-    members: memberCount,
-  })
+  .select({ slug: schema.clubs.slug, name: schema.clubs.name, il: schema.clubs.il, members: memberCount })
   .from(schema.clubs)
   .where(eq(schema.clubs.status, "approved"));
 
-const clubsByIl = new Map<string, typeof clubs>();
+const clubsByIl = new Map<string, { slug: string; name: string; members: number }[]>();
 for (const c of clubs) {
-  const match = Object.keys(iller).find((il) => normalize(il) === normalize(c.il));
+  const match = ilEsle(c.il);
   if (!match) continue;
   if (!clubsByIl.has(match)) clubsByIl.set(match, []);
-  clubsByIl.get(match)!.push(c);
+  clubsByIl.get(match)!.push({ slug: c.slug, name: c.name, members: Number(c.members) });
 }
 
-const pinler = Object.entries(iller as unknown as Record<string, [number, number]>)
-  .map(([il, [lon, lat]]) => ({
-    il,
-    x: px(lon),
-    y: py(lat),
-    uye: memberByIl.get(il) ?? 0,
-    kulupler: clubsByIl.get(il) ?? [],
-  }))
-  .filter((p) => p.uye > 0 || p.kulupler.length > 0);
+// 81 ilin tamamı (sınır tonu için sıfırlar da gerekli); rozet yalnız veri olan illerde (istemci süzer)
+const pinler = Object.entries(iller as unknown as Record<string, [number, number]>).map(([il, [lon, lat]]) => ({
+  il,
+  lat,
+  lon,
+  uye: memberByIl.get(il) ?? 0,
+  kulupler: clubsByIl.get(il) ?? [],
+}));
+const toplamUye = [...memberByIl.values()].reduce((a, b) => a + b, 0);
 ---
 
 <ToplulukLayout title="Harita" description="Türkiye'de okuma toplulukları — şehrinde kulüp kur.">
@@ -69,7 +64,7 @@ const pinler = Object.entries(iller as unknown as Record<string, [number, number
         <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">🗺️ Harita</h1>
         <p class="mt-2 text-ink-muted">
           <strong class="text-accent" data-ticker>{clubs.length}</strong> kulüp ·
-          <strong class="text-accent" data-ticker>{[...memberByIl.values()].reduce((a, b) => a + b, 0)}</strong> konumlu üye
+          <strong class="text-accent" data-ticker>{toplamUye}</strong> konumlu üye
         </p>
       </div>
       <a href="/kulup-kur" class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
@@ -78,97 +73,165 @@ const pinler = Object.entries(iller as unknown as Record<string, [number, number
     </div>
   </section>
 
-  <div class="relative mt-6 overflow-hidden rounded-2xl border border-line bg-surface-raised" data-reveal>
-    <svg viewBox={`0 0 ${W} ${H}`} class="w-full" role="img" aria-label="Türkiye üye ve kulüp haritası">
-      <!-- Stilize Türkiye silüeti (dekoratif, çini tonunda) -->
-      <path
-        d="M 40 210 Q 60 150 130 140 Q 170 100 250 110 Q 330 70 430 85 Q 540 60 650 80 Q 760 65 850 95 Q 930 110 965 160 Q 975 210 940 250 Q 960 290 920 320 Q 850 360 760 345 Q 660 380 560 360 Q 460 385 360 365 Q 250 380 170 340 Q 90 320 60 270 Q 35 240 40 210 Z"
-        fill="var(--accent-soft)"
-        stroke="var(--accent)"
-        stroke-opacity="0.35"
-        stroke-width="2"
-      />
-      {
-        pinler.map((p) => (
-          <g
-            class="harita-pin cursor-pointer"
-            data-il={p.il}
-            data-uye={p.uye}
-            data-kulupler={JSON.stringify(p.kulupler)}
-            transform={`translate(${p.x} ${p.y})`}
-          >
-            {p.kulupler.length > 0 ? (
-              <>
-                <circle r="13" fill="var(--accent)" class="transition-transform" />
-                <text y="5" text-anchor="middle" font-size="12" fill="var(--surface)" font-weight="700">
-                  {p.kulupler.length}
-                </text>
-              </>
-            ) : (
-              <>
-                <circle r="11" fill="var(--ink)" opacity="0.85" />
-                <text y="4" text-anchor="middle" font-size="10" fill="var(--surface)" font-weight="600">
-                  {p.uye}
-                </text>
-              </>
-            )}
-          </g>
-        ))
-      }
-    </svg>
-
-    <!-- Skool tarzı popover -->
-    <div
-      id="harita-pop"
-      class="menu-pop pointer-events-auto absolute z-20 hidden w-64 rounded-2xl border border-line bg-surface-raised p-4 shadow-xl"
-    >
-      <p class="font-display text-lg font-semibold text-ink" id="pop-il"></p>
-      <p class="mt-0.5 text-sm text-ink-muted" id="pop-uye"></p>
-      <div id="pop-kulupler" class="mt-2 space-y-1.5 text-sm"></div>
-      <a id="pop-kur" href="/kulup-kur" class="mt-3 inline-block text-sm font-medium text-accent hover:underline">
-        Bu şehirde kulüp kur →
-      </a>
-    </div>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-line bg-surface-raised" data-reveal>
+    <div id="harita" class="h-[60vh] min-h-80 w-full sm:h-[70vh]" role="region" aria-label="Türkiye üye ve kulüp haritası"></div>
+    <noscript><p class="p-4 text-sm text-ink-muted">Harita için JavaScript gerekir; aşağıdaki şehir listesini kullan.</p></noscript>
   </div>
+  {/* `<` kaçışı ZORUNLU: kulüp adı kullanıcı metni, </script> ile bloktan kaçabilir */}
+  <script type="application/json" id="harita-veri" set:html={JSON.stringify(pinler).replace(/</g, "\\u003c")} />
+
+  {pinler.some((p) => p.kulupler.length > 0) && (
+    <ul class="mt-4 flex flex-wrap gap-2 text-sm" aria-label="Kulüp olan şehirler">
+      {pinler
+        .filter((p) => p.kulupler.length > 0)
+        .map((p) => (
+          <li>
+            <a href={`/kulupler?il=${encodeURIComponent(p.il)}`} class="inline-block rounded-full border border-line px-3 py-1 text-ink hover:border-accent hover:text-accent">
+              {p.il} · {p.kulupler.length} kulüp
+            </a>
+          </li>
+        ))}
+    </ul>
+  )}
 
   <p class="mt-4 text-sm text-ink-muted">
-    Konumlar il düzeyindedir; profilindeki şehir alanından beslenir.
-    Kulüp pinine tıkla, katıl — <a href="/kulupler" class="text-accent hover:underline">tüm kulüpler</a>.
+    Konumlar il düzeyindedir; profilindeki şehir alanından beslenir. İl tonu kulüp sayısını gösterir; rozete ya da ile dokun, kulübe katıl —
+    <a href="/kulupler" class="text-accent hover:underline">tüm kulüpler</a>.
   </p>
 </ToplulukLayout>
 
+<style is:global>
+  /* Leaflet sayfa tokenlarına uyar; karolar koyu temada ters çevrilir */
+  .leaflet-container { font: inherit; background: var(--surface-raised); }
+  .leaflet-container a { color: var(--accent); }
+  .harita-rozet {
+    display: flex; width: 28px; height: 28px; align-items: center; justify-content: center;
+    border-radius: 9999px; border: 2px solid var(--surface); background: var(--ink); color: var(--surface);
+    font-size: 12px; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s;
+  }
+  .harita-rozet-kulup { background: var(--accent); }
+  .leaflet-marker-icon:hover .harita-rozet, .leaflet-marker-icon:focus-visible .harita-rozet { transform: scale(1.15); }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--surface-raised); color: var(--ink); border: 1px solid var(--line);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18); border-radius: 1rem;
+  }
+  .leaflet-popup-content { margin: 14px 16px; line-height: 1.4; }
+  .leaflet-container a.leaflet-popup-close-button { color: var(--ink-muted); }
+  .leaflet-bar a { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
+  /* Atıf: zorunlu ama göze batmasın — arka plansız, 9 px, yarı saydam; üzerine gelince okunur */
+  .leaflet-control-attribution { background: transparent; color: var(--ink-muted); font-size: 9px; line-height: 1; opacity: 0.45; padding: 2px 4px; transition: opacity 0.15s; }
+  .leaflet-control-attribution:hover { opacity: 1; }
+  .leaflet-container .leaflet-control-attribution a { color: inherit; text-decoration: none; }
+  [data-theme="dark"] .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+  /* İl sınırları: CSS, Leaflet'in inline sunum özniteliklerini ezer → tokenlar + koyu tema bedava */
+  .il-sinir { fill: var(--accent); fill-opacity: 0.06; stroke: var(--accent); stroke-opacity: 0.55; stroke-width: 1; cursor: pointer; transition: fill-opacity 0.15s; }
+  .il-sinir-uye { fill-opacity: 0.16; }
+  .il-sinir-1 { fill-opacity: 0.32; }
+  .il-sinir-2 { fill-opacity: 0.5; }
+  .il-sinir:hover { fill-opacity: 0.62; stroke-opacity: 1; }
+</style>
+
 <script>
-  document.addEventListener("astro:page-load", () => {
-    const pop = document.getElementById("harita-pop");
-    if (!pop || pop.dataset.init) return;
-    pop.dataset.init = "1";
-    const wrap = pop.parentElement!;
-    for (const pin of document.querySelectorAll<SVGGElement>(".harita-pin")) {
-      pin.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const kulupler = JSON.parse(pin.dataset.kulupler ?? "[]") as {
-          slug: string; name: string; members: number; place: string;
-        }[];
-        document.getElementById("pop-il")!.textContent = pin.dataset.il ?? "";
-        document.getElementById("pop-uye")!.textContent = `${pin.dataset.uye} üye · ${kulupler.length} kulüp`;
-        const list = document.getElementById("pop-kulupler")!;
-        list.innerHTML = kulupler
-          .map(
-            (k) =>
-              `<a href="/kulup/${k.slug}" class="block rounded-lg border border-line px-3 py-2 hover:border-accent hover:text-accent">${k.name} <span class="text-xs" style="color:var(--ink-muted)">· ${k.members} üye</span></a>`,
-          )
-          .join("");
-        document.getElementById("pop-kur")!.style.display = kulupler.length ? "none" : "inline-block";
-        // pinin ekran konumuna yerleştir
-        const pr = pin.getBoundingClientRect();
-        const wr = wrap.getBoundingClientRect();
-        pop.style.left = `${Math.min(Math.max(pr.left - wr.left - 110, 8), wr.width - 270)}px`;
-        pop.style.top = `${pr.top - wr.top + 24}px`;
-        pop.classList.remove("hidden");
-      });
+  import L from "leaflet";
+  import type { FeatureCollection } from "geojson";
+  import sinirlar from "@/data/il-sinirlari.json";
+
+  type Kulup = { slug: string; name: string; members: number };
+  type Pin = { il: string; lat: number; lon: number; uye: number; kulupler: Kulup[] };
+
+  /** Popup içeriği DOM ile kurulur: kulüp adı kullanıcı metnidir → textContent (innerHTML yok) */
+  function popupIcerigi(p: Pin): HTMLElement {
+    const el = document.createElement("div");
+    const baslik = document.createElement("p");
+    baslik.className = "font-display text-lg font-semibold text-ink";
+    baslik.textContent = p.il;
+    const ozet = document.createElement("p");
+    ozet.className = "mt-0.5 text-sm text-ink-muted";
+    ozet.textContent = `${p.uye} üye · ${p.kulupler.length} kulüp`;
+    el.append(baslik, ozet);
+    if (p.kulupler.length === 0) {
+      const kur = document.createElement("a");
+      kur.href = "/kulup-kur";
+      kur.className = "mt-3 inline-block text-sm font-medium text-accent hover:underline";
+      kur.textContent = "Bu şehirde kulüp kur →";
+      el.append(kur);
+      return el;
     }
-    document.addEventListener("click", (e) => {
-      if (!pop.contains(e.target as Node)) pop.classList.add("hidden");
+    const liste = document.createElement("div");
+    liste.className = "mt-2 space-y-1.5 text-sm";
+    for (const k of p.kulupler) {
+      const a = document.createElement("a");
+      a.href = `/kulup/${encodeURIComponent(k.slug)}`;
+      a.className = "block rounded-lg border border-line px-3 py-2 text-ink hover:border-accent hover:text-accent";
+      a.textContent = k.name;
+      const n = document.createElement("span");
+      n.className = "text-xs text-ink-muted";
+      n.textContent = ` · ${k.members} üye`;
+      a.append(n);
+      liste.append(a);
+    }
+    el.append(liste);
+    return el;
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    const kap = document.getElementById("harita");
+    if (!kap || kap.dataset.init) return;
+    kap.dataset.init = "1";
+    const pinler = JSON.parse(document.getElementById("harita-veri")?.textContent ?? "[]") as Pin[];
+    const pinMap = new Map(pinler.map((p) => [p.il, p]));
+    const POPUP: L.PopupOptions = { maxWidth: 280, maxHeight: 260, autoPanPadding: [16, 16] };
+
+    const TURKIYE: L.LatLngBoundsLiteral = [[35.8, 25.6], [42.2, 44.9]];
+    const map = L.map(kap, {
+      center: [39.03, 35.25], // openstreetmap.org/#map=6/39.03/35.25
+      zoom: 6,
+      minZoom: 5,
+      maxZoom: 14,
+      zoomControl: false, // sol üstte popup'la çakışıyordu → sağ alta (popup yukarı açılır)
+      scrollWheelZoom: false, // sayfa kaydırmasını çalmasın; haritaya odaklanınca açılır
+      // Gevşek sınır: dar/dikey ekranda zoom 5 görünümü Türkiye'den geniştir; sıkı sınır popup'ın
+      // autoPan'ını moveend'de geri alıp popup'ı kırpıyordu (ölçüldü)
+      maxBounds: [[30, 18], [48, 52]],
+      maxBoundsViscosity: 0.8,
     });
+    map.fitBounds(TURKIYE, { padding: [8, 8] }); // dar ekranda da tüm ülke görünsün (zoom konteynere göre)
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    map.on("focus", () => map.scrollWheelZoom.enable());
+    map.on("blur", () => map.scrollWheelZoom.disable());
+    // Atıf ZORUNLU (OSMF karo politikası + ODbL); "Leaflet" öneki kaldırıldı, metin küçük ve yarı saydam (CSS)
+    map.attributionControl.setPrefix(false);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // İl sınırları (OSM, ODbL): ton = kulüp sayısı; tıklanınca aynı popup
+    L.geoJSON(sinirlar as unknown as FeatureCollection, {
+      style: (f) => {
+        const p = pinMap.get(f?.properties?.il);
+        const k = p?.kulupler.length ?? 0;
+        return { className: `il-sinir il-sinir-${Math.min(k, 2)}${!k && (p?.uye ?? 0) > 0 ? " il-sinir-uye" : ""}` };
+      },
+      onEachFeature: (f, layer) =>
+        layer.bindPopup(() => popupIcerigi(pinMap.get(f.properties.il) ?? { il: f.properties.il, lat: 0, lon: 0, uye: 0, kulupler: [] }), POPUP),
+    }).addTo(map);
+
+    for (const p of pinler) {
+      if (p.uye === 0 && p.kulupler.length === 0) continue; // rozet yalnız veri olan ilde
+      const kulup = p.kulupler.length > 0;
+      const sayi = kulup ? p.kulupler.length : p.uye; // sayı: güvenli HTML
+      const icon = L.divIcon({
+        className: "",
+        html: `<span class="harita-rozet${kulup ? " harita-rozet-kulup" : ""}">${sayi}</span>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
+      });
+      L.marker([p.lat, p.lon], { icon, title: `${p.il}: ${p.uye} üye, ${p.kulupler.length} kulüp` })
+        .bindPopup(() => popupIcerigi(p), POPUP)
+        .addTo(map);
+    }
   });
 </script>
