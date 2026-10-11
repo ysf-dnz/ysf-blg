@@ -109,15 +109,14 @@ describe.skipIf(!URL)("ekonomi — gerçek DB", { timeout: 90_000 }, () => {
     expect(n).toEqual([10, 10, 5, 0]);
   });
 
-  it("AC-11/K1.5: 30 paralel ödül, günlük üretici tavanı 100 → toplam 100..105", async () => {
+  it("AC-11/K1.5: 30 paralel ödül, günlük üretici tavanı 100 → toplam TAM 100 (danışma kilidi)", async () => {
     const sonuclar = await Promise.all(
       Array.from({ length: 30 }, (_, i) =>
         rw.awardPoints({ userId, delta: 5, reason: "course_learner_activated", refId: `course:itest:u:${i}` }),
       ),
     );
     const toplam = sonuclar.reduce((t, x) => t + x, 0);
-    expect(toplam).toBeGreaterThanOrEqual(100);
-    expect(toplam).toBeLessThanOrEqual(105); // tek SQL: en fazla bir ödül aşabilir (ADR K1.5)
+    expect(toplam).toBe(100); // pg_advisory_xact_lock + INSERT…SELECT aynı transaction'da (ADR K1.5)
   });
 
   it("K5 iade: bir kez yazılır, bakiye düşer, kazanılan (seviye tabanı) değişmez", async () => {

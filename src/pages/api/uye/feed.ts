@@ -9,12 +9,7 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { R } from "@/lib/routes.ts";
-
-/** Yalnız yoldan ibaret güvenli geri dönüş (open redirect yok) */
-function geriDon(form: FormData, varsayilan: string): string {
-  const n = String(form.get("next") ?? "");
-  return n.startsWith("/") && !n.startsWith("//") ? n : varsayilan;
-}
+import { guvenliYol } from "@/lib/urls.ts";
 
 /** Basit hız sınırı: aynı üyeden son 30 sn'de gönderi/yorum varsa reddet. */
 async function sonSaniyelerdeVarMi(userId: number): Promise<boolean> {
@@ -72,17 +67,21 @@ export const POST: APIRoute = async (context) => {
     const courseItemId = Number(form.get("courseItemId") ?? 0) || null;
     const body = String(form.get("body") ?? "").trim();
     if (courseItemId && body && body.length <= 1000) {
-      const [yorum] = await db
-        .insert(schema.comments)
-        .values({ userId: member.id, courseItemId, body })
-        .returning();
+      // ÖNCE öğe + kurs doğrulanır: yalnız yayındaki kursa yorum (gizli/pending/reddedilmişe değil);
+      // olmayan öğe FK hatasıyla 500 üretmez
       const oge = await db.query.courseItems.findFirst({
         where: eq(schema.courseItems.id, courseItemId),
       });
       const kurs = oge
         ? await db.query.courses.findFirst({ where: eq(schema.courses.id, oge.courseId) })
         : null;
-      if (yorum && kurs && kurs.createdBy !== member.id) {
+      if (!oge || !kurs || kurs.status !== "published")
+        return new Response("Kurs yayında değil", { status: 404 });
+      const [yorum] = await db
+        .insert(schema.comments)
+        .values({ userId: member.id, courseItemId, body })
+        .returning();
+      if (yorum && kurs.createdBy !== member.id) {
         await db.insert(schema.notifications).values({
           userId: kurs.createdBy,
           kind: "comment",
@@ -155,5 +154,5 @@ export const POST: APIRoute = async (context) => {
     }
   }
 
-  return context.redirect(geriDon(form, "/topluluk"));
+  return context.redirect(guvenliYol(form, "/topluluk"));
 };

@@ -43,6 +43,8 @@ export const PUAN = {
   resourceAccepted: 15,
   /** Ek kaynak puanı GÜNLÜK tavanı (3 kabul × 15) */
   resourceDailyCap: 45,
+  /** En iyi cevap puanı GÜNLÜK tavanı (3 cevap × 10) — kukla hesap çiftliği freni */
+  answerDailyCap: 30,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */

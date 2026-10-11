@@ -3,7 +3,8 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  // Lokalde 1: soğuk dev sunucuda ilk derleme/Pagefind yüklemesi tek seferlik zaman aşımı üretebiliyor
+  retries: process.env.CI ? 2 : 1,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: "http://localhost:4321",

@@ -6,7 +6,8 @@ import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
-const id = Number(Astro.params.id ?? 0);
+const raw = Astro.params.id ?? "";
+const id = /^\d{1,9}$/.test(raw) ? Number(raw) : 0; // "1e400"/"1.5" → Postgres hatası yerine 301
 const kurs = id
   ? await db.query.courses.findFirst({ where: eq(schema.courses.id, id) })
   : undefined;

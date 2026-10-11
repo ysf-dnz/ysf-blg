@@ -60,9 +60,12 @@ describe("reason → tavan eşlemesi (awardPoints içinde otomatik)", () => {
     expect(t.limit).toBe(PUAN.courseWeeklyCap);
     expect(T0.getTime() - yediGunOnce(T0).getTime()).toBe(7 * 864e5);
   });
+  it("en iyi cevap günde 3 × 10 (kukla hesap çiftliği freni)", () => {
+    expect(tavanIcin("answer_accepted")!.limit).toBe(PUAN.answerDailyCap);
+    expect(PUAN.answerDailyCap).toBe(3 * PUAN.answerAccepted);
+  });
   it("tavansız reason'lar undefined (idem index tek koruma)", () => {
     expect(tavanIcin("course_launched")).toBeUndefined();
-    expect(tavanIcin("answer_accepted")).toBeUndefined();
     expect(tavanIcin("welcome")).toBeUndefined();
   });
   it("ekonomi oranı: tek öğrenciden üreticiye en çok 15 + açılış payı", () => {

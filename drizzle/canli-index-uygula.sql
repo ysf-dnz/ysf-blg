@@ -98,9 +98,12 @@ ALTER TABLE courses ALTER COLUMN slug SET NOT NULL;
 
 -- Katılım backfill: mevcut ilerlemelerden (puan tetiklemez; joined_at = ilk tamamlama)
 INSERT INTO course_enrollments (user_id, course_id, joined_at, activated_at)
-SELECT user_id, course_id, min(completed_at), min(completed_at)
-FROM course_progress GROUP BY user_id, course_id
+SELECT p.user_id, p.course_id, min(p.completed_at), min(p.completed_at)
+FROM course_progress p JOIN courses c ON c.id = p.course_id
+WHERE p.user_id <> c.created_by            -- üretici kendi kursuna katılamaz (kendine puan yok)
+GROUP BY p.user_id, p.course_id
 ON CONFLICT DO NOTHING;
+DELETE FROM course_enrollments e USING courses c WHERE c.id = e.course_id AND e.user_id = c.created_by;
 UPDATE course_enrollments e
 SET completed_at = (SELECT max(p.completed_at) FROM course_progress p WHERE p.user_id = e.user_id AND p.course_id = e.course_id)
 WHERE e.completed_at IS NULL

@@ -42,6 +42,8 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
       };
     case "resource_accepted":
       return { reasons: ["resource_accepted"], since: gunBaslangici(), limit: PUAN.resourceDailyCap };
+    case "answer_accepted":
+      return { reasons: ["answer_accepted"], since: gunBaslangici(), limit: PUAN.answerDailyCap };
     case "course_completed":
       return { reasons: ["course_completed"], since: yediGunOnce(), limit: PUAN.courseWeeklyCap };
     default:
@@ -286,7 +288,12 @@ export async function awardPoints(opts: {
   const tavan = opts.tavan ?? tavanIcin(opts.reason);
   let yazilan = 0;
   if (tavan && opts.delta > 0) {
-    const sonuc = await db.execute(sql`
+    // Tek HTTP transaction'ı (db.batch, etkileşimsiz): önce üye başına danışma kilidi,
+    // sonra INSERT…SELECT. READ COMMITTED'da her ifade yeni anlık görüntü alır; kilit
+    // olmadan paralel N istek aynı toplamı görüp tavanı N kez aşabiliyordu (ADR K1.5).
+    const [, sonuc] = await db.batch([
+      db.execute(sql`select pg_advisory_xact_lock(${opts.userId})`),
+      db.execute(sql`
       insert into points_ledger (user_id, delta, reason, ref_id)
       select ${opts.userId}, least(${opts.delta}, ${tavan.limit} - s.t)::int, ${opts.reason}, ${opts.refId ?? null}
       from (
@@ -298,7 +305,8 @@ export async function awardPoints(opts: {
       where ${tavan.limit} - s.t > 0
       on conflict do nothing
       returning delta
-    `);
+    `),
+    ]);
     yazilan = Number(satirlar<{ delta: number }>(sonuc)[0]?.delta ?? 0);
   } else {
     const [row] = await db

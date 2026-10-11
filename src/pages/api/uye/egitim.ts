@@ -17,6 +17,7 @@ import { PUAN } from "@/lib/points.ts";
 import { asgariSureGectiMi } from "@/lib/economy.ts";
 import { slugifyTitle } from "@/lib/markdown.ts";
 import { R } from "@/lib/routes.ts";
+import { guvenliYol } from "@/lib/urls.ts";
 
 export const prerender = false;
 
@@ -40,12 +41,6 @@ function parseYoutubeId(input: string): string | null {
 
 async function bildir(userId: number, body: string, href: string) {
   await db.insert(schema.notifications).values({ userId, kind: "course", body, href });
-}
-
-/** Yalnız yoldan ibaret güvenli geri dönüş (open redirect yok) */
-function geriDon(form: FormData, varsayilan: string): string {
-  const n = String(form.get("next") ?? "");
-  return n.startsWith("/") && !n.startsWith("//") ? n : varsayilan;
 }
 
 async function kursBul(id: number): Promise<Kurs | undefined> {
@@ -162,9 +157,15 @@ export const POST: APIRoute = async (context) => {
           kaynakOlusturulma: member.createdAt,
           note: `${member.name} "${kurs.title}" kursunda aktive oldu`,
         });
+        // Açılış eşiği: aktive olmuş FARKLI katılımcılar; en genç hesabın yaşı
+        // hesap-yaşı frenini belirler (3 kukla hesapla anında +50 yazılamaz)
         const [aktif] = await db
-          .select({ n: sql<number>`count(*)` })
+          .select({
+            n: sql<number>`count(*)`,
+            enGenc: sql<string>`max(${schema.users.createdAt})`,
+          })
           .from(schema.courseEnrollments)
+          .innerJoin(schema.users, eq(schema.users.id, schema.courseEnrollments.userId))
           .where(
             and(
               eq(schema.courseEnrollments.courseId, kurs.id),
@@ -173,11 +174,13 @@ export const POST: APIRoute = async (context) => {
             ),
           );
         if (Number(aktif?.n ?? 0) >= KURS_ACILIS_ESIGI) {
-          const acildi = await awardPoints({
+          const acildi = await puanOlayi({
             userId: kurs.createdBy,
             delta: PUAN.courseLaunched,
             reason: "course_launched",
             refId: `course:${kurs.id}`,
+            kaynakOlusturulma: new Date(aktif!.enGenc),
+            note: `"${kurs.title}" kursun açıldı (${KURS_ACILIS_ESIGI} katılımcı aktive)`,
           });
           if (acildi > 0)
             await bildir(
@@ -218,7 +221,7 @@ export const POST: APIRoute = async (context) => {
         if (bit) await bitirmeOdulleri(member, kurs, katilim, Number(total?.c));
       }
     }
-    return context.redirect(geriDon(form, R.kurs(kurs.slug)));
+    return context.redirect(guvenliYol(form, R.kurs(kurs.slug)));
   }
 
   // ---------------- En iyi cevap (F1-07) ----------------
@@ -230,6 +233,7 @@ export const POST: APIRoute = async (context) => {
       update comments c set accepted_at = now()
       from course_items ci join courses k on k.id = ci.course_id
       where c.id = ${commentId} and c.course_item_id = ci.id and k.created_by = ${member.id}
+        and k.status = 'published'
         and c.user_id <> ${member.id} and c.accepted_at is null and c.hidden_at is null
         and not exists (select 1 from comments x where x.course_item_id = ci.id and x.accepted_at is not null)
       returning c.user_id as user_id, k.slug as slug, k.title as title
@@ -251,7 +255,7 @@ export const POST: APIRoute = async (context) => {
           R.kurs(satir.slug),
         );
     }
-    return context.redirect(geriDon(form, R.kurslar));
+    return context.redirect(guvenliYol(form, R.kurslar));
   }
 
   // ---------------- Ek kaynak öner (F1-08) ----------------
@@ -264,6 +268,19 @@ export const POST: APIRoute = async (context) => {
       return new Response("Yalnız https:// bağlantı kabul edilir", { status: 400 });
     if (!(await katilimBul(member.id, kurs.id)) && kurs.createdBy !== member.id)
       return new Response("Önce kursa katıl", { status: 403 });
+    // Spam freni: kurs başına en çok 3 bekleyen öneri (bildirim + liste taşmasın)
+    const [bekleyen] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.courseResources)
+      .where(
+        and(
+          eq(schema.courseResources.courseId, kurs.id),
+          eq(schema.courseResources.userId, member.id),
+          eq(schema.courseResources.status, "pending"),
+        ),
+      );
+    if (Number(bekleyen?.n ?? 0) >= 3)
+      return new Response("Bu kursta 3 önerin onay bekliyor — önce onlar değerlendirilsin.", { status: 429 });
     await db.insert(schema.courseResources).values({
       courseId: kurs.id,
       userId: member.id,
@@ -279,7 +296,7 @@ export const POST: APIRoute = async (context) => {
         `${member.name} "${kurs.title}" için ek kaynak önerdi 🔗 Onaylarsan kursunda adıyla listelenir.`,
         R.kurs(kurs.slug),
       );
-    return context.redirect(geriDon(form, R.kurs(kurs.slug)));
+    return context.redirect(guvenliYol(form, R.kurs(kurs.slug)));
   }
 
   if (action === "resource-review") {
@@ -311,7 +328,7 @@ export const POST: APIRoute = async (context) => {
         R.kurs(satir.slug),
       );
     }
-    return context.redirect(geriDon(form, satir ? R.kurs(satir.slug) : R.kurslar));
+    return context.redirect(guvenliYol(form, satir ? R.kurs(satir.slug) : R.kurslar));
   }
 
   // ---------------- Değerlendir (F1-09) ----------------
@@ -320,6 +337,8 @@ export const POST: APIRoute = async (context) => {
     const stars = Number(form.get("stars") ?? 0);
     const body = String(form.get("body") ?? "").trim().slice(0, 300) || null;
     if (!kurs) return new Response("Kurs yok", { status: 404 });
+    if (kurs.createdBy === member.id)
+      return new Response("Kendi kursunu değerlendiremezsin", { status: 403 });
     if (!Number.isInteger(stars) || stars < 1 || stars > 5)
       return new Response("1-5 yıldız", { status: 400 });
     const katilim = await katilimBul(member.id, kurs.id);
@@ -332,11 +351,11 @@ export const POST: APIRoute = async (context) => {
         target: [schema.ratings.userId, schema.ratings.courseId],
         set: { stars, body },
       });
-    return context.redirect(geriDon(form, R.kurs(kurs.slug)));
+    return context.redirect(guvenliYol(form, R.kurs(kurs.slug)));
   }
 
   // ---------------- Oluştur ----------------
-  const title = String(form.get("title") ?? "").trim();
+  const title = String(form.get("title") ?? "").trim().slice(0, 90);
   if (!title) return new Response("Başlık gerekli", { status: 400 });
   // clubId form'dan gelir → YÖNETİCİSİ OLMADIĞIN kulübe iliştirilemez.
   const istenenClubId = Number(form.get("clubId") ?? 0) || null;
@@ -382,7 +401,8 @@ export const POST: APIRoute = async (context) => {
 
   const coverRaw = String(form.get("coverUrl") ?? "").trim();
   const levelRaw = String(form.get("level") ?? "");
-  const slug = `${slugifyTitle(title).slice(0, 60)}-${Date.now().toString(36).slice(-3)}`;
+  // Sonek rastgele: Date.now tabanlı 3 karakter 46 sn'de bir tekrarlıyordu (unique → 500)
+  const slug = `${slugifyTitle(title).slice(0, 60) || "kurs"}-${crypto.randomUUID().slice(0, 6)}`;
   const [course] = await db
     .insert(schema.courses)
     .values({
@@ -392,7 +412,11 @@ export const POST: APIRoute = async (context) => {
       title,
       description: String(form.get("description") ?? "").trim().slice(0, 200) || null,
       summary: String(form.get("summary") ?? "").trim().slice(0, 140) || null,
-      coverUrl: /^https:\/\/[^\s]+$/.test(coverRaw) ? coverRaw.slice(0, 300) : null,
+      // canParse şart: "https://a^b" gibi değerler sayfada new URL ile kalıcı 500 üretirdi
+      coverUrl:
+        /^https:\/\/[^\s]+$/.test(coverRaw) && coverRaw.length <= 300 && URL.canParse(coverRaw)
+          ? coverRaw
+          : null,
       level: (SEVIYELER as readonly string[]).includes(levelRaw) ? (levelRaw as Kurs["level"]) : null,
       estMinutes: Math.min(Math.max(Math.round(Number(form.get("estMinutes") ?? 0)) || 0, 0), 6000) || null,
       // Kulüp kursu / admin / Sv7 güvenilir üretici: onaysız yayın; diğerleri admin onayı

@@ -1,7 +1,7 @@
 /** POST /api/uye/admin — yazı/başvuru onay-red (yalnızca admin). */
 import type { APIRoute } from "astro";
 import { awardPoints, awardBadge, revokePoints, sayacRozetleri } from "@/lib/rewards.ts";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, like, or } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
@@ -113,14 +113,37 @@ export const POST: APIRoute = async (context) => {
   if ((action === "report_remove" || action === "report_restore") && reportTargetId) {
     const kaldir = action === "report_remove";
     if (reportTarget === "course") {
+      // Durum kapısı: "geri aç" yalnız gizleneni yayına döndürür (pending/rejected
+      // kurs şikâyet kuyruğu üzerinden onay atlayamaz); "kaldır" yalnız yayında/gizli
       const [kurs] = await db
         .update(schema.courses)
         .set({ status: kaldir ? "rejected" : "published" })
-        .where(eq(schema.courses.id, reportTargetId))
+        .where(
+          and(
+            eq(schema.courses.id, reportTargetId),
+            kaldir
+              ? inArray(schema.courses.status, ["published", "hidden"])
+              : eq(schema.courses.status, "hidden"),
+          ),
+        )
         .returning();
       if (kurs && kaldir) {
-        // İade: negatif admin_adjust; seviye düşmez, bakiye düşer (ADR 0001 K5)
+        // İade: negatif admin_adjust; seviye düşmez, bakiye düşer (ADR 0001 K5).
+        // Üreticinin bu kursa bağlı BEKLEYEN puanları da düşer (kesinleşmesin).
         await revokePoints({ userId: kurs.createdBy, reason: "course_launched", refId: `course:${kurs.id}` });
+        await db
+          .update(schema.pendingPoints)
+          .set({ status: "expired", resolvedAt: new Date() })
+          .where(
+            and(
+              eq(schema.pendingPoints.userId, kurs.createdBy),
+              eq(schema.pendingPoints.status, "pending"),
+              or(
+                eq(schema.pendingPoints.refId, `course:${kurs.id}`),
+                like(schema.pendingPoints.refId, `course:${kurs.id}:%`),
+              ),
+            ),
+          );
         await db.insert(schema.notifications).values({
           userId: kurs.createdBy,
           kind: "course",

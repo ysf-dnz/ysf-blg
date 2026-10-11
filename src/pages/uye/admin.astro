@@ -33,6 +33,7 @@ const pendingCourses = await db.query.courses.findMany({
 const acikSikayetler = await db.query.reports.findMany({
   where: eq(schema.reports.status, "open"),
   orderBy: desc(schema.reports.createdAt),
+  limit: 200,
 });
 const sikayetGruplari = [
   ...acikSikayetler

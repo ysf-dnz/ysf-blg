@@ -4,10 +4,11 @@
  * sayım gizleme UPDATE'inin WHERE'inde (tek SQL, yarışsız). Admin kuyruğu /uye/admin.
  */
 import type { APIRoute } from "astro";
-import { sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { LEVEL_THRESHOLDS } from "@/lib/levels.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { guvenliYol } from "@/lib/urls.ts";
 
 export const prerender = false;
 
@@ -23,10 +24,33 @@ export const POST: APIRoute = async (context) => {
   const targetType = String(form.get("targetType") ?? "");
   const targetId = Number(form.get("targetId") ?? 0);
   const reason = String(form.get("reason") ?? "").trim().slice(0, 300) || null;
-  const next = String(form.get("next") ?? "");
-  const geri = next.startsWith("/") && !next.startsWith("//") ? next : "/kurslar";
+  const geri = guvenliYol(form, "/kurslar");
   if (!(targetType === "course" || targetType === "comment") || !targetId)
     return new Response("Geçersiz hedef", { status: 400 });
+
+  // Hedef var ve şikâyet edilebilir durumda mı (kuyruk olmayan/zaten kapalı hedeflerle dolmasın)
+  const hedefVar =
+    targetType === "course"
+      ? await db.query.courses.findFirst({
+          where: and(eq(schema.courses.id, targetId), inArray(schema.courses.status, ["published", "hidden"])),
+        })
+      : await db.query.comments.findFirst({
+          where: and(eq(schema.comments.id, targetId), isNull(schema.comments.hiddenAt)),
+        });
+  if (!hedefVar) return new Response("Hedef bulunamadı", { status: 404 });
+
+  // Hız sınırı: şikâyetçi başına saatte 10
+  const [sonSaat] = await db
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.reports)
+    .where(
+      and(
+        eq(schema.reports.reporterId, member.id),
+        gte(schema.reports.createdAt, new Date(Date.now() - 3600_000)),
+      ),
+    );
+  if (Number(sonSaat?.n ?? 0) >= 10)
+    return new Response("Saatte en çok 10 şikâyet", { status: 429 });
 
   await db
     .insert(schema.reports)

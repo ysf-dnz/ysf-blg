@@ -79,7 +79,7 @@ const kitap = course.bookId ? books.get(course.bookId) : undefined;
 const kapak = course.coverUrl ?? kitap?.cover ?? undefined;
 
 const aktifIndex = Math.min(
-  Math.max(Number(Astro.url.searchParams.get("b") ?? 0), 0),
+  Math.max(Math.trunc(Number(Astro.url.searchParams.get("b"))) || 0, 0),
   Math.max(items.length - 1, 0),
 );
 const aktif = items[aktifIndex];
@@ -184,7 +184,7 @@ const ld = {
   name: course.title,
   description: aciklama,
   url: `${kok}${R.kurs(course.slug)}`,
-  ...(kapak ? { image: new URL(kapak, kok).toString() } : {}),
+  ...(kapak && URL.canParse(kapak, kok) ? { image: new URL(kapak, kok).toString() } : {}),
   provider: { "@type": "Organization", name: "Bilgi Ödüldür · Yusuf Deniz", url: kok },
   ...(yaratici ? { author: { "@type": "Person", name: yaratici.name, url: `${kok}${R.profil(yaratici.handle)}` } } : {}),
   isAccessibleForFree: true,
@@ -207,7 +207,8 @@ const ld = {
   description={aciklama}
   seo={{ ogImagePath: kapak, noindex: course.status !== "published" }}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  {/* `<` kaçışı ZORUNLU: kullanıcı metni (başlık, vaat) </script> ile bloktan kaçabilir (XSS) */}
+  <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />
 
   {bant && (
     <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>
@@ -218,7 +219,7 @@ const ld = {
     </div>
   )}
 
-  <header class="girih-texture -mx-4 px-4 py-8">
+  <header class="girih-texture -mx-4 px-4 py-8" data-kurs-id={course.id}>
     <div class="grid gap-6 md:grid-cols-[1fr_220px]">
       <div>
         <p class="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
@@ -266,7 +267,7 @@ const ld = {
               Devam et · {siradaki + 1}. öğe <span class="arrow-slide">→</span>
             </a>
           )}
-          {katilim && siradaki < 0 && <span class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent">Kursu bitirdin 🏁</span>}
+          {katilim && items.length > 0 && siradaki < 0 && <span class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent">Kursu bitirdin 🏁</span>}
           <button type="button" data-kopyala={paylasimLinki} class="cursor-pointer rounded-full border border-line px-4 py-2.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">
             🔗 Paylaş{member ? " (davet kodunla)" : ""}
           </button>

@@ -92,10 +92,11 @@ returning delta
 
 **refId kararı.** `event_attended` için refId **`String(eventId)` olarak kalır** (bugünkü RSVP yazımıyla aynı, `etkinlik.ts:35`). Geçişten önce RSVP ile +10 almış üye girişte ikinci +10 alamaz; "geçmiş kayıtlara dokunulmaz" kendiliğinden sağlanır. Yeni etkinliklerde RSVP puan yazmaz, çakışma yok.
 
-### K1.5 Bilinen sınır
+### K1.5 Toplam-tabanlı koşullar ve yarış (Faz 1 inceleme sonrası düzeltildi)
 
-Tek SQL'e gömülü **toplam-tabanlı** koşullar (bakiye ≥ maliyet, toplam < tavan) READ COMMITTED altında iki eşzamanlı ifadenin aynı anlık görüntüyü görmesini engellemez; yarış penceresi tek ifadeye iner ama sıfırlanmaz. `spendPoints` için bugün de geçerli. **Kesin tekillik yalnız unique index'ten** (refId başına). Kabul: tavan en fazla bir ödül kadar aşılabilir.
-`shortcut: tavan bir ödül aşılabilir; ölçümde görünürse pg_advisory_xact_lock(user_id) aynı SQL'e eklenir.`
+Tek SQL'e gömülü **toplam-tabanlı** koşul (toplam < tavan) READ COMMITTED altında N eşzamanlı ifadenin AYNI anlık görüntüyü görmesini engellemez: 8 paralel istek sum=0 görüp 8 ödül yazabilir (aşım "en fazla bir ödül" DEĞİL, istek sayısı kadar). Kilidi aynı ifadeye koymak da işe yaramaz — anlık görüntü kilit alınmadan önce çekilir.
+**Karar:** tavanlı yol `db.batch` ile tek HTTP transaction'ında İKİ ifade: `select pg_advisory_xact_lock(user_id)` + `INSERT…SELECT`. İkinci ifade kilitten sonra yeni anlık görüntü alır; `tests/integration/ekonomi-db.test.ts` 30 paralel çağrıda toplamın TAM 100 olduğunu gerçek Neon'da doğrular. Bu, K1.2'deki "`db.batch` v1'de kullanılmaz" kararının tek bilinçli istisnasıdır (neden: bağımlı adım yok, yalnız kilit + yazma).
+`spendPoints` (bakiye ≥ maliyet) için aynı yarış teorik olarak sürer; unique `refId` başına tek harcama kuralı pratik riski sınırlıyor. `shortcut: spendPoints kilitsiz; ölçümde çift harcama görünürse aynı batch deseni uygulanır.`
 
 ---
 

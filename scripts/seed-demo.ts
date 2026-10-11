@@ -312,7 +312,11 @@ async function kur() {
     .insert(schema.comments)
     .values({ userId: U.elif!.id, courseItemId: kursOgeleri[0]!.id, body: "go install ile go get farkı ne? Modül dışında çalıştırınca hata aldım." })
     .returning();
-  await db.insert(schema.comments).values({ userId: U.ayse!.id, courseItemId: kursOgeleri[0]!.id, body: "go install derlenen binary'yi $GOPATH/bin'e koyar; go get artık yalnız bağımlılık ekler. Modül dışı için GOFLAGS=-mod=mod dene.", acceptedAt: new Date() });
+  // En iyi cevap üreticinin değil bir katılımcının (API kendi cevabını seçmeye izin vermez)
+  await db.insert(schema.comments).values([
+    { userId: U.can!.id, courseItemId: kursOgeleri[0]!.id, body: "go install derlenen binary'yi $GOPATH/bin'e koyar; go get artık yalnız bağımlılık ekler. Modül dışı için GOFLAGS=-mod=mod dene.", acceptedAt: new Date() },
+    { userId: U.ayse!.id, courseItemId: kursOgeleri[0]!.id, body: "Can doğru söylüyor; 2. videoda modül yapısını ayrıca anlatıyorum." },
+  ]);
   await db.insert(schema.likes).values({ userId: U.can!.id, commentId: soru!.id });
   await db.insert(schema.courseResources).values([
     { courseId: kurs!.id, userId: U.can!.id, url: "https://go.dev/tour/welcome/1", note: "Resmî Go turu — 1. videoyla paralel gidiyor.", status: "accepted", acceptedAt: new Date() },

@@ -75,4 +75,4 @@ if (breadcrumbs && breadcrumbs.length > 0) {
 const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
 ---
 
-<script type="application/ld+json" set:html={jsonLd} />
+<script type="application/ld+json" set:html={jsonLd.replace(/</g, "\\u003c")} />

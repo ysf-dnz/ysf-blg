@@ -22,6 +22,9 @@ const t = useTranslations(langFromUrl(Astro.url.pathname));
 const member = await getOrCreateMember(Astro);
 if (!member) return Astro.redirect("/");
 
+// ⏳ Olgunlaşan bekleyen puanlar ÖNCE kesinleşir ki bakiye/seviye bu görüntülemede doğru olsun
+await bekleyenleriIsle(new Date(), member.id);
+
 const [balance, earned, access, notifs, yaziSayisi, kulubum] = await Promise.all([
   pointBalance(member.id),
   earnedPoints(member.id),
@@ -93,9 +96,7 @@ const tamamlanan = gorevler.filter((g) => g.ok).length;
 const level = levelFor(earned);
 const toNext = pointsToNextLevel(earned);
 
-// ⏳ Bekleyen puan (ADR 0001 K2): önce bu üyenin olgunlaşanlarını kesinleştir
-// (günlük cron'u beklemeden), sonra bekleyen + son 7 günde kırpılanları göster
-await bekleyenleriIsle(new Date(), member.id);
+// ⏳ Bekleyen puan (ADR 0001 K2): bekleyenler + son 7 günde kırpılanlar
 const bekleyenler = await db.query.pendingPoints.findMany({
   where: and(eq(schema.pendingPoints.userId, member.id), eq(schema.pendingPoints.status, "pending")),
   orderBy: desc(schema.pendingPoints.createdAt),
