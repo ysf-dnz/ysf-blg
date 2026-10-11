@@ -8,7 +8,7 @@ import type { APIRoute } from "astro";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
-import { awardBadge, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
+import { awardBadge, bekleyenleriIsle, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
 
 export const prerender = false;
 
@@ -206,6 +206,10 @@ export const GET: APIRoute = async ({ request }) => {
 
   // 4) Biten özel ligler
   await ozelLigleriKapat();
+
+  // 5) Bekleyen puanlar: olgunlaşanlar kesinleşir, süresi dolanlar düşer (ADR 0001 K2)
+  const bekleyen = await birKezCalistir("bekleyen", bugun, () => bekleyenleriIsle());
+  if (bekleyen !== undefined) rapor.bekleyen = bekleyen;
 
   return new Response(JSON.stringify({ ok: true, ...rapor }), {
     headers: { "content-type": "application/json" },

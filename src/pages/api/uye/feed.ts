@@ -8,6 +8,13 @@ import { begeniPuaniVer } from "@/lib/rewards.ts";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { R } from "@/lib/routes.ts";
+
+/** Yalnız yoldan ibaret güvenli geri dönüş (open redirect yok) */
+function geriDon(form: FormData, varsayilan: string): string {
+  const n = String(form.get("next") ?? "");
+  return n.startsWith("/") && !n.startsWith("//") ? n : varsayilan;
+}
 
 /** Basit hız sınırı: aynı üyeden son 30 sn'de gönderi/yorum varsa reddet. */
 async function sonSaniyelerdeVarMi(userId: number): Promise<boolean> {
@@ -60,9 +67,30 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (action === "comment") {
-    const feedPostId = Number(form.get("feedPostId") ?? 0);
+    const feedPostId = Number(form.get("feedPostId") ?? 0) || null;
+    // Kurs öğesi altı soru-cevap (F1-07): aynı tablo, aynı hız sınırı, 3. hedef
+    const courseItemId = Number(form.get("courseItemId") ?? 0) || null;
     const body = String(form.get("body") ?? "").trim();
-    if (feedPostId && body && body.length <= 1000) {
+    if (courseItemId && body && body.length <= 1000) {
+      const [yorum] = await db
+        .insert(schema.comments)
+        .values({ userId: member.id, courseItemId, body })
+        .returning();
+      const oge = await db.query.courseItems.findFirst({
+        where: eq(schema.courseItems.id, courseItemId),
+      });
+      const kurs = oge
+        ? await db.query.courses.findFirst({ where: eq(schema.courses.id, oge.courseId) })
+        : null;
+      if (yorum && kurs && kurs.createdBy !== member.id) {
+        await db.insert(schema.notifications).values({
+          userId: kurs.createdBy,
+          kind: "comment",
+          body: `${member.name} kursunda soru-cevap yazdı 💬 "${body.slice(0, 60)}${body.length > 60 ? "…" : ""}"`,
+          href: R.kurs(kurs.slug),
+        });
+      }
+    } else if (feedPostId && body && body.length <= 1000) {
       await db.insert(schema.comments).values({
         userId: member.id,
         feedPostId,
@@ -84,7 +112,26 @@ export const POST: APIRoute = async (context) => {
     }
   }
 
-  if (action === "like") {
+  if (action === "like" && Number(form.get("commentId") ?? 0)) {
+    // Kurs cevabına beğeni: aynı günlük fren, refId yorum:{id} (feed id'leriyle karışmaz)
+    const commentId = Number(form.get("commentId"));
+    const yorum = await db.query.comments.findFirst({
+      where: eq(schema.comments.id, commentId),
+    });
+    if (yorum && yorum.userId !== member.id && !yorum.hiddenAt) {
+      const [inserted] = await db
+        .insert(schema.likes)
+        .values({ userId: member.id, commentId })
+        .onConflictDoNothing()
+        .returning();
+      if (inserted)
+        await begeniPuaniVer({
+          begenenId: member.id,
+          yazarId: yorum.userId,
+          refId: `yorum:${commentId}`,
+        });
+    }
+  } else if (action === "like") {
     const feedPostId = Number(form.get("feedPostId") ?? 0);
     const post = await db.query.feedPosts.findFirst({
       where: eq(schema.feedPosts.id, feedPostId),
@@ -108,5 +155,5 @@ export const POST: APIRoute = async (context) => {
     }
   }
 
-  return context.redirect("/topluluk");
+  return context.redirect(geriDon(form, "/topluluk"));
 };

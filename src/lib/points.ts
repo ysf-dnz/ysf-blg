@@ -29,6 +29,20 @@ export const PUAN = {
   /** Bir üyenin eğitim tamamlamadan kazanabileceği HAFTALIK tavan —
    *  kendi kursunu açıp bitirme döngüsüyle sınırsız basımı engeller */
   courseWeeklyCap: 100,
+  /** Kurs üreticisi: ilk 3 katılımcı aktive oldu (kurs başına 1) */
+  courseLaunched: 50,
+  /** Kurs üreticisi: bir katılımcı aktive oldu */
+  courseLearnerActivated: 5,
+  /** Kurs üreticisi: bir katılımcı kursu bitirdi */
+  courseLearnerCompleted: 10,
+  /** Üreticinin katılımcı hareketlerinden GÜNLÜK (TR günü) toplam tavanı */
+  courseProducerDailyCap: 100,
+  /** En iyi cevap seçilen yorumun yazarı */
+  answerAccepted: 10,
+  /** Ek kaynak önerisi kabul edildi */
+  resourceAccepted: 15,
+  /** Ek kaynak puanı GÜNLÜK tavanı (3 kabul × 15) */
+  resourceDailyCap: 45,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */

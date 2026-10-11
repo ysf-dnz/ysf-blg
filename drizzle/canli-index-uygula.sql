@@ -77,3 +77,37 @@ WHERE indexname IN (
   'comments_feed_post_idx', 'comments_user_created_idx', 'notifications_user_idx'
 )
 ORDER BY tablename, indexname;
+
+-- ---------------------------------------------------------------------------
+-- ADIM 5 — Faz 1 Kurslar (2026-10-11). Dev ve canlı AYNI Neon DB olduğu için
+-- `drizzle-kit push` + aşağıdaki backfill o gün uygulandı; burada yeniden
+-- çalıştırılabilir kayıt olarak durur (hepsi idempotent).
+-- Yeni tablolar: course_enrollments, course_resources, ratings, reports,
+-- pending_points. Yeni kolonlar: courses(slug UNIQUE NOT NULL, summary, cover_url,
+-- level, est_minutes), comments(course_item_id, accepted_at, hidden_at),
+-- likes(comment_id).
+-- ---------------------------------------------------------------------------
+-- Ön kontrol: slug çifti olmamalı (backfill '-{id}' ekiyle tekilliği garanti eder)
+SELECT slug, count(*) FROM courses GROUP BY slug HAVING count(*) > 1;
+
+UPDATE courses
+SET slug = trim(both '-' from lower(regexp_replace(translate(title,'çğıöşüÇĞİÖŞÜ','cgiosuCGIOSU'),'[^a-zA-Z0-9]+','-','g'))) || '-' || id
+WHERE slug IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS "courses_slug_idx" ON "courses" USING btree ("slug");
+ALTER TABLE courses ALTER COLUMN slug SET NOT NULL;
+
+-- Katılım backfill: mevcut ilerlemelerden (puan tetiklemez; joined_at = ilk tamamlama)
+INSERT INTO course_enrollments (user_id, course_id, joined_at, activated_at)
+SELECT user_id, course_id, min(completed_at), min(completed_at)
+FROM course_progress GROUP BY user_id, course_id
+ON CONFLICT DO NOTHING;
+UPDATE course_enrollments e
+SET completed_at = (SELECT max(p.completed_at) FROM course_progress p WHERE p.user_id = e.user_id AND p.course_id = e.course_id)
+WHERE e.completed_at IS NULL
+  AND (SELECT count(*) FROM course_progress p WHERE p.user_id = e.user_id AND p.course_id = e.course_id)
+    = (SELECT count(*) FROM course_items i WHERE i.course_id = e.course_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "comments_accepted_idx" ON "comments" USING btree ("course_item_id") WHERE "accepted_at" IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS "likes_user_comment_idx" ON "likes" USING btree ("user_id", "comment_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "pending_points_idx" ON "pending_points" USING btree ("user_id", "reason", "ref_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "reports_idx" ON "reports" USING btree ("reporter_id", "target_type", "target_id");

@@ -1,10 +1,11 @@
 /** POST /api/uye/admin — yazı/başvuru onay-red (yalnızca admin). */
 import type { APIRoute } from "astro";
-import { awardPoints, awardBadge, sayacRozetleri } from "@/lib/rewards.ts";
-import { eq } from "drizzle-orm";
+import { awardPoints, awardBadge, revokePoints, sayacRozetleri } from "@/lib/rewards.ts";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
@@ -82,6 +83,67 @@ export const POST: APIRoute = async (context) => {
         await awardBadge(club.presidentId, "kulup-kurucu", `"${club.name}" ile Kulüp Kurucu rozetini kazandın 🏛️`);
       }
     }
+  }
+
+  // Kurs onayı (F1-01): pending kurs hiç yayınlanamıyordu — onay yolu yoktu
+  const courseId = Number(form.get("courseId") ?? 0);
+  if ((action === "course_approve" || action === "course_reject") && courseId) {
+    const approved = action === "course_approve";
+    const [kurs] = await db
+      .update(schema.courses)
+      .set({ status: approved ? "published" : "rejected" })
+      .where(and(eq(schema.courses.id, courseId), eq(schema.courses.status, "pending")))
+      .returning();
+    if (kurs) {
+      await db.insert(schema.notifications).values({
+        userId: kurs.createdBy,
+        kind: "course",
+        body: approved
+          ? `"${kurs.title}" kursun yayında 🎓 Davet et, ilk 3 katılımcı aktive olunca +${PUAN.courseLaunched}.`
+          : `"${kurs.title}" kursun için düzenleme gerekiyor — en az ${3} geçerli öğe ve kendi yazıların.`,
+        href: approved ? R.kurs(kurs.slug) : R.uye.egitimOlustur,
+      });
+    }
+  }
+
+  // Şikâyet kuyruğu (F1-10): kaldır (course → rejected + course_launched iadesi;
+  // comment → gizli kalır) ya da geri aç (course → published; comment → görünür).
+  const reportTarget = String(form.get("reportTarget") ?? "");
+  const reportTargetId = Number(form.get("reportTargetId") ?? 0);
+  if ((action === "report_remove" || action === "report_restore") && reportTargetId) {
+    const kaldir = action === "report_remove";
+    if (reportTarget === "course") {
+      const [kurs] = await db
+        .update(schema.courses)
+        .set({ status: kaldir ? "rejected" : "published" })
+        .where(eq(schema.courses.id, reportTargetId))
+        .returning();
+      if (kurs && kaldir) {
+        // İade: negatif admin_adjust; seviye düşmez, bakiye düşer (ADR 0001 K5)
+        await revokePoints({ userId: kurs.createdBy, reason: "course_launched", refId: `course:${kurs.id}` });
+        await db.insert(schema.notifications).values({
+          userId: kurs.createdBy,
+          kind: "course",
+          body: `"${kurs.title}" kursun şikâyetler üzerine kaldırıldı; açılış puanı iade alındı.`,
+          href: R.uye.panel,
+        });
+      }
+    } else if (reportTarget === "comment") {
+      await db
+        .update(schema.comments)
+        .set({ hiddenAt: kaldir ? new Date() : null })
+        .where(eq(schema.comments.id, reportTargetId));
+    }
+    await db
+      .update(schema.reports)
+      .set({ status: kaldir ? "resolved" : "dismissed" })
+      .where(
+        and(
+          eq(schema.reports.targetType, reportTarget as "course" | "comment"),
+          eq(schema.reports.targetId, reportTargetId),
+          eq(schema.reports.status, "open"),
+        ),
+      );
   }
 
   const quizId = Number(form.get("quizId") ?? 0);
