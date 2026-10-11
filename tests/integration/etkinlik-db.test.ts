@@ -411,6 +411,42 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect((await kayit(e.id, k.id))?.checkedInBy).toBe(gorevli.id);
   });
 
+  /* ---------------- F3-05: dönen QR ---------------- */
+
+  it("AC-17: dönen QR — 2 dk önceki token reddedilir (kayıt bile açılmaz); güncel token kayıtsız üyeyi kaydedip girişi yazar", async () => {
+    const { donenPencere, donenToken } = await import("@/lib/etkinlik-kural.ts");
+    const acan = await uye("dq-acan");
+    const e = await etkinlik(acan.id);
+    const baska = await etkinlik(acan.id);
+    const k = await uye("dq-kat");
+    const eski = donenToken(e.id, donenPencere(new Date(Date.now() - 120_000)));
+    expect(await ev.donenGiris(e, k, eski)).toEqual({ durum: "sure" });
+    expect(await ev.donenGiris(e, k, donenToken(baska.id, donenPencere()))).toEqual({ durum: "sure" }); // başka etkinliğin QR'ı
+    expect(await ev.donenGiris(e, k, "")).toEqual({ durum: "sure" });
+    expect(await kayit(e.id, k.id)).toBeUndefined();
+
+    expect(await ev.donenGiris(e, k, donenToken(e.id, donenPencere()))).toEqual({ durum: "geldi", puan: 10 });
+    expect(await kayit(e.id, k.id)).toMatchObject({ checkinMethod: "rotating", checkedInBy: k.id });
+    expect((await ev.donenGiris(e, k, donenToken(e.id, donenPencere()).toLowerCase())).durum).toBe("zaten");
+    expect(await ledger(k.id, "event_attended", String(e.id))).toHaveLength(1);
+  });
+
+  it("dönen QR: kontenjan doluysa kayıtsız üye giremez, kayıtlı girer; pencere dışında giriş yok", async () => {
+    const { donenPencere, donenToken } = await import("@/lib/etkinlik-kural.ts");
+    const acan = await uye("dk-acan");
+    const dolu = await etkinlik(acan.id, { capacity: 1 });
+    const kayitli = await uye("dk-kayitli");
+    await ev.kayitOl(kayitli, dolu);
+    const kapida = await uye("dk-kapida");
+    expect(await ev.donenGiris(dolu, kapida, donenToken(dolu.id, donenPencere()))).toEqual({ durum: "dolu" });
+    expect(await kayit(dolu.id, kapida.id)).toBeUndefined();
+    expect((await ev.donenGiris(dolu, kayitli, donenToken(dolu.id, donenPencere()))).durum).toBe("geldi");
+
+    const erken = await etkinlik(acan.id, { baslangic: 5, bitis: 7 });
+    expect(await ev.donenGiris(erken, kapida, donenToken(erken.id, donenPencere()))).toEqual({ durum: "pencere" });
+    expect(await kayit(erken.id, kapida.id)).toBeUndefined(); // pencere dışında kayıt da açılmaz
+  });
+
   it("slug'sız eski etkinliğe ilk çağrıda slug atanır, ikinci çağrı aynı slug'ı döner", async () => {
     const acan = await uye("slug-acan");
     const [e] = await db

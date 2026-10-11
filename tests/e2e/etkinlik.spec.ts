@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { clerk } from "@clerk/testing/playwright";
 
-import { biletToken } from "../../src/lib/etkinlik-kural.ts";
+import { biletToken, donenPencere, donenToken } from "../../src/lib/etkinlik-kural.ts";
 
 // seed:demo — yaklaşan etkinlik (kontenjan 40) ve Elif'in etkinlik daveti DEMEV01
 const YAKLASAN = "/etkinlik/canli-quiz-gecesi-demo";
@@ -123,5 +123,48 @@ test.describe("etkinlik akışı — üye", () => {
     await expect(page.locator('[data-giris][data-init="1"]')).toBeAttached();
     await expect(kuyruk).toHaveText("");
     await expect(page.locator(`[data-rsvp="${rsvp}"]`)).toHaveAttribute("data-geldi", "1");
+  });
+
+  test("F3-05 (AC-17): dönen QR — 2 dk önceki ekran görüntüsü reddedilir; güncel QR girişi doğrular; ekran yalnız görevliye", async ({ page }) => {
+    test.skip(!process.env.CRON_SECRET, "CRON_SECRET yok — dönen QR imzası üretilemez");
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    const id = Number(await page.locator("[data-etkinlik-id]").getAttribute("data-etkinlik-id"));
+    test.skip((await page.getByText("Sona erdi").count()) > 0, "demo maraton bitmiş — npm run seed:demo");
+
+    // AC-17: 2 dakika önce üretilmiş token
+    await page.goto(`/c/q/${id}/${donenToken(id, donenPencere(new Date(Date.now() - 120_000)))}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Bu QR'ın süresi doldu" })).toBeVisible();
+
+    // QR içeriği büyük harf /C/ yolu: 301 → /c/q/ (aynı yola değil — canlıda döngü olurdu)
+    const tok = donenToken(id, donenPencere());
+    const r = await page.request.get(`/C/${id}/${tok}`, { maxRedirects: 0 });
+    expect(r.status()).toBe(301);
+    expect(r.headers()["location"]).toBe(`/c/q/${id}/${tok}`);
+
+    // Güncel token: giriş yazılır (ilk koşum) ya da zaten yazılmıştır (tekrar koşum) → etkinlik sayfası
+    await page.goto(`/c/q/${id}/${donenToken(id, donenPencere())}`, { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/go-okuma-maratonu-demo\?giris=(geldi|zaten)/);
+    await expect(page.locator("[data-kayit-kutusu]").getByText(/Girişin doğrulandı ✓ \(\d{2}:\d{2}\)/)).toBeVisible();
+    // Tekrar okutma: yeni giriş yok
+    await page.goto(`/c/q/${id}/${donenToken(id, donenPencere())}`, { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/giris=zaten/);
+    // Bilet de "doğrulandı" gösterir
+    await page.goto("/uye/biletler", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("[data-bilet]", { hasText: "Go Okuma Maratonu" }).getByText(/Girişin doğrulandı ✓/)).toBeVisible();
+
+    // Ekran: test üyesi maratonda görevli (global-setup); QR görseli SVG ve önbelleksiz
+    const ekran = await page.goto(`${MARATON}/ekran`, { waitUntil: "domcontentloaded" });
+    if (ekran?.status() === 200) {
+      await expect(page.locator("[data-ekran-qr]")).toBeVisible();
+      const svg = await page.request.get(`/api/uye/etkinlik-qr?e=${id}`);
+      expect(svg.status()).toBe(200);
+      expect(svg.headers()["content-type"]).toContain("image/svg+xml");
+      expect(svg.headers()["cache-control"]).toBe("no-store");
+    }
+    // Görevli olmadığı etkinlikte ekran ve QR ucu yok
+    expect((await page.request.get(`${YAKLASAN}/ekran`)).status()).toBe(404);
+    await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });
+    const baskaId = await page.locator("[data-etkinlik-id]").getAttribute("data-etkinlik-id");
+    expect((await page.request.get(`/api/uye/etkinlik-qr?e=${baskaId}`)).status()).toBe(404);
   });
 });

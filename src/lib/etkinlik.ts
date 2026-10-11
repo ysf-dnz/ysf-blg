@@ -9,6 +9,7 @@ import { db, schema } from "@/db/client.ts";
 import { davetCereziOku, davetCereziSil } from "./davet.ts";
 import {
   biletCoz,
+  donenGecerli,
   etkinlikBitis,
   etkinlikGorunurMu,
   girisPenceresinde,
@@ -405,6 +406,34 @@ export async function biletGiris(
     etkinlik: e.title,
     oncelikli: sonuc.rsvp.priority,
   };
+}
+
+export type DonenSonucu =
+  /** QR'ın süresi dolmuş (yalnız içindeki ve bir önceki 30 sn'lik pencere geçerli — AC-17) */
+  | { durum: "sure" | "pencere" | "dolu" | "kapali" }
+  | { durum: "geldi"; puan: number }
+  | { durum: "zaten"; saat: string };
+
+/**
+ * Dönen QR ile kendi girişini doğrula (F3-05). Katılımcı girişteki ekrandan okutur:
+ * token geçerliyse ve giriş penceresindeyse kayıtsız üye ÖNCE kaydedilir (kontenjan ve
+ * kayıt kapanışı kayitOl'un SQL'inde; davet çerezi varsa atıf da orada), sonra giriş
+ * F3-04 ile AYNI K1.4 zinciriyle yazılır (checkin_method='rotating').
+ */
+export async function donenGiris(
+  e: Etkinlik,
+  member: Member,
+  token: string,
+  cookies?: AstroCookies,
+): Promise<DonenSonucu> {
+  if (!donenGecerli(e.id, token)) return { durum: "sure" };
+  if (!girisPenceresinde(e)) return { durum: "pencere" };
+  const k = await kayitOl(member, e, { cookies });
+  if (k.durum === "dolu" || k.durum === "kapali") return { durum: k.durum };
+  const g = await girisYap(e, member.id, "rotating", member.id);
+  if (g.durum === "geldi") return { durum: "geldi", puan: g.puan };
+  if (g.durum === "zaten") return { durum: "zaten", saat: trSaat(g.rsvp.checkedInAt!) };
+  return { durum: "pencere" };
 }
 
 export { etkinlikBitis, etkinlikGorunurMu };

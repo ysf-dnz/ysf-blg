@@ -159,9 +159,18 @@ const GOREVLI: Record<string, string> = {
   yok: "Bu kullanıcı adıyla üye bulunamadı.",
   olmadi: `Eklenemedi: zaten görevli ya da ortak düzenleyen sınırı (${PUAN.eventMaxCoHosts}) dolu.`,
 };
+const GIRIS: Record<string, string> = {
+  geldi:
+    Number(q.get("puan")) > 0
+      ? `Girişin doğrulandı ✓ +${Math.trunc(Number(q.get("puan")))} puan. İyi etkinlikler!`
+      : "Girişin doğrulandı ✓ İyi etkinlikler!",
+  zaten: "Girişin daha önce doğrulanmıştı ✓",
+};
 const bant = q.has("yeni")
   ? "Etkinliğin yayında 🎉 Topluluğunla paylaş."
-  : (SONUC[q.get("sonuc") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
+  : GIRIS[q.get("giris") ?? ""]
+    ? GIRIS[q.get("giris")!]
+    : (SONUC[q.get("sonuc") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
 const oncelikYok = q.get("oncelik") === "yok";
 ---
 
@@ -305,6 +314,7 @@ const oncelikYok = q.get("oncelik") === "yok";
     <p class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface-raised px-4 py-3 text-sm" data-gorevli-cubugu>
       <span class="text-ink-muted">Görevlisin:</span>
       <a href={R.etkinlikGiris(slug)} class="rounded-full bg-accent px-4 py-1.5 font-medium text-surface">🎟️ Giriş ekranı (bilet okut)</a>
+      <a href={R.etkinlikEkran(slug)} class="rounded-full border border-accent px-4 py-1.5 font-medium text-accent hover:bg-accent hover:text-surface">📺 Dönen QR ekranı</a>
       <span class="text-ink-muted">{sayi.giris} / {sayi.kayit} geldi</span>
     </p>
   )}

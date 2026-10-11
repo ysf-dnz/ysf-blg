@@ -71,6 +71,20 @@ test.describe("etkinlik sayfası — misafir (F3-02)", () => {
     expect(r.headers()["location"]).toBe("/t/q/1.AAAAAAAAAAAAAAAA");
   });
 
+  test("F3-05: dönen QR yolu — /C/ 301'i /c/q/'ya iner; misafir giriş ister, giriş yazılmaz; ekran misafire yok", async ({ page, request }) => {
+    const r = await request.get("/C/1/ABCDE12345", { maxRedirects: 0 });
+    expect(r.status()).toBe(301);
+    expect(r.headers()["location"]).toBe("/c/q/1/ABCDE12345");
+    expect((await request.get("/c/q/999999999/ABCDE12345")).status()).toBe(404);
+    expect((await request.get("/c/q/bozuk/ABCDE12345")).status()).toBe(404);
+    expect((await request.get(`${MARATON}/ekran`)).status()).toBe(404);
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    const id = await page.locator("[data-etkinlik-id]").getAttribute("data-etkinlik-id");
+    await page.goto(`/c/q/${id}/ABCDE12345`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator('[data-donen="giris"]')).toBeVisible();
+    await expect(page.getByRole("button", { name: "Giriş yap" })).toBeVisible();
+  });
+
   test("375px'te yatay taşma yok", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });

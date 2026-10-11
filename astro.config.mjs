@@ -70,6 +70,8 @@ export default defineConfig({
     "/D/[kod]": { status: 301, destination: "/d/q/[kod]" },
     // Bilet QR'ı (Faz 3): HTTPS://HOST/T/{rsvpId}.{imza}
     "/T/[token]": { status: 301, destination: "/t/q/[token]" },
+    // Dönen QR (Faz 3): HTTPS://HOST/C/{events.id}/{TOKEN} — 30 sn'de bir yenilenir
+    "/C/[etkinlik]/[token]": { status: 301, destination: "/c/q/[etkinlik]/[token]" },
   },
   i18n: {
     defaultLocale: "tr",

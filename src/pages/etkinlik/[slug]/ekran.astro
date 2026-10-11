@@ -1,0 +1,80 @@
+---
+/**
+ * Dönen QR ekranı (F3-05) — girişte projeksiyon/tablet. Yalnız görevli açar. QR görseli
+ * /api/uye/etkinlik-qr'dan gelir ve 30 sn'lik pencere sınırında yenilenir (önceki pencere
+ * de geçerli olduğu için istemci saat kayması tolere edilir). Katılımcı kendi telefonuyla okutur.
+ */
+import Base from "@/layouts/Base.astro";
+import { etkinlikBul, okutabilirMi, slugGaranti } from "@/lib/etkinlik.ts";
+import { DONEN_PENCERE_SN, girisPenceresinde, trAralik } from "@/lib/etkinlik-kural.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { PUAN } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
+
+export const prerender = false;
+
+const e = await etkinlikBul(Astro.params.slug ?? "");
+const member = await getOrCreateMember(Astro);
+if (!e || !(await okutabilirMi(e, member))) return new Response("Sayfa bulunamadı", { status: 404 });
+const slug = await slugGaranti(e);
+const pencerede = girisPenceresinde(e);
+const qr = `/api/uye/etkinlik-qr?e=${e.id}`;
+---
+
+<Base title={`Giriş ekranı · ${e.title}`} description="Dönen giriş QR'ı" seo={{ noindex: true }} sade>
+  <section class="mx-auto max-w-xl py-6 text-center" data-ekran data-pencere={DONEN_PENCERE_SN}>
+    <p class="text-sm"><a href={R.etkinlikGiris(slug)} class="text-ink-muted hover:text-accent">← Giriş doğrulaması</a></p>
+    <h1 class="mt-2 font-display text-3xl font-semibold text-ink">{e.title}</h1>
+    <p class="mt-1 text-ink-muted">{trAralik(e)}</p>
+    {pencerede ? (
+      <>
+        <div class="mx-auto mt-6 w-full max-w-md rounded-3xl bg-white p-4">
+          <img data-ekran-qr src={qr} alt="Giriş QR'ı" width="480" height="480" class="h-auto w-full" />
+        </div>
+        <div class="mx-auto mt-4 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-line" aria-hidden="true">
+          <div data-ekran-cubuk class="h-full w-full origin-left bg-accent"></div>
+        </div>
+        <p class="mt-4 font-display text-xl font-semibold text-ink">Telefonunun kamerasıyla okut, girişin doğrulansın</p>
+        <p class="mt-1 text-sm text-ink-muted">
+          Gelen +{PUAN.eventAttended} puan kazanır. QR {DONEN_PENCERE_SN} saniyede bir yenilenir; ekran görüntüsü işe yaramaz.
+        </p>
+      </>
+    ) : (
+      <p class="mt-8 rounded-2xl border border-line bg-surface-raised px-6 py-8 text-ink-muted">
+        Giriş doğrulaması şu an kapalı (kapı açılışından etkinlik bitişine kadar açıktır).
+      </p>
+    )}
+  </section>
+</Base>
+
+<script>
+  let zamanlayici = 0;
+  document.addEventListener("astro:page-load", () => {
+    const kok = document.querySelector<HTMLElement>("[data-ekran]");
+    const img = kok?.querySelector<HTMLImageElement>("[data-ekran-qr]");
+    const cubuk = kok?.querySelector<HTMLElement>("[data-ekran-cubuk]");
+    if (!kok || !img || kok.dataset.init) return;
+    kok.dataset.init = "1";
+    const pencereMs = Number(kok.dataset.pencere) * 1000;
+    const taban = img.getAttribute("src")!;
+    const kur = () => {
+      const kalan = pencereMs - (Date.now() % pencereMs);
+      if (cubuk) {
+        // Kalan süre çubuğu: pencere sonunda sıfıra iner
+        cubuk.style.transition = "none";
+        cubuk.style.transform = `scaleX(${kalan / pencereMs})`;
+        requestAnimationFrame(() => {
+          cubuk.style.transition = `transform ${kalan}ms linear`;
+          cubuk.style.transform = "scaleX(0)";
+        });
+      }
+      // Pencere değişince (+0,4 sn pay) yeni QR'ı çek; t parametresi tarayıcı önbelleğini atlar
+      zamanlayici = window.setTimeout(() => {
+        img.src = `${taban}&t=${Date.now()}`;
+        kur();
+      }, kalan + 400);
+    };
+    kur();
+  });
+  document.addEventListener("astro:before-swap", () => window.clearTimeout(zamanlayici));
+</script>

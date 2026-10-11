@@ -93,7 +93,7 @@ if (existsSync(vercelConfig)) {
   }
   // Büyük harf QR yolları (/D davet, /T bilet, /C dönen QR). Vercel kenarı deseni harf DUYARSIZ
   // eşleştirir: hedef, kaynağın küçük harfli hâliyle aynı desene uyarsa canlıda sonsuz 301 döngüsü.
-  for (const [onek, hedefOnek] of [["D", "/d/q/"], ["T", "/t/q/"]]) {
+  for (const [onek, hedefOnek] of [["D", "/d/q/"], ["T", "/t/q/"], ["C", "/c/q/"]]) {
     const r = routes.find((x) => x.status === 301 && typeof x.src === "string" && x.src.startsWith(`^/${onek}`));
     const hedef = r?.headers?.Location ?? "";
     if (!r || !hedef.startsWith(hedefOnek)) {
