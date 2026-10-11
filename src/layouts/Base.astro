@@ -86,11 +86,16 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     </script>
     <script is:inline>
       // Davet çerezi (F1-00): ana sayfa statik servis edilir, middleware koşmaz →
-      // canlıda /?ref= hiç çerez kurmuyordu. Aynı kural, aynı çerez; istemcide.
+      // canlıda /?ref= hiç çerez kurmuyordu. Aynı kural, aynı çerez; istemcide. ClientRouter
+      // gezintisinde de koşar (astro:page-load): middleware artık yalnız belge gezintisinde yazar.
       (function () {
-        var r = new URLSearchParams(location.search).get("ref");
-        if (r && /^[a-z0-9-]{2,40}$/.test(r))
-          document.cookie = "ysf_ref=" + r + "; Max-Age=2592000; Path=/; SameSite=Lax";
+        function kur() {
+          var r = new URLSearchParams(location.search).get("ref");
+          if (r && /^[a-z0-9-]{2,40}$/.test(r))
+            document.cookie = "ysf_ref=" + r + "; Max-Age=2592000; Path=/; SameSite=Lax";
+        }
+        kur();
+        document.addEventListener("astro:page-load", kur);
       })();
     </script>
   </head>

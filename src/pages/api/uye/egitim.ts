@@ -120,6 +120,8 @@ export const POST: APIRoute = async (context) => {
     const p = new URLSearchParams();
     if (k.yeni) p.set("katildin", "1");
     if (k.davetli) p.set("davet", "1");
+    const b = String(form.get("b") ?? ""); // bulunduğu öğe korunur (sayfa 0..n-1'e kırpar)
+    if (/^\d{1,3}$/.test(b) && b !== "0") p.set("b", b);
     return context.redirect(`${R.kurs(kurs.slug)}${p.size ? `?${p}` : ""}`);
   }
 

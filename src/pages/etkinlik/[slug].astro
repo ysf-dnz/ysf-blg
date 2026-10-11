@@ -83,7 +83,7 @@ if (davet && belgeGezintisiMi(Astro.request) && davetCereziOku(Astro.cookies, e.
   davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
 /**
  * Giriş sonrası dönüş: aynı sayfa (davet kodu korunur). `kayit=1` sunucuda HİÇBİR ŞEY yazmaz:
- * adresi farklı kılar (ClientRouter aynı adrese gezinmez) ve "girişin tamam, yerini ayır" bandını açar.
+ * yalnız "girişin tamam, yerini ayır" bandını açar (Astro yönlendiricisi hash'siz aynı adrese de gezinir).
  */
 const girisDonus = `${sayfa}?kayit=1${davet ? `&d=${davet.kod.code}` : ""}`;
 const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));

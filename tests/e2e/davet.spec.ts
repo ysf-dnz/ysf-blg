@@ -51,6 +51,14 @@ test.describe("kurs daveti — misafir karşılama (Faz 2)", () => {
     await expect(page.locator('meta[name="robots"][content="noindex"]')).toHaveCount(1);
   });
 
+  test("?ref= (middleware) yalnız belge gezintisinde çerez kurar (aynı kökenli <img>/prefetch platform atfını çalamaz)", async ({ request }) => {
+    const refVar = async (dest: string) =>
+      (await request.get("/kurslar?ref=ayse-demir", { headers: { "sec-fetch-dest": dest } })).headersArray().some((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ysf_ref=ayse-demir"));
+    expect(await refVar("document")).toBe(true);
+    expect(await refVar("image")).toBe(false);
+    expect(await refVar("empty")).toBe(false);
+  });
+
   test("kurs sayfasındaki çerez yedeği yalnız belge gezintisinde kurulur (aynı kökenli <img> atfı çalamaz)", async ({ request }) => {
     const cerezVar = async (dest: string) =>
       (await request.get(`${KURS}?d=${KOD}`, { headers: { "sec-fetch-dest": dest } })).headersArray().some((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ysf_davet="));
