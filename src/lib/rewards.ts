@@ -29,7 +29,7 @@ export function yediGunOnce(simdi: Date = new Date()): Date {
 /**
  * Reason'a bağlı varsayılan tavan — awardPoints çağıranı tavanı unutamaz.
  * Üretici günlük 100 (TR günü), ek kaynak günde 45, kurs bitirme kayan 7 günde 100,
- * davet havuzu kayan 7 günde 300.
+ * davet havuzu kayan 7 günde 300, etkinlik katılımı kayan 7 günde 70, düzenleyen kayan 7 günde 1000.
  */
 export function tavanIcin(reason: Reason): Tavan | undefined {
   switch (reason) {
@@ -55,6 +55,13 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
     case "course_invite_completed":
     case "event_invite_attended":
       return { reasons: DAVET_REASONLARI, since: yediGunOnce(), limit: PUAN.inviteWeeklyCap };
+    // Etkinlik (Faz 3 incelemesi): etkinlik başına frenler (idem; ilk 100 katılımcı) etkinlikler
+    // ARASI sınır koymuyordu → düzenleyen art arda etkinlik açıp sınırsız basabiliyordu.
+    case "event_attended":
+      return { reasons: ["event_attended"], since: yediGunOnce(), limit: PUAN.eventAttendedWeeklyCap };
+    case "event_hosted":
+    case "event_well_rated":
+      return { reasons: ["event_hosted", "event_well_rated"], since: yediGunOnce(), limit: PUAN.eventHostWeeklyCap };
     default:
       return undefined;
   }

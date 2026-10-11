@@ -390,10 +390,11 @@ async function kur() {
   // ---- Etkinlikler (Faz 3): yaklaşan + devam eden + bitmiş ----
   const SAAT = 3600e3;
   const simdi = Date.now();
-  // 1) Yaklaşan (yarın, 2 saat, kontenjan 40): kayıt + etkinlik daveti (Elif → Can, bekleyen)
+  // 1) Yaklaşan (6 gün sonra, 2 saat, kontenjan 40): kayıt + etkinlik daveti (Elif → Can, bekleyen).
+  // e2e bu etkinliğin BİTMEMİŞ olmasına dayanır → seed'den sonra 6 gün geçerli (maraton 13 gün).
   const [etkinlik] = await db
     .insert(schema.events)
-    .values({ clubId: kulup!.id, campaignId: kampanya!.id, slug: "canli-quiz-gecesi-demo", title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", kind: "bulusma", startsAt: new Date(simdi + 24 * SAAT), endsAt: new Date(simdi + 26 * SAAT), location: "ODTÜ Kütüphane B1", il: "Ankara", capacity: 40, createdBy: U.ayse!.id })
+    .values({ clubId: kulup!.id, campaignId: kampanya!.id, slug: "canli-quiz-gecesi-demo", title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", kind: "bulusma", startsAt: new Date(simdi + 144 * SAAT), endsAt: new Date(simdi + 146 * SAAT), location: "ODTÜ Kütüphane B1", il: "Ankara", capacity: 40, createdBy: U.ayse!.id })
     .returning();
   await db.insert(schema.eventStaff).values([
     { eventId: etkinlik!.id, userId: U.ayse!.id, role: "host" },
@@ -414,7 +415,7 @@ async function kur() {
   ]);
   await db.insert(schema.pendingPoints).values({
     userId: U.elif!.id, delta: 10, reason: "event_invite_attended", refId: `event:${etkinlik!.id}:u:${U.can!.id}`,
-    note: 'Can Yıldız "Canlı Quiz Gecesi: Learning Go" etkinliğinde giriş yapınca', expiresAt: new Date(simdi + 26 * SAAT),
+    note: 'Can Yıldız "Canlı Quiz Gecesi: Learning Go" etkinliğinde giriş yapınca', expiresAt: new Date(simdi + 146 * SAAT),
   });
 
   // 2) Devam eden (çevrimiçi maraton, 14 gün): giriş doğrulaması bugün denenebilir (e2e dönen QR)
@@ -519,8 +520,8 @@ async function kur() {
   kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)
   davet: /d/dem07kq (Ayşe'nin kurs daveti; 3 ziyaret, Can davetle katıldı) · /d/dem0c21 (Elif → /kurslar/go-ile-cli-araclari-demo)
   yazılar: /topluluk (3 yayında — 1'i yalnız-üyeler, 1 bekleyen)
-  etkinlikler: /etkinlik/${etkinlik!.slug} (yarın; kontenjan 40, görevliler, /d/demev01 Elif'in daveti)
-    · /etkinlik/${maraton!.slug} (DEVAM EDİYOR 14 gün — giriş doğrulaması denenir, 2 giriş)
+  etkinlikler: /etkinlik/${etkinlik!.slug} (6 gün sonra; kontenjan 40, görevliler, /d/demev01 Elif'in daveti)
+    · /etkinlik/${maraton!.slug} (DEVAM EDİYOR 13 gün — giriş doğrulaması denenir, 2 giriş; e2e seed'den sonra ~6 gün geçerli)
     · /etkinlik/${bulusma!.slug} (bitti; 3 giriş, 2 değerlendirme, düzenleyen payı +15)
   profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);
 }

@@ -51,6 +51,14 @@ test.describe("kurs daveti — misafir karşılama (Faz 2)", () => {
     await expect(page.locator('meta[name="robots"][content="noindex"]')).toHaveCount(1);
   });
 
+  test("kurs sayfasındaki çerez yedeği yalnız belge gezintisinde kurulur (aynı kökenli <img> atfı çalamaz)", async ({ request }) => {
+    const cerezVar = async (dest: string) =>
+      (await request.get(`${KURS}?d=${KOD}`, { headers: { "sec-fetch-dest": dest } })).headersArray().some((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ysf_davet="));
+    expect(await cerezVar("document")).toBe(true);
+    expect(await cerezVar("image")).toBe(false);
+    expect(await cerezVar("empty")).toBe(false);
+  });
+
   test("etkinlik daveti (F3-03): /d/{kod} etkinlik sayfasına iner, çerez event: önekli, kart üretilir", async ({ request }) => {
     const ETKINLIK = "/etkinlik/canli-quiz-gecesi-demo"; // seed:demo — Elif'in daveti DEMEV01
     const r1 = await request.get("/d/demev01", { maxRedirects: 0 });

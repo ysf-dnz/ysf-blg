@@ -7,7 +7,7 @@ import { asc, eq, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import EtkinlikFormu from "@/features/etkinlik/EtkinlikFormu.astro";
 import { db, schema } from "@/db/client.ts";
-import { etkinlikGorunurMu, kayitSayilari } from "@/lib/etkinlik.ts";
+import { etkinlikGorunurMu, etkinlikGorunurSql, kayitSayilari } from "@/lib/etkinlik.ts";
 import { etkinlikBitis, TUR_AD, trAralik, VARSAYILAN_SURE_SAAT } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
@@ -21,7 +21,8 @@ const [hepsi, onayliKulupler] = await Promise.all([
   db.query.events.findMany({
     // Bitişi (yoksa başlangıç + 2 saat) son 7 gün içinde ya da ileride olanlar
     // Ham SQL karşılaştırmasında Date parametresi kolon kodlayıcısından geçmez → ISO + ::timestamp
-    where: sql`coalesce(${schema.events.endsAt}, ${schema.events.startsAt} + ${VARSAYILAN_SURE_SAAT}::int * interval '1 hour')
+    // Görünürlük SQL'de (LIMIT'ten önce): gizli etkinlikler listeyi boşaltamasın
+    where: sql`${etkinlikGorunurSql} and coalesce(${schema.events.endsAt}, ${schema.events.startsAt} + ${VARSAYILAN_SURE_SAAT}::int * interval '1 hour')
       >= ${new Date(simdi.getTime() - PUAN.eventRatingDays * 864e5).toISOString()}::timestamp`,
     orderBy: asc(schema.events.startsAt),
     limit: 60,

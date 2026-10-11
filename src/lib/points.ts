@@ -38,6 +38,14 @@ export const PUAN = {
   eventRatingDays: 7,
   /** Etkinliği açan + en çok bu kadar ortak düzenleyen (host) */
   eventMaxCoHosts: 3,
+  /** Etkinlik başına en çok görevli (host + scanner) — sınırsız atama/bildirim freni */
+  eventMaxStaff: 20,
+  /** Katılım puanının (event_attended) kişi başı KAYAN 7 GÜN tavanı: günde bir etkinlik.
+   *  Etkinlik başına fren (idem) etkinlikler arası çiftliği sınırlamıyordu. */
+  eventAttendedWeeklyCap: 70,
+  /** Düzenleyen puanlarının (event_hosted + event_well_rated) kişi başı KAYAN 7 GÜN tavanı —
+   *  kulüp görev bütçesiyle aynı ölçek (haftada ~2 büyük konferans). */
+  eventHostWeeklyCap: 1000,
   /** 7 günlük seri kilometre taşı */
   streak7: 25,
   /** 30 günlük seri kilometre taşı */

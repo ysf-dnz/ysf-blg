@@ -10,6 +10,7 @@ import {
   etkinlikGorunurMu,
   gorevliEkle,
   gorevliHizAsildi,
+  gorevliRol,
   gorevliSil,
   girisYap,
   kayitOl,
@@ -18,7 +19,7 @@ import {
   slugUret,
   yonetebilirMi,
 } from "@/lib/etkinlik.ts";
-import { ETKINLIK_TURLERI, etkinlikBitis, trTarihOku, type EtkinlikTuru } from "@/lib/etkinlik-kural.ts";
+import { ETKINLIK_TURLERI, etkinlikBitis, KAPI_ACILIS_DK, trTarihOku, type EtkinlikTuru } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { canManage, clubRoleOf } from "@/lib/permissions.ts";
 import { R } from "@/lib/routes.ts";
@@ -43,10 +44,17 @@ export const POST: APIRoute = async (context) => {
     if (clubId && !kulup) return new Response("Topluluk bulunamadı", { status: 404 });
     const yetkili = clubId ? canManage(await clubRoleOf(member, clubId)) : member.role !== "member";
     if (!yetkili) return new Response("Yetkisiz", { status: 403 });
+    // Onay bekleyen/arşivli topluluk etkinlik açamaz: herkes başvurup anında başkan olur; admin
+    // onayı etkinlik ödüllerinin (katılım, düzenleyen payı) tek güven kapısıdır.
+    if (kulup && kulup.status !== "approved" && member.role !== "admin")
+      return new Response("Topluluğun onaylanınca etkinlik açabilirsin", { status: 403 });
 
     const title = metin("title", 80);
     const startsAt = trTarihOku(String(form.get("startsAt") ?? ""));
     if (!title || !startsAt) return new Response("Başlık ve başlangıç zamanı gerekli", { status: 400 });
+    // Geçmişe/şu ana etkinlik açılamaz: giriş penceresi ve değerlendirme anında açılırdı
+    if (startsAt.getTime() <= Date.now())
+      return new Response("Başlangıç zamanı gelecekte olmalı", { status: 400 });
     const endsHam = String(form.get("endsAt") ?? "").trim();
     const endsAt = endsHam ? trTarihOku(endsHam) : null;
     if (endsHam && (!endsAt || endsAt <= startsAt || endsAt.getTime() - startsAt.getTime() > 14 * GUN))
@@ -110,11 +118,20 @@ export const POST: APIRoute = async (context) => {
       ? await db.query.users.findFirst({ where: eq(schema.users.handle, handle) })
       : undefined;
     if (!kisi) return context.redirect(`${sayfa}?gorevli=yok#yonetim`);
+    const rol = form.get("rol") === "host" ? "host" : "scanner";
+    // Düzenleyen (host) listesi payı böler: yalnız etkinliği AÇAN (ve admin) değiştirir, o da kapı
+    // açılışına kadar. Yoksa ortak düzenleyen diğerlerini çıkarıp kendi hesaplarını ekleyebiliyor,
+    // dağıtımdan hemen önce liste değiştirilebiliyordu. Görevli (scanner) yönetimi her düzenleyende.
+    const hedefRol = action === "staff-sil" ? await gorevliRol(e, kisi.id) : rol;
+    if (hedefRol === "host") {
+      const acan = member.id === e.createdBy || member.role === "admin";
+      const kapidanOnce = Date.now() < e.startsAt.getTime() - KAPI_ACILIS_DK * 60_000;
+      if (!acan || !kapidanOnce) return context.redirect(`${sayfa}?gorevli=kilitli#yonetim`);
+    }
     if (action === "staff-sil") {
       await gorevliSil(e, kisi.id);
       return context.redirect(`${sayfa}?gorevli=silindi#yonetim`);
     }
-    const rol = form.get("rol") === "host" ? "host" : "scanner";
     const eklendi = await gorevliEkle(e, kisi.id, rol);
     if (eklendi) {
       await db.insert(schema.notifications).values({

@@ -95,6 +95,18 @@ test.describe("etkinlik sayfası — misafir (F3-02)", () => {
     expect(ld.aggregateRating).toMatchObject({ ratingValue: "4.5", ratingCount: 2 });
   });
 
+  test("davet çerezi yedeği yalnız belge gezintisinde kurulur; ?kayit=1 GET'i hiçbir şey yazmaz", async ({ request }) => {
+    const url = `${YAKLASAN}?d=DEMEV01`;
+    const cerezVar = async (dest: string) =>
+      (await request.get(url, { headers: { "sec-fetch-dest": dest } })).headersArray().some((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ysf_davet="));
+    expect(await cerezVar("document")).toBe(true); // "Tarayıcıda aç" ile /d/'den geçmeden gelen davetli
+    expect(await cerezVar("image")).toBe(false); // aynı kökenli <img src> atfı çalamaz
+    expect(await cerezVar("empty")).toBe(false); // prefetch / fetch
+    // Misafirde ?kayit=1 yalnız sayfayı açar (kayıt POST ile yazılır)
+    const r = await request.get(`${YAKLASAN}?kayit=1`, { maxRedirects: 0 });
+    expect(r.status()).toBe(200);
+  });
+
   test("375px'te yatay taşma yok", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });

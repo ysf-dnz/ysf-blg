@@ -158,6 +158,7 @@ const ELLE: Record<string, string> = {
     pencere: ["Giriş kapalı", "Kapı açılışından önce ya da etkinlik bitti.", "border-amber-500"],
     hiz: ["Çok hızlı", "Dakikada 120 okutma sınırı — bilet kuyrukta, birazdan gönderilecek.", "border-amber-500"],
     hazir: ["Bilet okundu", "Katılımcı karşındaysa Doğrula'ya dokun.", "border-accent"],
+    gonderildi: ["Kuyruk gönderildi", "Bağlantı geldi; bekleyen biletler işlendi.", "border-accent"],
     oturum: ["Oturum düştü", "Sayfayı yenileyip yeniden giriş yap; okutulanlar kuyrukta.", "border-red-500"],
     kuyruk: ["Bağlantı yok", "Bilet kuyruğa alındı; bağlantı gelince gönderilecek.", "border-amber-500"],
   };
@@ -195,25 +196,38 @@ const ELLE: Record<string, string> = {
     const sayac = sec("[data-giris-sayac]");
     const video = sec<HTMLVideoElement>("[data-kamera]");
     const son = new Map<string, number>();
+    /** Şu an canlı okutmayla gönderilen biletler: kuyruk boşaltması bunları ikinci kez yollamaz */
+    const ucusta = new Set<string>();
     let bosaltiliyor = false;
+    let sonDurum = "";
+    // localStorage yoksa/kapalıysa kuyruk yalnız bu sayfada (bellekte) yaşar
+    let bellek: KuyrukOgesi[] | null = null;
 
     const oku = (): KuyrukOgesi[] => {
+      if (bellek) return bellek;
       try {
         return kuyrukOku(localStorage.getItem(ANAHTAR));
       } catch {
-        return [];
+        return (bellek = []);
       }
     };
-    const yaz = (k: KuyrukOgesi[]) => {
+    const depola = (k: KuyrukOgesi[]) => {
+      if (bellek) return void (bellek = k);
       try {
         localStorage.setItem(ANAHTAR, JSON.stringify(k));
       } catch {
-        /* depolama kapalıysa kuyruk yalnız bu sayfada yaşar */
+        bellek = k;
       }
-      kuyrukEl.textContent = k.length ? `⏳ Bağlantı bekleyen bilet: ${k.length}` : "";
     };
+    /** Kuyruk satırı: yalnız GERÇEKTEN bekleyenler (o an gönderilmekte olan canlı okutma sayılmaz) */
+    const etiketle = (ozet = "") => {
+      const n = oku().filter((o) => !ucusta.has(o.token)).length;
+      kuyrukEl.textContent = n ? `⏳ Bağlantı bekleyen bilet: ${n}` : ozet;
+    };
+    const sayacArtir = () => (sayac.textContent = String(Number(sayac.textContent) + 1));
 
     function goster(s: Sonuc) {
+      sonDurum = s.durum;
       kutu.classList.remove(...CERCEVE);
       avatar.classList.add("hidden");
       if (s.durum === "geldi" || s.durum === "zaten") {
@@ -225,7 +239,7 @@ const ELLE: Record<string, string> = {
           avatar.src = s.avatarUrl;
           avatar.classList.remove("hidden");
         }
-        if (geldi) sayac.textContent = String(Number(sayac.textContent) + 1);
+        if (geldi) sayacArtir();
         bip(geldi ? 880 : 330);
         navigator.vibrate?.(geldi ? 80 : [60, 60, 60]);
         return;
@@ -237,13 +251,17 @@ const ELLE: Record<string, string> = {
       baslik.textContent = b;
       alt.textContent = a;
       kutu.classList.add(c);
-      if (s.durum === "hazir") return;
+      if (s.durum === "hazir" || s.durum === "gonderildi") return;
       bip(220);
       navigator.vibrate?.([120, 60, 120]);
     }
 
-    /** "tamam": sunucu yanıtladı (kuyruktan düşer) · diğerleri: bilet kuyrukta kalır, sonra yeniden denenir */
-    async function gonder(token: string): Promise<"tamam" | "bekle" | "oturum" | "hiz"> {
+    /**
+     * "tamam": sunucu yanıtladı (kuyruktan düşer) · diğerleri: bilet kuyrukta kalır, sonra yeniden denenir.
+     * sessiz: kuyruk boşaltması — sonuç kutusuna/sese dokunmaz (kapıda o an okutulan biletin sonucu
+     * ezilmesin); yeni girişse yalnız sayaç artar. @returns durum ve yeni giriş mi
+     */
+    async function gonder(token: string, sessiz = false): Promise<["tamam" | "bekle" | "oturum" | "hiz", boolean]> {
       try {
         const r = await fetch("/api/uye/giris", {
           method: "POST",
@@ -251,36 +269,57 @@ const ELLE: Record<string, string> = {
           body: JSON.stringify({ token, eventId }),
           // Oturum düşünce middleware giriş sayfasına yönlendirir: izleme, ayırt et
           redirect: "manual",
+          // Asılı bağlantı (Wi-Fi var, internet yok) dakikalarca beklemesin → kuyruğa düşsün
+          signal: AbortSignal.timeout(6000),
         });
-        if (r.type === "opaqueredirect" || r.status === 401) return "oturum";
+        if (r.type === "opaqueredirect" || r.status === 401) return ["oturum", false];
         // Hız sınırı giriş YAZMADI: bilet kuyruktan düşerse katılımcı işaretsiz kalırdı
-        if (r.status === 429) return "hiz";
-        if (r.status >= 500) return "bekle";
-        goster((await r.json()) as Sonuc);
-        return "tamam";
+        if (r.status === 429) return ["hiz", false];
+        if (r.status >= 500) return ["bekle", false];
+        const s = (await r.json()) as Sonuc;
+        if (!sessiz) goster(s);
+        else if (s.durum === "geldi") sayacArtir();
+        return ["tamam", s.durum === "geldi"];
       } catch {
-        return "bekle";
+        return ["bekle", false];
       }
     }
 
     async function isle(token: string) {
       if (!yeniOkumaMi(son, token, Date.now())) return;
-      const s = await gonder(token);
-      if (s === "tamam") return;
-      yaz(kuyrugaEkle(oku(), token, Date.now()));
-      goster({ durum: s === "bekle" ? "kuyruk" : s });
+      // ÖNCE kuyruğa yaz: yanıt beklerken sekme kapanır/yenilenirse okutma kaybolmasın (AC-18).
+      // Sunucu idempotent olduğu için yeniden gönderim zararsız.
+      ucusta.add(token);
+      depola(kuyrugaEkle(oku(), token, Date.now()));
+      const [s] = await gonder(token);
+      ucusta.delete(token);
+      if (s === "tamam") depola(kuyruktanCikar(oku(), token));
+      else goster({ durum: s === "bekle" ? "kuyruk" : s });
+      etiketle();
     }
 
     async function bosalt() {
       if (bosaltiliyor) return;
       bosaltiliyor = true;
+      let gonderilen = 0;
+      let yeni = 0;
       try {
         for (const o of oku()) {
-          if ((await gonder(o.token)) !== "tamam") break;
-          yaz(kuyruktanCikar(oku(), o.token));
+          if (ucusta.has(o.token)) continue;
+          const [s, yeniGiris] = await gonder(o.token, true);
+          if (s !== "tamam") break;
+          depola(kuyruktanCikar(oku(), o.token));
+          gonderilen++;
+          if (yeniGiris) yeni++;
+          etiketle();
         }
       } finally {
         bosaltiliyor = false;
+      }
+      if (gonderilen) {
+        etiketle(`✓ Kuyruktaki ${gonderilen} bilet gönderildi (${yeni} yeni giriş)`);
+        // Kutu hâlâ "bağlantı yok / oturum / hız" diyorsa güncelle; canlı okutma sonucunu ezme
+        if (["kuyruk", "oturum", "hiz"].includes(sonDurum) && !oku().length) goster({ durum: "gonderildi" });
       }
     }
 
@@ -298,15 +337,22 @@ const ELLE: Record<string, string> = {
     const Dedektor = (window as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => { detect(v: HTMLVideoElement): Promise<{ rawValue: string }[]> } }).BarcodeDetector;
     let akis: MediaStream | null = null;
     let dongu = 0;
+    let aciliyor = false;
+    let kapandi = false;
     const kameraAc = sec<HTMLButtonElement>("[data-kamera-ac]");
     if (!Dedektor || !navigator.mediaDevices?.getUserMedia) {
       kameraAc.classList.add("hidden");
       sec("[data-kamera-yok]").classList.remove("hidden");
     }
     kameraAc.addEventListener("click", async () => {
-      if (akis || !Dedektor) return;
+      if (akis || aciliyor || !Dedektor) return;
+      aciliyor = true;
+      kameraAc.disabled = true;
       try {
-        akis = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const yeniAkis = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        // İzin beklenirken sayfadan çıkıldıysa akışı hemen kapat (kamera açık kalmasın)
+        if (kapandi) return yeniAkis.getTracks().forEach((t) => t.stop());
+        akis = yeniAkis;
         video.srcObject = akis;
         video.classList.remove("hidden");
         await video.play();
@@ -324,6 +370,9 @@ const ELLE: Record<string, string> = {
         }, 300);
       } catch {
         sec("[data-kamera-yok]").classList.remove("hidden");
+        kameraAc.disabled = false;
+      } finally {
+        aciliyor = false;
       }
     });
 
@@ -331,19 +380,20 @@ const ELLE: Record<string, string> = {
     window.addEventListener("online", cevrimici);
     const zamanlayici = window.setInterval(bosalt, 15_000);
     temizle = () => {
+      kapandi = true;
       window.clearInterval(zamanlayici);
       window.clearInterval(dongu);
       window.removeEventListener("online", cevrimici);
       akis?.getTracks().forEach((t) => t.stop());
     };
 
-    yaz(oku());
+    etiketle();
     void bosalt();
     // /t/q/ görevliyi ?bilet= ile getirdi (telefon kamerasıyla okutma). Girişi OTOMATİK yazma:
     // GET ile durum değişmez — yoksa görevliye bağlantı gönderen biri uzaktan "geldi" işaretletirdi.
     const ilk = tokenAyikla(kok.dataset.bilet ?? "");
     if (ilk) {
-      history.replaceState(null, "", location.pathname);
+      history.replaceState(history.state, "", location.pathname); // ClientRouter durumu korunur
       sec<HTMLInputElement>("[data-elle-girdi]").value = ilk;
       goster({ durum: "hazir" });
       sec<HTMLFormElement>("[data-elle-form]").querySelector("button")?.focus();

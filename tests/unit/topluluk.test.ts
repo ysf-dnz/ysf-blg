@@ -37,6 +37,11 @@ describe("il listesi", () => {
     ["ANKARA", "Ankara"],
     ["İSTANBUL", "İstanbul"],
     ["izmir", "İzmir"],
+    ["Istanbul", "İstanbul"], // ASCII klavye: noktasız büyük I
+    ["IZMIR", "İzmir"],
+    ["ıgdır", null], // ğ'siz yazım eşleşmez
+    ["IĞDIR", "Iğdır"],
+    ["isparta", "Isparta"],
     ["Ankra", null],
     ["", null],
     [null, null],

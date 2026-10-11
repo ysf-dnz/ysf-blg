@@ -16,11 +16,11 @@ import { getBookMap } from "@/lib/books-lookup.ts";
 import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
 import { R } from "@/lib/routes.ts";
 import { PUAN } from "@/lib/points.ts";
-import { siteKok } from "@/lib/urls.ts";
+import { belgeGezintisiMi, getIleYazilabilirMi, siteKok } from "@/lib/urls.ts";
 import { formatDate } from "@/lib/dates.ts";
 import {
-  DAVET_CEREZ,
   davetCereziKur,
+  davetCereziOku,
   davetHedefi,
   davetKoduUret,
   kartSurumu,
@@ -49,17 +49,21 @@ const davet =
   davetHam && davetHam.kurs.id === course.id && !uretici && (!member || davetHam.davetEden.id !== member.id)
     ? davetHam
     : null;
-// "Tarayıcıda aç" ile çerezsiz gelen davetli: çerez yoksa burada kur (var olan ezilmez → ilk davet kazanır)
-if (davet && !Astro.cookies.has(DAVET_CEREZ)) davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
+// "Tarayıcıda aç" ile /d/'den geçmeden gelen davetli: çerezi burada kur. Yalnız belge gezintisinde
+// (aynı kökenli <img src="…?d=KOD"> atfı çalamasın) ve BU kursun çerezi yoksa (aynı kursta ilk davet
+// kazanır; başka hedefin bayat çerezi ise ezilir — yoksa bant puan vaat edip atıf yazılmıyordu).
+if (davet && belgeGezintisiMi(Astro.request) && davetCereziOku(Astro.cookies, course.id) === null)
+  davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
 
 // Girişten dönüşte otomatik katılım (karşılama akışı: ek dokunuş yok — AC-5).
-// GET durum değiştirdiği için yalnız aynı site: başka siteden açılan ?katil=1 (CSRF) işlemez;
-// Clerk dönüşü aynı origin (modal) ya da aynı site (accounts.yusufdeniz.com) olur.
+// GET durum değiştirdiği için fren: başka siteden, alt kaynak olarak (<img>, iframe…) ya da
+// prefetch olarak gelen ?katil=1 işlemez (getIleYazilabilirMi). Clerk dönüşü aynı origin (modal,
+// ClientRouter gezintisi) ya da aynı site (accounts.yusufdeniz.com) olur.
 if (
   member &&
   Astro.url.searchParams.get("katil") === "1" &&
   course.status === "published" &&
-  Astro.request.headers.get("sec-fetch-site") !== "cross-site"
+  getIleYazilabilirMi(Astro.request)
 ) {
   const k = await kursaKatil(member, course, Astro.cookies);
   const p = new URLSearchParams();

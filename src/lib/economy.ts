@@ -84,6 +84,13 @@ export function hostPaylari(
   return paylar;
 }
 
+/** Görevli başına dakikada okutma sınırı (PRD §4.2) */
+export const GOREVLI_DAKIKADA = 120;
+/** Son 60 sn'de bu kadar giriş yazmış görevli frenlenir mi? */
+export function gorevliHizAsildiMi(sonDakikadakiGiris: number): boolean {
+  return sonDakikadakiGiris >= GOREVLI_DAKIKADA;
+}
+
 /** Etkinlik iyi değerlendirildi mi? (ort ≥ 4,0 ve en az 10 değerlendirme) */
 export function iyiDegerlendirildiMi(ortalama: number, adet: number): boolean {
   return adet >= PUAN.eventWellRatedMinCount && ortalama >= PUAN.eventWellRatedMinAvg;

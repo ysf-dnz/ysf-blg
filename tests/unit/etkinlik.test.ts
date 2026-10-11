@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { hostPaylari, hostToplami, iyiDegerlendirildiMi } from "@/lib/economy.ts";
+import { createHmac } from "node:crypto";
+import { GOREVLI_DAKIKADA, gorevliHizAsildiMi, hostPaylari, hostToplami, iyiDegerlendirildiMi } from "@/lib/economy.ts";
 import { PUAN } from "@/lib/points.ts";
 import { DAVET_REASONLARI, tavanIcin } from "@/lib/rewards.ts";
 import {
@@ -76,17 +77,36 @@ describe("düzenleyen payları (F3-06)", () => {
   it("değişmez: bir etkinlik düzenleyenlere en çok 550 puan getirir (PRD §4.2)", () => {
     expect(hostToplami(10_000) + PUAN.eventWellRated).toBe(550);
   });
+
+  it.each([
+    [0, false],
+    [119, false],
+    [120, true],
+    [500, true],
+  ])("görevli freni: son dakikada %i giriş → frenlenir mi %s", (n, beklenen) => {
+    expect(GOREVLI_DAKIKADA).toBe(120);
+    expect(gorevliHizAsildiMi(n)).toBe(beklenen);
+  });
 });
 
-describe("etkinlik davet tavanı (F3-03)", () => {
-  it("event_invite_attended davet havuzunda; welcome/hosted/well_rated tavansız", () => {
+describe("etkinlik tavanları", () => {
+  it("event_invite_attended davet havuzunda (300/7g); event_invite_welcome tavansız (PRD listesinde yok)", () => {
     expect(DAVET_REASONLARI).toContain("event_invite_attended");
     expect(tavanIcin("event_invite_attended")?.limit).toBe(PUAN.inviteWeeklyCap);
     expect(tavanIcin("event_invite_attended")?.reasons).toBe(DAVET_REASONLARI);
     expect(tavanIcin("event_invite_welcome")).toBeUndefined();
-    expect(tavanIcin("event_hosted")).toBeUndefined();
-    expect(tavanIcin("event_well_rated")).toBeUndefined();
-    expect(tavanIcin("event_attended")).toBeUndefined();
+  });
+  it("etkinlikler ARASI tavan: katılım kayan 7 günde 70; düzenleyen puanları (pay + iyi değerlendirme) ortak havuzda 1000", () => {
+    const yediGun = Date.now() - 7 * 864e5;
+    const katilim = tavanIcin("event_attended")!;
+    expect(katilim).toMatchObject({ reasons: ["event_attended"], limit: 70 });
+    expect(Math.abs(katilim.since.getTime() - yediGun)).toBeLessThan(5000);
+    for (const r of ["event_hosted", "event_well_rated"] as const) {
+      expect(tavanIcin(r)).toMatchObject({ reasons: ["event_hosted", "event_well_rated"], limit: 1000 });
+      expect(Math.abs(tavanIcin(r)!.since.getTime() - yediGun)).toBeLessThan(5000);
+    }
+    // Havuz, tek büyük konferansın getirisini (550) kırpmaz
+    expect(PUAN.eventHostWeeklyCap).toBeGreaterThanOrEqual(hostToplami(10_000) + PUAN.eventWellRated);
   });
 });
 
@@ -146,6 +166,14 @@ describe("TR saatli girdi/çıktı (sunucu UTC'de koşar)", () => {
       /1 Kasım 2026.*19:00–21:00/,
     );
   });
+  it("çok günlü etkinlikte bitiş TARİHİ de görünür (gece yarısını TR saatiyle aşan dahil)", () => {
+    const cokGun = trAralik({ startsAt: t("2026-11-01T16:00:00Z"), endsAt: t("2026-11-14T18:00:00Z") });
+    expect(cokGun).toMatch(/1 Kasım 2026.*19:00 – 14 Kasım 2026.*21:00/);
+    // 23:00–01:00 TR: UTC'de aynı gün, TR'de ertesi güne taşar
+    expect(trAralik({ startsAt: t("2026-11-01T20:00:00Z"), endsAt: t("2026-11-01T22:00:00Z") })).toMatch(
+      /1 Kasım 2026.*23:00 – 2 Kasım 2026.*01:00/,
+    );
+  });
 });
 
 describe("bilet token'ı (ADR K6: {rsvpId}.{base32(HMAC('t:'+rsvpId))})", () => {
@@ -170,8 +198,27 @@ describe("bilet token'ı (ADR K6: {rsvpId}.{base32(HMAC('t:'+rsvpId))})", () => 
   ])("%s reddedilir", (_ad, boz) => {
     expect(biletCoz(boz(biletToken(42, SIR)), SIR)).toBeNull();
   });
-  it("bilet ve dönen QR imzaları aynı sırla çakışmaz ('t:' / 'c:' önekleri)", () => {
-    expect(biletToken(7, SIR).split(".")[1]!.slice(0, 10)).not.toBe(donenToken(7, 0, SIR));
+  // ADR K6 biçimini KİLİTLER: mesaj önekleri ("t:" / "c:"), uzunluk ve alfabe. Önek silinir ya da
+  // değişirse bu beklenen değerler tutmaz (yalnız "farklı mı" diye bakan test bunu yakalamıyordu).
+  it("sabit vektör: imza = base32(HMAC-SHA256(sır, 't:'+rsvpId)) ilk 16; dönen = 'c:'+id+':'+pencere ilk 10", () => {
+    const hmac = (m: string) => createHmac("sha256", SIR).update(m).digest();
+    expect(biletToken(42, SIR)).toBe(`42.${base32(hmac("t:42"), 16)}`);
+    expect(donenToken(5, 57812345, SIR)).toBe(base32(hmac("c:5:57812345"), 10));
+    // Öneksiz ya da yer değiştirmiş mesajın imzası kabul edilmez
+    expect(biletCoz(`42.${base32(hmac("42"), 16)}`, SIR)).toBeNull();
+    expect(biletCoz(`42.${base32(hmac("c:42"), 16)}`, SIR)).toBeNull();
+    expect(donenGecerli(5, base32(hmac("t:5"), 10), new Date(57812345 * 30_000), SIR)).toBe(false);
+    expect(donenGecerli(5, base32(hmac("c:5:57812345"), 10), new Date(57812345 * 30_000), SIR)).toBe(true);
+  });
+  it("elle yazım: O→0, I/L→1 (Crockford) ve küçük harf kabul edilir", () => {
+    // İmzasında hem 0 hem 1 bulunan bir bilet seç (deterministik arama)
+    const id = Array.from({ length: 500 }, (_, i) => i + 1).find((i) => /0/.test(biletToken(i, SIR).split(".")[1]!) && /1/.test(biletToken(i, SIR).split(".")[1]!))!;
+    expect(id).toBeGreaterThan(0);
+    const [, imza] = biletToken(id, SIR).split(".");
+    expect(biletCoz(`${id}.${imza!.replace(/0/g, "O").replace(/1/g, "I")}`, SIR)).toBe(id);
+    expect(biletCoz(`${id}.${imza!.replace(/0/g, "o").replace(/1/g, "l")}`, SIR)).toBe(id);
+    // Gerçekten farklı bir karakter ise reddedilir
+    expect(biletCoz(`${id}.${imza!.replace(/0/g, "8")}`, SIR)).toBeNull();
   });
   it("QR içerikleri tamamen büyük harf (alfanümerik mod)", () => {
     const k = "https://yusufdeniz.com";
@@ -203,8 +250,13 @@ describe("dönen QR (AC-17)", () => {
     expect(donenGecerli(5, null, simdi, SIR)).toBe(false);
     expect(donenGecerli(5, "KISA", simdi, SIR)).toBe(false);
   });
-  it("küçük harf ve O/I yazımı normalleşir", () => {
+  it("küçük harf ve O/I/L yazımı normalleşir", () => {
     expect(donenGecerli(5, donenToken(5, p, SIR).toLowerCase(), simdi, SIR)).toBe(true);
+    // İmzasında 0 ya da 1 olan bir etkinlik bul; O/L ile yazılınca da geçerli
+    const id = Array.from({ length: 500 }, (_, i) => i + 1).find((i) => /[01]/.test(donenToken(i, p, SIR)))!;
+    const yazim = donenToken(id, p, SIR).replace(/0/g, "O").replace(/1/g, "L");
+    expect(yazim).not.toBe(donenToken(id, p, SIR));
+    expect(donenGecerli(id, yazim, simdi, SIR)).toBe(true);
   });
   it("pencere 30 sn", () => {
     expect(DONEN_PENCERE_SN).toBe(30);

@@ -1,8 +1,10 @@
 ---
 /**
  * Etkinlik sayfası — herkese açık SSR: tarih, yer, kontenjan, düzenleyenler, takvime ekle.
- * Kayıt (RSVP) /api/uye/etkinlik'e gider; misafir sayfa içi girişten sonra ek dokunuşsuz
- * kaydolur (?kayit=1). Onay bekleyen topluluğun etkinliği yalnız görevlilere görünür (404).
+ * Kayıt (RSVP) yalnız POST /api/uye/etkinlik ile yazılır — GET ile kayıt YOK: sec-fetch frenleri
+ * aynı kökenli <img>, prefetch ve uygulamadan açılan bağlantıyı durdurmuyordu (rızasız, atıflı
+ * kayıt). Misafir sayfa içi girişten döner (?kayit=1 yalnız ipucu bandı) ve bir kez daha dokunur
+ * (iki dokunuş). Onay bekleyen topluluğun etkinliği yalnız görevlilere görünür (404).
  * Davetle geliş (?d=KOD): "{Ad} seni davet ediyor" bandı + kişisel OG kartı; kayıtlı üye ve
  * düzenleyen kendi davet kartını (QR) buradan alır.
  */
@@ -17,19 +19,27 @@ import {
   gorevliRol,
   hostIdleri,
   hostPayHesabi,
-  kayitOl,
   kayitSayilari,
   slugGaranti,
 } from "@/lib/etkinlik.ts";
-import { degerlendirmeAcikMi, etkinlikBitis, kayitAcikMi, TUR_AD, trAralik, trSaat, trTarih } from "@/lib/etkinlik-kural.ts";
+import {
+  degerlendirmeAcikMi,
+  etkinlikBitis,
+  KAPI_ACILIS_DK,
+  kayitAcikMi,
+  TUR_AD,
+  trAralik,
+  trSaat,
+  trTarih,
+} from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
 import { getUsersMap } from "@/lib/social.ts";
-import { siteKok } from "@/lib/urls.ts";
+import { belgeGezintisiMi, siteKok } from "@/lib/urls.ts";
 import {
-  DAVET_CEREZ,
   davetCereziKur,
+  davetCereziOku,
   davetKoduUret,
   etkinlikDaveti,
   kartSurumu,
@@ -43,9 +53,7 @@ export const prerender = false;
 const param = Astro.params.slug ?? "";
 const e = await etkinlikBul(param);
 if (!e) return new Response("Etkinlik bulunamadı", { status: 404 });
-// Slug'sız eski kayıt (/etkinlik/{id}) kalıcı adresine taşınır
 const slug = await slugGaranti(e);
-if (param !== slug) return Astro.redirect(`${R.etkinlik(slug)}${Astro.url.search}`, 301);
 
 const member = await getOrCreateMember(Astro);
 const [kulup, rol] = await Promise.all([
@@ -56,6 +64,9 @@ const yonetici = !!member && (rol === "host" || member.role === "admin");
 const gorevli = yonetici || rol === "scanner";
 const gorunur = etkinlikGorunurMu(e, kulup);
 if (!gorunur && !gorevli) return new Response("Etkinlik bulunamadı", { status: 404 });
+// Slug'sız eski kayıt (/etkinlik/{id}) kalıcı adresine taşınır — görünürlük kapısından SONRA
+// (gizli etkinliğin başlığı id deneyerek Location'dan okunmasın)
+if (param !== slug) return Astro.redirect(`${R.etkinlik(slug)}${Astro.url.search}`, 301);
 
 const q = Astro.url.searchParams;
 const sayfa = R.etkinlik(slug);
@@ -65,15 +76,15 @@ const dKod = q.get("d");
 const davetHam = dKod ? await etkinlikDaveti(dKod) : null;
 const davet =
   davetHam && davetHam.etkinlik.id === e.id && (!member || davetHam.davetEden.id !== member.id) ? davetHam : null;
-// "Tarayıcıda aç" ile çerezsiz gelen davetli: çerez yoksa burada kur (var olan ezilmez → ilk davet kazanır)
-if (davet && !Astro.cookies.has(DAVET_CEREZ)) davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
-// Girişten dönüşte otomatik kayıt. GET durum değiştirdiği için yalnız aynı site (CSRF freni);
-// kontenjan zaten SQL'de — fren atlatılsa bile kapasite aşılamaz.
-if (member && q.get("kayit") === "1" && Astro.request.headers.get("sec-fetch-site") !== "cross-site") {
-  const k = await kayitOl(member, e, { cookies: Astro.cookies });
-  return Astro.redirect(`${sayfa}?sonuc=${k.durum}${k.davetli ? "&davet=1" : ""}`);
-}
-/** Giriş sonrası dönüş: aynı sayfa + otomatik kayıt (davet kodu korunur) */
+// "Tarayıcıda aç" ile /d/'den geçmeden gelen davetli: çerezi burada kur. Yalnız belge gezintisinde
+// (aynı kökenli <img src="…?d=KOD"> atfı çalamasın) ve BU etkinliğin çerezi yoksa (aynı etkinlikte
+// ilk davet kazanır; başka hedefin bayat çerezi ezilir — yoksa bant puan vaat edip atıf yazılmazdı).
+if (davet && belgeGezintisiMi(Astro.request) && davetCereziOku(Astro.cookies, e.id, "event") === null)
+  davetCereziKur(Astro.cookies, davet, import.meta.env.PROD);
+/**
+ * Giriş sonrası dönüş: aynı sayfa (davet kodu korunur). `kayit=1` sunucuda HİÇBİR ŞEY yazmaz:
+ * adresi farklı kılar (ClientRouter aynı adrese gezinmez) ve "girişin tamam, yerini ayır" bandını açar.
+ */
 const girisDonus = `${sayfa}?kayit=1${davet ? `&d=${davet.kod.code}` : ""}`;
 const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"));
 
@@ -119,9 +130,29 @@ const benimPuanim = degerlendirebilir
       where: and(eq(schema.ratings.userId, member!.id), eq(schema.ratings.eventId, e.id)),
     })
   : undefined;
-// Düzenleyen payı (ADR K2): bekleyen satır yok, canlı sayımdan; bitişten 48 saat sonra cron dağıtır
-const hostPay = rol === "host" ? await hostPayHesabi(e) : null;
+// Düzenleyen payı (ADR K2): bekleyen satır yok, canlı sayımdan; bitişten 48 saat sonra cron dağıtır.
+// Dağıtıldıysa gösterilen rakam ledger'dan (canlı hesap sonradan değişen listeyle yanıltmasın).
+const [hostPay, dagitilan] =
+  rol === "host"
+    ? await Promise.all([
+        hostPayHesabi(e),
+        db.query.pointsLedger.findFirst({
+          where: and(
+            eq(schema.pointsLedger.userId, member!.id),
+            eq(schema.pointsLedger.reason, "event_hosted"),
+            eq(schema.pointsLedger.refId, `event:${e.id}`),
+          ),
+        }),
+      ])
+    : [null, undefined];
 const payDagitim = new Date(bitis.getTime() + PUAN.eventHostedDelayHours * 3600e3);
+// Düzenleyen listesini yalnız etkinliği açan (ve admin), kapı açılışına kadar değiştirir
+const hostYonetir =
+  !!member &&
+  (member.id === e.createdBy || member.role === "admin") &&
+  simdi.getTime() < e.startsAt.getTime() - KAPI_ACILIS_DK * 60_000;
+// Girişten yeni dönen üye (?kayit=1): kayıt GET ile yazılmaz, düğmeye bir kez daha dokunur
+const kayitIpucu = !!member && !kaydim && q.get("kayit") === "1" && !bitti && kayitAcik && !dolu;
 
 const kok = siteKok(Astro.site, Astro.url);
 // AC-20: düzenleyen kendi etkinliğinde davet puanı almaz (davetli yine +5 alır)
@@ -184,7 +215,8 @@ const GOREVLI: Record<string, string> = {
   eklendi: "Görevli eklendi.",
   silindi: "Görevli çıkarıldı.",
   yok: "Bu kullanıcı adıyla üye bulunamadı.",
-  olmadi: `Eklenemedi: zaten görevli ya da ortak düzenleyen sınırı (${PUAN.eventMaxCoHosts}) dolu.`,
+  olmadi: `Eklenemedi: zaten görevli ya da sınır dolu (en çok ${PUAN.eventMaxCoHosts} ortak düzenleyen, ${PUAN.eventMaxStaff} görevli).`,
+  kilitli: "Düzenleyen listesini yalnız etkinliği açan, kapı açılışına (başlangıçtan 60 dk önce) kadar değiştirebilir.",
 };
 const GIRIS: Record<string, string> = {
   geldi:
@@ -247,6 +279,11 @@ const oncelikYok = q.get("oncelik") === "yok";
     </div>
   )}
   {bant && <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>}
+  {kayitIpucu && !davet && (
+    <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink" data-kayit-ipucu>
+      Girişin tamam ✓ Yerini ayırmak için <strong>Yerimi ayır</strong>'a dokun.
+    </div>
+  )}
   {oncelikYok && (
     <div class="menu-pop mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
       Yerin ayrıldı ama ⭐ öncelikli koltuk alınamadı: {PUAN.prioritySeatCost} puan gerekiyor.
@@ -425,10 +462,12 @@ const oncelikYok = q.get("oncelik") === "yok";
         <p class="mt-3 rounded-xl border border-line px-3 py-2 text-sm text-ink" data-host-pay>
           👥 {hostPay.katilimci} doğrulanmış katılımcı × {PUAN.eventHostedPerAttendee} = <strong>{hostPay.toplam}</strong> puan
           {hostPay.paylar.size > 1 && ` (${hostPay.paylar.size} düzenleyen arasında)`} →
-          {simdi < payDagitim
-            ? <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; {trTarih(payDagitim)} sonrası dağıtılır (bitiş + {PUAN.eventHostedDelayHours} saat).</>
-            : <> payın <strong class="text-accent">+{hostPay.paylar.get(member!.id) ?? 0}</strong>; günlük dağıtımda hesabına yazılır.</>}
-          <span class="block text-xs text-ink-muted">İlk {PUAN.eventHostedMaxAttendees} katılımcı sayılır; ortalama ≥ 4,0 ve en az {PUAN.eventWellRatedMinCount} değerlendirmede +{PUAN.eventWellRated}.</span>
+          {dagitilan
+            ? <> payın <strong class="text-accent">+{dagitilan.delta}</strong> hesabına yazıldı.</>
+            : simdi < payDagitim
+              ? <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; {trTarih(payDagitim)} sonrası dağıtılır (bitiş + {PUAN.eventHostedDelayHours} saat).</>
+              : <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; sıradaki günlük dağıtımda yazılır.</>}
+          <span class="block text-xs text-ink-muted">Bilet ya da dönen QR ile gelen ilk {PUAN.eventHostedMaxAttendees} katılımcı sayılır (elle girişler sayılmaz); ortalama ≥ 4,0 ve en az {PUAN.eventWellRatedMinCount} değerlendirmede +{PUAN.eventWellRated}. Düzenleyen puanları haftada en çok {PUAN.eventHostWeeklyCap}.</span>
         </p>
       )}
       <p class="mt-3 text-sm">
@@ -444,7 +483,7 @@ const oncelikYok = q.get("oncelik") === "yok";
               <span class="rounded-full border border-line px-2 py-0.5 text-xs text-ink-muted">
                 {g.role === "host" ? (g.userId === e.createdBy ? "Düzenleyen (açan)" : "Ortak düzenleyen") : "Giriş görevlisi"}
               </span>
-              {g.userId !== e.createdBy && (
+              {g.userId !== e.createdBy && (g.role !== "host" || hostYonetir) && (
                 <form method="post" action="/api/uye/etkinlik" class="ml-auto">
                   <input type="hidden" name="action" value="staff-sil" />
                   <input type="hidden" name="eventId" value={e.id} />
@@ -462,7 +501,7 @@ const oncelikYok = q.get("oncelik") === "yok";
         <input name="handle" required maxlength="60" placeholder="@kullanici-adi" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
         <select name="rol" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" aria-label="Görev">
           <option value="scanner">Giriş görevlisi</option>
-          <option value="host">Ortak düzenleyen</option>
+          {hostYonetir && <option value="host">Ortak düzenleyen</option>}
         </select>
         <button class="cursor-pointer rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Ekle</button>
       </form>

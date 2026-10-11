@@ -8,7 +8,7 @@ import { and, eq, gte, inArray, isNotNull, isNull, notInArray, sql } from "drizz
 import { db, schema } from "@/db/client.ts";
 import { birKezCalistir } from "./cron.ts";
 import { davetCereziOku, davetCereziSil } from "./davet.ts";
-import { hostPaylari, hostToplami, iyiDegerlendirildiMi } from "./economy.ts";
+import { gorevliHizAsildiMi, hostPaylari, hostToplami, iyiDegerlendirildiMi } from "./economy.ts";
 import {
   biletCoz,
   degerlendirmeAcikMi,
@@ -69,6 +69,27 @@ export async function etkinlikBul(param: string): Promise<Etkinlik | undefined> 
   return db.query.events.findFirst({ where: eq(schema.events.id, Number(param)) });
 }
 
+/**
+ * Görünürlük koşulunun SQL eşleniği (liste/cron sorgularında LIMIT'ten ÖNCE uygulanır):
+ * kulüpsüz ya da kulübü onaylı.
+ */
+export const etkinlikGorunurSql = sql`(${schema.events.clubId} is null or exists (
+  select 1 from clubs c where c.id = ${schema.events.clubId} and c.status = 'approved'))`;
+
+/**
+ * Etkinlik herkese açık mı (DB'den). Kayıt, giriş, değerlendirme ve düzenleyen payı YALNIZ açık
+ * etkinlikte işler: onay bekleyen topluluğun gizli etkinliği ödül zincirine kapalıdır (yoksa
+ * admin onayı olmadan iki hesapla puan basılabiliyordu — Faz 3 incelemesi).
+ */
+export async function etkinlikAcikMi(e: Pick<Etkinlik, "clubId">): Promise<boolean> {
+  if (!e.clubId) return true;
+  const kulup = await db.query.clubs.findFirst({
+    where: eq(schema.clubs.id, e.clubId),
+    columns: { status: true },
+  });
+  return etkinlikGorunurMu(e, kulup);
+}
+
 /* ---------------- Görevliler ---------------- */
 
 /** Düzenleyenler: event_staff host'ları + etkinliği açan (eski kayıtta staff satırı olmayabilir) */
@@ -105,8 +126,9 @@ export async function okutabilirMi(e: Pick<Etkinlik, "id" | "createdBy">, member
 }
 
 /**
- * Görevli ekle. Ortak düzenleyen sınırı (açan + 3) INSERT'in WHERE'inde (A ilkeli).
- * @returns eklendiyse true; zaten görevliyse ya da host sınırı doluysa false
+ * Görevli ekle. Ortak düzenleyen sınırı (açan + 3) ve toplam görevli sınırı (20) INSERT'in
+ * WHERE'inde (A ilkeli).
+ * @returns eklendiyse true; zaten görevliyse ya da sınır doluysa false
  */
 export async function gorevliEkle(
   e: Pick<Etkinlik, "id" | "createdBy">,
@@ -116,10 +138,11 @@ export async function gorevliEkle(
   const sonuc = await db.execute(sql`
     insert into event_staff (event_id, user_id, role)
     select ${e.id}, ${userId}, ${rol}
-    where ${rol} <> 'host' or (
-      select count(*) from event_staff
-      where event_id = ${e.id} and role = 'host' and user_id <> ${e.createdBy ?? 0}
-    ) < ${PUAN.eventMaxCoHosts}
+    where (select count(*) from event_staff where event_id = ${e.id}) < ${PUAN.eventMaxStaff}
+      and (${rol} <> 'host' or (
+        select count(*) from event_staff
+        where event_id = ${e.id} and role = 'host' and user_id <> ${e.createdBy ?? 0}
+      ) < ${PUAN.eventMaxCoHosts})
     on conflict do nothing
     returning id
   `);
@@ -156,6 +179,8 @@ export async function kayitOl(
   opts: { oncelik?: boolean; cookies?: AstroCookies } = {},
 ): Promise<KayitSonucu> {
   const simdi = new Date();
+  // Gizli (onay bekleyen topluluk) etkinliğe kimse kaydolamaz — görevlisi dahil
+  if (!(await etkinlikAcikMi(e))) return { durum: "kapali", oncelikli: false, davetli: false };
   const codeId = davetCereziOku(opts.cookies, e.id, "event");
   let kod = codeId
     ? await db.query.inviteCodes.findFirst({
@@ -264,11 +289,8 @@ export type GirisSonucu =
   /** Bu etkinliğe kaydı yok */
   | { durum: "yok" };
 
-/** Görevli başına dakikada okutma sınırı (PRD §4.2) */
-export const GOREVLI_DAKIKADA = 120;
-
 /**
- * Girişte yazılan puanlar — her adım idempotent (awardPoints idem index, puanOlayi).
+ * Girişte yazılan puanlar — yalnız girişi yazan istekte çağrılır; her adım ayrıca idempotent.
  * Sıra ADR K1.4: katılımcıya event_attended (refId ÖNEKSİZ String(eventId): eski RSVP
  * ödülünü almış üye ikinci +10'u alamaz) → davetliyse event_invite_welcome (anında) →
  * davet edenin bekleyeni kesinleşir (davetlinin hesabı 24 saatten gençse matures_at).
@@ -323,10 +345,15 @@ async function girisOdulleri(e: Etkinlik, rsvp: Rsvp): Promise<number> {
  * Giriş doğrulaması — tek istek, idempotent (ADR K1.4, C ilkeli):
  * `UPDATE … WHERE checked_in_at IS NULL RETURNING` satır döndürdüyse girişi BU istek yaptı.
  * Çevrimdışı kuyruğun tekrar gönderdiği istek boş döner → "zaten" (AC-16, AC-18).
- * Giriş yalnız pencerede (kapı açılışı → bitiş) yazılır: davet edenin bekleyeni bitişte
- * düşer ve puanOlayi düşmüş satıra bakmadan ödediği için bitişten sonra giriş kabul edilmez.
- * Ödül zinciri "zaten" durumunda da koşar: UPDATE yazılıp ödüller yazılamadan ölen istek
- * sonraki okutmada kendini onarır (adımlar idempotent; yeni puan üretmez).
+ * Giriş yalnız pencerede (kapı açılışı → bitiş) ve herkese açık etkinlikte yazılır: davet
+ * edenin bekleyeni bitişte düşer ve puanOlayi düşmüş satıra bakmadan ödediği için bitişten
+ * sonra giriş kabul edilmez.
+ * Ödül zinciri YALNIZ girişi yazan istekte koşar (ADR K1.4). "Zaten" durumunda yeniden
+ * koşturmak onarım gibi görünür ama zarar verir: tavana takılıp 0 yazılan ödül (idem anahtarı
+ * tüketilmez) pencere boşalınca yeniden okutmayla ödenirdi ("kırpılan geri kazanılmaz" — ADR K2),
+ * ve sonradan değişen düzenleyen listesi eski girişlere yeni puan yazdırırdı.
+ * shortcut: UPDATE ile ödül arasında ölen istek puanı kaybeder (onaran cron yok); ölçülürse
+ * girişten sonraki birkaç dakikayla sınırlı bir onarım eklenir.
  */
 export async function girisYap(
   e: Etkinlik,
@@ -336,7 +363,7 @@ export async function girisYap(
 ): Promise<GirisSonucu> {
   const simdi = new Date();
   const kayit = and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, userId));
-  const [yazilan] = girisPenceresinde(e, simdi)
+  const [yazilan] = girisPenceresinde(e, simdi) && (await etkinlikAcikMi(e))
     ? await db
         .update(schema.eventRsvps)
         .set({ checkedInAt: simdi, checkinMethod: yontem, checkedInBy: gorevliId })
@@ -346,8 +373,8 @@ export async function girisYap(
   const rsvp = yazilan ?? (await db.query.eventRsvps.findFirst({ where: kayit }));
   if (!rsvp) return { durum: "yok" };
   if (!rsvp.checkedInAt) return { durum: "pencere" };
-  const puan = await girisOdulleri(e, rsvp);
-  return yazilan ? { durum: "geldi", rsvp, puan } : { durum: "zaten", rsvp };
+  if (!yazilan) return { durum: "zaten", rsvp };
+  return { durum: "geldi", rsvp, puan: await girisOdulleri(e, yazilan) };
 }
 
 /** Görevli son 60 sn'de sınırı doldurdu mu? (fren; okutma sayımı checked_in_by üzerinden) */
@@ -361,7 +388,7 @@ export async function gorevliHizAsildi(gorevliId: number): Promise<boolean> {
         gte(schema.eventRsvps.checkedInAt, new Date(Date.now() - 60_000)),
       ),
     );
-  return Number(r?.n ?? 0) >= GOREVLI_DAKIKADA;
+  return gorevliHizAsildiMi(Number(r?.n ?? 0));
 }
 
 export type BiletSonucu =
@@ -441,7 +468,12 @@ export async function donenGiris(
 
 /* ---------------- Etkinlik sonrası: düzenleyen payı, değerlendirme (F3-06) ---------------- */
 
-/** Doğrulanmış katılımcı sayısı — düzenleyenlerin kendi girişi sayılmaz (kendine puan yok) */
+/**
+ * Düzenleyen payına sayılan katılımcılar: bilet ya da dönen QR ile gelenler. Düzenleyenlerin
+ * kendi girişi sayılmaz (kendine puan yok). ELLE girişler de sayılmaz: payın sahibi olan
+ * düzenleyen, kayıtlı ama gelmeyenleri tek tıkla "geldi" yapıp kendi payını şişirebiliyordu
+ * (katılımcının +10'u kalır; elle giriş telefonu olmayan gerçek katılımcı içindir).
+ */
 async function girisSayisi(eventId: number, hostlar: number[]): Promise<number> {
   const [r] = await db
     .select({ n: sql<number>`count(*)` })
@@ -450,6 +482,7 @@ async function girisSayisi(eventId: number, hostlar: number[]): Promise<number> 
       and(
         eq(schema.eventRsvps.eventId, eventId),
         isNotNull(schema.eventRsvps.checkedInAt),
+        sql`${schema.eventRsvps.checkinMethod} is distinct from 'manual'`,
         hostlar.length ? notInArray(schema.eventRsvps.userId, hostlar) : undefined,
       ),
     );
@@ -537,6 +570,9 @@ export async function etkinlikSonrasiIsle(
       and(
         sql`${bitis} <= ${once(PUAN.eventHostedDelayHours * 3600e3)}::timestamp`,
         sql`${bitis} >= ${once((GERIYE_BAKIS_GUN + PUAN.eventRatingDays) * GUN)}::timestamp`,
+        // Onay bekleyen topluluğun etkinliği pay üretmez; kilit alınmadığı için onay
+        // geriye bakış süresi içinde gelirse dağıtım yine yapılır
+        etkinlikGorunurSql,
         opts.yalniz ? inArray(schema.events.id, opts.yalniz.length ? opts.yalniz : [0]) : undefined,
       ),
     );
@@ -585,7 +621,7 @@ export async function etkinligiDegerlendir(
   yorum: string | null,
 ): Promise<DegerlendirmeSonucu> {
   if (!Number.isInteger(yildiz) || yildiz < 1 || yildiz > 5) return "gecersiz";
-  if (!degerlendirmeAcikMi(e)) return "pencere";
+  if (!degerlendirmeAcikMi(e) || !(await etkinlikAcikMi(e))) return "pencere";
   const [rsvp, hostlar] = await Promise.all([
     db.query.eventRsvps.findFirst({
       where: and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, userId)),

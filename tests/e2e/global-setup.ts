@@ -25,10 +25,18 @@ export default async function globalSetup() {
   // (idempotent; yalnız seed'in açtığı demo etkinlik). Üyenin DB satırı ilk SSR isteğinde açılır —
   // henüz yoksa satır yazılmaz ve spec kendini atlar. Dev = canlı DB: yalnız demo veriye dokunur.
   if (process.env.POSTGRES_URL) {
-    await neon(process.env.POSTGRES_URL)`
+    const sql = neon(process.env.POSTGRES_URL);
+    await sql`
       insert into event_staff (event_id, user_id, role)
       select e.id, u.id, 'scanner' from events e, users u
       where e.slug = 'go-okuma-maratonu-demo' and u.clerk_id = ${clerkId}
       on conflict do nothing`;
+    // Ön koşul gerçekten sağlandıysa bayrak: spec'ler bayrak VARKEN giriş ekranını sert doğrular
+    // (regresyon skip'e düşmesin); yalnız ilk koşumda (üye satırı henüz yokken) atlar.
+    const [hazir] = await sql`
+      select 1 from event_staff s join events e on e.id = s.event_id join users u on u.id = s.user_id
+      where e.slug = 'go-okuma-maratonu-demo' and u.clerk_id = ${clerkId}
+        and coalesce(e.ends_at, e.starts_at + interval '2 hours') > now() at time zone 'utc'`;
+    if (hazir) process.env.E2E_GOREVLI = "1";
   }
 }

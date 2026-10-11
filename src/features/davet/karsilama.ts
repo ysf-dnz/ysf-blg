@@ -9,14 +9,14 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { davetCereziKur, davetCoz, kisaHash, kodNormalize } from "@/lib/davet.ts";
 import { R } from "@/lib/routes.ts";
+import { belgeGezintisiMi } from "@/lib/urls.ts";
 
 export const DAKIKADA_ISTEK = 60;
 
 export async function karsila(Astro: AstroGlobal, kanal: "qr" | "link"): Promise<Response> {
   // Yalnız üst düzey gezinme: <img src="/d/KOD"> gibi alt-kaynak istekleri çerezleri EZEMEZ
   // (atıf hırsızlığı) ve ziyaret sayılmaz. Başlığı olmayan eski tarayıcılar geçer.
-  const dest = Astro.request.headers.get("sec-fetch-dest");
-  if (dest && dest !== "document") return new Response(null, { status: 204 });
+  if (!belgeGezintisiMi(Astro.request)) return new Response(null, { status: 204 });
   const hedef = await davetCoz(Astro.params.kod ?? "");
   if (!hedef) {
     // Kod tanınıyor ama hedefi geçersizse (biten etkinlik, yayından kalkan kurs) türüne göre liste

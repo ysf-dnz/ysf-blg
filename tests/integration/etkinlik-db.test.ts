@@ -24,6 +24,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
   let db: Db["db"], schema: Db["schema"], ev: Ev, rw: Rw, dv: Dv;
   const uyeler: number[] = [];
   const etkinlikler: number[] = [];
+  const kulupler: number[] = [];
   const t = Date.now().toString(36);
 
   async function uye(ad: string, gunOnce = 2) {
@@ -83,6 +84,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
         .where(and(inArray(schema.cronRuns.job, ["etkinlik-host", "etkinlik-degerlendirme"]), inArray(schema.cronRuns.periodKey, etkinlikler.map(String))));
       await db.delete(schema.events).where(inArray(schema.events.id, etkinlikler));
     }
+    if (kulupler.length) await db.delete(schema.clubs).where(inArray(schema.clubs.id, kulupler));
     if (uyeler.length === 0) return;
     for (const tbl of [schema.pendingPoints, schema.notifications, schema.badges, schema.bookAccess, schema.pointsLedger])
       await db.delete(tbl).where(inArray(tbl.userId, uyeler));
@@ -140,7 +142,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect(satir?.priority).toBe(true);
   });
 
-  it("görevliler: açan + en çok 3 ortak düzenleyen; görevli (scanner) sınırsız; açan çıkarılamaz", async () => {
+  it("görevliler: açan + en çok 3 ortak düzenleyen; görevli (scanner) bu sınıra girmez; açan çıkarılamaz", async () => {
     const acan = await uye("gor-acan");
     const e = await etkinlik(acan.id);
     const ortaklar = await Promise.all(Array.from({ length: 4 }, (_, i) => uye(`gor-h${i}`)));
@@ -411,6 +413,98 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     await ev.gorevliEkle(e, gorevli.id, "scanner");
     expect(await ev.biletGiris(token.toLowerCase(), gorevli, e.id)).toMatchObject({ durum: "geldi", ad: k.name });
     expect((await kayit(e.id, k.id))?.checkedInBy).toBe(gorevli.id);
+  });
+
+  /* ---------------- Faz 3 incelemesi: ödül zinciri kapıları ---------------- */
+
+  it("onay bekleyen topluluğun etkinliği ödül zincirine KAPALI: kayıt, giriş, değerlendirme ve düzenleyen payı işlemez; onay gelince açılır", async () => {
+    const baskan = await uye("gz-baskan");
+    const [kulup] = await db
+      .insert(schema.clubs)
+      .values({ slug: `itest-ev-kulup-${t}`, name: "Itest Onaysız Kulüp", kind: "sehir", place: "x", il: "Ankara", presidentId: baskan.id })
+      .returning();
+    kulupler.push(kulup!.id);
+    expect(kulup!.status).toBe("pending");
+    const e = await etkinlik(baskan.id, { clubId: kulup!.id });
+    const kukla = await uye("gz-kukla");
+    await ev.gorevliEkle(e, kukla.id, "scanner"); // görevli de olsa kaydolamaz
+    expect(await ev.etkinlikAcikMi(e)).toBe(false);
+    expect((await ev.kayitOl(kukla, e)).durum).toBe("kapali");
+    // Kayıt bir şekilde var olsa bile (eski veri) giriş ve ödül yazılmaz
+    await db.insert(schema.eventRsvps).values({ eventId: e.id, userId: kukla.id });
+    expect((await ev.girisYap(e, kukla.id, "manual", kukla.id)).durum).toBe("pencere");
+    expect((await kayit(e.id, kukla.id))?.checkedInAt).toBeNull();
+    expect(await ledger(kukla.id, "event_attended", String(e.id))).toHaveLength(0);
+    const { donenPencere, donenToken } = await import("@/lib/etkinlik-kural.ts");
+    expect((await ev.donenGiris(e, await uye("gz-kapida"), donenToken(e.id, donenPencere()))).durum).toBe("kapali");
+
+    // Bitmiş + girişli gizli etkinlik: cron pay dağıtmaz ve tek-atış kilidi TÜKETMEZ
+    const eski = await etkinlik(baskan.id, { clubId: kulup!.id, baslangic: -52, bitis: -50 });
+    await girisliKayit(eski.id, [kukla.id], new Date(Date.now() - 51 * SAAT));
+    expect(await ev.etkinligiDegerlendir(eski, kukla.id, 5, null)).toBe("pencere");
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: [eski.id] })).toEqual({ host: 0, iyiDegerlendirme: 0, hata: 0 });
+    expect(await pay(baskan.id, "event_hosted", eski.id)).toEqual([]);
+    // Admin onaylayınca (geriye bakış süresi içinde) dağıtım yapılır
+    await db.update(schema.clubs).set({ status: "approved" }).where(eq(schema.clubs.id, kulup!.id));
+    expect(await ev.etkinlikAcikMi(e)).toBe(true);
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: [eski.id] })).toMatchObject({ host: 1 });
+    expect(await pay(baskan.id, "event_hosted", eski.id)).toEqual([5]);
+  });
+
+  it("ödül zinciri YALNIZ girişi yazan istekte koşar: 'zaten' okutma eksik/kırpılmış ödülü sonradan yazmaz", async () => {
+    const acan = await uye("zt-acan");
+    const e = await etkinlik(acan.id);
+    const eden = await uye("zt-eden");
+    await ev.kayitOl(eden, e);
+    const kod = await dv.davetKoduUret(eden.id, e.id, "event");
+    const davetli = await uye("zt-davetli");
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    const ref = `event:${e.id}:u:${davetli.id}`;
+    // Davet edenin haftalık davet tavanı DOLU → girişte 0 yazılır, bekleyen "kırpıldı" olarak kapanır
+    await rw.awardPoints({ userId: eden.id, delta: 300, reason: "referral_joined", refId: `itest-tavan:${t}` });
+    expect(await ev.girisYap(e, davetli.id, "ticket", acan.id)).toMatchObject({ durum: "geldi", puan: 15 });
+    expect(await ledger(eden.id, "event_invite_attended", ref)).toHaveLength(0);
+    expect(await bekleyen(eden.id, ref)).toMatchObject({ status: "confirmed", yazilan: 0 });
+    // Tavan penceresi boşalsa da (dolduran satır silinir) yeniden okutma ödemeyi tetiklemez
+    await db.delete(schema.pointsLedger).where(and(eq(schema.pointsLedger.userId, eden.id), eq(schema.pointsLedger.reason, "referral_joined")));
+    expect((await ev.girisYap(e, davetli.id, "ticket", acan.id)).durum).toBe("zaten");
+    expect((await ev.girisYap(e, davetli.id, "manual", acan.id)).durum).toBe("zaten");
+    expect(await ledger(eden.id, "event_invite_attended", ref)).toHaveLength(0);
+    expect((await ledger(davetli.id, "event_attended", String(e.id))).map((l) => l.delta)).toEqual([10]);
+  });
+
+  it("elle girişler düzenleyen payına sayılmaz (düzenleyen gelmeyenleri işaretleyip payını şişiremez); katılımcının +10'u kalır", async () => {
+    const acan = await uye("el-acan");
+    const e = await etkinlik(acan.id);
+    const [a, b, c, d, f] = await topluUye(5, "el");
+    for (const id of [a!, b!, c!, d!, f!]) await db.insert(schema.eventRsvps).values({ eventId: e.id, userId: id });
+    const { biletToken } = await import("@/lib/etkinlik-kural.ts");
+    for (const id of [a!, b!]) expect((await ev.biletGiris(biletToken((await kayit(e.id, id))!.id), acan, e.id)).durum).toBe("geldi");
+    for (const id of [c!, d!, f!]) expect(await ev.girisYap(e, id, "manual", acan.id)).toMatchObject({ durum: "geldi", puan: 10 });
+    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 2, toplam: 10 });
+    expect((await ev.hostBekleyenleri(acan.id)).find((h) => h.etkinlik.id === e.id)).toMatchObject({ tahmini: 10, katilimci: 2 });
+  });
+
+  it("etkinlikler arası tavan: katılım kayan 7 günde 70; düzenleyen puanları (pay + iyi değerlendirme) ortak 1000", async () => {
+    const k = await uye("tv-kat");
+    const yazilanlar = [];
+    for (let i = 0; i < 9; i++) yazilanlar.push(await rw.awardPoints({ userId: k.id, delta: 10, reason: "event_attended", refId: `itest-tv-${t}-${i}` }));
+    expect(yazilanlar).toEqual([10, 10, 10, 10, 10, 10, 10, 0, 0]);
+    const h = await uye("tv-host");
+    expect(await rw.awardPoints({ userId: h.id, delta: 500, reason: "event_hosted", refId: `event:itest-${t}-1` })).toBe(500);
+    expect(await rw.awardPoints({ userId: h.id, delta: 50, reason: "event_well_rated", refId: `event:itest-${t}-1` })).toBe(50);
+    expect(await rw.awardPoints({ userId: h.id, delta: 500, reason: "event_hosted", refId: `event:itest-${t}-2` })).toBe(450); // 1000'e kırpıldı
+    expect(await rw.awardPoints({ userId: h.id, delta: 50, reason: "event_well_rated", refId: `event:itest-${t}-2` })).toBe(0);
+  });
+
+  it("görevli sınırı: etkinlik başına en çok 20 görevli (açan dahil)", async () => {
+    const acan = await uye("gs-acan");
+    const e = await etkinlik(acan.id);
+    const adaylar = await topluUye(21, "gs");
+    const eklenen = [];
+    for (const id of adaylar) eklenen.push(await ev.gorevliEkle(e, id, "scanner"));
+    expect(eklenen.filter(Boolean)).toHaveLength(19); // açan + 19 = 20
+    expect(eklenen.slice(19)).toEqual([false, false]);
   });
 
   /* ---------------- F3-05: dönen QR ---------------- */

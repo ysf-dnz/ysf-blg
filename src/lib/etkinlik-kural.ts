@@ -102,9 +102,12 @@ const tarihBicimi = new Intl.DateTimeFormat("tr-TR", {
 const saatBicimi = new Intl.DateTimeFormat("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
 export const trTarih = (d: Date): string => tarihBicimi.format(d);
 export const trSaat = (d: Date): string => saatBicimi.format(d);
-/** "12 Ekim 2026 Pazartesi · 19:00–21:00" */
+/** "12 Ekim 2026 Pazartesi · 19:00–21:00"; başka güne taşıyorsa bitiş tarihiyle birlikte */
 export function trAralik(e: EtkinlikZamani): string {
-  return `${trTarih(e.startsAt)} · ${trSaat(e.startsAt)}–${trSaat(etkinlikBitis(e))}`;
+  const bitis = etkinlikBitis(e);
+  return trTarih(e.startsAt) === trTarih(bitis)
+    ? `${trTarih(e.startsAt)} · ${trSaat(e.startsAt)}–${trSaat(bitis)}`
+    : `${trTarih(e.startsAt)} ${trSaat(e.startsAt)} – ${trTarih(bitis)} ${trSaat(bitis)}`;
 }
 
 /* ---------------- İmzalar: bilet ve dönen QR (ADR K6) ---------------- */

@@ -89,9 +89,12 @@ test.describe("etkinlik akışı — üye", () => {
   });
 
   test("F3-04 (AC-16, AC-18): görevli tarayıcısı — tekrar okutma 'Zaten geldi (saat)'; çevrimdışı okutma kuyruğa girer, bağlantı gelince bir kez işlenir", async ({ page, context }) => {
-    const r = await page.goto(`${MARATON}/giris`, { waitUntil: "domcontentloaded" });
-    test.skip(r?.status() === 404, "test üyesi demo etkinlikte görevli değil ya da seed eski (npm run seed:demo, sonra yeniden koş)");
+    // Ön koşul (global-setup: test üyesi demo maratonda görevli, maraton bitmemiş) yoksa atla;
+    // VARSA sert doğrula — giriş ekranı regresyonu skip'e düşmesin.
+    test.skip(!process.env.E2E_GOREVLI, "ön koşul yok: test üyesinin DB satırı henüz açılmamış ya da demo maraton bitmiş (npm run seed:demo, sonra yeniden koş)");
     test.skip(!process.env.CRON_SECRET, "CRON_SECRET yok — bilet imzası üretilemez");
+    const r = await page.goto(`${MARATON}/giris`, { waitUntil: "domcontentloaded" });
+    expect(r?.status()).toBe(200);
     await expect(page.locator('[data-giris][data-init="1"]')).toBeAttached(); // tarayıcı betiği bağlandı
     await expect(page.getByText(/giriş açık/)).toBeVisible();
     const sonuc = page.locator("[data-sonuc-baslik]");
@@ -134,10 +137,10 @@ test.describe("etkinlik akışı — üye", () => {
     await expect(kuyruk).toHaveText(/bekleyen bilet: 1$/);
     await okut(biletToken(rsvp));
     await expect(kuyruk).toHaveText(/bekleyen bilet: 1$/);
-    // Bağlantı gelince kuyruk kendiliğinden boşalır ve sonuç görünür
+    // Bağlantı gelince kuyruk kendiliğinden, SESSİZCE boşalır (canlı okutmanın sonucunu ezmez) ve özet verir
     await context.setOffline(false);
-    await expect(kuyruk).toHaveText("", { timeout: 20_000 });
-    await expect(sonuc).toHaveText(/^(✓ .+|Zaten geldi \(\d{2}:\d{2}\))$/);
+    await expect(kuyruk).toHaveText(/^✓ Kuyruktaki 1 bilet gönderildi \((0|1) yeni giriş\)$/, { timeout: 20_000 });
+    await expect(sonuc).toHaveText("Kuyruk gönderildi");
     // Sayfa yenilenince de kuyruk boş (localStorage'dan düştü) ve katılımcı listede "geldi"
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-giris][data-init="1"]')).toBeAttached();
@@ -172,9 +175,10 @@ test.describe("etkinlik akışı — üye", () => {
     await page.goto("/uye/biletler", { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-bilet]", { hasText: "Go Okuma Maratonu" }).getByText(/Girişin doğrulandı ✓/)).toBeVisible();
 
-    // Ekran: test üyesi maratonda görevli (global-setup); QR görseli SVG ve önbelleksiz
-    const ekran = await page.goto(`${MARATON}/ekran`, { waitUntil: "domcontentloaded" });
-    if (ekran?.status() === 200) {
+    // Ekran: test üyesi maratonda görevli (global-setup bayrağı) → sert doğrula; QR görseli SVG ve önbelleksiz
+    if (process.env.E2E_GOREVLI) {
+      const ekran = await page.goto(`${MARATON}/ekran`, { waitUntil: "domcontentloaded" });
+      expect(ekran?.status()).toBe(200);
       await expect(page.locator("[data-ekran-qr]")).toBeVisible();
       const svg = await page.request.get(`/api/uye/etkinlik-qr?e=${id}`);
       expect(svg.status()).toBe(200);
@@ -191,7 +195,10 @@ test.describe("etkinlik akışı — üye", () => {
   test("F3-06: girişi doğrulanan üye etkinliği değerlendirir (tek satır, güncellenir); gelmediği etkinlikte form yok; CSV yalnız düzenleyene", async ({ page }) => {
     await page.goto(MARATON, { waitUntil: "domcontentloaded" });
     const form = page.locator("#degerlendir");
-    test.skip((await form.count()) === 0, "test üyesinin girişi doğrulanmamış (dönen QR testi atlanmış) ya da maraton bitmiş");
+    // Ön koşul: bir önceki test (dönen QR) girişi doğruladı. Yoksa atla; varsa form GÖRÜNMELİ.
+    const girisli = await page.locator("[data-kayit-kutusu]").getByText(/Girişin doğrulandı/).count();
+    test.skip(!girisli, "test üyesinin girişi doğrulanmamış (dönen QR testi atlanmış) ya da maraton bitmiş");
+    await expect(form).toBeVisible();
     await form.locator('input[name="stars"][value="5"]').check();
     await form.locator('input[name="body"]').fill("e2e: çok verimliydi");
     await form.getByRole("button", { name: /Gönder|Güncelle/ }).click();

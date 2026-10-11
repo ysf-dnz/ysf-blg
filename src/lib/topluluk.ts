@@ -20,7 +20,8 @@ export const kulupTuruMu = (s: string): s is KulupTuru => Object.hasOwn(KULUP_TU
 /** Bilinmeyen (beyaz liste öncesi yazılmış) değerde ham metne düşer */
 export const turEtiketi = (s: string): string => (KULUP_TUR as Record<string, string>)[s] ?? s;
 
-const normalize = (s: string) => s.trim().toLocaleLowerCase("tr");
+// Türkçe küçültme + ı→i katlama: "Istanbul"/"IZMIR" (ASCII klavye) de "İstanbul"/"İzmir" ile eşleşir
+const normalize = (s: string) => s.trim().toLocaleLowerCase("tr").replace(/ı/g, "i");
 /** 81 il, Türkçe alfabetik (JSON plaka sırasında) */
 export const ILLER: string[] = Object.keys(iller).sort((a, b) => a.localeCompare(b, "tr"));
 const IL_HARITA = new Map(ILLER.map((il) => [normalize(il), il]));
