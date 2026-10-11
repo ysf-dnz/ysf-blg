@@ -68,6 +68,8 @@ export default defineConfig({
     // harf DUYARSIZ eşleştirir (/d/kod da buraya düşer) → hedef, kaynağın küçük harfli hâliyle
     // ASLA aynı yol olmamalı ("/T/[x]" → "/t/[x]" canlıda sonsuz döngü); kanal davetKanali'nden.
     "/D/[kod]": { status: 301, destination: "/d/q/[kod]" },
+    // Bilet QR'ı (Faz 3): HTTPS://HOST/T/{rsvpId}.{imza}
+    "/T/[token]": { status: 301, destination: "/t/q/[token]" },
   },
   i18n: {
     defaultLocale: "tr",

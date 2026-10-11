@@ -91,6 +91,22 @@ if (existsSync(vercelConfig)) {
     console.error("✗ REDIRECT: /dersler → /kurslar 301 rotası adapter çıktısında yok");
     hata++;
   }
+  // Büyük harf QR yolları (/D davet, /T bilet, /C dönen QR). Vercel kenarı deseni harf DUYARSIZ
+  // eşleştirir: hedef, kaynağın küçük harfli hâliyle aynı desene uyarsa canlıda sonsuz 301 döngüsü.
+  for (const [onek, hedefOnek] of [["D", "/d/q/"], ["T", "/t/q/"]]) {
+    const r = routes.find((x) => x.status === 301 && typeof x.src === "string" && x.src.startsWith(`^/${onek}`));
+    const hedef = r?.headers?.Location ?? "";
+    if (!r || !hedef.startsWith(hedefOnek)) {
+      console.error(`✗ REDIRECT: /${onek}/… → ${hedefOnek}… 301 rotası adapter çıktısında yok (bulunan hedef: ${hedef || "—"})`);
+      hata++;
+    } else if (new RegExp(r.src, "i").test(hedef.replace(/\$\d/g, "x"))) {
+      console.error(`✗ REDIRECT: /${onek}/… hedefi (${hedef}) kendi desenine uyuyor → canlıda sonsuz yönlendirme döngüsü`);
+      hata++;
+    } else if (hedef.includes("[")) {
+      console.error(`✗ REDIRECT: /${onek}/… hedefi çözülmemiş parametre taşıyor (${hedef}) — hedef sayfa dosyası yok`);
+      hata++;
+    }
+  }
 }
 
 const fonksiyonlar = existsSync(".vercel/output/functions")

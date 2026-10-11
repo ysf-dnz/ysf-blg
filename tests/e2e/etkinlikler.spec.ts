@@ -61,6 +61,16 @@ test.describe("etkinlik sayfası — misafir (F3-02)", () => {
     for (const yol of [YAKLASAN, MARATON, BITMIS]) expect(xml).toContain(`${yol}</loc>`);
   });
 
+  test("F3-04: misafir giriş ekranını ve bilet doğrulamasını göremez; imzasız bilet 404", async ({ request }) => {
+    expect((await request.get(`${YAKLASAN}/giris`)).status()).toBe(404);
+    expect((await request.get("/t/q/1.AAAAAAAAAAAAAAAA")).status()).toBe(404);
+    expect((await request.get("/t/q/bozuk")).status()).toBe(404);
+    // /T/ büyük harf QR yolu her zaman /t/q/'ya iner (aynı yola 301 canlıda sonsuz döngü olurdu)
+    const r = await request.get("/T/1.AAAAAAAAAAAAAAAA", { maxRedirects: 0 });
+    expect(r.status()).toBe(301);
+    expect(r.headers()["location"]).toBe("/t/q/1.AAAAAAAAAAAAAAAA");
+  });
+
   test("375px'te yatay taşma yok", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });

@@ -1,5 +1,5 @@
 /**
- * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), görevli yönet.
+ * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), görevli yönet, elle giriş.
  * Aksiyonlar AÇIK dallardır: bilinmeyen aksiyon 400 (eskiden her şey oluşturmaya düşüyordu).
  */
 import type { APIRoute } from "astro";
@@ -8,8 +8,11 @@ import { db, schema } from "@/db/client.ts";
 import {
   etkinlikGorunurMu,
   gorevliEkle,
+  gorevliHizAsildi,
   gorevliSil,
+  girisYap,
   kayitOl,
+  okutabilirMi,
   slugGaranti,
   slugUret,
   yonetebilirMi,
@@ -17,8 +20,6 @@ import {
 import { ETKINLIK_TURLERI, etkinlikBitis, trTarihOku, type EtkinlikTuru } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { canManage, clubRoleOf } from "@/lib/permissions.ts";
-import { PUAN } from "@/lib/points.ts";
-import { awardPoints } from "@/lib/rewards.ts";
 import { R } from "@/lib/routes.ts";
 import { ilBul } from "@/lib/topluluk.ts";
 
@@ -86,21 +87,15 @@ export const POST: APIRoute = async (context) => {
   const eventId = Number(form.get("eventId") ?? 0);
   const e = eventId ? await db.query.events.findFirst({ where: eq(schema.events.id, eventId) }) : undefined;
   if (!e) return new Response("Etkinlik bulunamadı", { status: 404 });
-  const sayfa = R.etkinlik(await slugGaranti(e));
+  const slug = await slugGaranti(e);
+  const sayfa = R.etkinlik(slug);
 
   if (action === "rsvp") {
     const kulup = e.clubId ? await db.query.clubs.findFirst({ where: eq(schema.clubs.id, e.clubId) }) : null;
     if (!etkinlikGorunurMu(e, kulup) && !(await yonetebilirMi(e, member)))
       return new Response("Etkinlik bulunamadı", { status: 404 });
+    // Kayıt PUAN ÜRETMEZ (AC-15): event_attended yalnız doğrulanmış girişte yazılır
     const k = await kayitOl(member, e, { oncelik: form.get("priority") === "1", cookies: context.cookies });
-    if (k.durum === "yeni") {
-      await awardPoints({
-        userId: member.id,
-        delta: PUAN.eventAttended,
-        reason: "event_attended",
-        refId: String(e.id),
-      });
-    }
     const p = new URLSearchParams({ sonuc: k.durum });
     if (k.davetli) p.set("davet", "1");
     if (form.get("priority") === "1" && k.durum === "yeni" && !k.oncelikli) p.set("oncelik", "yok");
@@ -132,6 +127,15 @@ export const POST: APIRoute = async (context) => {
       });
     }
     return context.redirect(`${sayfa}?gorevli=${eklendi ? "eklendi" : "olmadi"}#yonetim`);
+  }
+
+  // Elle giriş: telefonu/bileti olmayan kayıtlı katılımcıyı görevli listeden işaretler
+  if (action === "checkin-manual") {
+    if (!(await okutabilirMi(e, member))) return new Response("Yetkisiz", { status: 403 });
+    const donus = R.etkinlikGiris(slug);
+    if (await gorevliHizAsildi(member.id)) return context.redirect(`${donus}?elle=hiz#liste`);
+    const s = await girisYap(e, Number(form.get("userId") ?? 0), "manual", member.id);
+    return context.redirect(`${donus}?elle=${s.durum}#liste`);
   }
 
   return new Response("Bilinmeyen işlem", { status: 400 });

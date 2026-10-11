@@ -261,9 +261,14 @@ const oncelikYok = q.get("oncelik") === "yok";
 
         <div class="mt-4">
           {kaydim ? (
-            <p class="rounded-full bg-accent-soft px-4 py-2 text-center text-sm font-medium text-accent">
-              Kayıtlısın ✓{kaydim.priority && " ⭐"}
-            </p>
+            <>
+              <p class="rounded-full bg-accent-soft px-4 py-2 text-center text-sm font-medium text-accent">
+                {kaydim.checkedInAt ? `Girişin doğrulandı ✓ (${trSaat(kaydim.checkedInAt)})` : "Kayıtlısın ✓"}{kaydim.priority && " ⭐"}
+              </p>
+              {!kaydim.checkedInAt && !bitti && (
+                <a href={`${R.uye.biletler}#bilet-${kaydim.id}`} class="mt-2 block rounded-full border border-accent px-4 py-2 text-center text-sm font-medium text-accent hover:bg-accent hover:text-surface">🎟️ Biletimi göster</a>
+              )}
+            </>
           ) : bitti ? (
             <p class="text-sm text-ink-muted">Etkinlik sona erdi.</p>
           ) : !kayitAcik ? (
@@ -295,6 +300,14 @@ const oncelikYok = q.get("oncelik") === "yok";
       </aside>
     </div>
   </header>
+
+  {gorevli && !bitti && (
+    <p class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface-raised px-4 py-3 text-sm" data-gorevli-cubugu>
+      <span class="text-ink-muted">Görevlisin:</span>
+      <a href={R.etkinlikGiris(slug)} class="rounded-full bg-accent px-4 py-1.5 font-medium text-surface">🎟️ Giriş ekranı (bilet okut)</a>
+      <span class="text-ink-muted">{sayi.giris} / {sayi.kayit} geldi</span>
+    </p>
+  )}
 
   {member && katilimcilar.length > 0 && (
     <section class="mt-8">

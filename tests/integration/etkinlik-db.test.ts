@@ -1,6 +1,7 @@
 /**
  * Etkinlik — gerçek DB (Faz 3): kapasite yarışı, kayıt kapanışı, ⭐ koltuk, görevli sınırı;
- * etkinlik daveti atfı, bekleyen ve bitişte düşme (AC-19), düzenleyen davet puanı almaz (AC-20).
+ * etkinlik daveti atfı, bekleyen ve bitişte düşme (AC-19), düzenleyen davet puanı almaz (AC-20);
+ * giriş doğrulaması: RSVP puansız (AC-15), tekrar okutma (AC-16), paralel/çift gönderim (AC-18).
  * Yalnız POSTGRES_URL_TEST ile koşar; kendi geçici üyelerini/etkinliklerini açar ve temizler:
  *   POSTGRES_URL_TEST="$(node --env-file=.env.local -p process.env.POSTGRES_URL)" npx vitest run tests/integration
  */
@@ -257,6 +258,157 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     // Biten etkinliğin kodu artık çözülmez (kart/karşılama üretmez)
     await db.update(schema.events).set({ startsAt: new Date(Date.now() - 5 * SAAT), endsAt: new Date(Date.now() - 3 * SAAT) }).where(eq(schema.events.id, e.id));
     expect(await dv.davetCoz(kod.code)).toBeNull();
+  });
+
+  /* ---------------- F3-04: giriş doğrulaması ---------------- */
+
+  const kayit = (eventId: number, userId: number) =>
+    db.query.eventRsvps.findFirst({ where: and(eq(schema.eventRsvps.eventId, eventId), eq(schema.eventRsvps.userId, userId)) });
+
+  it("AC-15/AC-16: kayıt puan üretmez; giriş +10 yazar; tekrar okutma 'zaten', yeni puan yok", async () => {
+    const acan = await uye("g-acan");
+    const e = await etkinlik(acan.id); // pencerede (1 saat önce başladı)
+    const k = await uye("g-kat");
+    expect((await ev.kayitOl(k, e)).durum).toBe("yeni");
+    expect(await ledger(k.id, "event_attended", String(e.id))).toHaveLength(0); // AC-15
+    const g1 = await ev.girisYap(e, k.id, "ticket", acan.id);
+    expect(g1).toMatchObject({ durum: "geldi", puan: 10 });
+    const g2 = await ev.girisYap(e, k.id, "ticket", acan.id);
+    expect(g2.durum).toBe("zaten"); // AC-16
+    expect((await ledger(k.id, "event_attended", String(e.id))).map((l) => l.delta)).toEqual([10]);
+    const r = await kayit(e.id, k.id);
+    expect(r).toMatchObject({ checkinMethod: "ticket", checkedInBy: acan.id });
+    expect(g2.durum === "zaten" && g2.rsvp.checkedInAt?.getTime()).toBe(r!.checkedInAt!.getTime());
+    // Kaydı olmayan üye
+    expect((await ev.girisYap(e, (await uye("g-kayitsiz")).id, "ticket", acan.id)).durum).toBe("yok");
+  });
+
+  it("AC-18: aynı bilet 30 kez paralel gönderilir → TEK 'geldi', 29 'zaten', ledger'da tek satır", async () => {
+    const acan = await uye("p-acan");
+    const e = await etkinlik(acan.id);
+    const k = await uye("p-kat");
+    const { rsvp } = await ev.kayitOl(k, e);
+    const { biletToken } = await import("@/lib/etkinlik-kural.ts");
+    const token = biletToken(rsvp!.id);
+    const sonuclar = await Promise.all(Array.from({ length: 30 }, () => ev.biletGiris(token, acan, e.id)));
+    expect(sonuclar.filter((s) => s.durum === "geldi")).toHaveLength(1);
+    expect(sonuclar.filter((s) => s.durum === "zaten")).toHaveLength(29);
+    expect(await ledger(k.id, "event_attended", String(e.id))).toHaveLength(1);
+    expect(sonuclar.find((s) => s.durum === "geldi")).toMatchObject({ ad: k.name, etkinlik: e.title });
+  });
+
+  it("eski RSVP ödülünü almış üye girişte ikinci +10'u alamaz (event_attended refId String(eventId) AYNEN)", async () => {
+    const acan = await uye("eski-acan");
+    const e = await etkinlik(acan.id);
+    const k = await uye("eski-kat");
+    await ev.kayitOl(k, e);
+    // Faz 3 öncesi kod RSVP anında yazıyordu:
+    await rw.awardPoints({ userId: k.id, delta: 10, reason: "event_attended", refId: String(e.id) });
+    expect(await ev.girisYap(e, k.id, "ticket", acan.id)).toMatchObject({ durum: "geldi", puan: 0 });
+    expect(await ledger(k.id, "event_attended", String(e.id))).toHaveLength(1);
+  });
+
+  it("davetli girişi: davetliye +5 anında, davet edene +10 ve bekleyeni kesinleşir (tekrarında çift yazım yok)", async () => {
+    const acan = await uye("dg-acan");
+    const e = await etkinlik(acan.id);
+    const eden = await uye("dg-eden");
+    await ev.kayitOl(eden, e);
+    const kod = await dv.davetKoduUret(eden.id, e.id, "event");
+    const davetli = await uye("dg-davetli"); // 2 günlük hesap
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    const ref = `event:${e.id}:u:${davetli.id}`;
+    expect(await ev.girisYap(e, davetli.id, "ticket", acan.id)).toMatchObject({ durum: "geldi", puan: 15 });
+    expect((await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).map((l) => l.delta)).toEqual([5]);
+    expect((await ledger(eden.id, "event_invite_attended", ref)).map((l) => l.delta)).toEqual([10]);
+    expect(await bekleyen(eden.id, ref)).toMatchObject({ status: "confirmed", yazilan: 10 });
+    // Tekrar okutma (çevrimdışı kuyruk yeniden gönderdi): hiçbir şey çiftlenmez
+    await ev.girisYap(e, davetli.id, "ticket", acan.id);
+    expect(await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).toHaveLength(1);
+    expect(await ledger(eden.id, "event_invite_attended", ref)).toHaveLength(1);
+    // Kesinleşen bekleyen bitişte "düşmüş" sayılmaz
+    expect((await rw.bekleyenleriIsle(new Date(e.endsAt!.getTime() + 1000), eden.id)).dusen).toBe(0);
+  });
+
+  it("genç davetli (hesap < 24 s): davet edenin puanı ledger'a DEĞİL bekleyene (matures_at); olgunlaşınca kesinleşir", async () => {
+    const acan = await uye("gn-acan");
+    const e = await etkinlik(acan.id);
+    const eden = await uye("gn-eden");
+    await ev.kayitOl(eden, e);
+    const kod = await dv.davetKoduUret(eden.id, e.id, "event");
+    const davetli = await uye("gn-davetli", 0); // kapıda yeni kaydolan
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    const ref = `event:${e.id}:u:${davetli.id}`;
+    // Davetlinin KENDİ puanları anında (ADR K1.4: welcome için bekleyen satır yok)
+    expect(await ev.girisYap(e, davetli.id, "rotating", davetli.id)).toMatchObject({ durum: "geldi", puan: 15 });
+    expect(await ledger(eden.id, "event_invite_attended", ref)).toHaveLength(0);
+    const b = await bekleyen(eden.id, ref);
+    expect(b).toMatchObject({ status: "pending", expiresAt: null });
+    expect(b!.maturesAt!.getTime()).toBe(davetli.createdAt.getTime() + 24 * SAAT);
+    // Bitiş geçse de DÜŞMEZ (olay geldi, yalnız hesap yaşı bekleniyor); olgunlaşınca kesinleşir
+    expect(await rw.bekleyenleriIsle(new Date(e.endsAt!.getTime() + 1000), eden.id)).toMatchObject({ kesinlesen: 0, dusen: 0 });
+    expect((await rw.bekleyenleriIsle(new Date(b!.maturesAt!.getTime() + 1000), eden.id)).kesinlesen).toBe(1);
+    expect((await ledger(eden.id, "event_invite_attended", ref)).map((l) => l.delta)).toEqual([10]);
+  });
+
+  it("AC-20: düzenleyenin davetlisi gelince davetli +15 alır, düzenleyen davet puanı ALMAZ; düzenleyen kendi girişinden puan almaz", async () => {
+    const acan = await uye("h20-acan");
+    const e = await etkinlik(acan.id);
+    const kod = await dv.davetKoduUret(acan.id, e.id, "event");
+    const davetli = await uye("h20-davetli");
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    expect(await ev.girisYap(e, davetli.id, "ticket", acan.id)).toMatchObject({ durum: "geldi", puan: 15 });
+    expect(await ledger(acan.id, "event_invite_attended", `event:${e.id}:u:${davetli.id}`)).toHaveLength(0);
+    expect(await bekleyen(acan.id, `event:${e.id}:u:${davetli.id}`)).toBeUndefined();
+    // Düzenleyen kendi etkinliğine kaydolup giriş yaparsa: giriş yazılır, puan yazılmaz
+    await ev.kayitOl(acan, e);
+    expect(await ev.girisYap(e, acan.id, "manual", acan.id)).toMatchObject({ durum: "geldi", puan: 0 });
+    expect(await ledger(acan.id, "event_attended", String(e.id))).toHaveLength(0);
+  });
+
+  it("giriş penceresi: kapı açılmadan ve bitişten sonra giriş YAZILMAZ (bitişte düşen bekleyen sonradan ödenmesin)", async () => {
+    const acan = await uye("pn-acan");
+    const erken = await etkinlik(acan.id, { baslangic: 5, bitis: 7 });
+    const k1 = await uye("pn-1");
+    await ev.kayitOl(k1, erken);
+    expect((await ev.girisYap(erken, k1.id, "ticket", acan.id)).durum).toBe("pencere");
+    expect((await kayit(erken.id, k1.id))?.checkedInAt).toBeNull();
+
+    // Bitmiş etkinlik: davetli gelmedi → bekleyen düştü → geç okutma ne giriş ne puan yazar
+    const gec = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    const eden = await uye("pn-eden");
+    await ev.kayitOl(eden, gec);
+    const kod = await dv.davetKoduUret(eden.id, gec.id, "event");
+    const k2 = await uye("pn-2");
+    await ev.kayitOl(k2, gec, { cookies: cerez(`event:${gec.id}:${kod.id}`) });
+    const bitmis = { ...gec, startsAt: new Date(Date.now() - 5 * SAAT), endsAt: new Date(Date.now() - 3 * SAAT) };
+    await db.update(schema.events).set({ startsAt: bitmis.startsAt, endsAt: bitmis.endsAt }).where(eq(schema.events.id, gec.id));
+    await db.update(schema.pendingPoints).set({ expiresAt: bitmis.endsAt }).where(eq(schema.pendingPoints.userId, eden.id));
+    await rw.bekleyenleriIsle(new Date(), eden.id);
+    expect((await ev.girisYap(bitmis, k2.id, "ticket", acan.id)).durum).toBe("pencere");
+    expect((await kayit(gec.id, k2.id))?.checkedInAt).toBeNull();
+    expect(await ledger(eden.id, "event_invite_attended", `event:${gec.id}:u:${k2.id}`)).toHaveLength(0);
+    expect(await ledger(k2.id, "event_attended", String(gec.id))).toHaveLength(0);
+  });
+
+  it("bilet: bozuk imza geçersiz; görevli olmayan okutamaz; başka etkinliğin bileti işlenmez; görevli (scanner) okutur", async () => {
+    const acan = await uye("b-acan");
+    const e = await etkinlik(acan.id);
+    const baska = await etkinlik(acan.id);
+    const k = await uye("b-kat");
+    const { rsvp } = await ev.kayitOl(k, e);
+    const { biletToken } = await import("@/lib/etkinlik-kural.ts");
+    const token = biletToken(rsvp!.id);
+    const bozuk = token.slice(0, -1) + (token.endsWith("0") ? "1" : "0");
+    expect((await ev.biletGiris(bozuk, acan)).durum).toBe("gecersiz");
+    expect((await ev.biletGiris("999999999.AAAAAAAAAAAAAAAA", acan)).durum).toBe("gecersiz");
+    expect((await ev.biletGiris(token, await uye("b-yabanci"))).durum).toBe("yetkisiz");
+    expect((await ev.biletGiris(token, k)).durum).toBe("yetkisiz"); // bilet sahibi kendini okutamaz
+    expect(await ev.biletGiris(token, acan, baska.id)).toMatchObject({ durum: "baska", etkinlik: e.title });
+    expect((await kayit(e.id, k.id))?.checkedInAt).toBeNull();
+    const gorevli = await uye("b-gorevli");
+    await ev.gorevliEkle(e, gorevli.id, "scanner");
+    expect(await ev.biletGiris(token.toLowerCase(), gorevli, e.id)).toMatchObject({ durum: "geldi", ad: k.name });
+    expect((await kayit(e.id, k.id))?.checkedInBy).toBe(gorevli.id);
   });
 
   it("slug'sız eski etkinliğe ilk çağrıda slug atanır, ikinci çağrı aynı slug'ı döner", async () => {
