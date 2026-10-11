@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createHmac } from "node:crypto";
 import type { AstroCookies } from "astro";
-import { CROCKFORD, davetCereziOku, davetKanali, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
+import { CROCKFORD, davetCereziOku, davetKanali, kisaHash, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
 
 describe("davet kodu — Crockford Base32", () => {
   it("alfabe I, L, O, U içermez; 32 karakter", () => {
@@ -63,6 +64,16 @@ describe("karşılama çerezi: {course|event}:{hedefId}:{codeId}", () => {
     expect(davetCereziOku(cerez("course:5:9"), 5)).toBe(9);
     expect(davetCereziOku(cerez("event:5:9"), 5)).toBeNull();
     expect(davetCereziOku(undefined, 5)).toBeNull();
+  });
+});
+
+describe("IP/UA takma adı — imzalarla alan ayrımı", () => {
+  it("kisaHash saldırganın seçtiği metinle bilet/dönen QR imzasının HMAC'ini üretemez ('h:' öneki)", () => {
+    const sir = (process.env.CRON_SECRET ??= "test-sirri");
+    const ham = (m: string) => createHmac("sha256", sir).update(m).digest("hex").slice(0, 32);
+    for (const metin of ["t:123", "c:5:57812345"]) expect(kisaHash(metin)).not.toBe(ham(metin));
+    expect(kisaHash("1.2.3.4")).toBe(ham("h:1.2.3.4"));
+    expect(kisaHash("1.2.3.4")).toBe(kisaHash("1.2.3.4")); // hız sınırı sayımı için kararlı
   });
 });
 

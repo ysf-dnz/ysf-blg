@@ -268,6 +268,13 @@ describe(".ics", () => {
     expect(ics).toContain("DESCRIPTION:Satır 1\\nSatır 2");
     expect(ics).toContain("LOCATION:ODTÜ\\, Ankara");
   });
+  it("alan enjeksiyonu: tek başına CR ya da LF yeni .ics satırı açamaz", () => {
+    const kotu = icsUret({ ...e, title: "Sohbet\rATTENDEE:mailto:x@y.z", location: "Salon\nURL:https://kotu.example" }, "https://yusufdeniz.com/etkinlik/x");
+    const satirlar = kotu.split("\r\n");
+    expect(satirlar.filter((s) => s.startsWith("ATTENDEE"))).toHaveLength(0);
+    expect(satirlar.filter((s) => s.startsWith("URL:"))).toEqual(["URL:https://yusufdeniz.com/etkinlik/x"]);
+    expect(kotu).toContain("SUMMARY:Sohbet\\nATTENDEE:mailto:x@y.z");
+  });
   it("uzun satır 75 oktette katlanır", () => {
     const uzun = icsUret({ ...e, description: "ç".repeat(200) }, "https://yusufdeniz.com/etkinlik/x");
     for (const satir of uzun.split("\r\n")) expect(Buffer.byteLength(satir)).toBeLessThanOrEqual(75);

@@ -2,7 +2,9 @@
 /**
  * Giriş ekranı (görevli tarayıcısı) — yalnız host/scanner/admin. Kamerayla art arda bilet
  * okutur (tarayıcıda BarcodeDetector varsa), yoksa kod elle yazılır ya da telefonun kamera
- * uygulaması bileti açar ve /t/q/ görevliyi ?bilet= ile buraya getirir. Okutma JSON POST
+ * uygulaması bileti açar ve /t/q/ görevliyi ?bilet= ile buraya getirir — bu yolla gelen bilet
+ * yalnız kutuya YAZILIR, girişi görevlinin "Doğrula" dokunuşu yazar (bağlantıya tıklatarak
+ * uzaktan "geldi" işaretletilemesin). Okutma JSON POST
  * (/api/uye/giris); bağlantı yoksa localStorage kuyruğu, bağlantı gelince bir kez gönderilir
  * (sunucu idempotent — AC-16, AC-18). Elle giriş: listeden "Geldi".
  */
@@ -154,7 +156,8 @@ const ELLE: Record<string, string> = {
     gecersiz: ["Geçersiz bilet", "Kod tanınmadı ya da imzası bozuk.", "border-red-500"],
     yetkisiz: ["Yetkin yok", "Bu etkinliğin görevlisi değilsin.", "border-red-500"],
     pencere: ["Giriş kapalı", "Kapı açılışından önce ya da etkinlik bitti.", "border-amber-500"],
-    hiz: ["Çok hızlı", "Dakikada 120 okutma sınırı — bir an bekle.", "border-amber-500"],
+    hiz: ["Çok hızlı", "Dakikada 120 okutma sınırı — bilet kuyrukta, birazdan gönderilecek.", "border-amber-500"],
+    hazir: ["Bilet okundu", "Katılımcı karşındaysa Doğrula'ya dokun.", "border-accent"],
     oturum: ["Oturum düştü", "Sayfayı yenileyip yeniden giriş yap; okutulanlar kuyrukta.", "border-red-500"],
     kuyruk: ["Bağlantı yok", "Bilet kuyruğa alındı; bağlantı gelince gönderilecek.", "border-amber-500"],
   };
@@ -234,12 +237,13 @@ const ELLE: Record<string, string> = {
       baslik.textContent = b;
       alt.textContent = a;
       kutu.classList.add(c);
+      if (s.durum === "hazir") return;
       bip(220);
       navigator.vibrate?.([120, 60, 120]);
     }
 
-    /** "tamam": sunucu yanıtladı (kuyruktan düşer) · "bekle": ağ/oturum yok (kuyrukta kalır) */
-    async function gonder(token: string): Promise<"tamam" | "bekle" | "oturum"> {
+    /** "tamam": sunucu yanıtladı (kuyruktan düşer) · diğerleri: bilet kuyrukta kalır, sonra yeniden denenir */
+    async function gonder(token: string): Promise<"tamam" | "bekle" | "oturum" | "hiz"> {
       try {
         const r = await fetch("/api/uye/giris", {
           method: "POST",
@@ -249,6 +253,8 @@ const ELLE: Record<string, string> = {
           redirect: "manual",
         });
         if (r.type === "opaqueredirect" || r.status === 401) return "oturum";
+        // Hız sınırı giriş YAZMADI: bilet kuyruktan düşerse katılımcı işaretsiz kalırdı
+        if (r.status === 429) return "hiz";
         if (r.status >= 500) return "bekle";
         goster((await r.json()) as Sonuc);
         return "tamam";
@@ -262,7 +268,7 @@ const ELLE: Record<string, string> = {
       const s = await gonder(token);
       if (s === "tamam") return;
       yaz(kuyrugaEkle(oku(), token, Date.now()));
-      goster({ durum: s === "oturum" ? "oturum" : "kuyruk" });
+      goster({ durum: s === "bekle" ? "kuyruk" : s });
     }
 
     async function bosalt() {
@@ -333,11 +339,14 @@ const ELLE: Record<string, string> = {
 
     yaz(oku());
     void bosalt();
-    // /t/q/ görevliyi ?bilet= ile getirdi (telefon kamerasıyla okutma): girişi buradan POST et
+    // /t/q/ görevliyi ?bilet= ile getirdi (telefon kamerasıyla okutma). Girişi OTOMATİK yazma:
+    // GET ile durum değişmez — yoksa görevliye bağlantı gönderen biri uzaktan "geldi" işaretletirdi.
     const ilk = tokenAyikla(kok.dataset.bilet ?? "");
     if (ilk) {
       history.replaceState(null, "", location.pathname);
-      void isle(ilk);
+      sec<HTMLInputElement>("[data-elle-girdi]").value = ilk;
+      goster({ durum: "hazir" });
+      sec<HTMLFormElement>("[data-elle-form]").querySelector("button")?.focus();
     }
   });
   // Sayfadan çıkışta kamera ve zamanlayıcılar kapanır (ClientRouter soft-nav'da script yaşar)

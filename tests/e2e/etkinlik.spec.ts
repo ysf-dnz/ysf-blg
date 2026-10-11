@@ -79,6 +79,11 @@ test.describe("etkinlik akışı — üye", () => {
     const r = await page.request.post("/api/uye/giris", { data: { token } });
     expect(r.status()).toBe(403);
     expect((await r.json()).durum).toBe("yetkisiz");
+    // JSON ucu yalnız application/json + aynı köken kabul eder (çapraz siteden no-cors POST geçemesin)
+    const duz = await page.request.post("/api/uye/giris", { data: JSON.stringify({ token }), headers: { "content-type": "text/plain" } });
+    expect(duz.status()).toBe(400);
+    const capraz = await page.request.post("/api/uye/giris", { data: { token }, headers: { "sec-fetch-site": "cross-site" } });
+    expect(capraz.status()).toBe(400);
     await page.goto("/uye/biletler", { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-bilet]", { hasText: "Canlı Quiz Gecesi" }).getByText(/Girişin doğrulandı/)).toHaveCount(0);
   });
@@ -105,6 +110,20 @@ test.describe("etkinlik akışı — üye", () => {
     // Bozuk imza
     await okut(`${gelmis}.AAAAAAAAAAAAAAAA`);
     await expect(sonuc).toHaveText("Geçersiz bilet");
+
+    // Bağlantıyla gelen bilet (?bilet=) girişi OTOMATİK yazmaz: kutuya yazılır, görevli Doğrula'ya dokunur
+    const bekleyenler = page.locator('[data-rsvp][data-geldi="0"]');
+    if (await bekleyenler.count()) {
+      const bekleyenRsvp = Number(await bekleyenler.first().getAttribute("data-rsvp"));
+      await page.goto(`${MARATON}/giris?bilet=${biletToken(bekleyenRsvp)}`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator('[data-giris][data-init="1"]')).toBeAttached();
+      await expect(sonuc).toHaveText("Bilet okundu");
+      await expect(page.locator("[data-elle-girdi]")).toHaveValue(biletToken(bekleyenRsvp));
+      await expect(page).toHaveURL(/\/giris$/); // token adres çubuğundan silindi
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.locator(`[data-rsvp="${bekleyenRsvp}"]`)).toHaveAttribute("data-geldi", "0"); // dokunulmadıkça giriş yok
+      await expect(page.locator('[data-giris][data-init="1"]')).toBeAttached();
+    }
 
     // AC-18: bağlantı yokken okutulan bilet kuyruğa girer (aynı bilet iki kez okutulsa da TEK kayıt)
     const hedef = page.locator('[data-rsvp][data-geldi="0"]').first();

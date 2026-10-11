@@ -115,10 +115,18 @@ const bekleyenToplam = bekleyenler.reduce((t, b) => t + b.delta, 0);
 // 🎤 Düzenleyen payı (ADR K2): bekleyen SATIRI yoktur — canlı giriş sayımından tahmin, toplamın dışında
 const [hostBek, [biletSayi]] = await Promise.all([
   hostBekleyenleri(member.id),
+  // Yalnız bitmemiş etkinlikler (gidilmemiş eski kayıtlar sayacı sonsuza dek şişirmesin)
   db
     .select({ n: sql<number>`count(*)` })
     .from(schema.eventRsvps)
-    .where(and(eq(schema.eventRsvps.userId, member.id), isNull(schema.eventRsvps.checkedInAt))),
+    .innerJoin(schema.events, eq(schema.events.id, schema.eventRsvps.eventId))
+    .where(
+      and(
+        eq(schema.eventRsvps.userId, member.id),
+        isNull(schema.eventRsvps.checkedInAt),
+        sql`coalesce(${schema.events.endsAt}, ${schema.events.startsAt} + interval '2 hours') > ${new Date().toISOString()}::timestamp`,
+      ),
+    ),
 ]);
 const tarihKisa = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>

@@ -1,8 +1,9 @@
 ---
 /**
  * Dönen QR ekranı (F3-05) — girişte projeksiyon/tablet. Yalnız görevli açar. QR görseli
- * /api/uye/etkinlik-qr'dan gelir ve 30 sn'lik pencere sınırında yenilenir (önceki pencere
- * de geçerli olduğu için istemci saat kayması tolere edilir). Katılımcı kendi telefonuyla okutur.
+ * /api/uye/etkinlik-qr'dan gelir; 10 sn'de bir ve sekme öne gelince yenilenir (QR en çok ~10 sn
+ * bayat kalır; token 30–60 sn geçerli → istemci saati kaysa da ekrandaki QR hep okunur). Kalan
+ * süre çubuğu yalnız görseldir. Katılımcı kendi telefonuyla okutur.
  */
 import Base from "@/layouts/Base.astro";
 import { etkinlikBul, okutabilirMi, slugGaranti } from "@/lib/etkinlik.ts";
@@ -49,6 +50,8 @@ const qr = `/api/uye/etkinlik-qr?e=${e.id}`;
 
 <script>
   let zamanlayici = 0;
+  let yenileyici = 0;
+  let onGelince: (() => void) | null = null;
   document.addEventListener("astro:page-load", () => {
     const kok = document.querySelector<HTMLElement>("[data-ekran]");
     const img = kok?.querySelector<HTMLImageElement>("[data-ekran-qr]");
@@ -68,13 +71,20 @@ const qr = `/api/uye/etkinlik-qr?e=${e.id}`;
           cubuk.style.transform = "scaleX(0)";
         });
       }
-      // Pencere değişince (+0,4 sn pay) yeni QR'ı çek; t parametresi tarayıcı önbelleğini atlar
-      zamanlayici = window.setTimeout(() => {
-        img.src = `${taban}&t=${Date.now()}`;
-        kur();
-      }, kalan + 400);
+      zamanlayici = window.setTimeout(kur, kalan + 50);
     };
+    // t parametresi tarayıcı önbelleğini atlar (yanıt zaten no-store)
+    const yenile = () => (img.src = `${taban}&t=${Date.now()}`);
     kur();
+    yenileyici = window.setInterval(yenile, 10_000);
+    // Arka plandaki sekmede zamanlayıcılar kısılır: öne gelince hemen tazele
+    onGelince = () => document.visibilityState === "visible" && yenile();
+    document.addEventListener("visibilitychange", onGelince);
   });
-  document.addEventListener("astro:before-swap", () => window.clearTimeout(zamanlayici));
+  document.addEventListener("astro:before-swap", () => {
+    window.clearTimeout(zamanlayici);
+    window.clearInterval(yenileyici);
+    if (onGelince) document.removeEventListener("visibilitychange", onGelince);
+    onGelince = null;
+  });
 </script>

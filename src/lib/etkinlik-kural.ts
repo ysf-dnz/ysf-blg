@@ -134,8 +134,8 @@ export function base32(buf: Uint8Array, uzunluk: number): string {
 
 /**
  * İmza sırrı. Yedek YOK: sır eksikse herkesin üretebileceği bilet yerine hata.
- * (IP takma adındaki `kisaHash` aynı sırrı ÖNEKSİZ kullanır; "t:"/"c:" önekleri
- * bilet ile dönen QR'ı hem birbirinden hem ondan ayırır.)
+ * Aynı sırrın üç kullanımı öneklerle ayrılır (alan ayrımı): bilet "t:", dönen QR "c:",
+ * IP/UA takma adı `kisaHash` "h:" — biri diğerinin imzasını üretemez.
  */
 function gizliSir(): string {
   const s = process.env.CRON_SECRET ?? import.meta.env.CRON_SECRET;
@@ -223,7 +223,7 @@ export function csvUret(basliklar: string[], satirlar: (string | number | null |
 /* ---------------- Takvim (.ics, RFC 5545) ---------------- */
 
 const icsKacis = (s: string) =>
-  s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r\n|\r|\n/g, "\\n");
 const icsAn = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 /** Satır katlama: 75 oktet (UTF-8) — devam satırı tek boşlukla başlar */
 function icsKatla(satir: string): string {

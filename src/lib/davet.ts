@@ -47,10 +47,12 @@ export function kodNormalize(girdi: string): string | null {
 /**
  * IP/UA takma adı: ham değer saklanmaz; HMAC anahtarı gizli (CRON_SECRET her ortamda var)
  * — sabit tuzlu SHA-256 IPv4 uzayını dakikalar içinde geri çevirtirdi.
+ * "h:" öneki alan ayrımıdır: aynı sır bilet ("t:") ve dönen QR ("c:") imzalarında da kullanılır;
+ * öneksiz olsaydı saldırganın seçtiği User-Agent ("t:123") bir bilet imzasının HMAC'ini üretirdi.
  */
 export function kisaHash(deger: string): string {
   const anahtar = process.env.CRON_SECRET ?? import.meta.env.CRON_SECRET ?? "ysf-davet-dev";
-  return createHmac("sha256", anahtar).update(deger).digest("hex").slice(0, 32);
+  return createHmac("sha256", anahtar).update(`h:${deger}`).digest("hex").slice(0, 32);
 }
 
 /** Davet süresi: katılımdan bu yana 14 gün geçtiyse davet puanları artık ödenmez (AC-8) */

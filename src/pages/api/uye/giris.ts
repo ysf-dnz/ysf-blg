@@ -9,6 +9,15 @@ import { getOrCreateMember } from "@/lib/member.ts";
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
+  // Astro'nun köken kontrolü yalnız form içerik türlerine bakar: içerik türü OLMAYAN no-cors POST
+  // çapraz siteden geçer. application/json şartı tarayıcıda preflight zorlar; sec-fetch-site
+  // gönderen tarayıcıda ayrıca aynı köken istenir (görevlinin oturumuyla uzaktan giriş yazdırılamasın).
+  const kaynak = context.request.headers.get("sec-fetch-site");
+  if (
+    !(context.request.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json") ||
+    (kaynak !== null && kaynak !== "same-origin")
+  )
+    return Response.json({ durum: "gecersiz" }, { status: 400 });
   const member = await getOrCreateMember(context);
   if (!member) return Response.json({ durum: "oturum" }, { status: 401 });
   const govde = (await context.request.json().catch(() => null)) as { token?: unknown; eventId?: unknown } | null;
