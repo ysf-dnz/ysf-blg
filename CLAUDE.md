@@ -30,7 +30,7 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - `npm run qa` — kalite kapısı: check + birim + **`npm run build`** (postbuild DAHİL — `astro build` çağırmak pagefind/llms.txt adımını atlar, bekçi bunu yakalar) + çıktı-bekçisi + e2e
 - Şema: `drizzle/0000_*.sql` boş DB için BASELINE'dır, canlıya uygulanamaz. Canlı Neon'a yeni index'ler için `drizzle/canli-index-uygula.sql` (önce çift-kayıt ön kontrolü).
 - `npm run seed:demo` — 5 demo üye + kulüp + kampanya + quiz + kurs + etkinlik (idempotent; `demo_` clerkId). Demo: /kulup/odtu-yz-okuma-demo, /u/elif-celik
-- e2e **dev server'a** koşar (Vercel adapter `astro preview` desteklemez — kanıtlı). Tuzaklar: `details.first()` mobil menüyü bulur (`details[id^='kat-']` kullan); tema toggle startViewTransition'la asenkron; uzun dev oturumu EMFILE/`504 Outdated Optimize Dep` üretir → sunucu restart + `rm -rf node_modules/.vite`.
+- e2e **dev server'a** koşar (Vercel adapter `astro preview` desteklemez — kanıtlı). Tuzaklar: `details.first()` mobil menüyü bulur (`details[id^='kat-']` kullan); tema toggle startViewTransition'la asenkron; uzun dev oturumu EMFILE/`504 Outdated Optimize Dep` üretir → sunucu restart + `rm -rf node_modules/.vite`. **Auth'lu e2e**: Playwright `auth` projesi (`tests/e2e/global-setup.ts` → `clerkSetup()` + `e2e+clerk_test@yusufdeniz.com` test üyesi idempotent; giriş `clerk.signIn({emailAddress})` = ticket, instance'ın e-posta kodu ayarından bağımsız). `.env.local`'da `CLERK_SECRET_KEY` yoksa skip. Yalnız DEV instance (testing token prod anahtarıyla verilmez).
 - Değer notları: `src/data/deger-notlari.json` (NotebookLM MCP `notebook_query` ile üretim; 884 için batch iş BEKLİYOR — nb-sor.py hattı)
 
 ## Topluluk motoru (2026-08-09 eklendi)
@@ -61,9 +61,9 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 ## Bekleyenler / sonraki adımlar
 - **Clerk `sk_test` anahtarını ROTATE et (KULLANICI)**: eski lokal build'lerde client bundle'a sızmıştı (hiç deploy edilmedi, o yüzden acil değil ama temizlik şart). Clerk Dashboard → API Keys → rotate → `vercel env rm/add CLERK_SECRET_KEY` → redeploy.
 - **Drive içerik koruması YARIM (Faz 5.C)**: statik sayfa sızıntısı kapandı ama 884 dosya Drive'da hâlâ "linki olan herkes" (Drive API ile doğrulandı) ve URL slug'ı = fileId. PDF boyut ölçüldü: **medyan 10MB, p95 42MB, p99/max 77MB, %4'ü >50MB** → saf proxy UX taşır AMA Range desteği ŞART. Kalan: service-account (KULLANICI Google Cloud'da oluşturmalı) + auth'lu Range-proxy `/api/uye/kitap-icerik`, slug'ı fileId'den koparma (301 haritası), `sync-drive-books.ts`'i Drive API v3'e taşıma (public klasör listelemesi sync önkoşulu — izinler kapanınca sync kırılır).
-- Pagefind araması DEV sunucusunda 0 sonuç döner (index sağlam — canlıda ÇALIŞIYOR); `search.spec.ts` dev'de kırmızı. Ayrı iş (spawn task açıldı).
+- `search.spec.ts` dev'de yalnız sunucunun İLK ~60 sn'sinde kırmızı (index sağlam, sonuç geliyor): Vite bağımlılık tarayıcısı `src/components/mdx/D3Chart.astro` frontmatter yorumundaki literal `<script>` metnini script sanıp patlıyor (`Expected ";" but found "kaydedilir"`) → `@clerk/astro/internal`+`motion` geç keşfedilir → "optimized dependencies changed. reloading" tam sayfa yenilemesi açık arama dialog'unu kapatır. Düzeltme: o yorumdaki `<script>` kelimesini değiştir (alternatif: astro.config `vite.optimizeDeps.include`).
 - Canlı quiz odası (PIN, WebSocket), e-posta bildirimleri (Resend), moderasyon araçları
-- Auth'lu e2e (@clerk/testing), 884 kitaba toplu değer notu üretimi
+- 884 kitaba toplu değer notu üretimi
 
 ## Agent skills
 

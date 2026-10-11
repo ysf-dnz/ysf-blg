@@ -12,6 +12,12 @@ export default defineConfig({
     navigationTimeout: 30_000,
   },
   expect: { timeout: 15_000 },
+  globalSetup: "./tests/e2e/global-setup.ts",
+  projects: [
+    { name: "misafir", testIgnore: /auth\.spec|kurs\.spec/ },
+    // Clerk test üyesi tek: oturumlar çakışmasın diye seri + tek worker
+    { name: "auth", testMatch: /auth\.spec|kurs\.spec/, fullyParallel: false, workers: 1 },
+  ],
   webServer: {
     // Server-mode sonrası: Vercel adapter `astro preview`ü desteklemez
     // (D0 ölçümüyle kanıtlandı). SSR rotalar dahil gerçek koşum dev'de;
