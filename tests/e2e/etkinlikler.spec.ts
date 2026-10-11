@@ -1,0 +1,70 @@
+import { expect, test } from "@playwright/test";
+
+// seed:demo — yaklaşan (kontenjan 40), devam eden (çevrimiçi maraton), bitmiş (tanışma)
+const YAKLASAN = "/etkinlik/canli-quiz-gecesi-demo";
+const MARATON = "/etkinlik/go-okuma-maratonu-demo";
+const BITMIS = "/etkinlik/tanisma-bulusmasi-demo";
+
+test.describe("etkinlik sayfası — misafir (F3-02)", () => {
+  test("liste etkinlik sayfalarına götürür; kontenjan ve geçmiş bölümü görünür", async ({ page }) => {
+    await page.goto("/etkinlikler", { waitUntil: "domcontentloaded" });
+    const kart = page.locator("[data-etkinlikler] li", { hasText: "Canlı Quiz Gecesi" });
+    await expect(kart.getByRole("link")).toHaveAttribute("href", YAKLASAN);
+    await expect(kart).toContainText(/\d+ \/ 40 kayıtlı/);
+    await expect(page.getByRole("link", { name: /Dönem Açılışı Tanışma Buluşması/ })).toHaveAttribute("href", BITMIS);
+    // RSVP artık puan vaat etmez: puan doğrulanmış girişte
+    await expect(page.getByText(/girişini doğrulat/).first()).toBeVisible();
+  });
+
+  test("etkinlik sayfası herkese açık: tarih, kontenjan, düzenleyen, Event JSON-LD, tek kayıt butonu", async ({ page }) => {
+    const yanit = await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });
+    expect(yanit?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1, name: /Canlı Quiz Gecesi/ })).toBeVisible();
+    const nav = page.getByRole("navigation", { name: "Topluluk bölümleri" });
+    await expect(nav.getByRole("link", { name: /Etkinlikler/ })).toHaveAttribute("aria-current", "page");
+    await expect(page.locator("[data-kayit-kutusu]")).toContainText(/\d+ \/ 40/);
+    await expect(page.getByText("Ayşe Demir").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Yerimi ayır/ })).toHaveCount(1);
+    // Sayfada site geneli JSON-LD de var: Event olanı seç
+    const bloklar = await page.locator('script[type="application/ld+json"]').allTextContents();
+    const ld = bloklar.map((b) => JSON.parse(b)).find((b) => b["@type"] === "Event");
+    expect(ld).toBeTruthy();
+    expect(ld.maximumAttendeeCapacity).toBe(40);
+    expect(new Date(ld.endDate).getTime() - new Date(ld.startDate).getTime()).toBe(2 * 3600_000);
+    // Misafire katılımcı listesi ve düzenleyen paneli yok
+    await expect(page.getByText("Düzenleyen paneli")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /Katılımcılar/ })).toHaveCount(0);
+  });
+
+  test("bitmiş etkinlikte kayıt butonu yok; olmayan etkinlik 404", async ({ page, request }) => {
+    await page.goto(BITMIS, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Sona erdi").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Yerimi ayır/ })).toHaveCount(0);
+    expect((await request.get("/etkinlik/yok-boyle-etkinlik")).status()).toBe(404);
+  });
+
+  test("takvime ekle: .ics indirilebilir ve UTC anlar taşır", async ({ request }) => {
+    const r = await request.get(`${YAKLASAN}/takvim.ics`);
+    expect(r.status()).toBe(200);
+    expect(r.headers()["content-type"]).toContain("text/calendar");
+    const ics = await r.text();
+    expect(ics).toContain("BEGIN:VEVENT");
+    expect(ics).toMatch(/DTSTART:\d{8}T\d{6}Z/);
+    expect(ics).toContain("SUMMARY:Canlı Quiz Gecesi: Learning Go");
+    expect((await request.get("/etkinlik/yok-boyle-etkinlik/takvim.ics")).status()).toBe(404);
+  });
+
+  test("etkinlik sitemap'i herkese açık etkinlikleri listeler", async ({ request }) => {
+    const r = await request.get("/sitemap-etkinlikler.xml");
+    expect(r.status()).toBe(200);
+    const xml = await r.text();
+    for (const yol of [YAKLASAN, MARATON, BITMIS]) expect(xml).toContain(`${yol}</loc>`);
+  });
+
+  test("375px'te yatay taşma yok", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });
+    const tasma = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(tasma).toBeLessThanOrEqual(1);
+  });
+});

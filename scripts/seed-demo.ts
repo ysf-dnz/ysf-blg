@@ -30,6 +30,22 @@ const MINDSET = "1JlqnQCbEoW5DGVOXte4O88AdSofFbH2Z";
 const LEARNING_GO = "1h6nwQ-jHvqKuCtpiP3kdb5GsBtOcPww6";
 const EFFECTIVE_GO = "1pASwcWSHzwO55U2Lv-v4giPCoZBmdy-l";
 
+/** Etkinlikleri FK sırasıyla sil: değerlendirme, görevli, etkinlik davet kodları (+ziyaret), kayıt */
+async function etkinlikleriSil(eids: number[]) {
+  if (eids.length === 0) return;
+  await db.delete(schema.ratings).where(inArray(schema.ratings.eventId, eids));
+  await db.delete(schema.eventStaff).where(inArray(schema.eventStaff.eventId, eids));
+  const kodlar = await db.query.inviteCodes.findMany({
+    where: and(eq(schema.inviteCodes.targetType, "event"), inArray(schema.inviteCodes.targetId, eids)),
+  });
+  if (kodlar.length) {
+    await db.delete(schema.inviteVisits).where(inArray(schema.inviteVisits.inviteCodeId, kodlar.map((k) => k.id)));
+    await db.delete(schema.inviteCodes).where(inArray(schema.inviteCodes.id, kodlar.map((k) => k.id)));
+  }
+  await db.delete(schema.eventRsvps).where(inArray(schema.eventRsvps.eventId, eids));
+  await db.delete(schema.events).where(inArray(schema.events.id, eids));
+}
+
 async function temizle() {
   const eski = await db.query.users.findMany({
     where: like(schema.users.clerkId, "demo_%"),
@@ -91,17 +107,14 @@ async function temizle() {
     await db.delete(schema.clubGroups).where(inArray(schema.clubGroups.clubId, kids));
     await db.delete(schema.clubMembers).where(inArray(schema.clubMembers.clubId, kids));
     const etkinlikler = await db.query.events.findMany({ where: inArray(schema.events.clubId, kids) });
-    if (etkinlikler.length) {
-      await db.delete(schema.eventRsvps).where(inArray(schema.eventRsvps.eventId, etkinlikler.map((e) => e.id)));
-      await db.delete(schema.events).where(inArray(schema.events.id, etkinlikler.map((e) => e.id)));
-    }
+    await etkinlikleriSil(etkinlikler.map((e) => e.id));
     await db.delete(schema.clubs).where(inArray(schema.clubs.id, kids));
   }
   const demoEtkinlik = await db.query.events.findMany({ where: inArray(schema.events.createdBy, ids) });
-  if (demoEtkinlik.length) {
-    await db.delete(schema.eventRsvps).where(inArray(schema.eventRsvps.eventId, demoEtkinlik.map((e) => e.id)));
-    await db.delete(schema.events).where(inArray(schema.events.id, demoEtkinlik.map((e) => e.id)));
-  }
+  await etkinlikleriSil(demoEtkinlik.map((e) => e.id));
+  // Demo üyenin gerçek etkinliklerdeki izleri (görevlilik, okuttuğu biletler)
+  await db.delete(schema.eventStaff).where(inArray(schema.eventStaff.userId, ids));
+  await db.update(schema.eventRsvps).set({ checkedInBy: null }).where(inArray(schema.eventRsvps.checkedInBy, ids));
   const quizler = await db.query.quizzes.findMany({ where: inArray(schema.quizzes.createdBy, ids) });
   if (quizler.length) {
     const qids = quizler.map((q) => q.id);
@@ -148,7 +161,7 @@ async function kur() {
     { u: U.ayse, delta: 38, reason: "quiz" }, { u: U.ayse, delta: 25, reason: "referral_joined" },
     { u: U.ayse, delta: 75, reason: "referral_activated" },
     { u: U.zeynep, delta: 50, reason: "welcome" }, { u: U.zeynep, delta: 100, reason: "post_approved" },
-    { u: U.mehmet, delta: 50, reason: "welcome" }, { u: U.mehmet, delta: 10, reason: "event_attended" },
+    { u: U.mehmet, delta: 50, reason: "welcome" },
     { u: U.can, delta: 50, reason: "welcome" },
   ];
   await db.insert(schema.pointsLedger).values(
@@ -374,15 +387,79 @@ async function kur() {
   ]);
   await db.insert(schema.ratings).values({ userId: U.can!.id, courseId: kurs!.id, stars: 5, body: "Video + yazı karışımı çok iyi oturmuş." });
 
-  // Etkinlik (yarın) + RSVP'ler (1 öncelikli ⭐)
+  // ---- Etkinlikler (Faz 3): yaklaşan + devam eden + bitmiş ----
+  const SAAT = 3600e3;
+  const simdi = Date.now();
+  // 1) Yaklaşan (yarın, 2 saat, kontenjan 40): kayıt + etkinlik daveti (Elif → Can, bekleyen)
   const [etkinlik] = await db
     .insert(schema.events)
-    .values({ clubId: kulup!.id, campaignId: kampanya!.id, title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", startsAt: new Date(Date.now() + 864e5), location: "Discord / ODTÜ Kütüphane B1", createdBy: U.ayse!.id })
+    .values({ clubId: kulup!.id, campaignId: kampanya!.id, slug: "canli-quiz-gecesi-demo", title: "Canlı Quiz Gecesi: Learning Go", description: "Kampanya finali — kazanana kitap ödülü!", kind: "bulusma", startsAt: new Date(simdi + 24 * SAAT), endsAt: new Date(simdi + 26 * SAAT), location: "ODTÜ Kütüphane B1", il: "Ankara", capacity: 40, createdBy: U.ayse!.id })
     .returning();
+  await db.insert(schema.eventStaff).values([
+    { eventId: etkinlik!.id, userId: U.ayse!.id, role: "host" },
+    { eventId: etkinlik!.id, userId: U.mehmet!.id, role: "scanner" },
+  ]);
+  const [etkinlikKodu] = await db
+    .insert(schema.inviteCodes)
+    .values({ code: "DEMEV01", inviterId: U.elif!.id, targetType: "event", targetId: etkinlik!.id, note: "Quiz gecesinde aynı takımda olalım 🧠" })
+    .returning();
+  await db.insert(schema.inviteVisits).values([
+    { inviteCodeId: etkinlikKodu!.id, ipHash: "demo-ip-4", uaHash: "demo-ua", kanal: "qr" },
+    { inviteCodeId: etkinlikKodu!.id, ipHash: "demo-ip-5", uaHash: "demo-ua", kanal: "link" },
+  ]);
   await db.insert(schema.eventRsvps).values([
     { eventId: etkinlik!.id, userId: U.elif!.id, priority: true },
     { eventId: etkinlik!.id, userId: U.mehmet!.id },
-    { eventId: etkinlik!.id, userId: U.can!.id },
+    { eventId: etkinlik!.id, userId: U.can!.id, inviteCodeId: etkinlikKodu!.id },
+  ]);
+  await db.insert(schema.pendingPoints).values({
+    userId: U.elif!.id, delta: 10, reason: "event_invite_attended", refId: `event:${etkinlik!.id}:u:${U.can!.id}`,
+    note: 'Can Yıldız "Canlı Quiz Gecesi: Learning Go" etkinliğinde giriş yapınca', expiresAt: new Date(simdi + 26 * SAAT),
+  });
+
+  // 2) Devam eden (çevrimiçi maraton, 14 gün): giriş doğrulaması bugün denenebilir (e2e dönen QR)
+  const [maraton] = await db
+    .insert(schema.events)
+    .values({ slug: "go-okuma-maratonu-demo", title: "Go Okuma Maratonu (çevrimiçi)", description: "İki hafta boyunca her akşam 30 dakika birlikte okuyoruz. Girişini ekrandaki QR ile doğrulat.", kind: "cevrimici", startsAt: new Date(simdi - SAAT), endsAt: new Date(simdi + 13 * 24 * SAAT), location: "Discord #okuma-odasi", createdBy: U.ayse!.id })
+    .returning();
+  await db.insert(schema.eventStaff).values([
+    { eventId: maraton!.id, userId: U.ayse!.id, role: "host" },
+    { eventId: maraton!.id, userId: U.elif!.id, role: "host" },
+  ]);
+  const [maratonKodu] = await db
+    .insert(schema.inviteCodes)
+    .values({ code: "DEMEV02", inviterId: U.mehmet!.id, targetType: "event", targetId: maraton!.id })
+    .returning();
+  await db.insert(schema.eventRsvps).values([
+    { eventId: maraton!.id, userId: U.mehmet!.id, checkedInAt: new Date(simdi - 30 * 60e3), checkinMethod: "rotating", checkedInBy: U.mehmet!.id },
+    { eventId: maraton!.id, userId: U.zeynep!.id, inviteCodeId: maratonKodu!.id, checkedInAt: new Date(simdi - 20 * 60e3), checkinMethod: "ticket", checkedInBy: U.ayse!.id },
+    { eventId: maraton!.id, userId: U.can!.id },
+  ]);
+  // Girişte yazılanlar (ADR §7): katılımcı +10, davetli +5, davet eden +10
+  await db.insert(schema.pointsLedger).values([
+    { userId: U.mehmet!.id, delta: 10, reason: "event_attended", refId: String(maraton!.id) },
+    { userId: U.zeynep!.id, delta: 10, reason: "event_attended", refId: String(maraton!.id) },
+    { userId: U.zeynep!.id, delta: 5, reason: "event_invite_welcome", refId: `event:${maraton!.id}` },
+    { userId: U.mehmet!.id, delta: 10, reason: "event_invite_attended", refId: `event:${maraton!.id}:u:${U.zeynep!.id}` },
+  ]);
+
+  // 3) Bitmiş (3 gün önce): 3 giriş, 2 değerlendirme, düzenleyen payı dağıtılmış (3 × 5 = 15)
+  const [bulusma] = await db
+    .insert(schema.events)
+    .values({ clubId: kulup!.id, slug: "tanisma-bulusmasi-demo", title: "Dönem Açılışı Tanışma Buluşması", description: "Yeni dönemin kitaplarını seçtik, görev panosunu tanıttık.", kind: "bulusma", startsAt: new Date(simdi - 74 * SAAT), endsAt: new Date(simdi - 72 * SAAT), location: "ODTÜ Çarşı", il: "Ankara", createdBy: U.ayse!.id })
+    .returning();
+  await db.insert(schema.eventStaff).values({ eventId: bulusma!.id, userId: U.ayse!.id, role: "host" });
+  const gelis = new Date(simdi - 74 * SAAT + 10 * 60e3);
+  await db.insert(schema.eventRsvps).values(
+    [U.elif!, U.mehmet!, U.can!].map((u) => ({ eventId: bulusma!.id, userId: u.id, checkedInAt: gelis, checkinMethod: "ticket" as const, checkedInBy: U.ayse!.id })),
+  );
+  await db.insert(schema.ratings).values([
+    { userId: U.elif!.id, eventId: bulusma!.id, stars: 5, body: "Görev panosu tanıtımı çok işe yaradı." },
+    { userId: U.can!.id, eventId: bulusma!.id, stars: 4 },
+  ]);
+  await db.insert(schema.pointsLedger).values([
+    ...[U.elif!, U.mehmet!, U.can!].map((u) => ({ userId: u.id, delta: 10, reason: "event_attended" as const, refId: String(bulusma!.id) })),
+    { userId: U.ayse!.id, delta: 15, reason: "event_hosted" as const, refId: `event:${bulusma!.id}` },
   ]);
 
   // Davet zinciri + temsilcilik başvurusu + bildirimler
@@ -442,7 +519,9 @@ async function kur() {
   kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)
   davet: /d/dem07kq (Ayşe'nin kurs daveti; 3 ziyaret, Can davetle katıldı) · /d/dem0c21 (Elif → /kurslar/go-ile-cli-araclari-demo)
   yazılar: /topluluk (3 yayında — 1'i yalnız-üyeler, 1 bekleyen)
-  etkinlik: /etkinlikler (yarın, ⭐ öncelikli koltuklu)
+  etkinlikler: /etkinlik/${etkinlik!.slug} (yarın; kontenjan 40, görevliler, /d/demev01 Elif'in daveti)
+    · /etkinlik/${maraton!.slug} (DEVAM EDİYOR 14 gün — giriş doğrulaması denenir, 2 giriş)
+    · /etkinlik/${bulusma!.slug} (bitti; 3 giriş, 2 değerlendirme, düzenleyen payı +15)
   profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);
 }
 

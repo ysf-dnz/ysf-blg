@@ -1,0 +1,289 @@
+---
+/**
+ * Etkinlik sayfası — herkese açık SSR: tarih, yer, kontenjan, düzenleyenler, takvime ekle.
+ * Kayıt (RSVP) /api/uye/etkinlik'e gider; misafir sayfa içi girişten sonra ek dokunuşsuz
+ * kaydolur (?kayit=1). Onay bekleyen topluluğun etkinliği yalnız görevlilere görünür (404).
+ */
+import { and, asc, desc, eq } from "drizzle-orm";
+import { SignInButton } from "@clerk/astro/components";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import { db, schema } from "@/db/client.ts";
+import {
+  etkinlikBul,
+  etkinlikGorunurMu,
+  gorevliRol,
+  hostIdleri,
+  kayitOl,
+  kayitSayilari,
+  slugGaranti,
+} from "@/lib/etkinlik.ts";
+import { etkinlikBitis, kayitAcikMi, TUR_AD, trAralik, trSaat, trTarih } from "@/lib/etkinlik-kural.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { PUAN } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
+import { getUsersMap } from "@/lib/social.ts";
+import { siteKok } from "@/lib/urls.ts";
+
+export const prerender = false;
+
+const param = Astro.params.slug ?? "";
+const e = await etkinlikBul(param);
+if (!e) return new Response("Etkinlik bulunamadı", { status: 404 });
+// Slug'sız eski kayıt (/etkinlik/{id}) kalıcı adresine taşınır
+const slug = await slugGaranti(e);
+if (param !== slug) return Astro.redirect(`${R.etkinlik(slug)}${Astro.url.search}`, 301);
+
+const member = await getOrCreateMember(Astro);
+const [kulup, rol] = await Promise.all([
+  e.clubId ? db.query.clubs.findFirst({ where: eq(schema.clubs.id, e.clubId) }) : null,
+  member ? gorevliRol(e, member.id) : null,
+]);
+const yonetici = !!member && (rol === "host" || member.role === "admin");
+const gorevli = yonetici || rol === "scanner";
+const gorunur = etkinlikGorunurMu(e, kulup);
+if (!gorunur && !gorevli) return new Response("Etkinlik bulunamadı", { status: 404 });
+
+const q = Astro.url.searchParams;
+const sayfa = R.etkinlik(slug);
+// Girişten dönüşte otomatik kayıt. GET durum değiştirdiği için yalnız aynı site (CSRF freni);
+// kontenjan zaten SQL'de — fren atlatılsa bile kapasite aşılamaz.
+if (member && q.get("kayit") === "1" && Astro.request.headers.get("sec-fetch-site") !== "cross-site") {
+  const k = await kayitOl(member, e, { cookies: Astro.cookies });
+  return Astro.redirect(`${sayfa}?sonuc=${k.durum}`);
+}
+const girisDonus = `${sayfa}?kayit=1`;
+
+const simdi = new Date();
+const bitis = etkinlikBitis(e);
+const bitti = simdi > bitis;
+const [sayilar, kaydim, hostIds, gorevliler, katilimcilar] = await Promise.all([
+  kayitSayilari([e.id]),
+  member
+    ? db.query.eventRsvps.findFirst({
+        where: and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, member.id)),
+      })
+    : undefined,
+  hostIdleri(e),
+  yonetici
+    ? db.query.eventStaff.findMany({ where: eq(schema.eventStaff.eventId, e.id), orderBy: asc(schema.eventStaff.id) })
+    : [],
+  // Katılımcı listesi yalnız üyelere (misafir toplamı görür)
+  member
+    ? db.query.eventRsvps.findMany({
+        where: eq(schema.eventRsvps.eventId, e.id),
+        orderBy: [desc(schema.eventRsvps.priority), asc(schema.eventRsvps.createdAt)],
+        limit: 60,
+      })
+    : [],
+]);
+const sayi = sayilar.get(e.id) ?? { kayit: 0, oncelikli: 0, giris: 0 };
+const dolu = e.capacity != null && sayi.kayit >= e.capacity;
+const kayitAcik = kayitAcikMi(e, simdi);
+const kisiler = await getUsersMap([...hostIds, ...gorevliler.map((g) => g.userId), ...katilimcilar.map((k) => k.userId)]);
+const hostlar = hostIds.map((id) => kisiler.get(id)).filter((k) => !!k);
+
+const kok = siteKok(Astro.site, Astro.url);
+const aciklama =
+  e.description ?? `${trAralik(e)}${e.location ? ` · ${e.location}` : ""}${kulup ? ` · ${kulup.name}` : ""}`;
+const cevrimici = e.kind === "cevrimici";
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: e.title,
+  description: aciklama,
+  startDate: e.startsAt.toISOString(),
+  endDate: bitis.toISOString(),
+  eventStatus: "https://schema.org/EventScheduled",
+  eventAttendanceMode: `https://schema.org/${cevrimici ? "Online" : "Offline"}EventAttendanceMode`,
+  location: cevrimici
+    ? { "@type": "VirtualLocation", url: `${kok}${sayfa}` }
+    : {
+        "@type": "Place",
+        name: e.location ?? e.il ?? "Türkiye",
+        address: { "@type": "PostalAddress", ...(e.il ? { addressLocality: e.il } : {}), addressCountry: "TR" },
+      },
+  url: `${kok}${sayfa}`,
+  ...(e.coverUrl ? { image: e.coverUrl } : {}),
+  organizer: kulup
+    ? { "@type": "Organization", name: kulup.name, url: `${kok}${R.kulup(kulup.slug)}` }
+    : { "@type": "Organization", name: "Bilgi Ödüldür · Yusuf Deniz", url: kok },
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "TRY", url: `${kok}${sayfa}`, availability: `https://schema.org/${dolu ? "SoldOut" : "InStock"}` },
+  ...(e.capacity != null
+    ? { maximumAttendeeCapacity: e.capacity, remainingAttendeeCapacity: Math.max(e.capacity - sayi.kayit, 0) }
+    : {}),
+};
+
+const SONUC: Record<string, string> = {
+  yeni: `Yerin ayrıldı 🎟️ Etkinlikte girişin doğrulanınca +${PUAN.eventAttended} puan.`,
+  zaten: "Bu etkinliğe zaten kayıtlısın ✓",
+  dolu: "Kontenjan dolmuş — bu etkinliğe kayıt alınamıyor.",
+  kapali: "Bu etkinliğin kayıtları kapandı.",
+};
+const GOREVLI: Record<string, string> = {
+  eklendi: "Görevli eklendi.",
+  silindi: "Görevli çıkarıldı.",
+  yok: "Bu kullanıcı adıyla üye bulunamadı.",
+  olmadi: `Eklenemedi: zaten görevli ya da ortak düzenleyen sınırı (${PUAN.eventMaxCoHosts}) dolu.`,
+};
+const bant = q.has("yeni")
+  ? "Etkinliğin yayında 🎉 Topluluğunla paylaş."
+  : (SONUC[q.get("sonuc") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
+const oncelikYok = q.get("oncelik") === "yok";
+---
+
+<ToplulukLayout
+  title={e.title}
+  description={aciklama}
+  seo={{ ogImagePath: e.coverUrl ?? undefined, noindex: !gorunur }}
+>
+  {/* `<` kaçışı ZORUNLU: kullanıcı metni (başlık, açıklama) kapanış etiketiyle bloktan kaçabilir (XSS) */}
+  <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />
+
+  {bant && <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>}
+  {oncelikYok && (
+    <div class="menu-pop mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Yerin ayrıldı ama ⭐ öncelikli koltuk alınamadı: {PUAN.prioritySeatCost} puan gerekiyor.
+    </div>
+  )}
+  {!gorunur && (
+    <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Topluluk <strong>onay bekliyor</strong> — bu etkinlik şimdilik yalnız görevlilere görünür.
+    </div>
+  )}
+
+  <header class="girih-texture -mx-4 px-4 py-8" data-etkinlik-id={e.id}>
+    <div class="grid gap-6 md:grid-cols-[1fr_260px]">
+      <div class="min-w-0">
+        <p class="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+          {kulup && <a href={R.kulup(kulup.slug)} class="rounded-full border border-line px-2.5 py-0.5 hover:text-accent">🏛️ {kulup.name}</a>}
+          {e.kind && <span class="rounded-full border border-line px-2.5 py-0.5">{TUR_AD[e.kind]}</span>}
+          {e.il && <span class="rounded-full border border-line px-2.5 py-0.5">📍 {e.il}</span>}
+          {bitti && <span class="rounded-full bg-surface-raised px-2.5 py-0.5 font-medium text-ink">Sona erdi</span>}
+        </p>
+        <h1 class="mt-3 font-display text-3xl font-semibold text-ink sm:text-4xl">📅 {e.title}</h1>
+        <p class="mt-3 text-lg text-ink"><time datetime={e.startsAt.toISOString()}>{trAralik(e)}</time></p>
+        {e.location && <p class="mt-1 text-ink-muted">📍 {e.location}</p>}
+        {e.description && <p class="mt-3 text-ink-muted">{e.description}</p>}
+
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          {hostlar.map((h) => (
+            <a href={R.profil(h.handle)} class="flex items-center gap-2 text-sm text-ink-muted hover:text-accent">
+              <Avatar name={h.name} avatarUrl={h.avatarUrl} size="sm" />
+              {h.name}
+            </a>
+          ))}
+          {hostlar.length > 0 && <span class="text-xs text-ink-muted">düzenliyor</span>}
+        </div>
+      </div>
+
+      <aside class="rounded-2xl border border-line bg-surface-raised p-5" data-kayit-kutusu>
+        <p class="font-display text-2xl font-semibold text-accent">
+          {sayi.kayit}{e.capacity != null && <span class="text-base text-ink-muted"> / {e.capacity}</span>}
+        </p>
+        <p class="text-xs text-ink-muted">
+          kayıtlı{sayi.oncelikli > 0 && ` · ⭐ ${sayi.oncelikli} öncelikli`}
+          {e.capacity != null && !dolu && ` · ${e.capacity - sayi.kayit} yer kaldı`}
+        </p>
+        {e.rsvpClosesAt && !bitti && (
+          <p class="mt-1 text-xs text-ink-muted">Kayıt kapanışı: {trTarih(e.rsvpClosesAt)} {trSaat(e.rsvpClosesAt)}</p>
+        )}
+
+        <div class="mt-4">
+          {kaydim ? (
+            <p class="rounded-full bg-accent-soft px-4 py-2 text-center text-sm font-medium text-accent">
+              Kayıtlısın ✓{kaydim.priority && " ⭐"}
+            </p>
+          ) : bitti ? (
+            <p class="text-sm text-ink-muted">Etkinlik sona erdi.</p>
+          ) : !kayitAcik ? (
+            <p class="text-sm text-ink-muted">Kayıtlar kapandı.</p>
+          ) : dolu ? (
+            <p class="text-sm font-medium text-ink">Kontenjan doldu.</p>
+          ) : member ? (
+            <form method="post" action="/api/uye/etkinlik">
+              <input type="hidden" name="action" value="rsvp" />
+              <input type="hidden" name="eventId" value={e.id} />
+              <button class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎟️</button>
+              <label class="mt-2 flex cursor-pointer items-center justify-center gap-1.5 text-xs text-ink-muted">
+                <input type="checkbox" name="priority" value="1" class="accent-(--accent)" />
+                ⭐ Öncelikli koltuk ({PUAN.prioritySeatCost}p)
+              </label>
+            </form>
+          ) : (
+            <SignInButton mode="modal" forceRedirectUrl={girisDonus} signUpForceRedirectUrl={girisDonus} asChild>
+              <button type="button" class="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yerimi ayır 🎟️</button>
+            </SignInButton>
+          )}
+        </div>
+        {!bitti && (
+          <p class="mt-3 text-xs text-ink-muted">
+            Giriş kapıda doğrulanır: gelen <strong class="text-ink">+{PUAN.eventAttended} puan</strong> kazanır.
+          </p>
+        )}
+        <a href={R.etkinlikTakvim(slug)} class="mt-3 inline-block text-sm text-accent hover:underline">🗓 Takvime ekle (.ics)</a>
+      </aside>
+    </div>
+  </header>
+
+  {member && katilimcilar.length > 0 && (
+    <section class="mt-8">
+      <h2 class="font-display text-lg font-semibold text-ink">👥 Katılımcılar</h2>
+      <ul class="mt-3 flex flex-wrap gap-2">
+        {katilimcilar.map((k) => {
+          const u = kisiler.get(k.userId);
+          return u ? (
+            <li>
+              <a href={R.profil(u.handle)} class="flex items-center gap-2 rounded-full border border-line bg-surface-raised py-1 pl-1 pr-3 text-sm text-ink-muted hover:border-accent hover:text-accent">
+                <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+                {u.name}{k.priority && " ⭐"}
+              </a>
+            </li>
+          ) : null;
+        })}
+      </ul>
+    </section>
+  )}
+
+  {yonetici && (
+    <section id="yonetim" class="mt-10 rounded-2xl border border-line bg-surface-raised p-5">
+      <h2 class="font-display text-lg font-semibold text-ink">🎤 Düzenleyen paneli</h2>
+      <p class="mt-1 text-sm text-ink-muted">
+        Ortak düzenleyen (en çok {PUAN.eventMaxCoHosts}) katılımcı puanını paylaşır; giriş görevlisi yalnız bilet okutur, puan almaz.
+      </p>
+      <ul class="mt-4 space-y-2">
+        {gorevliler.map((g) => {
+          const u = kisiler.get(g.userId);
+          return u ? (
+            <li class="flex flex-wrap items-center gap-3 text-sm">
+              <Avatar name={u.name} avatarUrl={u.avatarUrl} size="sm" />
+              <span class="text-ink">{u.name}</span>
+              <span class="rounded-full border border-line px-2 py-0.5 text-xs text-ink-muted">
+                {g.role === "host" ? (g.userId === e.createdBy ? "Düzenleyen (açan)" : "Ortak düzenleyen") : "Giriş görevlisi"}
+              </span>
+              {g.userId !== e.createdBy && (
+                <form method="post" action="/api/uye/etkinlik" class="ml-auto">
+                  <input type="hidden" name="action" value="staff-sil" />
+                  <input type="hidden" name="eventId" value={e.id} />
+                  <input type="hidden" name="handle" value={u.handle} />
+                  <button class="cursor-pointer text-xs text-ink-muted hover:text-red-500">Çıkar</button>
+                </form>
+              )}
+            </li>
+          ) : null;
+        })}
+      </ul>
+      <form method="post" action="/api/uye/etkinlik" class="mt-4 flex flex-wrap gap-2">
+        <input type="hidden" name="action" value="staff-ekle" />
+        <input type="hidden" name="eventId" value={e.id} />
+        <input name="handle" required maxlength="60" placeholder="@kullanici-adi" class="min-w-0 flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
+        <select name="rol" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" aria-label="Görev">
+          <option value="scanner">Giriş görevlisi</option>
+          <option value="host">Ortak düzenleyen</option>
+        </select>
+        <button class="cursor-pointer rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Ekle</button>
+      </form>
+    </section>
+  )}
+</ToplulukLayout>

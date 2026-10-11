@@ -239,9 +239,11 @@ const myBooks = member
             </div>
             <ul class="mt-2 space-y-2 text-sm">
               {yaklasan.map((e) => (
-                <li class="rounded-lg border border-line px-3 py-2">
-                  <span class="block font-medium text-ink">{e.title}</span>
-                  <span class="text-xs text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}</span>
+                <li>
+                  <a href={R.etkinlik(e.slug ?? String(e.id))} class="block rounded-lg border border-line px-3 py-2 hover:border-accent/50">
+                    <span class="block font-medium text-ink">{e.title}</span>
+                    <span class="text-xs text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}</span>
+                  </a>
                 </li>
               ))}
             </ul>

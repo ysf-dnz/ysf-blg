@@ -96,9 +96,9 @@ export default defineConfig({
       },
       // Statik yollu SSR sayfalar da sitemap'e girer; üye alanı girmesin
       // (/uyeler herkese açık, kalır). Dinamik [slug] sayfaları girmez →
-      // kurslar için SSR sitemap ayrıca listelenir (F1-04).
+      // kurslar ve etkinlikler için SSR sitemap'ler ayrıca listelenir (F1-04, F3-02).
       filter: (page) => !/\/uye(\/|$)/.test(new URL(page).pathname),
-      customSitemaps: [`${SITE}/sitemap-kurslar.xml`],
+      customSitemaps: [`${SITE}/sitemap-kurslar.xml`, `${SITE}/sitemap-etkinlikler.xml`],
     }),
     ...adminIntegrations,
   ],

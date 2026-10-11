@@ -14,6 +14,8 @@ import { formatDate } from "@/lib/dates.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
 import { groupByCategory } from "@/lib/books-lookup.ts";
 import { R } from "@/lib/routes.ts";
+import { trSaat, trTarih } from "@/lib/etkinlik-kural.ts";
+import EtkinlikFormu from "@/features/etkinlik/EtkinlikFormu.astro";
 import { turEtiketi } from "@/lib/topluluk.ts";
 
 export const prerender = false;
@@ -338,21 +340,15 @@ if (groups.length && tab === "uyeler") {
   {
     tab === "etkinlik" && (
       <section class="mt-6">
-        {canManage(myRole) && (
-          <form method="post" action="/api/uye/etkinlik" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-2">
-            <input type="hidden" name="clubId" value={club.id} />
-            <input name="title" required maxlength="80" placeholder="Etkinlik başlığı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-            <input name="startsAt" required type="datetime-local" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-            <input name="location" placeholder="Yer / bağlantı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-            <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Etkinlik aç</button>
-          </form>
-        )}
+        {canManage(myRole) && <EtkinlikFormu clubId={club.id} />}
         <ul class="mt-4 space-y-3">
           {clubEvents.length === 0 && <p class="text-ink-muted">Etkinlik yok.</p>}
           {clubEvents.map((e) => (
-            <li class="rounded-xl border border-line bg-surface-raised px-5 py-3">
-              <strong class="text-ink">{e.title}</strong>
-              <span class="ml-2 text-sm text-ink-muted">🕐 {formatDate(e.startsAt, "tr")}{e.location && ` · 📍 ${e.location}`}</span>
+            <li>
+              <a href={R.etkinlik(e.slug ?? String(e.id))} class="hover-lift block rounded-xl border border-line bg-surface-raised px-5 py-3 hover:border-accent/50">
+                <strong class="text-ink">{e.title}</strong>
+                <span class="ml-2 text-sm text-ink-muted">🕐 {trTarih(e.startsAt)} {trSaat(e.startsAt)}{e.location && ` · 📍 ${e.location}`}</span>
+              </a>
             </li>
           ))}
         </ul>

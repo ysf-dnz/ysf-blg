@@ -1,99 +1,120 @@
 ---
-/** Etkinlik takvimi: RSVP (+10 puan, ilk katılımda). Rep/admin etkinlik açar. */
-import { asc, gte, inArray } from "drizzle-orm";
+/**
+ * Etkinlik takvimi: yaklaşanlar + son 7 günde bitenler (değerlendirme penceresi).
+ * Kart etkinlik sayfasına gider; kayıt ve bilet orada. Rep/admin site geneli etkinlik açar.
+ */
+import { asc, eq, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import EtkinlikFormu from "@/features/etkinlik/EtkinlikFormu.astro";
 import { db, schema } from "@/db/client.ts";
+import { etkinlikGorunurMu, kayitSayilari } from "@/lib/etkinlik.ts";
+import { etkinlikBitis, TUR_AD, trAralik, VARSAYILAN_SURE_SAAT } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { formatDate } from "@/lib/dates.ts";
+import { PUAN } from "@/lib/points.ts";
+import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
 const member = await getOrCreateMember(Astro);
-const events = await db.query.events.findMany({
-  where: gte(schema.events.startsAt, new Date(Date.now() - 864e5)),
-  orderBy: asc(schema.events.startsAt),
-  limit: 30,
-});
-const eventIds = events.map((e) => e.id);
-const myRsvps = new Set<number>();
-const counts = new Map<number, number>();
-const priorityCounts = new Map<number, number>();
-const myPriority = new Set<number>();
-if (eventIds.length) {
-  const rows = await db.query.eventRsvps.findMany({
-    where: inArray(schema.eventRsvps.eventId, eventIds),
-  });
-  for (const r of rows) {
-    counts.set(r.eventId, (counts.get(r.eventId) ?? 0) + 1);
-    if (r.priority)
-      priorityCounts.set(r.eventId, (priorityCounts.get(r.eventId) ?? 0) + 1);
-    if (member && r.userId === member.id) {
-      myRsvps.add(r.eventId);
-      if (r.priority) myPriority.add(r.eventId);
-    }
-  }
-}
+const simdi = new Date();
+const [hepsi, onayliKulupler] = await Promise.all([
+  db.query.events.findMany({
+    // Bitişi (yoksa başlangıç + 2 saat) son 7 gün içinde ya da ileride olanlar
+    // Ham SQL karşılaştırmasında Date parametresi kolon kodlayıcısından geçmez → ISO + ::timestamp
+    where: sql`coalesce(${schema.events.endsAt}, ${schema.events.startsAt} + ${VARSAYILAN_SURE_SAAT}::int * interval '1 hour')
+      >= ${new Date(simdi.getTime() - PUAN.eventRatingDays * 864e5).toISOString()}::timestamp`,
+    orderBy: asc(schema.events.startsAt),
+    limit: 60,
+  }),
+  db.query.clubs.findMany({ where: eq(schema.clubs.status, "approved") }),
+]);
+const kulupler = new Map(onayliKulupler.map((k) => [k.id, k]));
+// Onay bekleyen topluluğun etkinliği herkese açık listede görünmez
+const events = hepsi.filter((e) => etkinlikGorunurMu(e, e.clubId ? kulupler.get(e.clubId) : null));
+const [sayilar, kayitlarim] = await Promise.all([
+  kayitSayilari(events.map((e) => e.id)),
+  member
+    ? db.query.eventRsvps.findMany({ where: eq(schema.eventRsvps.userId, member.id) })
+    : [],
+]);
+const kaydim = new Map(kayitlarim.map((r) => [r.eventId, r]));
 const canCreate = member && member.role !== "member";
+const yaklasan = events.filter((e) => etkinlikBitis(e) >= simdi);
+const biten = events.filter((e) => etkinlikBitis(e) < simdi).reverse();
 ---
 
-<ToplulukLayout title="Etkinlikler" description="Okuma maratonları, canlı quiz geceleri, buluşmalar.">
+<ToplulukLayout title="Etkinlikler" description="Buluşmalar, atölyeler, konferanslar ve çevrimiçi okuma geceleri. Yerini ayır, kapıda girişini doğrulat.">
   <section class="girih-texture -mx-4 px-4 py-10">
     <h1 class="font-display text-3xl font-semibold text-ink sm:text-4xl">📅 Etkinlikler</h1>
-    <p class="mt-2 text-ink-muted">Katıl, birlikte oku; katılım +10 puan.</p>
+    <p class="mt-2 text-ink-muted">
+      Yerini ayır, gel, girişini doğrulat: gelen <strong class="text-ink">+{PUAN.eventAttended} puan</strong> kazanır.
+      {member && <a href={R.uye.biletler} class="ml-1 text-accent hover:underline">🎟️ Biletlerim</a>}
+    </p>
   </section>
 
-  {
-    canCreate && (
-      <form method="post" action="/api/uye/etkinlik" class="mt-6 grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-2">
-        <input name="title" required maxlength="80" placeholder="Etkinlik başlığı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-        <input name="startsAt" required type="datetime-local" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-        <input name="location" placeholder="Yer / bağlantı" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-        <input name="description" placeholder="Kısa açıklama" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
-        <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2 text-sm font-medium text-surface sm:col-span-2">Etkinlik aç</button>
-      </form>
-    )
-  }
+  {Astro.url.searchParams.get("davet") === "gecersiz" && (
+    <div class="menu-pop mt-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Bu davet artık geçerli değil (etkinlik sona ermiş ya da kod iptal edilmiş olabilir). Yaklaşan etkinlikler aşağıda.
+    </div>
+  )}
 
-  <ul class="mt-8 space-y-4" data-stagger>
-    {events.length === 0 && <p class="text-ink-muted">Yaklaşan etkinlik yok{canCreate ? " — ilkini sen aç." : "."}</p>}
+  {canCreate && <div class="mt-6"><EtkinlikFormu /></div>}
+
+  <ul class="mt-8 space-y-4" data-stagger data-etkinlikler>
+    {yaklasan.length === 0 && <p class="text-ink-muted">Yaklaşan etkinlik yok{canCreate ? " — ilkini sen aç." : "."}</p>}
     {
-      events.map((e) => (
-        <li>
-          <article class="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface-raised p-5">
-            <div class="min-w-0 flex-1">
-              <h2 class="font-display text-lg font-semibold text-ink">{e.title}</h2>
-              <p class="mt-1 text-sm text-ink-muted">
-                🕐 {formatDate(e.startsAt, "tr")} {e.startsAt.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
-                {e.location && ` · 📍 ${e.location}`}
-              </p>
-              {e.description && <p class="mt-1 text-sm text-ink-muted">{e.description}</p>}
-            </div>
-            <div class="text-center">
-              <p class="text-sm text-ink-muted">
-                {counts.get(e.id) ?? 0} katılımcı
-                {(priorityCounts.get(e.id) ?? 0) > 0 && (
-                  <span title="Öncelikli koltuk"> · ⭐{priorityCounts.get(e.id)}</span>
-                )}
-              </p>
-              {member && !myRsvps.has(e.id) ? (
-                <form method="post" action="/api/uye/etkinlik">
-                  <input type="hidden" name="action" value="rsvp" />
-                  <input type="hidden" name="eventId" value={e.id} />
-                  <button class="mt-1 cursor-pointer rounded-full bg-accent px-5 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katılıyorum</button>
-                  <label class="mt-1.5 flex cursor-pointer items-center justify-center gap-1.5 text-xs text-ink-muted">
-                    <input type="checkbox" name="priority" value="1" class="accent-(--accent)" />
-                    ⭐ Öncelikli koltuk (25p)
-                  </label>
-                </form>
-              ) : myRsvps.has(e.id) ? (
-                <p class="mt-1 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-medium text-accent">
-                  Katılıyorsun ✓{myPriority.has(e.id) && " ⭐"}
+      yaklasan.map((e) => {
+        const s = sayilar.get(e.id) ?? { kayit: 0, oncelikli: 0, giris: 0 };
+        const benim = kaydim.get(e.id);
+        const dolu = e.capacity != null && s.kayit >= e.capacity;
+        const kulup = e.clubId ? kulupler.get(e.clubId) : null;
+        return (
+          <li>
+            <a href={R.etkinlik(e.slug ?? String(e.id))} class="hover-lift flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface-raised p-5 hover:border-accent/50">
+              <div class="min-w-0 flex-1">
+                <p class="flex flex-wrap gap-2 text-xs text-ink-muted">
+                  {e.kind && <span class="rounded-full border border-line px-2 py-0.5">{TUR_AD[e.kind]}</span>}
+                  {kulup && <span>🏛️ {kulup.name}</span>}
+                  {e.il && <span>📍 {e.il}</span>}
                 </p>
-              ) : null}
-            </div>
-          </article>
-        </li>
-      ))
+                <h2 class="mt-1 font-display text-lg font-semibold text-ink">{e.title}</h2>
+                <p class="mt-1 text-sm text-ink-muted">🕐 {trAralik(e)}{e.location && ` · ${e.location}`}</p>
+                {e.description && <p class="mt-1 text-sm text-ink-muted">{e.description}</p>}
+              </div>
+              <div class="text-center text-sm">
+                <p class="text-ink-muted">
+                  {s.kayit}{e.capacity != null && ` / ${e.capacity}`} kayıtlı
+                  {s.oncelikli > 0 && <span title="Öncelikli koltuk"> · ⭐{s.oncelikli}</span>}
+                </p>
+                {benim ? (
+                  <p class="mt-1 rounded-full bg-accent-soft px-4 py-1.5 font-medium text-accent">Kayıtlısın ✓{benim.priority && " ⭐"}</p>
+                ) : dolu ? (
+                  <p class="mt-1 rounded-full border border-line px-4 py-1.5 text-ink-muted">Kontenjan doldu</p>
+                ) : (
+                  <p class="mt-1 rounded-full bg-accent px-5 py-1.5 font-medium text-surface">Yerimi ayır →</p>
+                )}
+              </div>
+            </a>
+          </li>
+        );
+      })
     }
   </ul>
+
+  {biten.length > 0 && (
+    <section class="mt-10">
+      <h2 class="font-display text-lg font-semibold text-ink">Geçtiğimiz günlerde</h2>
+      <ul class="mt-3 space-y-2">
+        {biten.map((e) => (
+          <li>
+            <a href={R.etkinlik(e.slug ?? String(e.id))} class="flex flex-wrap items-center gap-3 rounded-xl border border-line px-4 py-3 text-sm text-ink-muted hover:border-accent/50 hover:text-ink">
+              <span class="font-medium text-ink">{e.title}</span>
+              <span>{trAralik(e)}</span>
+              <span class="ml-auto">👥 {sayilar.get(e.id)?.giris ?? 0} katıldı{kaydim.get(e.id)?.checkedInAt && " · ⭐ değerlendir"}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </ToplulukLayout>

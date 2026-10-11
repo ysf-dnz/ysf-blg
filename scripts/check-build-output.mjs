@@ -77,9 +77,11 @@ if (existsSync(sitemap0) && /\/uye(\/|<)/.test(readFileSync(sitemap0, "utf8"))) 
   hata++;
 }
 const sitemapIndex = `${STATIK}/sitemap-index.xml`;
-if (existsSync(sitemapIndex) && !readFileSync(sitemapIndex, "utf8").includes("sitemap-kurslar.xml")) {
-  console.error("✗ SITEMAP: sitemap-kurslar.xml index'te yok (customSitemaps)");
-  hata++;
+for (const ozel of ["sitemap-kurslar.xml", "sitemap-etkinlikler.xml"]) {
+  if (existsSync(sitemapIndex) && !readFileSync(sitemapIndex, "utf8").includes(ozel)) {
+    console.error(`✗ SITEMAP: ${ozel} index'te yok (customSitemaps)`);
+    hata++;
+  }
 }
 const vercelConfig = ".vercel/output/config.json";
 if (existsSync(vercelConfig)) {
