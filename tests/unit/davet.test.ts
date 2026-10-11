@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CROCKFORD, davetKanali, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
+import type { AstroCookies } from "astro";
+import { CROCKFORD, davetCereziOku, davetKanali, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
 
 describe("davet kodu — Crockford Base32", () => {
   it("alfabe I, L, O, U içermez; 32 karakter", () => {
@@ -40,6 +41,28 @@ describe("davet kodu — Crockford Base32", () => {
     ["", "qr"],
   ] as const)("kanal %j → %s", (ham, kanal) => {
     expect(davetKanali(ham)).toBe(kanal);
+  });
+});
+
+describe("karşılama çerezi: {course|event}:{hedefId}:{codeId}", () => {
+  const cerez = (v: string | null) => ({ get: () => (v ? { value: v } : undefined) }) as unknown as AstroCookies;
+  it.each([
+    ["course:5:9", 5, "course", 9],
+    ["event:5:9", 5, "event", 9],
+    ["course:5:9", 5, "event", null], // tür uyuşmazlığı: kurs çerezi etkinlikte atıf üretmez
+    ["event:5:9", 5, "course", null],
+    ["event:6:9", 5, "event", null], // başka etkinliğin daveti (AC-9)
+    ["event:5:9:1", 5, "event", null],
+    ["kulup:5:9", 5, "event", null],
+    ["", 5, "course", null],
+    [null, 5, "event", null],
+  ] as const)("%j, hedef %i/%s → kod %j", (deger, hedefId, tur, beklenen) => {
+    expect(davetCereziOku(cerez(deger), hedefId, tur)).toBe(beklenen);
+  });
+  it("tür verilmezse kurs (Faz 2 çağıranları değişmedi)", () => {
+    expect(davetCereziOku(cerez("course:5:9"), 5)).toBe(9);
+    expect(davetCereziOku(cerez("event:5:9"), 5)).toBeNull();
+    expect(davetCereziOku(undefined, 5)).toBeNull();
   });
 });
 

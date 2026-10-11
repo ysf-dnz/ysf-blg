@@ -27,6 +27,8 @@ export interface KartGirdi {
   qrSvg: string;
   /** Protokolsüz, elle yazılabilir: host/d/kod */
   kisaLink: string;
+  /** QR altı çağrı; varsayılan "Tara, hemen katıl" (etkinlikte "Tara, yerini ayır") */
+  cagri?: string;
 }
 
 const RENK = { zemin: "#0a2b33", metin: "#fdfcfa", soluk: "#93a5a8", vurgu: "#3fb8bc", kart: "#123b44" };
@@ -113,7 +115,7 @@ export async function renderDavetKartiDetay(g: KartGirdi): Promise<{ png: Buffer
   const qrKutu = el("div", { flexDirection: "column", alignItems: "center", gap: px(16) }, [
     { type: "img", props: { src: qr, style: { width: `${qrBoy}px`, height: `${qrBoy}px`, borderRadius: px(24), backgroundColor: "#ffffff" } } },
     yazi(g.kisaLink, { fontSize: og ? "26px" : px(40), fontWeight: 700, color: RENK.vurgu, letterSpacing: "1px" }),
-    yazi("Tara, hemen katıl", { fontSize: og ? "22px" : px(30), color: RENK.soluk }),
+    yazi(g.cagri ?? "Tara, hemen katıl", { fontSize: og ? "22px" : px(30), color: RENK.soluk }),
   ]);
 
   const kok = {

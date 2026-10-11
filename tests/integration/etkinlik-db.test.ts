@@ -1,19 +1,24 @@
 /**
- * Etkinlik — gerçek DB (Faz 3): kapasite yarışı, kayıt kapanışı, ⭐ koltuk, görevli sınırı.
+ * Etkinlik — gerçek DB (Faz 3): kapasite yarışı, kayıt kapanışı, ⭐ koltuk, görevli sınırı;
+ * etkinlik daveti atfı, bekleyen ve bitişte düşme (AC-19), düzenleyen davet puanı almaz (AC-20).
  * Yalnız POSTGRES_URL_TEST ile koşar; kendi geçici üyelerini/etkinliklerini açar ve temizler:
  *   POSTGRES_URL_TEST="$(node --env-file=.env.local -p process.env.POSTGRES_URL)" npx vitest run tests/integration
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray } from "drizzle-orm";
+import type { AstroCookies } from "astro";
 
 const URL = process.env.POSTGRES_URL_TEST;
 const SAAT = 3600e3;
+const cerez = (deger: string | null) =>
+  ({ get: () => (deger ? { value: deger } : undefined), delete: () => {} }) as unknown as AstroCookies;
 
 describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
   type Db = typeof import("@/db/client.ts");
   type Ev = typeof import("@/lib/etkinlik.ts");
   type Rw = typeof import("@/lib/rewards.ts");
-  let db: Db["db"], schema: Db["schema"], ev: Ev, rw: Rw;
+  type Dv = typeof import("@/lib/davet.ts");
+  let db: Db["db"], schema: Db["schema"], ev: Ev, rw: Rw, dv: Dv;
   const uyeler: number[] = [];
   const etkinlikler: number[] = [];
   const t = Date.now().toString(36);
@@ -56,6 +61,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     ({ db, schema } = await import("@/db/client.ts"));
     ev = await import("@/lib/etkinlik.ts");
     rw = await import("@/lib/rewards.ts");
+    dv = await import("@/lib/davet.ts");
   });
   afterAll(async () => {
     if (etkinlikler.length) {
@@ -148,6 +154,109 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect(await ev.gorevliRol(e, ortaklar[0]!.id)).toBeNull();
     // Yer açıldı → 4. ortak artık host olabilir mi? Önce scanner satırı var → rol değişmez (silip eklenir)
     expect(await ev.gorevliEkle(e, ortaklar[3]!.id, "host")).toBe(false);
+  });
+
+  /* ---------------- F3-03: etkinlik daveti ---------------- */
+
+  const bekleyen = (userId: number, refId: string) =>
+    db.query.pendingPoints.findFirst({
+      where: and(eq(schema.pendingPoints.userId, userId), eq(schema.pendingPoints.reason, "event_invite_attended"), eq(schema.pendingPoints.refId, refId)),
+    });
+
+  it("davetle kayıt: atıf yazılır, davet edene bekleyen +10 açılır (bitişte sona erer); kod çözülür", async () => {
+    const acan = await uye("dv-acan");
+    const e = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    const davetEden = await uye("dv-eden");
+    await ev.kayitOl(davetEden, e);
+    const kod = await dv.davetKoduUret(davetEden.id, e.id, "event");
+    expect((await dv.davetKoduUret(davetEden.id, e.id, "event")).id).toBe(kod.id);
+    // Aynı sayısal id'li KURS için ayrı kod üretilir (tür ayrımı)
+    expect(kod.targetType).toBe("event");
+    const cozulen = await dv.davetCoz(kod.code.toLowerCase());
+    expect(cozulen && "etkinlik" in cozulen && cozulen.etkinlik.id).toBe(e.id);
+    expect(await dv.davetHedefi(kod.code)).toBeNull(); // kurs çözücüsü etkinlik kodunu tanımaz
+
+    const davetli = await uye("dv-davetli");
+    const k = await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    expect(k).toMatchObject({ durum: "yeni", davetli: true });
+    expect(k.rsvp?.inviteCodeId).toBe(kod.id);
+    const b = await bekleyen(davetEden.id, `event:${e.id}:u:${davetli.id}`);
+    expect(b).toMatchObject({ status: "pending", delta: 10 });
+    expect(b!.expiresAt!.getTime()).toBe(e.endsAt!.getTime());
+    // Davet anında ledger'a HİÇBİR ŞEY yazılmaz (RSVP puan üretmez; davet puanı girişte)
+    expect(await ledger(davetEden.id, "event_invite_attended", `event:${e.id}:u:${davetli.id}`)).toHaveLength(0);
+    expect(await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).toHaveLength(0);
+  });
+
+  it("atıfsız durumlar: kendi kodu, başka etkinliğin çerezi, kurs çerezi, iptal edilmiş kod", async () => {
+    const acan = await uye("at-acan");
+    const e = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    const baska = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    const eden = await uye("at-eden");
+    await ev.kayitOl(eden, baska);
+    const baskaKod = await dv.davetKoduUret(eden.id, baska.id, "event");
+    const kod = await dv.davetKoduUret(eden.id, e.id, "event");
+
+    // Kendi kodu: kaydolur, atıf yok
+    const kendi = await ev.kayitOl(eden, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    expect(kendi).toMatchObject({ durum: "yeni", davetli: false });
+    expect(kendi.rsvp?.inviteCodeId).toBeNull();
+    // Başka etkinliğin daveti (AC-9 eşleniği) ve kurs çerezi
+    const a = await ev.kayitOl(await uye("at-a"), e, { cookies: cerez(`event:${baska.id}:${baskaKod.id}`) });
+    const b = await ev.kayitOl(await uye("at-b"), e, { cookies: cerez(`course:${e.id}:${kod.id}`) });
+    // Çerez bu etkinliği gösteriyor ama kod başka etkinliğe ait (sahte çerez)
+    const c = await ev.kayitOl(await uye("at-c"), e, { cookies: cerez(`event:${e.id}:${baskaKod.id}`) });
+    for (const s of [a, b, c]) {
+      expect(s).toMatchObject({ durum: "yeni", davetli: false });
+      expect(s.rsvp?.inviteCodeId).toBeNull();
+    }
+    // İptal edilmiş kod
+    await db.update(schema.inviteCodes).set({ revokedAt: new Date() }).where(eq(schema.inviteCodes.id, kod.id));
+    const d = await ev.kayitOl(await uye("at-d"), e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    expect(d.davetli).toBe(false);
+    expect(await db.query.pendingPoints.findMany({ where: eq(schema.pendingPoints.userId, eden.id) })).toHaveLength(0);
+  });
+
+  it("AC-20: düzenleyenin davetiyle kayıt atıf taşır ama düzenleyene bekleyen AÇILMAZ", async () => {
+    const acan = await uye("h-acan");
+    const ortak = await uye("h-ortak");
+    const e = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    await ev.gorevliEkle(e, ortak.id, "host");
+    for (const host of [acan, ortak]) {
+      const kod = await dv.davetKoduUret(host.id, e.id, "event");
+      const davetli = await uye(`h-davetli-${host.id}`);
+      const k = await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+      expect(k).toMatchObject({ durum: "yeni", davetli: true }); // huni sayımı için atıf kalır
+      expect(await bekleyen(host.id, `event:${e.id}:u:${davetli.id}`)).toBeUndefined();
+    }
+    // Giriş görevlisi (scanner) düzenleyen değildir: davet puanı alabilir
+    const gorevli = await uye("h-gorevli");
+    await ev.gorevliEkle(e, gorevli.id, "scanner");
+    const kod = await dv.davetKoduUret(gorevli.id, e.id, "event");
+    const davetli = await uye("h-davetli-g");
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    expect(await bekleyen(gorevli.id, `event:${e.id}:u:${davetli.id}`)).toMatchObject({ status: "pending" });
+  });
+
+  it("AC-19: davetli gelmezse davet edenin bekleyeni etkinlik bitince düşer, ledger boş kalır", async () => {
+    const acan = await uye("d19-acan");
+    const e = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
+    const eden = await uye("d19-eden");
+    await ev.kayitOl(eden, e);
+    const kod = await dv.davetKoduUret(eden.id, e.id, "event");
+    const davetli = await uye("d19-davetli");
+    await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) });
+    const ref = `event:${e.id}:u:${davetli.id}`;
+    // Bitişten ÖNCE: düşmez
+    expect((await rw.bekleyenleriIsle(new Date(e.endsAt!.getTime() - 1000), eden.id)).dusen).toBe(0);
+    expect((await bekleyen(eden.id, ref))?.status).toBe("pending");
+    // Bitişten SONRA: düşer
+    expect((await rw.bekleyenleriIsle(new Date(e.endsAt!.getTime() + 1000), eden.id)).dusen).toBe(1);
+    expect((await bekleyen(eden.id, ref))?.status).toBe("expired");
+    expect(await ledger(eden.id, "event_invite_attended", ref)).toHaveLength(0);
+    // Biten etkinliğin kodu artık çözülmez (kart/karşılama üretmez)
+    await db.update(schema.events).set({ startsAt: new Date(Date.now() - 5 * SAAT), endsAt: new Date(Date.now() - 3 * SAAT) }).where(eq(schema.events.id, e.id));
+    expect(await dv.davetCoz(kod.code)).toBeNull();
   });
 
   it("slug'sız eski etkinliğe ilk çağrıda slug atanır, ikinci çağrı aynı slug'ı döner", async () => {

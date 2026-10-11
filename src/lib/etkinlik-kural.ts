@@ -30,6 +30,18 @@ export const VARSAYILAN_SURE_SAAT = 2;
 /** Kapı açılışı: giriş doğrulaması başlangıçtan bu kadar dakika önce başlar */
 export const KAPI_ACILIS_DK = 60;
 
+/**
+ * Herkese açık mı? events'te status yok: kulüp etkinliği kulüp onaylıysa görünür
+ * (onay bekleyen kulübün etkinliği sitemap/OG ile indekslenmesin); kulüpsüz etkinliği
+ * yalnız rep/admin açabildiği için hep görünür.
+ */
+export function etkinlikGorunurMu(
+  e: { clubId: number | null },
+  kulup: { status: string } | null | undefined,
+): boolean {
+  return !e.clubId || kulup?.status === "approved";
+}
+
 export function etkinlikBitis(e: EtkinlikZamani): Date {
   return e.endsAt ?? new Date(e.startsAt.getTime() + VARSAYILAN_SURE_SAAT * SAAT);
 }

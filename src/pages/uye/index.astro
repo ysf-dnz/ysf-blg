@@ -15,6 +15,7 @@ import {
 import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { PUAN } from "@/lib/points.ts";
 import { DAVET_REASONLARI, UNLOCKS, bekleyenleriIsle } from "@/lib/rewards.ts";
+import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
@@ -118,14 +119,17 @@ const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
       ? `son gün ${tarihKisa(b.expiresAt)}`
       : "koşul bekliyor";
 
-// 🤝 Davetlerim (Faz 2): kod başına görüntülenme (kanal) → katılım → aktivasyon; kazanılan/bekleyen
+// 🤝 Davetlerim (Faz 2-3): kod başına görüntülenme (kanal) → katılım → aktivasyon; kazanılan/bekleyen.
+// Kurs kodu: course_enrollments; etkinlik kodu: event_rsvps (aktive = girişi doğrulanan).
 // (yalnız davet EDEN olarak kazanılanlar: welcome davetlinin kendi puanıdır, tavan listesinde kalır)
 const DAVET_EDEN_REASONLARI = DAVET_REASONLARI.filter((r) => r !== "course_invite_welcome");
 const davetKodlarim = await db.query.inviteCodes.findMany({
   where: and(eq(schema.inviteCodes.inviterId, member.id), isNull(schema.inviteCodes.revokedAt)),
 });
 const kodIdler = davetKodlarim.map((k) => k.id);
-const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]] = await Promise.all([
+const kursKodlari = davetKodlarim.filter((k) => k.targetType === "course");
+const etkinlikKodlari = davetKodlarim.filter((k) => k.targetType === "event");
+const [davetZiyaret, davetKatilim, davetKurslar, davetEtkinlikKatilim, davetEtkinlikler, [davetKazanc], [davetBekleyen]] = await Promise.all([
   kodIdler.length
     ? db
         .select({ codeId: schema.inviteVisits.inviteCodeId, kanal: schema.inviteVisits.kanal, n: sql<number>`count(*)` })
@@ -145,8 +149,23 @@ const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]]
         .where(inArray(schema.courseEnrollments.inviteCodeId, kodIdler))
         .groupBy(schema.courseEnrollments.inviteCodeId)
     : [],
-  kodIdler.length
-    ? db.query.courses.findMany({ where: inArray(schema.courses.id, davetKodlarim.map((k) => k.targetId)) })
+  // Tür ayrımı ŞART: etkinlik kodunun target_id'si aynı sayısal id'li KURSU bulmasın
+  kursKodlari.length
+    ? db.query.courses.findMany({ where: inArray(schema.courses.id, kursKodlari.map((k) => k.targetId)) })
+    : [],
+  etkinlikKodlari.length
+    ? db
+        .select({
+          codeId: schema.eventRsvps.inviteCodeId,
+          katilan: sql<number>`count(*)`,
+          aktif: sql<number>`count(${schema.eventRsvps.checkedInAt})`,
+        })
+        .from(schema.eventRsvps)
+        .where(inArray(schema.eventRsvps.inviteCodeId, etkinlikKodlari.map((k) => k.id)))
+        .groupBy(schema.eventRsvps.inviteCodeId)
+    : [],
+  etkinlikKodlari.length
+    ? db.query.events.findMany({ where: inArray(schema.events.id, etkinlikKodlari.map((k) => k.targetId)) })
     : [],
   db
     .select({ t: sql<number>`coalesce(sum(${schema.pointsLedger.delta}), 0)` })
@@ -164,13 +183,17 @@ const [davetZiyaret, davetKatilim, davetKurslar, [davetKazanc], [davetBekleyen]]
     ),
 ]);
 const davetKursMap = new Map(davetKurslar.map((c) => [c.id, c]));
+const davetEtkinlikMap = new Map(davetEtkinlikler.map((e) => [e.id, e]));
 const ziyaretMap = new Map<number, { qr: number; link: number }>();
 for (const z of davetZiyaret) {
   const g = ziyaretMap.get(z.codeId) ?? { qr: 0, link: 0 };
   g[z.kanal] += Number(z.n);
   ziyaretMap.set(z.codeId, g);
 }
-const katilimMap = new Map(davetKatilim.map((k) => [k.codeId, { katilan: Number(k.katilan), aktif: Number(k.aktif), bitiren: Number(k.bitiren) }]));
+const katilimMap = new Map<number | null, { katilan: number; aktif: number; bitiren: number | null }>([
+  ...davetKatilim.map((k) => [k.codeId, { katilan: Number(k.katilan), aktif: Number(k.aktif), bitiren: Number(k.bitiren) }] as const),
+  ...davetEtkinlikKatilim.map((k) => [k.codeId, { katilan: Number(k.katilan), aktif: Number(k.aktif), bitiren: null }] as const),
+]);
 const kFaktor = [...katilimMap.values()].reduce((t, k) => t + k.aktif, 0);
 
 // 🔨 Görevlerim: üstlenilen kampanya görevleri + son tarih
@@ -432,22 +455,28 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
       </p>
     </div>
     {davetKodlarim.length === 0 ? (
-      <p class="mt-2 text-sm text-ink-muted">Katıldığın bir kursun sayfasındaki <strong>🎴 Davet kartın</strong>ı paylaş: arkadaşın QR'ı okutunca o +{PUAN.inviteWelcome}, sen +{PUAN.inviteActivated} kazanırsın.</p>
+      <p class="mt-2 text-sm text-ink-muted">Katıldığın bir kursun ya da kaydolduğun bir etkinliğin sayfasındaki <strong>🎴 Davet kartın</strong>ı paylaş: arkadaşın QR'ı okutunca kursta o +{PUAN.inviteWelcome}, sen +{PUAN.inviteActivated}; etkinlikte o +{PUAN.eventInviteWelcome}, sen +{PUAN.eventInviteAttended} kazanırsın.</p>
     ) : (
       <table class="mt-3 w-full text-sm">
-        <thead class="text-left text-xs text-ink-muted"><tr><th class="py-1 font-medium">Kurs</th><th class="py-1 font-medium">Görüntülenme</th><th class="py-1 font-medium">Katılan</th><th class="py-1 font-medium">Aktive</th><th class="py-1 font-medium">Bitiren</th></tr></thead>
+        <thead class="text-left text-xs text-ink-muted"><tr><th class="py-1 font-medium">Kurs / etkinlik</th><th class="py-1 font-medium">Görüntülenme</th><th class="py-1 font-medium">Katılan</th><th class="py-1 font-medium" title="Kursta ilk öğeyi bitiren; etkinlikte girişi doğrulanan">Aktive</th><th class="py-1 font-medium">Bitiren</th></tr></thead>
         <tbody>
           {davetKodlarim.map((k) => {
             const z = ziyaretMap.get(k.id) ?? { qr: 0, link: 0 };
-            const kt = katilimMap.get(k.id) ?? { katilan: 0, aktif: 0, bitiren: 0 };
-            const kurs = davetKursMap.get(k.targetId);
+            const etkinlikMi = k.targetType === "event";
+            const kt = katilimMap.get(k.id) ?? { katilan: 0, aktif: 0, bitiren: etkinlikMi ? null : 0 };
+            const kurs = etkinlikMi ? undefined : davetKursMap.get(k.targetId);
+            const etkinlik = etkinlikMi ? davetEtkinlikMap.get(k.targetId) : undefined;
+            const baslik = kurs?.title ?? etkinlik?.title;
+            // Hedefi silinmiş kod (ör. yeniden kurulan demo veri) listelenmez
+            if (!baslik) return null;
+            const href = kurs ? `${R.kurs(kurs.slug)}#davet` : `${R.etkinlik(etkinlik!.slug ?? String(etkinlik!.id))}#davet`;
             return (
               <tr class="border-t border-line">
-                <td class="py-1.5 pr-2"><a href={kurs ? `/kurslar/${kurs.slug}#davet` : "#"} class="text-accent hover:underline">{kurs?.title ?? k.code}</a> <span class="font-mono text-xs text-ink-muted">{k.code}</span></td>
+                <td class="py-1.5 pr-2">{etkinlikMi ? "📅 " : "🎓 "}<a href={href} class="text-accent hover:underline">{baslik}</a> <span class="font-mono text-xs text-ink-muted">{k.code}</span></td>
                 <td class="py-1.5">{z.qr + z.link} <span class="text-xs text-ink-muted">(QR {z.qr} · link {z.link})</span></td>
                 <td class="py-1.5">{kt.katilan}</td>
                 <td class="py-1.5">{kt.aktif}</td>
-                <td class="py-1.5">{kt.bitiren}</td>
+                <td class="py-1.5">{kt.bitiren ?? "—"}</td>
               </tr>
             );
           })}

@@ -5,11 +5,13 @@
 import type { AstroCookies } from "astro";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { etkinlikBitis, kayitAcikMi, VARSAYILAN_SURE_SAAT } from "./etkinlik-kural.ts";
+import { davetCereziOku, davetCereziSil } from "./davet.ts";
+import { etkinlikBitis, etkinlikGorunurMu, kayitAcikMi, VARSAYILAN_SURE_SAAT } from "./etkinlik-kural.ts";
 import { slugifyTitle } from "./markdown.ts";
 import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
-import { satirlar, spendPoints } from "./rewards.ts";
+import { bekleyenYaz, satirlar, spendPoints } from "./rewards.ts";
+import { R } from "./routes.ts";
 
 export type Etkinlik = typeof schema.events.$inferSelect;
 export type Rsvp = typeof schema.eventRsvps.$inferSelect;
@@ -52,15 +54,6 @@ export async function etkinlikBul(param: string): Promise<Etkinlik | undefined> 
   const e = await db.query.events.findFirst({ where: eq(schema.events.slug, param) });
   if (e || !/^\d{1,9}$/.test(param)) return e;
   return db.query.events.findFirst({ where: eq(schema.events.id, Number(param)) });
-}
-
-/**
- * Herkese açık mı? events'te status yok: kulüp etkinliği kulüp onaylıysa görünür
- * (onay bekleyen kulübün etkinliği sitemap/OG ile indekslenmesin); kulüpsüz etkinliği
- * yalnız rep/admin açabildiği için hep görünür.
- */
-export function etkinlikGorunurMu(e: Pick<Etkinlik, "clubId">, kulup: Pick<Kulup, "status"> | null | undefined): boolean {
-  return !e.clubId || kulup?.status === "approved";
 }
 
 /* ---------------- Görevliler ---------------- */
@@ -131,13 +124,18 @@ export async function gorevliSil(e: Pick<Etkinlik, "id" | "createdBy">, userId: 
 /* ---------------- Kayıt (RSVP) ---------------- */
 
 export type KayitDurumu = "yeni" | "zaten" | "dolu" | "kapali";
-export type KayitSonucu = { durum: KayitDurumu; rsvp?: Rsvp; oncelikli: boolean };
+export type KayitSonucu = { durum: KayitDurumu; rsvp?: Rsvp; oncelikli: boolean; davetli: boolean };
 
 /**
  * Etkinliğe kayıt. Kapasite ve kayıt kapanışı INSERT'in WHERE'inde; aynı etkinliğe
  * paralel kayıtlar danışma kilidiyle sıraya girer (tek HTTP transaction'ı, ADR K1.5
  * deseni): kilitsiz tek SQL'de N eşzamanlı istek aynı sayımı görüp kapasiteyi N kez
  * aşabiliyordu. ⭐ öncelikli koltuk yalnız YENİ kayıtta ve kesinti gerçekleştiyse.
+ *
+ * Atıf (F3-03): karşılama çerezi BU etkinliğe ait geçerli bir kodu taşıyorsa (davet eden ≠
+ * üye) kod `invite_code_id`'ye yazılır — tekillik event_rsvps(event, user): "ilk geçerli
+ * davet kazanır". Davet edene `event_invite_attended` BEKLEYEN açılır (bitişte düşer, AC-19);
+ * davet eden düzenleyense açılmaz (AC-20: host'lar event_hosted alır, davet puanı almaz).
  */
 export async function kayitOl(
   member: Member,
@@ -145,11 +143,23 @@ export async function kayitOl(
   opts: { oncelik?: boolean; cookies?: AstroCookies } = {},
 ): Promise<KayitSonucu> {
   const simdi = new Date();
+  const codeId = davetCereziOku(opts.cookies, e.id, "event");
+  let kod = codeId
+    ? await db.query.inviteCodes.findFirst({
+        where: and(
+          eq(schema.inviteCodes.id, codeId),
+          isNull(schema.inviteCodes.revokedAt),
+          eq(schema.inviteCodes.targetType, "event"),
+          eq(schema.inviteCodes.targetId, e.id),
+        ),
+      })
+    : undefined;
+  if (kod && kod.inviterId === member.id) kod = undefined; // kendi kodu: kaydolur, atıf yok
   const [, sonuc] = await db.batch([
     db.execute(sql`select pg_advisory_xact_lock(${KILIT_ETKINLIK}::int, ${e.id}::int)`),
     db.execute(sql`
-      insert into event_rsvps (event_id, user_id)
-      select e.id, ${member.id}
+      insert into event_rsvps (event_id, user_id, invite_code_id)
+      select e.id, ${member.id}, ${kod?.id ?? null}::int
       from events e
       where e.id = ${e.id}
         and (e.capacity is null
@@ -164,9 +174,28 @@ export async function kayitOl(
   const rsvp = await db.query.eventRsvps.findFirst({
     where: and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, member.id)),
   });
+  // Çerez yalnız BU hedefe aitse silinir (başka hedefin daveti yaşamaya devam eder)
+  if (codeId) davetCereziSil(opts.cookies);
   if (!yeniId) {
-    if (rsvp) return { durum: "zaten", rsvp, oncelikli: rsvp.priority };
-    return { durum: kayitAcikMi(e, simdi) ? "dolu" : "kapali", oncelikli: false };
+    if (rsvp) return { durum: "zaten", rsvp, oncelikli: rsvp.priority, davetli: false };
+    return { durum: kayitAcikMi(e, simdi) ? "dolu" : "kapali", oncelikli: false, davetli: false };
+  }
+
+  if (kod && !(await hostIdleri(e)).includes(kod.inviterId)) {
+    await bekleyenYaz({
+      userId: kod.inviterId,
+      delta: PUAN.eventInviteAttended,
+      reason: "event_invite_attended",
+      refId: `event:${e.id}:u:${member.id}`,
+      note: `${member.name} "${e.title}" etkinliğinde giriş yapınca`,
+      expiresAt: etkinlikBitis(e),
+    });
+    await db.insert(schema.notifications).values({
+      userId: kod.inviterId,
+      kind: "event",
+      body: `${member.name} davetinle "${e.title}" etkinliğine kaydoldu 👋 Girişi doğrulanınca +${PUAN.eventInviteAttended}.`,
+      href: R.etkinlik(e.slug ?? String(e.id)),
+    });
   }
 
   // Öncelikli koltuk: ÖNCE atomik kesinti, koltuk ancak kesinti gerçekleştiyse ⭐ olur
@@ -183,7 +212,7 @@ export async function kayitOl(
       oncelikli = true;
     }
   }
-  return { durum: "yeni", rsvp, oncelikli };
+  return { durum: "yeni", rsvp, oncelikli, davetli: !!kod };
 }
 
 /** Etkinlik başına kayıt / ⭐ / giriş sayıları — tek gruplu sorgu */
@@ -209,4 +238,4 @@ export async function kayitSayilari(
   );
 }
 
-export { etkinlikBitis };
+export { etkinlikBitis, etkinlikGorunurMu };

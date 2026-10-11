@@ -102,6 +102,7 @@ export const POST: APIRoute = async (context) => {
       });
     }
     const p = new URLSearchParams({ sonuc: k.durum });
+    if (k.davetli) p.set("davet", "1");
     if (form.get("priority") === "1" && k.durum === "yeni" && !k.oncelikli) p.set("oncelik", "yok");
     return context.redirect(`${sayfa}?${p}`);
   }

@@ -45,8 +45,42 @@ test.describe("kurs daveti — misafir karşılama (Faz 2)", () => {
     await expect(page.getByRole("button", { name: /Kursa katıl/ }).first()).toBeVisible();
     const og = await page.locator('meta[property="og:image"]').getAttribute("content");
     expect(og).toContain(`/api/kart/${KOD}/og.png`);
+    // og:url ?d='yi korur (Meta yeniden tararken kişisel kartı bulsun) — Base bunu Seo'ya iletmiyordu
+    expect(await page.locator('meta[property="og:url"]').getAttribute("content")).toContain(`${KURS}?d=${KOD}`);
     // Davet sayfası indekslenmez (kişisel kart)
     await expect(page.locator('meta[name="robots"][content="noindex"]')).toHaveCount(1);
+  });
+
+  test("etkinlik daveti (F3-03): /d/{kod} etkinlik sayfasına iner, çerez event: önekli, kart üretilir", async ({ request }) => {
+    const ETKINLIK = "/etkinlik/canli-quiz-gecesi-demo"; // seed:demo — Elif'in daveti DEMEV01
+    const r1 = await request.get("/d/demev01", { maxRedirects: 0 });
+    expect(r1.status()).toBe(302);
+    expect(r1.headers()["location"]).toBe(`${ETKINLIK}?d=DEMEV01`);
+    const cerezler = r1.headersArray().filter((h) => h.name.toLowerCase() === "set-cookie").map((h) => h.value);
+    expect(cerezler.some((c) => c.startsWith("ysf_davet=event%3A") || c.startsWith("ysf_davet=event:"))).toBe(true);
+    expect(cerezler.some((c) => c.startsWith("ysf_ref=elif-celik"))).toBe(true);
+    const r2 = await request.get("/D/DEMEV01", { maxRedirects: 0 });
+    expect(r2.status()).toBe(301);
+    expect(r2.headers()["location"]).toBe("/d/q/DEMEV01");
+    const kart = await request.get("/api/kart/DEMEV01/og.png");
+    expect(kart.status()).toBe(200);
+    expect(kart.headers()["content-type"]).toBe("image/png");
+  });
+
+  test("etkinlik karşılama: '{Ad} seni bu etkinliğe davet ediyor', puan rozeti, OG kart, noindex", async ({ page }) => {
+    const ETKINLIK = "/etkinlik/canli-quiz-gecesi-demo";
+    await page.goto(`${ETKINLIK}?d=DEMEV01`, { waitUntil: "domcontentloaded" });
+    const bant = page.locator("[data-davet-bandi]");
+    await expect(bant.getByText(/Elif Çelik seni bu etkinliğe davet ediyor/)).toBeVisible();
+    await expect(bant.getByText(/sen \+15/)).toBeVisible();
+    await expect(bant.getByText(/Elif Çelik \+10/)).toBeVisible();
+    await expect(bant.getByRole("button", { name: /Yerimi ayır/ })).toBeVisible();
+    expect(await page.locator('meta[property="og:image"]').getAttribute("content")).toContain("/api/kart/DEMEV01/og.png");
+    expect(await page.locator('meta[property="og:url"]').getAttribute("content")).toContain(`${ETKINLIK}?d=DEMEV01`);
+    await expect(page.locator('meta[name="robots"][content="noindex"]')).toHaveCount(1);
+    // Kurs kodu etkinlik sayfasında bant üretmez (tür ayrımı)
+    await page.goto(`${ETKINLIK}?d=${KOD}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("[data-davet-bandi]")).toHaveCount(0);
   });
 
   test("davetli uygulama içi tarayıcıda e-posta kodu ipucu görür", async ({ browser }) => {
