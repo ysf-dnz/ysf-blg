@@ -3,6 +3,15 @@
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
 > Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
 
+## 🧭 FAZ 0 TAMAM — Kurs · Davet QR · Topluluklarımız · Etkinlik girişi · Harita/DM (2026-10-11)
+PRD: `docs/prd/kurs-topluluk-ekosistemi.md`. Kod/şema/bağımlılık DEĞİŞMEDİ; yalnız belge.
+- **ADR:** `docs/adr/0001-kurs-davet-etkinlik-harita.md` — neon-http atomiklik (A/B/C ilkelleri, `awardPoints` `tavan` parametresi + `number` dönüş), `pending_points` tek tasarım (ÖNCE ledger SONRA status), kart/QR hattı (satori+resvg → dependencies, `includeFiles`, `uqr`, `/D|T|C/` → `astro.config redirects` 301), yoklama kararı, iade = negatif `admin_adjust` (seviye düşmez), veri modeli kesin hâli + reason→refId tablosu, PRD'nin kodla çelişen 28 noktası.
+- **Issue planı:** `docs/prd/kurs-topluluk-ekosistemi-issue-plani.md` — Faz 1 (13), Faz 2 (6+human), Faz 3 (6), Faz 4 (4), Faz 5 (4); AC-1..25 eşlemesi. GitHub'da HENÜZ AÇILMADI (onay bekliyor).
+- **Sözlük:** `CONTEXT.md` "Kurs ve etkinlik" bölümü (16 terim) + Davet/Karşılama sayfası netleştirmesi. `docs/assumptions.md` (14), `docs/ideas.md` (9) açıldı.
+- **Canlıda doğrulanan 2 kritik bulgu:** (1) `/?ref=x` statik → `Set-Cookie: ysf_ref` YOK → **davet zinciri canlıda kırık** (hotfix F1-00: `Base.astro`'da 3 satır inline script). (2) Vercel rotaları harf duyarlı (`/Dersler` 404) → `/D/` normalizasyonu middleware'de yapılamaz.
+- **Bekleyen (Yusuf):** 7 soruya yanıt (issue planı başı / son mesaj); Clerk dashboard'da e-posta kodu stratejisi; onay sonrası issue açılışı ve F1-00 hotfix.
+- **Faz 1 ilk işleri:** F1-0T (qa yeşil önkoşulu: search.spec + @clerk/testing), `awardPoints` `number` dönüşü için `begeniPuaniVer` imzası (`rewards.ts:317,346`), slug backfill nullable-first. Tutarlılık denetimi (3 mercek) sonrası düzeltildi: `?k=qr` destination Astro'da çalışmaz → `/d/q/[kod]` ayrı sayfa; `event_hosted` bekleyen satırı yok (canlı sayım); hesap yaşı kuralı tüm bekleyenlere.
+
 ## 🆕 TOPLULUK MOTORU (2026-08-09, ikinci oturum)
 **Görev 2.0 + hiyerarşi + lig/sezon + ödül mıknatısı** — plan: `~/.claude/plans/bunlar-bu-skill-e-giggly-raven.md`
 - **Görev sistemi**: atomik claim (`WHERE status='backlog'` + RETURNING), kulüp üyeliği şartı, üye başına 2 aktif görev limiti, yönetici "Ata ▾" doğrudan atama, Kolay/Orta/Zor zorluk presetleri (25/50/100), `due_at` UI + geri sayım rozetleri, `/uye`'de "Görevlerim", tüm geçişlerde bildirim, kampanya kapatma (`action=close` → kampanya.ts).
