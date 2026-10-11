@@ -74,7 +74,8 @@ test.describe("etkinlik akışı — üye", () => {
   test("F3-04: görevli olmayan üye giriş ekranını göremez ve kendi biletini okutamaz", async ({ page }) => {
     expect((await page.request.get(`${YAKLASAN}/giris`)).status()).toBe(404);
     await page.goto("/uye/biletler", { waitUntil: "domcontentloaded" });
-    const token = (await page.locator("[data-bilet]").first().getAttribute("data-bilet"))!;
+    // Görevli OLMADIĞI etkinliğin bileti (maratonda görevli olduğu için o bileti okutabilir — ayrı test)
+    const token = (await page.locator("[data-bilet]", { hasText: "Canlı Quiz Gecesi" }).getAttribute("data-bilet"))!;
     const r = await page.request.post("/api/uye/giris", { data: { token } });
     expect(r.status()).toBe(403);
     expect((await r.json()).durum).toBe("yetkisiz");
@@ -166,5 +167,24 @@ test.describe("etkinlik akışı — üye", () => {
     await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });
     const baskaId = await page.locator("[data-etkinlik-id]").getAttribute("data-etkinlik-id");
     expect((await page.request.get(`/api/uye/etkinlik-qr?e=${baskaId}`)).status()).toBe(404);
+  });
+
+  test("F3-06: girişi doğrulanan üye etkinliği değerlendirir (tek satır, güncellenir); gelmediği etkinlikte form yok; CSV yalnız düzenleyene", async ({ page }) => {
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    const form = page.locator("#degerlendir");
+    test.skip((await form.count()) === 0, "test üyesinin girişi doğrulanmamış (dönen QR testi atlanmış) ya da maraton bitmiş");
+    await form.locator('input[name="stars"][value="5"]').check();
+    await form.locator('input[name="body"]').fill("e2e: çok verimliydi");
+    await form.getByRole("button", { name: /Gönder|Güncelle/ }).click();
+    await expect(page).toHaveURL(/deger=tamam/);
+    await expect(page.getByText(/Değerlendirmen kaydedildi/)).toBeVisible();
+    await expect(page.locator('#degerlendir input[name="stars"][value="5"]')).toBeChecked();
+    await expect(page.locator("#degerlendir").getByRole("button", { name: "Güncelle" })).toBeVisible();
+    await expect(page.locator("[data-etkinlik-puan]")).toContainText("değerlendirme");
+    // Kayıtlı ama girişi doğrulanmamış olduğu etkinlik: form yok, API de reddeder
+    await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#degerlendir")).toHaveCount(0);
+    // Katılım listesi yalnız düzenleyene (test üyesi maratonda görevli ama düzenleyen değil)
+    expect((await page.request.get(`${MARATON}/katilimcilar.csv`)).status()).toBe(404);
   });
 });

@@ -5,6 +5,8 @@ import { DAVET_REASONLARI, tavanIcin } from "@/lib/rewards.ts";
 import {
   base32,
   biletCoz,
+  csvHucre,
+  csvUret,
   biletQrIcerigi,
   biletToken,
   degerlendirmeAcikMi,
@@ -217,6 +219,29 @@ describe("base32", () => {
     expect(base32(new Uint8Array([0, 0, 0, 0, 0]), 8)).toBe("00000000");
     expect(base32(new Uint8Array([0b00001_000, 0b10_00011_0]), 3)).toBe("123");
     expect(base32(new Uint8Array(32).fill(0xa5), 16)).toHaveLength(16);
+  });
+});
+
+describe("katılım listesi CSV'si", () => {
+  it.each([
+    ["Ayşe Demir", '"Ayşe Demir"'],
+    ['Ali "Hızlı" Can', '"Ali ""Hızlı"" Can"'],
+    ["a,b;c", '"a,b;c"'],
+    ["satır1\nsatır2", '"satır1\nsatır2"'],
+    // Formül enjeksiyonu: ad alanı kullanıcı verisidir
+    ["=HYPERLINK(\"http://x\")", '"\'=HYPERLINK(""http://x"")"'],
+    ["+90555", '"\'+90555"'],
+    ["-1", '"\'-1"'],
+    ["@komut", '"\'@komut"'],
+    [null, '""'],
+    [42, '"42"'],
+  ])("%j → %s", (deger, beklenen) => {
+    expect(csvHucre(deger)).toBe(beklenen);
+  });
+  it("BOM + CRLF, başlık ilk satır", () => {
+    const csv = csvUret(["Ad", "Giriş"], [["Elif", "19:05"], ["Can", null]]);
+    expect(csv.charCodeAt(0)).toBe(0xfeff);
+    expect(csv.slice(1)).toBe('"Ad","Giriş"\r\n"Elif","19:05"\r\n"Can",""\r\n');
   });
 });
 

@@ -203,6 +203,23 @@ export function donenQrIcerigi(kok: string, eventId: number, token: string): str
   return `${kok}/C/${eventId}/${token}`.toUpperCase();
 }
 
+/* ---------------- Katılım listesi (CSV) ---------------- */
+
+/**
+ * CSV hücresi: çift tırnakla sarılır, iç tırnak ikilenir. Formül enjeksiyonu: = + - @ (ve
+ * sekme/CR) ile başlayan kullanıcı metni Excel/Sheets'te formül sayılır → başına tek tırnak.
+ */
+export function csvHucre(deger: string | number | null | undefined): string {
+  let s = String(deger ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+/** Başlık + satırlar → CSV (CRLF; Excel Türkçe karakterleri tanısın diye UTF-8 BOM) */
+export function csvUret(basliklar: string[], satirlar: (string | number | null | undefined)[][]): string {
+  return "\uFEFF" + [basliklar, ...satirlar].map((s) => s.map(csvHucre).join(",")).join("\r\n") + "\r\n";
+}
+
 /* ---------------- Takvim (.ics, RFC 5545) ---------------- */
 
 const icsKacis = (s: string) =>

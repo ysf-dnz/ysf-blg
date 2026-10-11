@@ -16,6 +16,7 @@ import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { PUAN } from "@/lib/points.ts";
 import { DAVET_REASONLARI, UNLOCKS, bekleyenleriIsle } from "@/lib/rewards.ts";
 import { R } from "@/lib/routes.ts";
+import { hostBekleyenleri } from "@/lib/etkinlik.ts";
 
 export const prerender = false;
 
@@ -111,6 +112,14 @@ const kirpilanlar = (
   })
 ).filter((b) => b.yazilan < b.delta && b.resolvedAt && b.resolvedAt.getTime() > Date.now() - 7 * 864e5);
 const bekleyenToplam = bekleyenler.reduce((t, b) => t + b.delta, 0);
+// 🎤 Düzenleyen payı (ADR K2): bekleyen SATIRI yoktur — canlı giriş sayımından tahmin, toplamın dışında
+const [hostBek, [biletSayi]] = await Promise.all([
+  hostBekleyenleri(member.id),
+  db
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.eventRsvps)
+    .where(and(eq(schema.eventRsvps.userId, member.id), isNull(schema.eventRsvps.checkedInAt))),
+]);
 const tarihKisa = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
   b.maturesAt
@@ -301,6 +310,14 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
             🛡️ Admin paneli
           </a>
         )}
+        {Number(biletSayi?.n ?? 0) > 0 && (
+          <a
+            href={R.uye.biletler}
+            class="pill-pop rounded-full border border-accent px-3 py-0.5 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-surface"
+          >
+            🎟️ Biletlerim ({Number(biletSayi!.n)})
+          </a>
+        )}
       </p>
     </div>
     <div class="ml-auto flex flex-wrap gap-4 text-center">
@@ -485,7 +502,7 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
     )}
   </section>
 
-  {(bekleyenler.length > 0 || kirpilanlar.length > 0) && (
+  {(bekleyenler.length > 0 || kirpilanlar.length > 0 || hostBek.length > 0) && (
       <section class="mt-8 rounded-2xl border border-line bg-surface-raised p-5" data-reveal aria-label="Bekleyen puan">
         <h2 class="font-display text-xl font-semibold text-ink">⏳ Bekleyen puan {bekleyenToplam > 0 && <span class="text-accent">+{bekleyenToplam}</span>}</h2>
         <p class="mt-1 text-xs text-ink-muted">Ledger'a henüz girmedi, seviyeye sayılmaz; koşulu gerçekleşince kesinleşir.</p>
@@ -494,6 +511,12 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
             <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line px-3 py-2">
               <span class="text-ink">{b.note ?? b.reason}</span>
               <span class="text-xs text-ink-muted">+{b.delta} · {bekleyenZaman(b)}</span>
+            </li>
+          ))}
+          {hostBek.map((h) => (
+            <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line px-3 py-2" data-host-bekleyen>
+              <span class="text-ink">🎤 <a href={R.etkinlik(h.etkinlik.slug ?? String(h.etkinlik.id))} class="hover:text-accent">{h.etkinlik.title}</a> — düzenleyen payı ({h.katilimci} doğrulanmış katılımcı)</span>
+              <span class="text-xs text-ink-muted">≈ +{h.tahmini} · {tarihKisa(h.dagitim)} sonrası dağıtılır</span>
             </li>
           ))}
           {kirpilanlar.map((b) => (

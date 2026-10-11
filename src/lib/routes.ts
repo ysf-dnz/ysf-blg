@@ -20,6 +20,7 @@ export const R = {
   etkinlikGiris: (slug: string) => `/etkinlik/${slug}/giris`,
   etkinlikEkran: (slug: string) => `/etkinlik/${slug}/ekran`,
   etkinlikTakvim: (slug: string) => `/etkinlik/${slug}/takvim.ics`,
+  etkinlikCsv: (slug: string) => `/etkinlik/${slug}/katilimcilar.csv`,
   uyeler: "/uyeler",
   harita: "/harita",
   aramizaKatil: "/aramiza-katil",

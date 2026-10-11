@@ -6,7 +6,7 @@
  * Davetle geliş (?d=KOD): "{Ad} seni davet ediyor" bandı + kişisel OG kartı; kayıtlı üye ve
  * düzenleyen kendi davet kartını (QR) buradan alır.
  */
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { SignInButton } from "@clerk/astro/components";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import Avatar from "@/components/ui/Avatar.astro";
@@ -16,11 +16,12 @@ import {
   etkinlikGorunurMu,
   gorevliRol,
   hostIdleri,
+  hostPayHesabi,
   kayitOl,
   kayitSayilari,
   slugGaranti,
 } from "@/lib/etkinlik.ts";
-import { etkinlikBitis, kayitAcikMi, TUR_AD, trAralik, trSaat, trTarih } from "@/lib/etkinlik-kural.ts";
+import { degerlendirmeAcikMi, etkinlikBitis, kayitAcikMi, TUR_AD, trAralik, trSaat, trTarih } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
@@ -79,7 +80,7 @@ const uygulamaIci = uygulamaIciTarayici(Astro.request.headers.get("user-agent"))
 const simdi = new Date();
 const bitis = etkinlikBitis(e);
 const bitti = simdi > bitis;
-const [sayilar, kaydim, hostIds, gorevliler, katilimcilar] = await Promise.all([
+const [sayilar, kaydim, hostIds, gorevliler, katilimcilar, [puanlama]] = await Promise.all([
   kayitSayilari([e.id]),
   member
     ? db.query.eventRsvps.findFirst({
@@ -98,12 +99,29 @@ const [sayilar, kaydim, hostIds, gorevliler, katilimcilar] = await Promise.all([
         limit: 60,
       })
     : [],
+  db
+    .select({ ort: sql<number>`avg(${schema.ratings.stars})`, n: sql<number>`count(*)` })
+    .from(schema.ratings)
+    .where(eq(schema.ratings.eventId, e.id)),
 ]);
+const puanSayi = Number(puanlama?.n ?? 0);
+const puanOrt = puanSayi > 0 ? Number(puanlama!.ort).toFixed(1).replace(".", ",") : null;
 const sayi = sayilar.get(e.id) ?? { kayit: 0, oncelikli: 0, giris: 0 };
 const dolu = e.capacity != null && sayi.kayit >= e.capacity;
 const kayitAcik = kayitAcikMi(e, simdi);
 const kisiler = await getUsersMap([...hostIds, ...gorevliler.map((g) => g.userId), ...katilimcilar.map((k) => k.userId)]);
 const hostlar = hostIds.map((id) => kisiler.get(id)).filter((k) => !!k);
+
+// Değerlendirme: yalnız girişi doğrulanmış katılımcı (düzenleyen hariç), bitişten 7 gün sonrasına kadar
+const degerlendirebilir = !!kaydim?.checkedInAt && rol !== "host" && degerlendirmeAcikMi(e, simdi);
+const benimPuanim = degerlendirebilir
+  ? await db.query.ratings.findFirst({
+      where: and(eq(schema.ratings.userId, member!.id), eq(schema.ratings.eventId, e.id)),
+    })
+  : undefined;
+// Düzenleyen payı (ADR K2): bekleyen satır yok, canlı sayımdan; bitişten 48 saat sonra cron dağıtır
+const hostPay = rol === "host" ? await hostPayHesabi(e) : null;
+const payDagitim = new Date(bitis.getTime() + PUAN.eventHostedDelayHours * 3600e3);
 
 const kok = siteKok(Astro.site, Astro.url);
 // AC-20: düzenleyen kendi etkinliğinde davet puanı almaz (davetli yine +5 alır)
@@ -143,6 +161,9 @@ const ld = {
   ...(e.capacity != null
     ? { maximumAttendeeCapacity: e.capacity, remainingAttendeeCapacity: Math.max(e.capacity - sayi.kayit, 0) }
     : {}),
+  ...(puanSayi > 0
+    ? { aggregateRating: { "@type": "AggregateRating", ratingValue: Number(puanlama!.ort).toFixed(1), ratingCount: puanSayi, bestRating: 5, worstRating: 1 } }
+    : {}),
 };
 
 const SONUC: Record<string, string> = {
@@ -152,6 +173,12 @@ const SONUC: Record<string, string> = {
   zaten: "Bu etkinliğe zaten kayıtlısın ✓",
   dolu: "Kontenjan dolmuş — bu etkinliğe kayıt alınamıyor.",
   kapali: "Bu etkinliğin kayıtları kapandı.",
+};
+const DEGER: Record<string, string> = {
+  tamam: "Değerlendirmen kaydedildi ⭐ Teşekkürler.",
+  "giris-yok": "Yalnız girişi doğrulanmış katılımcılar değerlendirebilir.",
+  pencere: "Değerlendirme penceresi kapalı (etkinlik bitişinden 7 gün sonrasına kadar açık).",
+  gecersiz: "1 ile 5 arasında bir puan seç.",
 };
 const GOREVLI: Record<string, string> = {
   eklendi: "Görevli eklendi.",
@@ -170,7 +197,7 @@ const bant = q.has("yeni")
   ? "Etkinliğin yayında 🎉 Topluluğunla paylaş."
   : GIRIS[q.get("giris") ?? ""]
     ? GIRIS[q.get("giris")!]
-    : (SONUC[q.get("sonuc") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
+    : (SONUC[q.get("sonuc") ?? ""] ?? DEGER[q.get("deger") ?? ""] ?? GOREVLI[q.get("gorevli") ?? ""] ?? null);
 const oncelikYok = q.get("oncelik") === "yok";
 ---
 
@@ -239,6 +266,7 @@ const oncelikYok = q.get("oncelik") === "yok";
           {e.kind && <span class="rounded-full border border-line px-2.5 py-0.5">{TUR_AD[e.kind]}</span>}
           {e.il && <span class="rounded-full border border-line px-2.5 py-0.5">📍 {e.il}</span>}
           {bitti && <span class="rounded-full bg-surface-raised px-2.5 py-0.5 font-medium text-ink">Sona erdi</span>}
+          {puanOrt && <span class="rounded-full border border-line px-2.5 py-0.5" data-etkinlik-puan>⭐ {puanOrt} · {puanSayi} değerlendirme</span>}
         </p>
         <h1 class="mt-3 font-display text-3xl font-semibold text-ink sm:text-4xl">📅 {e.title}</h1>
         <p class="mt-3 text-lg text-ink"><time datetime={e.startsAt.toISOString()}>{trAralik(e)}</time></p>
@@ -319,6 +347,26 @@ const oncelikYok = q.get("oncelik") === "yok";
     </p>
   )}
 
+  {degerlendirebilir && (
+    <section id="degerlendir" class="mt-8 rounded-2xl border border-line bg-surface-raised p-5">
+      <h2 class="font-display text-lg font-semibold text-ink">⭐ Etkinliği değerlendir</h2>
+      <p class="mt-1 text-sm text-ink-muted">Geldin, şimdi söz sende. Değerlendirmen düzenleyenlere yol gösterir; puan üretmez.</p>
+      <form method="post" action="/api/uye/etkinlik" class="mt-3 grid gap-3">
+        <input type="hidden" name="action" value="rate" />
+        <input type="hidden" name="eventId" value={e.id} />
+        <div class="flex gap-3 text-sm">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <label class="flex cursor-pointer items-center gap-1">
+              <input type="radio" name="stars" value={s} required checked={benimPuanim?.stars === s} /> {s}★
+            </label>
+          ))}
+        </div>
+        <input name="body" maxlength="300" value={benimPuanim?.body ?? ""} placeholder="Bir cümle (isteğe bağlı)" class="rounded-xl border border-line bg-surface px-3 py-2 text-sm" />
+        <button class="cursor-pointer justify-self-start rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">{benimPuanim ? "Güncelle" : "Gönder"}</button>
+      </form>
+    </section>
+  )}
+
   {member && katilimcilar.length > 0 && (
     <section class="mt-8">
       <h2 class="font-display text-lg font-semibold text-ink">👥 Katılımcılar</h2>
@@ -372,6 +420,19 @@ const oncelikYok = q.get("oncelik") === "yok";
       <h2 class="font-display text-lg font-semibold text-ink">🎤 Düzenleyen paneli</h2>
       <p class="mt-1 text-sm text-ink-muted">
         Ortak düzenleyen (en çok {PUAN.eventMaxCoHosts}) katılımcı puanını paylaşır; giriş görevlisi yalnız bilet okutur, puan almaz.
+      </p>
+      {hostPay && (
+        <p class="mt-3 rounded-xl border border-line px-3 py-2 text-sm text-ink" data-host-pay>
+          👥 {hostPay.katilimci} doğrulanmış katılımcı × {PUAN.eventHostedPerAttendee} = <strong>{hostPay.toplam}</strong> puan
+          {hostPay.paylar.size > 1 && ` (${hostPay.paylar.size} düzenleyen arasında)`} →
+          {simdi < payDagitim
+            ? <> payın <strong class="text-accent">≈ {hostPay.paylar.get(member!.id) ?? 0}</strong>; {trTarih(payDagitim)} sonrası dağıtılır (bitiş + {PUAN.eventHostedDelayHours} saat).</>
+            : <> payın <strong class="text-accent">+{hostPay.paylar.get(member!.id) ?? 0}</strong>; günlük dağıtımda hesabına yazılır.</>}
+          <span class="block text-xs text-ink-muted">İlk {PUAN.eventHostedMaxAttendees} katılımcı sayılır; ortalama ≥ 4,0 ve en az {PUAN.eventWellRatedMinCount} değerlendirmede +{PUAN.eventWellRated}.</span>
+        </p>
+      )}
+      <p class="mt-3 text-sm">
+        <a href={R.etkinlikCsv(slug)} class="text-accent hover:underline">⬇ Katılım listesi (CSV)</a>
       </p>
       <ul class="mt-4 space-y-2">
         {gorevliler.map((g) => {

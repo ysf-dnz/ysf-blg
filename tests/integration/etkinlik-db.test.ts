@@ -1,7 +1,9 @@
 /**
  * Etkinlik — gerçek DB (Faz 3): kapasite yarışı, kayıt kapanışı, ⭐ koltuk, görevli sınırı;
  * etkinlik daveti atfı, bekleyen ve bitişte düşme (AC-19), düzenleyen davet puanı almaz (AC-20);
- * giriş doğrulaması: RSVP puansız (AC-15), tekrar okutma (AC-16), paralel/çift gönderim (AC-18).
+ * giriş doğrulaması: RSVP puansız (AC-15), tekrar okutma (AC-16), paralel/çift gönderim (AC-18);
+ * dönen QR (AC-17); etkinlik sonrası: düzenleyen payı (101 giriş → 500; 166/166/168), cron no-op,
+ * değerlendirme ve iyi değerlendirme ödülü.
  * Yalnız POSTGRES_URL_TEST ile koşar; kendi geçici üyelerini/etkinliklerini açar ve temizler:
  *   POSTGRES_URL_TEST="$(node --env-file=.env.local -p process.env.POSTGRES_URL)" npx vitest run tests/integration
  */
@@ -445,6 +447,119 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     const erken = await etkinlik(acan.id, { baslangic: 5, bitis: 7 });
     expect(await ev.donenGiris(erken, kapida, donenToken(erken.id, donenPencere()))).toEqual({ durum: "pencere" });
     expect(await kayit(erken.id, kapida.id)).toBeUndefined(); // pencere dışında kayıt da açılmaz
+  });
+
+  /* ---------------- F3-06: etkinlik sonrası ---------------- */
+
+  /** n üyeyi tek sorguda açar (101 girişli senaryo) */
+  async function topluUye(n: number, ad: string) {
+    const rows = await db
+      .insert(schema.users)
+      .values(Array.from({ length: n }, (_, i) => ({ clerkId: `demo_itest_ev_${ad}${i}_${t}`, handle: `itest-ev-${ad}${i}-${t}`, name: `Itest ${ad}${i}`, createdAt: new Date(Date.now() - 5 * 864e5) })))
+      .returning({ id: schema.users.id });
+    uyeler.push(...rows.map((r) => r.id));
+    return rows.map((r) => r.id);
+  }
+  const girisliKayit = (eventId: number, ids: number[], an: Date) =>
+    db.insert(schema.eventRsvps).values(ids.map((userId) => ({ eventId, userId, checkedInAt: an, checkinMethod: "ticket" as const })));
+  const pay = async (userId: number, reason: string, eventId: number) =>
+    (await ledger(userId, reason, `event:${eventId}`)).map((l) => l.delta);
+
+  it("düzenleyen payı: 101 girişte toplam 500 → 3 host 166/166/168 (kalan açana); 48 saat dolmadan dağıtılmaz; cron ikinci koşumda no-op", async () => {
+    const acan = await uye("hp-acan");
+    const [h1, h2] = [await uye("hp-h1"), await uye("hp-h2")];
+    const e = await etkinlik(acan.id, { baslangic: -52, bitis: -50 }); // 50 saat önce bitti
+    await ev.gorevliEkle(e, h1.id, "host");
+    await ev.gorevliEkle(e, h2.id, "host");
+    const gorevli = await uye("hp-gorevli");
+    await ev.gorevliEkle(e, gorevli.id, "scanner");
+    const gelis = new Date(Date.now() - 51 * SAAT);
+    await girisliKayit(e.id, await topluUye(101, "hp"), gelis);
+    await girisliKayit(e.id, [acan.id], gelis); // düzenleyenin kendi girişi SAYILMAZ
+    await db.insert(schema.eventRsvps).values({ eventId: e.id, userId: (await uye("hp-gelmeyen")).id }); // gelmeyen sayılmaz
+
+    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 101, toplam: 500 });
+    // Henüz 48 saat dolmamış başka bir etkinlik işlenmez
+    const taze = await etkinlik(acan.id, { baslangic: -49, bitis: -47 });
+    await girisliKayit(taze.id, [h1.id], new Date(Date.now() - 48 * SAAT));
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: [e.id, taze.id] })).toEqual({ host: 1, iyiDegerlendirme: 0, hata: 0 });
+    expect(await pay(acan.id, "event_hosted", e.id)).toEqual([168]);
+    expect(await pay(h1.id, "event_hosted", e.id)).toEqual([166]);
+    expect(await pay(h2.id, "event_hosted", e.id)).toEqual([166]);
+    expect(await pay(gorevli.id, "event_hosted", e.id)).toEqual([]); // görevli (scanner) pay almaz
+    expect(await pay(acan.id, "event_hosted", taze.id)).toEqual([]);
+    // İkinci koşum: kilit tutuyor, ledger değişmiyor
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: [e.id, taze.id] })).toEqual({ host: 0, iyiDegerlendirme: 0, hata: 0 });
+    expect(await pay(acan.id, "event_hosted", e.id)).toEqual([168]);
+    // Kilit silinse bile (elle yeniden koşum) idem index çift yazımı yutar
+    expect((await ev.hostOdulleriniDagit(e)).yazilan).toBe(0);
+    // event_hosted için bekleyen satır YOKTUR (ADR K2)
+    expect(await db.query.pendingPoints.findMany({ where: inArray(schema.pendingPoints.userId, [acan.id, h1.id, h2.id]) })).toHaveLength(0);
+  });
+
+  it("değerlendirme: yalnız girişi doğrulanmış katılımcı; tek satır (güncellenir); düzenleyen ve gelmeyen değerlendiremez", async () => {
+    const acan = await uye("dg2-acan");
+    const e = await etkinlik(acan.id); // sürüyor → pencere açık
+    const gelen = await uye("dg2-gelen");
+    const gelmeyen = await uye("dg2-gelmeyen");
+    await ev.kayitOl(gelen, e);
+    await ev.kayitOl(gelmeyen, e);
+    await ev.kayitOl(acan, e);
+    await ev.girisYap(e, gelen.id, "ticket", acan.id);
+    await ev.girisYap(e, acan.id, "manual", acan.id);
+    expect(await ev.etkinligiDegerlendir(e, gelmeyen.id, 5, null)).toBe("giris-yok");
+    expect(await ev.etkinligiDegerlendir(e, acan.id, 5, null)).toBe("giris-yok"); // kendi etkinliği
+    expect(await ev.etkinligiDegerlendir(e, (await uye("dg2-yabanci")).id, 5, null)).toBe("giris-yok");
+    expect(await ev.etkinligiDegerlendir(e, gelen.id, 0, null)).toBe("gecersiz");
+    expect(await ev.etkinligiDegerlendir(e, gelen.id, 4.5, null)).toBe("gecersiz");
+    expect(await ev.etkinligiDegerlendir(e, gelen.id, 3, "idare eder")).toBe("tamam");
+    expect(await ev.etkinligiDegerlendir(e, gelen.id, 5, "fikrim değişti")).toBe("tamam");
+    const satirlar = await db.query.ratings.findMany({ where: eq(schema.ratings.eventId, e.id) });
+    expect(satirlar.map((r) => [r.userId, r.stars, r.body])).toEqual([[gelen.id, 5, "fikrim değişti"]]);
+    // Pencere: bitişten 7 günden fazla geçmiş
+    const eski = await etkinlik(acan.id, { baslangic: -200, bitis: -198 });
+    await girisliKayit(eski.id, [gelen.id], new Date(Date.now() - 199 * SAAT));
+    expect(await ev.etkinligiDegerlendir(eski, gelen.id, 5, null)).toBe("pencere");
+  });
+
+  it("iyi değerlendirme: bitişten 7 gün sonra ort ≥ 4,0 ve ≥ 10 değerlendirme → +50 düzenleyenler arasında; 9 değerlendirmede yok", async () => {
+    const acan = await uye("wr-acan");
+    const ortak = await uye("wr-ortak");
+    const katilimcilar = await topluUye(10, "wr");
+    const yeterli = await etkinlik(acan.id, { baslangic: -200, bitis: -198 }); // ~8 gün önce bitti
+    const az = await etkinlik(acan.id, { baslangic: -200, bitis: -198 });
+    const dusuk = await etkinlik(acan.id, { baslangic: -200, bitis: -198 });
+    const erken = await etkinlik(acan.id, { baslangic: -100, bitis: -98 }); // 7 gün dolmadı
+    await ev.gorevliEkle(yeterli, ortak.id, "host");
+    const yildizlar = [5, 5, 5, 4, 4, 4, 4, 4, 4, 3]; // ort 4,2
+    await db.insert(schema.ratings).values([
+      ...katilimcilar.map((userId, i) => ({ userId, eventId: yeterli.id, stars: yildizlar[i]! })),
+      ...katilimcilar.slice(0, 9).map((userId) => ({ userId, eventId: az.id, stars: 5 })),
+      ...katilimcilar.map((userId) => ({ userId, eventId: dusuk.id, stars: 3 })),
+      ...katilimcilar.map((userId) => ({ userId, eventId: erken.id, stars: 5 })),
+    ]);
+    const ids = [yeterli.id, az.id, dusuk.id, erken.id];
+    // 4 etkinliğin düzenleyen payı kilidi (girişsiz → 0 puan) + 3'ünün değerlendirme kilidi
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: ids })).toEqual({ host: 4, iyiDegerlendirme: 3, hata: 0 });
+    expect(await pay(acan.id, "event_well_rated", yeterli.id)).toEqual([25]);
+    expect(await pay(ortak.id, "event_well_rated", yeterli.id)).toEqual([25]);
+    expect(await pay(acan.id, "event_well_rated", az.id)).toEqual([]);
+    expect(await pay(acan.id, "event_well_rated", dusuk.id)).toEqual([]);
+    expect(await pay(acan.id, "event_well_rated", erken.id)).toEqual([]);
+    expect(await pay(acan.id, "event_hosted", yeterli.id)).toEqual([]); // giriş yok → 0'lık satır yazılmaz
+    expect(await ev.etkinlikSonrasiIsle({ yalniz: ids })).toEqual({ host: 0, iyiDegerlendirme: 0, hata: 0 });
+    expect(await pay(acan.id, "event_well_rated", yeterli.id)).toEqual([25]);
+  });
+
+  it("pano tahmini: süren etkinlikte düzenleyenin payı canlı sayımdan; dağıtım anı bitiş + 48 saat", async () => {
+    const acan = await uye("pt-acan");
+    const e = await etkinlik(acan.id); // 1 saat önce başladı, 3 saat sonra bitiyor
+    await girisliKayit(e.id, await topluUye(3, "pt"), new Date());
+    const b = await ev.hostBekleyenleri(acan.id);
+    expect(b).toHaveLength(1);
+    expect(b[0]).toMatchObject({ tahmini: 15, katilimci: 3 });
+    expect(b[0]!.dagitim.getTime()).toBe(e.endsAt!.getTime() + 48 * SAAT);
+    expect(await ev.hostBekleyenleri((await uye("pt-yabanci")).id)).toEqual([]);
   });
 
   it("slug'sız eski etkinliğe ilk çağrıda slug atanır, ikinci çağrı aynı slug'ı döner", async () => {

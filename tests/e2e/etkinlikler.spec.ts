@@ -85,6 +85,16 @@ test.describe("etkinlik sayfası — misafir (F3-02)", () => {
     await expect(page.getByRole("button", { name: "Giriş yap" })).toBeVisible();
   });
 
+  test("F3-06: biten etkinlikte değerlendirme ortalaması herkese görünür; form ve katılım listesi misafire yok", async ({ page, request }) => {
+    await page.goto(BITMIS, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("[data-etkinlik-puan]")).toHaveText("⭐ 4,5 · 2 değerlendirme"); // seed: 5 ve 4
+    await expect(page.locator("#degerlendir")).toHaveCount(0);
+    expect((await request.get(`${BITMIS}/katilimcilar.csv`)).status()).toBe(404);
+    const bloklar = await page.locator('script[type="application/ld+json"]').allTextContents();
+    const ld = bloklar.map((b) => JSON.parse(b)).find((b) => b["@type"] === "Event");
+    expect(ld.aggregateRating).toMatchObject({ ratingValue: "4.5", ratingCount: 2 });
+  });
+
   test("375px'te yatay taşma yok", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto(YAKLASAN, { waitUntil: "domcontentloaded" });

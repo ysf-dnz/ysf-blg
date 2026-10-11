@@ -3,45 +3,18 @@
  * Kimlik: Authorization: Bearer CRON_SECRET (Vercel) veya x-cron-secret.
  * Her iş cron_runs (job, period_key UNIQUE) ile idempotent: aynı dönem
  * ikinci kez çalışmaz; endpoint elle de güvenle tetiklenebilir.
+ * İşler: bayat görev, sezon, ayın kitabı, özel ligler, bekleyen puanlar, davet ziyaret
+ * temizliği, etkinlik sonrası (düzenleyen payı + iyi değerlendirme).
  */
 import type { APIRoute } from "astro";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
+import { birKez, birKezCalistir } from "@/lib/cron.ts";
+import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
 import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
 
 export const prerender = false;
-
-/** İş daha önce bu dönem için koştuysa false döner; koşmadıysa kaydeder */
-async function birKez(job: string, periodKey: string): Promise<boolean> {
-  const [row] = await db
-    .insert(schema.cronRuns)
-    .values({ job, periodKey })
-    .onConflictDoNothing()
-    .returning();
-  return !!row;
-}
-
-/**
- * Dönem kilidini alır, işi çalıştırır; iş PATLARSA kilidi geri verir.
- * Kilit iş bitmeden tüketilirse yarıda kalan bir sezon kapanışı bir daha
- * hiç koşmaz (aktifSezon bayat sezonu seçmez) → ödüller kalıcı kaybolur.
- */
-async function birKezCalistir<T>(
-  job: string,
-  periodKey: string,
-  fn: () => Promise<T>,
-): Promise<T | undefined> {
-  if (!(await birKez(job, periodKey))) return undefined;
-  try {
-    return await fn();
-  } catch (err) {
-    await db
-      .delete(schema.cronRuns)
-      .where(and(eq(schema.cronRuns.job, job), eq(schema.cronRuns.periodKey, periodKey)));
-    throw err;
-  }
-}
 
 /** 7 gün hareketsiz "üstlenildi" görevleri backlog'a döndür (site geneli) */
 async function bayatGorevSupur(): Promise<number> {
@@ -220,6 +193,12 @@ export const GET: APIRoute = async ({ request }) => {
     return silinen.length;
   });
   if (temizlik !== undefined) rapor.davetZiyaretTemizlik = temizlik;
+
+  // 7) Etkinlik sonrası (ADR 0001 K2 — bekleyen satır YOK, canlı sayım): bitişten 48 saat sonra
+  // düzenleyen payı (min(giriş,100)×5), 7 gün sonra iyi değerlendirme (+50). Etkinlik başına
+  // tek-atış kilit; tek bozuk etkinlik diğerlerini durdurmaz (içeride yakalanır).
+  const etkinlik = await etkinlikSonrasiIsle();
+  if (etkinlik.host || etkinlik.iyiDegerlendirme || etkinlik.hata) rapor.etkinlik = etkinlik;
 
   return new Response(JSON.stringify({ ok: true, ...rapor }), {
     headers: { "content-type": "application/json" },

@@ -1,14 +1,17 @@
 /**
  * Etkinlik akışı (Faz 3, ADR 0001 K1.4/K2/K6): slug, görünürlük, görevliler, kapasiteli
- * kayıt (RSVP), giriş doğrulaması ve ödül zinciri. Saf kurallar (zaman pencereleri,
- * imzalar) etkinlik-kural.ts'te.
+ * kayıt (RSVP), giriş doğrulaması ve ödül zinciri, etkinlik sonrası (düzenleyen payı,
+ * değerlendirme). Saf kurallar (zaman pencereleri, imzalar) etkinlik-kural.ts'te.
  */
 import type { AstroCookies } from "astro";
-import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, isNull, notInArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
+import { birKezCalistir } from "./cron.ts";
 import { davetCereziOku, davetCereziSil } from "./davet.ts";
+import { hostPaylari, hostToplami, iyiDegerlendirildiMi } from "./economy.ts";
 import {
   biletCoz,
+  degerlendirmeAcikMi,
   donenGecerli,
   etkinlikBitis,
   etkinlikGorunurMu,
@@ -434,6 +437,202 @@ export async function donenGiris(
   if (g.durum === "geldi") return { durum: "geldi", puan: g.puan };
   if (g.durum === "zaten") return { durum: "zaten", saat: trSaat(g.rsvp.checkedInAt!) };
   return { durum: "pencere" };
+}
+
+/* ---------------- Etkinlik sonrası: düzenleyen payı, değerlendirme (F3-06) ---------------- */
+
+/** Doğrulanmış katılımcı sayısı — düzenleyenlerin kendi girişi sayılmaz (kendine puan yok) */
+async function girisSayisi(eventId: number, hostlar: number[]): Promise<number> {
+  const [r] = await db
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.eventRsvps)
+    .where(
+      and(
+        eq(schema.eventRsvps.eventId, eventId),
+        isNotNull(schema.eventRsvps.checkedInAt),
+        hostlar.length ? notInArray(schema.eventRsvps.userId, hostlar) : undefined,
+      ),
+    );
+  return Number(r?.n ?? 0);
+}
+
+/**
+ * Düzenleyen payları — CANLI sayımdan (ADR K2: event_hosted için bekleyen satır YOK;
+ * "host sonradan eklendi, pay değişti" sorunu böylece yok). Pano tahmini ve cron dağıtımı
+ * aynı hesabı kullanır.
+ */
+export async function hostPayHesabi(
+  e: Pick<Etkinlik, "id" | "createdBy">,
+): Promise<{ katilimci: number; toplam: number; paylar: Map<number, number> }> {
+  const hostlar = await hostIdleri(e);
+  const katilimci = await girisSayisi(e.id, hostlar);
+  const toplam = hostToplami(katilimci);
+  return { katilimci, toplam, paylar: hostPaylari(toplam, hostlar, e.createdBy) };
+}
+
+/** event_hosted dağıtımı: min(giriş, 100) × 5 düzenleyenler arasında (idempotent, refId event:{id}) */
+export async function hostOdulleriniDagit(e: Etkinlik): Promise<{ katilimci: number; yazilan: number }> {
+  const { katilimci, paylar } = await hostPayHesabi(e);
+  let yazilan = 0;
+  for (const [userId, delta] of paylar) {
+    const n = await awardPoints({ userId, delta, reason: "event_hosted", refId: `event:${e.id}` });
+    yazilan += n;
+    if (n > 0)
+      await db.insert(schema.notifications).values({
+        userId,
+        kind: "event",
+        body: `"${e.title}" etkinliğine ${katilimci} kişi geldi 🎤 +${n} düzenleyen puanı.`,
+        href: R.etkinlik(e.slug ?? String(e.id)),
+      });
+  }
+  return { katilimci, yazilan };
+}
+
+/** event_well_rated: ort ≥ 4,0 ve ≥ 10 değerlendirme → +50 düzenleyenler arasında (idempotent) */
+export async function iyiDegerlendirmeOdulu(e: Etkinlik): Promise<{ ortalama: number; adet: number; yazilan: number }> {
+  const [r] = await db
+    .select({ ort: sql<number>`coalesce(avg(${schema.ratings.stars}), 0)`, n: sql<number>`count(*)` })
+    .from(schema.ratings)
+    .where(eq(schema.ratings.eventId, e.id));
+  const ortalama = Number(r?.ort ?? 0);
+  const adet = Number(r?.n ?? 0);
+  let yazilan = 0;
+  if (iyiDegerlendirildiMi(ortalama, adet)) {
+    for (const [userId, delta] of hostPaylari(PUAN.eventWellRated, await hostIdleri(e), e.createdBy)) {
+      const n = await awardPoints({ userId, delta, reason: "event_well_rated", refId: `event:${e.id}` });
+      yazilan += n;
+      if (n > 0)
+        await db.insert(schema.notifications).values({
+          userId,
+          kind: "event",
+          body: `"${e.title}" çok beğenildi ⭐ ${ortalama.toFixed(1)} (${adet} değerlendirme) +${n} puan.`,
+          href: R.etkinlik(e.slug ?? String(e.id)),
+        });
+    }
+  }
+  return { ortalama, adet, yazilan };
+}
+
+const GUN = 864e5;
+/** Cron atlanırsa telafi için geriye bakış (gün) */
+const GERIYE_BAKIS_GUN = 30;
+
+/**
+ * Günlük cron işi. Bitişinden 48 saat geçen etkinlikte düzenleyen payı, 7 gün geçende iyi
+ * değerlendirme ödülü — etkinlik başına tek-atış kilit (cron_runs). Cron günde bir koştuğu
+ * için koşul "≤ now − 48 s"tir (eşitlik penceresi değil). Tek bozuk etkinlik diğerlerini
+ * durdurmaz: hata sayılır, kilit geri verilir, ertesi gün yeniden denenir.
+ * `yalniz`: yalnız bu etkinlikler (testler canlı DB'deki başka etkinliklere dokunmasın).
+ */
+export async function etkinlikSonrasiIsle(
+  opts: { simdi?: Date; yalniz?: number[] } = {},
+): Promise<{ host: number; iyiDegerlendirme: number; hata: number }> {
+  const simdi = opts.simdi ?? new Date();
+  const once = (ms: number) => new Date(simdi.getTime() - ms).toISOString();
+  const bitis = sql`coalesce(${schema.events.endsAt}, ${schema.events.startsAt} + ${VARSAYILAN_SURE_SAAT}::int * interval '1 hour')`;
+  const adaylar = await db
+    .select()
+    .from(schema.events)
+    .where(
+      and(
+        sql`${bitis} <= ${once(PUAN.eventHostedDelayHours * 3600e3)}::timestamp`,
+        sql`${bitis} >= ${once((GERIYE_BAKIS_GUN + PUAN.eventRatingDays) * GUN)}::timestamp`,
+        opts.yalniz ? inArray(schema.events.id, opts.yalniz.length ? opts.yalniz : [0]) : undefined,
+      ),
+    );
+  if (adaylar.length === 0) return { host: 0, iyiDegerlendirme: 0, hata: 0 };
+  // Daha önce koşanlar tek sorguda elenir (her gün etkinlik başına boş kilit denemesi olmasın)
+  const kosmus = new Set(
+    (
+      await db.query.cronRuns.findMany({
+        where: and(
+          inArray(schema.cronRuns.job, ["etkinlik-host", "etkinlik-degerlendirme"]),
+          inArray(schema.cronRuns.periodKey, adaylar.map((e) => String(e.id))),
+        ),
+      })
+    ).map((r) => `${r.job}:${r.periodKey}`),
+  );
+  const rapor = { host: 0, iyiDegerlendirme: 0, hata: 0 };
+  for (const e of adaylar) {
+    try {
+      if (!kosmus.has(`etkinlik-host:${e.id}`)) {
+        const h = await birKezCalistir("etkinlik-host", String(e.id), () => hostOdulleriniDagit(e));
+        if (h !== undefined) rapor.host++;
+      }
+      const degerlendirmeBitti = etkinlikBitis(e).getTime() <= simdi.getTime() - PUAN.eventRatingDays * GUN;
+      if (degerlendirmeBitti && !kosmus.has(`etkinlik-degerlendirme:${e.id}`)) {
+        const d = await birKezCalistir("etkinlik-degerlendirme", String(e.id), () => iyiDegerlendirmeOdulu(e));
+        if (d !== undefined) rapor.iyiDegerlendirme++;
+      }
+    } catch {
+      rapor.hata++;
+    }
+  }
+  return rapor;
+}
+
+export type DegerlendirmeSonucu = "tamam" | "giris-yok" | "pencere" | "gecersiz";
+
+/**
+ * Etkinliği değerlendir (1–5): yalnız girişi doğrulanmış katılımcı, başlangıçtan bitiş + 7
+ * güne. Düzenleyen kendi etkinliğini değerlendiremez (event_well_rated'i kendine yazdırmasın).
+ * Üye başına tek satır (ratings_user_event_idx); yeniden gönderim günceller. Puan üretmez.
+ */
+export async function etkinligiDegerlendir(
+  e: Etkinlik,
+  userId: number,
+  yildiz: number,
+  yorum: string | null,
+): Promise<DegerlendirmeSonucu> {
+  if (!Number.isInteger(yildiz) || yildiz < 1 || yildiz > 5) return "gecersiz";
+  if (!degerlendirmeAcikMi(e)) return "pencere";
+  const [rsvp, hostlar] = await Promise.all([
+    db.query.eventRsvps.findFirst({
+      where: and(eq(schema.eventRsvps.eventId, e.id), eq(schema.eventRsvps.userId, userId)),
+    }),
+    hostIdleri(e),
+  ]);
+  if (!rsvp?.checkedInAt || hostlar.includes(userId)) return "giris-yok";
+  await db
+    .insert(schema.ratings)
+    .values({ userId, eventId: e.id, stars: yildiz, body: yorum })
+    .onConflictDoUpdate({
+      target: [schema.ratings.userId, schema.ratings.eventId],
+      set: { stars: yildiz, body: yorum },
+    });
+  return "tamam";
+}
+
+/**
+ * Üyenin düzenlediği, payı henüz DAĞITILMAMIŞ etkinlikler için tahmini pay (pano satırı:
+ * "bekleyen ≈ N, {tarih}"). Canlı sayım — ledger'da da pending_points'te de karşılığı yoktur.
+ */
+export async function hostBekleyenleri(
+  userId: number,
+  simdi: Date = new Date(),
+): Promise<{ etkinlik: Etkinlik; tahmini: number; katilimci: number; dagitim: Date }[]> {
+  const gorevler = await db.query.eventStaff.findMany({
+    where: and(eq(schema.eventStaff.userId, userId), eq(schema.eventStaff.role, "host")),
+    columns: { eventId: true },
+  });
+  const [benim, actiklarim] = await Promise.all([
+    gorevler.length
+      ? db.query.events.findMany({ where: inArray(schema.events.id, gorevler.map((g) => g.eventId)) })
+      : [],
+    db.query.events.findMany({ where: eq(schema.events.createdBy, userId) }),
+  ]);
+  const gecikme = PUAN.eventHostedDelayHours * 3600e3;
+  // Başlamış (kapı açılmış) ama dağıtım anı gelmemiş etkinlikler
+  const acik = [...new Map([...benim, ...actiklarim].map((e) => [e.id, e])).values()].filter(
+    (e) => e.startsAt.getTime() - 3600e3 <= simdi.getTime() && etkinlikBitis(e).getTime() + gecikme > simdi.getTime(),
+  );
+  const sonuc = [];
+  for (const e of acik) {
+    const { katilimci, paylar } = await hostPayHesabi(e);
+    const tahmini = paylar.get(userId) ?? 0;
+    if (tahmini > 0) sonuc.push({ etkinlik: e, tahmini, katilimci, dagitim: new Date(etkinlikBitis(e).getTime() + gecikme) });
+  }
+  return sonuc;
 }
 
 export { etkinlikBitis, etkinlikGorunurMu };

@@ -1,11 +1,12 @@
 /**
- * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), görevli yönet, elle giriş.
+ * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), görevli yönet, elle giriş, değerlendir.
  * Aksiyonlar AÇIK dallardır: bilinmeyen aksiyon 400 (eskiden her şey oluşturmaya düşüyordu).
  */
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import {
+  etkinligiDegerlendir,
   etkinlikGorunurMu,
   gorevliEkle,
   gorevliHizAsildi,
@@ -127,6 +128,12 @@ export const POST: APIRoute = async (context) => {
       });
     }
     return context.redirect(`${sayfa}?gorevli=${eklendi ? "eklendi" : "olmadi"}#yonetim`);
+  }
+
+  // Değerlendirme (1–5): yalnız girişi doğrulanmış katılımcı, bitişten 7 gün sonrasına kadar
+  if (action === "rate") {
+    const s = await etkinligiDegerlendir(e, member.id, Number(form.get("stars")), metin("body", 300) || null);
+    return context.redirect(`${sayfa}?deger=${s}#degerlendir`);
   }
 
   // Elle giriş: telefonu/bileti olmayan kayıtlı katılımcıyı görevli listeden işaretler
