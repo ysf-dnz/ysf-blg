@@ -1,6 +1,6 @@
 ---
 /** Admin paneli: bekleyen yazılar + başvurular (yalnızca role=admin). */
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -24,6 +24,47 @@ const pendingClubs = await db.query.clubs.findMany({
 const pendingQuizzes = await db.query.quizzes.findMany({
   where: eq(schema.quizzes.status, "pending"),
 });
+// Kurs onayı (F1-01) — eskiden pending kurs hiç yayınlanamıyordu
+const pendingCourses = await db.query.courses.findMany({
+  where: eq(schema.courses.status, "pending"),
+  orderBy: desc(schema.courses.createdAt),
+});
+// Şikâyet kuyruğu (F1-10): hedef başına grupla
+const acikSikayetler = await db.query.reports.findMany({
+  where: eq(schema.reports.status, "open"),
+  orderBy: desc(schema.reports.createdAt),
+});
+const sikayetGruplari = [
+  ...acikSikayetler
+    .reduce((m, r) => {
+      const k = `${r.targetType}:${r.targetId}`;
+      const g = m.get(k) ?? { targetType: r.targetType, targetId: r.targetId, adet: 0, nedenler: [] as string[] };
+      g.adet++;
+      if (r.reason) g.nedenler.push(r.reason);
+      return m.set(k, g);
+    }, new Map<string, { targetType: string; targetId: number; adet: number; nedenler: string[] }>())
+    .values(),
+];
+const sikayetliKurslar = new Map(
+  (
+    await db.query.courses.findMany({
+      where: inArray(
+        schema.courses.id,
+        sikayetGruplari.filter((g) => g.targetType === "course").map((g) => g.targetId).concat([0]),
+      ),
+    })
+  ).map((c) => [c.id, c]),
+);
+const sikayetliYorumlar = new Map(
+  (
+    await db.query.comments.findMany({
+      where: inArray(
+        schema.comments.id,
+        sikayetGruplari.filter((g) => g.targetType === "comment").map((g) => g.targetId).concat([0]),
+      ),
+    })
+  ).map((c) => [c.id, c]),
+);
 const pendingApps = await db.query.applications.findMany({
   where: eq(schema.applications.status, "pending"),
   orderBy: desc(schema.applications.createdAt),
@@ -136,5 +177,59 @@ const pendingApps = await db.query.applications.findMany({
         ))
       }
     </ul>
+  </section>
+  <section class="mt-10">
+    <h2 class="font-display text-xl font-semibold text-ink">
+      Onay bekleyen kurslar ({pendingCourses.length})
+    </h2>
+    {pendingCourses.length === 0 && <p class="mt-2 text-ink-muted">Bekleyen kurs yok.</p>}
+    <div class="mt-4 space-y-4">
+      {pendingCourses.map((c) => (
+        <article class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface-raised p-5">
+          <div>
+            <h3 class="font-display text-lg font-semibold text-ink">
+              <a href={`/kurslar/${c.slug}`} class="hover:text-accent">{c.title}</a>
+            </h3>
+            <p class="text-sm text-ink-muted">@{authors.get(c.createdBy)?.handle} · {c.summary ?? c.description ?? "açıklama yok"}</p>
+          </div>
+          <form method="post" action="/api/uye/admin" class="flex gap-2">
+            <input type="hidden" name="courseId" value={c.id} />
+            <button name="action" value="course_approve" class="cursor-pointer rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Yayınla</button>
+            <button name="action" value="course_reject" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-red-400 hover:text-red-500">Reddet</button>
+          </form>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="mt-10">
+    <h2 class="font-display text-xl font-semibold text-ink">Şikâyet kuyruğu ({sikayetGruplari.length})</h2>
+    {sikayetGruplari.length === 0 && <p class="mt-2 text-ink-muted">Açık şikâyet yok.</p>}
+    <div class="mt-4 space-y-4">
+      {sikayetGruplari.map((g) => {
+        const kurs = g.targetType === "course" ? sikayetliKurslar.get(g.targetId) : undefined;
+        const yorum = g.targetType === "comment" ? sikayetliYorumlar.get(g.targetId) : undefined;
+        const gizli = kurs ? kurs.status === "hidden" : !!yorum?.hiddenAt;
+        return (
+          <article class="rounded-2xl border border-line bg-surface-raised p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs text-ink-muted">{g.targetType === "course" ? "Kurs" : "Yorum"} · {g.adet} şikâyet {gizli && <span class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">gizlendi</span>}</p>
+                <p class="mt-1 font-medium text-ink">
+                  {kurs ? <a href={`/kurslar/${kurs.slug}`} class="hover:text-accent">{kurs.title}</a> : yorum ? yorum.body.slice(0, 160) : `#${g.targetId}`}
+                </p>
+                {g.nedenler.length > 0 && <p class="mt-1 text-sm text-ink-muted">{g.nedenler.slice(0, 3).join(" · ")}</p>}
+              </div>
+              <form method="post" action="/api/uye/admin" class="flex gap-2">
+                <input type="hidden" name="reportTarget" value={g.targetType} />
+                <input type="hidden" name="reportTargetId" value={g.targetId} />
+                <button name="action" value="report_remove" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">Kaldır{g.targetType === "course" && " (+iade)"}</button>
+                <button name="action" value="report_restore" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">Geri aç</button>
+              </form>
+            </div>
+          </article>
+        );
+      })}
+    </div>
   </section>
 </Base>

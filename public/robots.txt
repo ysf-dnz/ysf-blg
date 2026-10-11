@@ -24,6 +24,6 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://yusufdeniz.dev/sitemap-index.xml
+Sitemap: https://yusufdeniz.com/sitemap-index.xml
 
-# AI için içerik haritası: https://yusufdeniz.dev/llms.txt
+# AI için içerik haritası: https://yusufdeniz.com/llms.txt

@@ -1,0 +1,560 @@
+---
+/**
+ * Kurs sayfası — herkese açık SSR (mıknatıs): misafir müfredatı ve İLK öğeyi
+ * görür, diğer öğeler giriş ister. Katılım / aktivasyon / bitirme / soru-cevap /
+ * ek kaynak / değerlendirme formları /api/uye/egitim ve /api/uye/feed'e gider.
+ * Pending · draft · rejected · hidden kurs yalnız üretici ve admin'e görünür.
+ */
+import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { SignInButton } from "@clerk/astro/components";
+import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
+import Avatar from "@/components/ui/Avatar.astro";
+import { db, schema } from "@/db/client.ts";
+import { getOrCreateMember } from "@/lib/member.ts";
+import { renderMemberMarkdown } from "@/lib/markdown.ts";
+import { getBookMap } from "@/lib/books-lookup.ts";
+import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
+import { R } from "@/lib/routes.ts";
+import { PUAN } from "@/lib/points.ts";
+import { siteKok } from "@/lib/urls.ts";
+import { formatDate } from "@/lib/dates.ts";
+
+export const prerender = false;
+
+const slug = Astro.params.slug ?? "";
+const course = await db.query.courses.findFirst({ where: eq(schema.courses.slug, slug) });
+if (!course) return new Response("Kurs bulunamadı", { status: 404 });
+
+const member = await getOrCreateMember(Astro);
+const uretici = !!member && member.id === course.createdBy;
+const yonetici = !!member && (uretici || member.role === "admin");
+if (course.status !== "published" && !yonetici)
+  return new Response("Kurs bulunamadı", { status: 404 });
+
+const buSayfa = `${Astro.url.pathname}${Astro.url.search}`;
+const items = await db.query.courseItems.findMany({
+  where: eq(schema.courseItems.courseId, course.id),
+  orderBy: asc(schema.courseItems.order),
+});
+
+const [katilim, ilerleme, [sayilar], [puanlama], books] = await Promise.all([
+  member
+    ? db.query.courseEnrollments.findFirst({
+        where: and(
+          eq(schema.courseEnrollments.userId, member.id),
+          eq(schema.courseEnrollments.courseId, course.id),
+        ),
+      })
+    : Promise.resolve(undefined),
+  member
+    ? db.query.courseProgress.findMany({
+        where: and(
+          eq(schema.courseProgress.courseId, course.id),
+          eq(schema.courseProgress.userId, member.id),
+        ),
+      })
+    : Promise.resolve([]),
+  db
+    .select({
+      katilimci: sql<number>`count(*)`,
+      aktif: sql<number>`count(${schema.courseEnrollments.activatedAt})`,
+      bitiren: sql<number>`count(${schema.courseEnrollments.completedAt})`,
+    })
+    .from(schema.courseEnrollments)
+    .where(eq(schema.courseEnrollments.courseId, course.id)),
+  db
+    .select({ ort: sql<number>`avg(${schema.ratings.stars})`, n: sql<number>`count(*)` })
+    .from(schema.ratings)
+    .where(eq(schema.ratings.courseId, course.id)),
+  getBookMap(),
+]);
+const doneIds = new Set(ilerleme.map((p) => p.itemId));
+const pct = items.length ? Math.round((doneIds.size / items.length) * 100) : 0;
+const katilimci = Number(sayilar?.katilimci ?? 0);
+const bitiren = Number(sayilar?.bitiren ?? 0);
+const puanOrt = puanlama?.n && Number(puanlama.n) > 0 ? Number(puanlama.ort).toFixed(1) : null;
+const puanSayi = Number(puanlama?.n ?? 0);
+
+const kitap = course.bookId ? books.get(course.bookId) : undefined;
+const kapak = course.coverUrl ?? kitap?.cover ?? undefined;
+
+const aktifIndex = Math.min(
+  Math.max(Number(Astro.url.searchParams.get("b") ?? 0), 0),
+  Math.max(items.length - 1, 0),
+);
+const aktif = items[aktifIndex];
+// Misafir yalnız ilk öğeyi görür (teaser); gerisi giriş ister
+const misafirKilidi = !member && aktifIndex > 0;
+
+const aktifPost =
+  !misafirKilidi && aktif?.kind === "yazi" && aktif.memberPostId
+    ? await db.query.memberPosts.findFirst({
+        where: eq(schema.memberPosts.id, aktif.memberPostId),
+      })
+    : null;
+// Üye yazısının kendi görünürlük kuralı korunur (members-only → misafire kilit)
+const yaziKilidi =
+  !!aktifPost && (aktifPost.status !== "published" || (aktifPost.visibility === "members" && !member));
+const aktifQuiz =
+  !misafirKilidi && aktif?.kind === "quiz" && aktif.quizId
+    ? await db.query.quizzes.findFirst({ where: eq(schema.quizzes.id, aktif.quizId) })
+    : null;
+
+// Soru-cevap (aktif öğe): en iyi cevap üstte
+const yorumlar =
+  aktif && !misafirKilidi
+    ? await db.query.comments.findMany({
+        where: and(eq(schema.comments.courseItemId, aktif.id), isNull(schema.comments.hiddenAt)),
+        orderBy: [desc(schema.comments.acceptedAt), asc(schema.comments.createdAt)],
+      })
+    : [];
+const yorumIdler = yorumlar.map((y) => y.id);
+const [begeniSayilari, benimBegenilerim] = await Promise.all([
+  yorumIdler.length
+    ? db
+        .select({ commentId: schema.likes.commentId, n: sql<number>`count(*)` })
+        .from(schema.likes)
+        .where(inArray(schema.likes.commentId, yorumIdler))
+        .groupBy(schema.likes.commentId)
+    : Promise.resolve([]),
+  member && yorumIdler.length
+    ? db.query.likes.findMany({
+        where: and(eq(schema.likes.userId, member.id), inArray(schema.likes.commentId, yorumIdler)),
+      })
+    : Promise.resolve([]),
+]);
+const begeniMap = new Map(begeniSayilari.map((b) => [b.commentId, Number(b.n)]));
+const begendim = new Set(benimBegenilerim.map((l) => l.commentId));
+const enIyiVar = yorumlar.some((y) => y.acceptedAt);
+
+// Ek kaynaklar: kabul edilenler herkese, bekleyenler üreticiye
+const kaynaklar = await db.query.courseResources.findMany({
+  where: and(
+    eq(schema.courseResources.courseId, course.id),
+    uretici
+      ? inArray(schema.courseResources.status, ["accepted", "pending"])
+      : eq(schema.courseResources.status, "accepted"),
+  ),
+  orderBy: desc(schema.courseResources.createdAt),
+});
+
+// Değerlendirmem
+const benimPuanim =
+  member && katilim?.activatedAt
+    ? await db.query.ratings.findFirst({
+        where: and(eq(schema.ratings.userId, member.id), eq(schema.ratings.courseId, course.id)),
+      })
+    : undefined;
+
+// Kişiler (N+1 yok: tek harita)
+const kisiIdler = [
+  course.createdBy,
+  ...yorumlar.map((y) => y.userId),
+  ...kaynaklar.map((k) => k.userId),
+];
+const [kisiler, seviyeler, club] = await Promise.all([
+  getUsersMap(kisiIdler),
+  getLevelsMap(kisiIdler),
+  course.clubId ? db.query.clubs.findFirst({ where: eq(schema.clubs.id, course.clubId) }) : null,
+]);
+const yaratici = kisiler.get(course.createdBy);
+
+const IKON = { youtube: "🎬", yazi: "✍️", quiz: "🧠" } as const;
+const SEVIYE_AD = { baslangic: "Başlangıç", orta: "Orta", ileri: "İleri" } as const;
+const siradaki = items.findIndex((it) => !doneIds.has(it.id));
+
+// Paylaşım linki: üyeyse davet kodu (?ref) taşır — F1-00 ile statik/SSR her yerde çerez kurulur
+const kok = siteKok(Astro.site, Astro.url);
+const paylasimLinki = `${kok}${R.kurs(course.slug)}${member ? `?ref=${member.handle}` : ""}`;
+
+const bant = Astro.url.searchParams.has("katildin")
+  ? `Kursa katıldın 🎉 İlk öğeyi bitirince kurs aktive olur; kursu bitirince +${PUAN.courseCompleted} puan.`
+  : Astro.url.searchParams.has("yayin")
+    ? "Kursun yayında 🚀 Paylaş: ilk 3 katılımcı aktive olunca +50."
+    : Astro.url.searchParams.has("onay")
+      ? "Kursun admin onayına gitti. Onaylanınca bildirim alırsın; sayfa şimdilik yalnız sana görünür."
+      : Astro.url.searchParams.has("sikayet")
+        ? "Şikâyetin alındı. İncelenecek; teşekkürler."
+        : null;
+
+const aciklama = course.summary ?? course.description ?? `${items.length} öğelik kurs`;
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  name: course.title,
+  description: aciklama,
+  url: `${kok}${R.kurs(course.slug)}`,
+  ...(kapak ? { image: new URL(kapak, kok).toString() } : {}),
+  provider: { "@type": "Organization", name: "Bilgi Ödüldür · Yusuf Deniz", url: kok },
+  ...(yaratici ? { author: { "@type": "Person", name: yaratici.name, url: `${kok}${R.profil(yaratici.handle)}` } } : {}),
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", category: "Free", price: "0", priceCurrency: "TRY" },
+  hasCourseInstance: [
+    {
+      "@type": "CourseInstance",
+      courseMode: "Online",
+      ...(course.estMinutes ? { courseWorkload: `PT${course.estMinutes}M` } : {}),
+    },
+  ],
+  ...(puanOrt
+    ? { aggregateRating: { "@type": "AggregateRating", ratingValue: puanOrt, ratingCount: puanSayi, bestRating: 5, worstRating: 1 } }
+    : {}),
+};
+---
+
+<ToplulukLayout
+  title={course.title}
+  description={aciklama}
+  seo={{ ogImagePath: kapak, noindex: course.status !== "published" }}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+
+  {bant && (
+    <div class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft px-4 py-3 text-sm text-ink">{bant}</div>
+  )}
+  {course.status !== "published" && (
+    <div class="mb-4 rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      Bu kurs <strong>{course.status === "pending" ? "onay bekliyor" : course.status === "hidden" ? "şikâyetler üzerine inceleniyor" : course.status}</strong> — yalnız sana ve yöneticiye görünür.
+    </div>
+  )}
+
+  <header class="girih-texture -mx-4 px-4 py-8">
+    <div class="grid gap-6 md:grid-cols-[1fr_220px]">
+      <div>
+        <p class="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+          {club && <a href={R.kulup(club.slug)} class="rounded-full border border-line px-2.5 py-0.5 hover:text-accent">🏛️ {club.name}</a>}
+          {course.level && <span class="rounded-full border border-line px-2.5 py-0.5">{SEVIYE_AD[course.level]}</span>}
+          {course.estMinutes && <span class="rounded-full border border-line px-2.5 py-0.5">⏱ {course.estMinutes} dk</span>}
+          <span class="rounded-full border border-line px-2.5 py-0.5">{items.length} öğe</span>
+          {kitap && <a href={R.kitap(kitap.id)} class="rounded-full border border-line px-2.5 py-0.5 hover:text-accent">📖 {kitap.titleTr ?? kitap.title}</a>}
+        </p>
+        <h1 class="mt-3 font-display text-3xl font-semibold text-ink sm:text-4xl">🎓 {course.title}</h1>
+        {course.summary && <p class="mt-2 text-lg text-ink">{course.summary}</p>}
+        {course.description && <p class="mt-1 text-ink-muted">{course.description}</p>}
+
+        <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-ink-muted">
+          {yaratici && (
+            <a href={R.profil(yaratici.handle)} class="flex items-center gap-2 hover:text-accent">
+              <Avatar name={yaratici.name} avatarUrl={yaratici.avatarUrl} level={seviyeler.get(yaratici.id)} size="sm" />
+              <span>{yaratici.name}</span>
+            </a>
+          )}
+          <span>👥 {katilimci} katılımcı</span>
+          <span>🏁 {bitiren} bitirdi</span>
+          {puanOrt && <span title={`${puanSayi} değerlendirme`}>⭐ {puanOrt} <span class="text-xs">({puanSayi})</span></span>}
+        </div>
+
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          {!member && (
+            <SignInButton mode="modal" forceRedirectUrl={buSayfa} asChild>
+              <button type="button" class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+                Katıl, ilk kitabın hediye 🎁
+              </button>
+            </SignInButton>
+          )}
+          {member && !katilim && !uretici && course.status === "published" && (
+            <form method="post" action="/api/uye/egitim">
+              <input type="hidden" name="action" value="join" />
+              <input type="hidden" name="courseId" value={course.id} />
+              <button class="cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+                Kursa katıl <span class="arrow-slide">→</span>
+              </button>
+            </form>
+          )}
+          {katilim && siradaki >= 0 && (
+            <a href={`${R.kurs(course.slug)}?b=${siradaki}`} class="rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+              Devam et · {siradaki + 1}. öğe <span class="arrow-slide">→</span>
+            </a>
+          )}
+          {katilim && siradaki < 0 && <span class="rounded-full border border-accent px-5 py-2.5 text-sm font-medium text-accent">Kursu bitirdin 🏁</span>}
+          <button type="button" data-kopyala={paylasimLinki} class="cursor-pointer rounded-full border border-line px-4 py-2.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">
+            🔗 Paylaş{member ? " (davet kodunla)" : ""}
+          </button>
+        </div>
+        {katilim && (
+          <div class="mt-4 max-w-sm">
+            <div class="h-2 overflow-hidden rounded-full bg-accent-soft"><div class="h-full bg-accent transition-all" style={`width:${pct}%`}></div></div>
+            <p class="mt-1 text-xs text-ink-muted">%{pct} · {doneIds.size}/{items.length} öğe{katilim.activatedAt ? "" : " · ilk öğeyi bitirince kurs aktive olur"}</p>
+          </div>
+        )}
+        {!member && (
+          <p class="mt-3 text-xs text-ink-muted">İlk öğe herkese açık. Üye olursan ilerlemen kaydedilir, kursu bitirince +{PUAN.courseCompleted} puan kazanırsın.</p>
+        )}
+      </div>
+      {kapak && (
+        <img src={kapak} alt="" width="220" height="300" class="hidden w-full max-w-[220px] justify-self-end rounded-xl border border-line object-cover shadow-md md:block" loading="lazy" />
+      )}
+    </div>
+  </header>
+
+  <div class="mt-6 grid gap-8 lg:grid-cols-[300px_1fr]">
+    <aside class="min-w-0">
+      <ol class="space-y-1.5">
+        {items.map((it, i) => (
+          <li>
+            <a
+              href={`${R.kurs(course.slug)}?b=${i}`}
+              aria-current={i === aktifIndex ? "page" : undefined}
+              class:list={[
+                "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors",
+                i === aktifIndex
+                  ? "border-accent bg-accent-soft font-medium text-accent"
+                  : "border-line bg-surface-raised text-ink-muted hover:border-accent/50 hover:text-ink",
+              ]}
+            >
+              <span>{doneIds.has(it.id) ? "✅" : !member && i > 0 ? "🔒" : IKON[it.kind]}</span>
+              <span class="min-w-0 flex-1 truncate">{i + 1}. {it.title}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+      {uretici && (
+        <div class="mt-4 rounded-xl border border-line bg-surface-raised p-3 text-xs text-ink-muted">
+          <p class="font-medium text-ink">Üretici özeti</p>
+          <p class="mt-1">👥 {katilimci} katılımcı · ⚡ {Number(sayilar?.aktif ?? 0)} aktif · 🏁 {bitiren} bitirdi</p>
+          <p class="mt-1">+{PUAN.courseLearnerActivated} aktivasyon · +{PUAN.courseLearnerCompleted} bitirme (günde en çok {PUAN.courseProducerDailyCap}) · ilk 3 aktivasyonda +{PUAN.courseLaunched}</p>
+        </div>
+      )}
+    </aside>
+
+    <section class="min-w-0">
+      {!aktif && <p class="text-ink-muted">Bu kursta henüz içerik yok.</p>}
+
+      {misafirKilidi && aktif && (
+        <div class="rounded-2xl border border-line bg-surface-raised p-8 text-center">
+          <p class="text-3xl">🔒</p>
+          <p class="mt-2 font-display text-xl font-semibold text-ink">{aktif.title}</p>
+          <p class="mt-2 text-ink-muted">Bu öğe üyelere açık. İlk öğeyi ücretsiz izledin; devamı için katıl — ilk kitabın hediye.</p>
+          <SignInButton mode="modal" forceRedirectUrl={buSayfa} asChild>
+            <button type="button" class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Katıl ve devam et 🎁</button>
+          </SignInButton>
+        </div>
+      )}
+
+      {!misafirKilidi && aktif?.kind === "youtube" && aktif.youtubeId && (
+        <div class="overflow-hidden rounded-2xl border border-line">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${aktif.youtubeId}`}
+            title={aktif.title}
+            loading="lazy"
+            allowfullscreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            class="aspect-video w-full"
+          />
+        </div>
+      )}
+      {aktifPost && !yaziKilidi && (
+        <article
+          class="prose prose-lg max-w-none rounded-2xl border border-line bg-surface-raised p-6 dark:prose-invert prose-headings:font-display prose-a:text-accent"
+          set:html={renderMemberMarkdown(aktifPost.markdown)}
+        />
+      )}
+      {aktifPost && yaziKilidi && (
+        <div class="rounded-2xl border border-line bg-surface-raised p-8 text-center">
+          <p class="text-3xl">🔒</p>
+          <p class="mt-2 font-display text-xl font-semibold text-ink">{aktifPost.title}</p>
+          <p class="mt-2 text-ink-muted">Bu yazı yalnız üyelere açık.</p>
+          {!member && (
+            <SignInButton mode="modal" forceRedirectUrl={buSayfa} asChild>
+              <button type="button" class="mt-4 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface">Katıl 🎁</button>
+            </SignInButton>
+          )}
+        </div>
+      )}
+      {aktifQuiz && (
+        <div class="rounded-2xl border border-line bg-surface-raised p-8 text-center">
+          <p class="font-display text-xl font-semibold text-ink">🧠 {aktifQuiz.title}</p>
+          <a href={R.quiz(aktifQuiz.bookId)} class="mt-4 inline-block rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+            Quiz'i çöz <span class="arrow-slide">→</span>
+          </a>
+        </div>
+      )}
+
+      {aktif && !misafirKilidi && member && (
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          {katilim ? (
+            !doneIds.has(aktif.id) ? (
+              <form method="post" action="/api/uye/egitim">
+                <input type="hidden" name="action" value="complete" />
+                <input type="hidden" name="itemId" value={aktif.id} />
+                <input type="hidden" name="next" value={aktifIndex < items.length - 1 ? `${R.kurs(course.slug)}?b=${aktifIndex + 1}` : R.kurs(course.slug)} />
+                <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+                  Tamamlandı işaretle ✓
+                </button>
+              </form>
+            ) : (
+              <span class="text-sm font-medium text-accent">Tamamlandı ✅</span>
+            )
+          ) : uretici ? (
+            <span class="text-sm text-ink-muted">Kursun üreticisisin — ilerleme sayılmaz.</span>
+          ) : (
+            <form method="post" action="/api/uye/egitim">
+              <input type="hidden" name="action" value="join" />
+              <input type="hidden" name="courseId" value={course.id} />
+              <button class="cursor-pointer rounded-full border border-accent px-5 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface">
+                İlerlemeyi kaydetmek için kursa katıl
+              </button>
+            </form>
+          )}
+          {aktifIndex < items.length - 1 && (
+            <a href={`${R.kurs(course.slug)}?b=${aktifIndex + 1}`} class="text-sm font-medium text-accent hover:underline">
+              Sonraki öğe <span class="arrow-slide">→</span>
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* ---- Soru-cevap ---- */}
+      {aktif && !misafirKilidi && (
+        <section class="mt-10" id="soru-cevap">
+          <h2 class="font-display text-xl font-semibold text-ink">💬 Soru-cevap <span class="text-sm font-normal text-ink-muted">· bu öğe · {yorumlar.length}</span></h2>
+          <ul class="mt-4 space-y-3">
+            {yorumlar.map((y) => {
+              const k = kisiler.get(y.userId);
+              return (
+                <li class:list={["rounded-xl border p-4", y.acceptedAt ? "border-accent bg-accent-soft/40" : "border-line bg-surface-raised"]}>
+                  <div class="flex items-center justify-between gap-3 text-xs text-ink-muted">
+                    <span class="flex items-center gap-2">
+                      {k && <Avatar name={k.name} avatarUrl={k.avatarUrl} level={seviyeler.get(k.id)} size="sm" />}
+                      <span class="font-medium text-ink">{k?.name ?? "Üye"}</span>
+                      {y.userId === course.createdBy && <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-medium text-surface">üretici</span>}
+                      {y.acceptedAt && <span class="rounded-full border border-accent px-2 py-0.5 text-[10px] font-medium text-accent">🏅 en iyi cevap</span>}
+                    </span>
+                    <time datetime={y.createdAt.toISOString()}>{formatDate(y.createdAt, "tr")}</time>
+                  </div>
+                  <p class="mt-2 whitespace-pre-wrap text-sm text-ink">{y.body}</p>
+                  <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                    {member && y.userId !== member.id && !begendim.has(y.id) ? (
+                      <form method="post" action="/api/uye/feed">
+                        <input type="hidden" name="action" value="like" />
+                        <input type="hidden" name="commentId" value={y.id} />
+                        <input type="hidden" name="next" value={`${buSayfa}#soru-cevap`} />
+                        <button class="cursor-pointer rounded-full border border-line px-2.5 py-1 text-ink-muted hover:border-accent hover:text-accent">👏 {begeniMap.get(y.id) ?? 0}</button>
+                      </form>
+                    ) : (
+                      <span class="rounded-full border border-line px-2.5 py-1 text-ink-muted">👏 {begeniMap.get(y.id) ?? 0}</span>
+                    )}
+                    {uretici && !enIyiVar && y.userId !== member!.id && (
+                      <form method="post" action="/api/uye/egitim">
+                        <input type="hidden" name="action" value="accept-answer" />
+                        <input type="hidden" name="commentId" value={y.id} />
+                        <input type="hidden" name="next" value={`${buSayfa}#soru-cevap`} />
+                        <button class="cursor-pointer rounded-full border border-accent px-2.5 py-1 text-accent hover:bg-accent hover:text-surface">🏅 En iyi cevap seç (+{PUAN.answerAccepted})</button>
+                      </form>
+                    )}
+                    {member && y.userId !== member.id && (
+                      <form method="post" action="/api/uye/sikayet" class="ml-auto">
+                        <input type="hidden" name="targetType" value="comment" />
+                        <input type="hidden" name="targetId" value={y.id} />
+                        <input type="hidden" name="next" value={buSayfa} />
+                        <button class="cursor-pointer text-ink-muted hover:text-red-500" title="Şikâyet et">🚩</button>
+                      </form>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {member ? (
+            <form method="post" action="/api/uye/feed" class="mt-4 grid gap-2">
+              <input type="hidden" name="action" value="comment" />
+              <input type="hidden" name="courseItemId" value={aktif.id} />
+              <input type="hidden" name="next" value={`${buSayfa}#soru-cevap`} />
+              <textarea name="body" required maxlength="1000" rows="3" placeholder="Soru sor ya da cevapla — beğeni alan cevap +1, en iyi cevap +10" class="rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm"></textarea>
+              <button class="cursor-pointer justify-self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Gönder</button>
+            </form>
+          ) : (
+            <p class="mt-4 text-sm text-ink-muted">Soru sormak ve cevaplamak için üye ol.</p>
+          )}
+        </section>
+      )}
+
+      {/* ---- Ek kaynaklar ---- */}
+      {!misafirKilidi && (kaynaklar.length > 0 || (member && (katilim || uretici))) && (
+        <section class="mt-10" id="kaynaklar">
+          <h2 class="font-display text-xl font-semibold text-ink">🔗 Ek kaynaklar</h2>
+          <ul class="mt-3 space-y-2">
+            {kaynaklar.map((kk) => (
+              <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface-raised px-4 py-3 text-sm">
+                <div class="min-w-0">
+                  <a href={kk.url} rel="noopener nofollow ugc" target="_blank" class="break-all font-medium text-accent hover:underline">{kk.url.replace(/^https:\/\//, "")}</a>
+                  {kk.note && <p class="text-ink-muted">{kk.note}</p>}
+                  <p class="text-xs text-ink-muted">öneren: {kisiler.get(kk.userId)?.name ?? "Üye"}{kk.status === "pending" && " · onay bekliyor"}</p>
+                </div>
+                {uretici && kk.status === "pending" && (
+                  <form method="post" action="/api/uye/egitim" class="flex gap-2">
+                    <input type="hidden" name="action" value="resource-review" />
+                    <input type="hidden" name="resourceId" value={kk.id} />
+                    <input type="hidden" name="next" value={`${buSayfa}#kaynaklar`} />
+                    <button name="decision" value="accept" class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface">Kabul (+{PUAN.resourceAccepted} önerene)</button>
+                    <button name="decision" value="reject" class="cursor-pointer rounded-full border border-line px-3 py-1 text-xs text-ink-muted hover:border-red-400 hover:text-red-500">Reddet</button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+          {member && (katilim || uretici) && (
+            <form method="post" action="/api/uye/egitim" class="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <input type="hidden" name="action" value="resource" />
+              <input type="hidden" name="courseId" value={course.id} />
+              <input type="hidden" name="next" value={`${buSayfa}#kaynaklar`} />
+              <input name="url" type="url" required pattern="https://.*" placeholder="https://… (yalnız https)" class="rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm" />
+              <input name="note" maxlength="200" placeholder="Kısa not" class="rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm" />
+              <button class="cursor-pointer rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">Öner</button>
+            </form>
+          )}
+        </section>
+      )}
+
+      {/* ---- Değerlendirme ---- */}
+      {member && katilim?.activatedAt && !uretici && (
+        <section class="mt-10" id="degerlendir">
+          <h2 class="font-display text-xl font-semibold text-ink">⭐ Kursu değerlendir</h2>
+          <form method="post" action="/api/uye/egitim" class="mt-3 grid gap-2">
+            <input type="hidden" name="action" value="rate" />
+            <input type="hidden" name="courseId" value={course.id} />
+            <input type="hidden" name="next" value={`${buSayfa}#degerlendir`} />
+            <div class="flex gap-3 text-sm">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <label class="flex cursor-pointer items-center gap-1">
+                  <input type="radio" name="stars" value={s} required checked={benimPuanim?.stars === s} /> {s}★
+                </label>
+              ))}
+            </div>
+            <input name="body" maxlength="300" value={benimPuanim?.body ?? ""} placeholder="Bir cümle (isteğe bağlı)" class="rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm" />
+            <button class="cursor-pointer justify-self-start rounded-full border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-surface">{benimPuanim ? "Güncelle" : "Gönder"}</button>
+          </form>
+        </section>
+      )}
+
+      {member && !uretici && (
+        <details class="mt-10 text-xs text-ink-muted">
+          <summary class="cursor-pointer hover:text-red-500">🚩 Bu kursu şikâyet et</summary>
+          <form method="post" action="/api/uye/sikayet" class="mt-2 flex flex-wrap gap-2">
+            <input type="hidden" name="targetType" value="course" />
+            <input type="hidden" name="targetId" value={course.id} />
+            <input type="hidden" name="next" value={buSayfa} />
+            <input name="reason" maxlength="300" placeholder="Neden? (isteğe bağlı)" class="rounded-xl border border-line bg-surface-raised px-3 py-1.5" />
+            <button class="cursor-pointer rounded-full border border-line px-3 py-1.5 hover:border-red-400 hover:text-red-500">Gönder</button>
+          </form>
+        </details>
+      )}
+    </section>
+  </div>
+</ToplulukLayout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-kopyala]")) {
+      if (btn.dataset.init) continue;
+      btn.dataset.init = "1";
+      btn.addEventListener("click", async () => {
+        const url = btn.dataset.kopyala ?? "";
+        if (navigator.share) {
+          try { await navigator.share({ url, title: document.title }); return; } catch { /* iptal */ }
+        }
+        try { await navigator.clipboard.writeText(url); btn.textContent = "✅ Kopyalandı"; } catch { prompt("Bağlantı:", url); }
+      });
+    }
+  });
+</script>

@@ -38,11 +38,26 @@ async function temizle() {
   const ids = eski.map((u) => u.id);
   // Bağımlı tablolar (FK sırasıyla)
   await db.delete(schema.courseProgress).where(inArray(schema.courseProgress.userId, ids));
+  await db.delete(schema.courseEnrollments).where(inArray(schema.courseEnrollments.userId, ids));
+  await db.delete(schema.ratings).where(inArray(schema.ratings.userId, ids));
+  await db.delete(schema.courseResources).where(inArray(schema.courseResources.userId, ids));
+  await db.delete(schema.reports).where(inArray(schema.reports.reporterId, ids));
+  await db.delete(schema.pendingPoints).where(inArray(schema.pendingPoints.userId, ids));
   const kurslar = await db.query.courses.findMany({ where: inArray(schema.courses.createdBy, ids) });
   if (kurslar.length) {
-    await db.delete(schema.courseProgress).where(inArray(schema.courseProgress.courseId, kurslar.map((c) => c.id)));
-    await db.delete(schema.courseItems).where(inArray(schema.courseItems.courseId, kurslar.map((c) => c.id)));
-    await db.delete(schema.courses).where(inArray(schema.courses.id, kurslar.map((c) => c.id)));
+    const cids = kurslar.map((c) => c.id);
+    const ogeler = await db.query.courseItems.findMany({ where: inArray(schema.courseItems.courseId, cids) });
+    if (ogeler.length) {
+      const yorumlar = await db.query.comments.findMany({ where: inArray(schema.comments.courseItemId, ogeler.map((o) => o.id)) });
+      if (yorumlar.length) await db.delete(schema.likes).where(inArray(schema.likes.commentId, yorumlar.map((y) => y.id)));
+      await db.delete(schema.comments).where(inArray(schema.comments.courseItemId, ogeler.map((o) => o.id)));
+    }
+    await db.delete(schema.courseProgress).where(inArray(schema.courseProgress.courseId, cids));
+    await db.delete(schema.courseEnrollments).where(inArray(schema.courseEnrollments.courseId, cids));
+    await db.delete(schema.ratings).where(inArray(schema.ratings.courseId, cids));
+    await db.delete(schema.courseResources).where(inArray(schema.courseResources.courseId, cids));
+    await db.delete(schema.courseItems).where(inArray(schema.courseItems.courseId, cids));
+    await db.delete(schema.courses).where(inArray(schema.courses.id, cids));
   }
   await db.delete(schema.likes).where(inArray(schema.likes.userId, ids));
   const gonderiler = await db.query.feedPosts.findMany({ where: inArray(schema.feedPosts.userId, ids) });
@@ -258,7 +273,18 @@ async function kur() {
   // Eğitim: karışık müfredat (2 video + 1 yazı + 1 quiz)
   const [kurs] = await db
     .insert(schema.courses)
-    .values({ clubId: kulup!.id, bookId: LEARNING_GO, title: "Sıfırdan Go: Learning Go Yol Haritası", description: "Video izle → yazı oku → quiz çöz. Kulübün ortak müfredatı.", status: "published", createdBy: U.ayse!.id })
+    .values({
+      clubId: kulup!.id,
+      bookId: LEARNING_GO,
+      slug: "sifirdan-go-learning-go-yol-haritasi-demo",
+      title: "Sıfırdan Go: Learning Go Yol Haritası",
+      description: "Video izle → yazı oku → quiz çöz. Kulübün ortak müfredatı.",
+      summary: "4 öğede Go'nun temellerini kur, goroutine'lere ilk adımı at.",
+      level: "baslangic",
+      estMinutes: 90,
+      status: "published",
+      createdBy: U.ayse!.id,
+    })
     .returning();
   const kursOgeleri = await db
     .insert(schema.courseItems)
@@ -269,10 +295,30 @@ async function kur() {
       { courseId: kurs!.id, order: 3, kind: "quiz", title: quiz!.title, quizId: quiz!.id },
     ])
     .returning();
+  // Katılımlar: Elif %50 (aktive), Mehmet katıldı ama başlamadı, Can aktive
+  const ikiGunOnce = new Date(Date.now() - 2 * 864e5);
+  await db.insert(schema.courseEnrollments).values([
+    { userId: U.elif!.id, courseId: kurs!.id, joinedAt: ikiGunOnce, activatedAt: ikiGunOnce },
+    { userId: U.mehmet!.id, courseId: kurs!.id, joinedAt: ikiGunOnce },
+    { userId: U.can!.id, courseId: kurs!.id, joinedAt: ikiGunOnce, activatedAt: ikiGunOnce },
+  ]);
   await db.insert(schema.courseProgress).values([
     { userId: U.elif!.id, courseId: kurs!.id, itemId: kursOgeleri[0]!.id },
     { userId: U.elif!.id, courseId: kurs!.id, itemId: kursOgeleri[1]!.id },
+    { userId: U.can!.id, courseId: kurs!.id, itemId: kursOgeleri[0]!.id },
   ]);
+  // Soru-cevap + ek kaynak + değerlendirme (kurs sayfası boş görünmesin)
+  const [soru] = await db
+    .insert(schema.comments)
+    .values({ userId: U.elif!.id, courseItemId: kursOgeleri[0]!.id, body: "go install ile go get farkı ne? Modül dışında çalıştırınca hata aldım." })
+    .returning();
+  await db.insert(schema.comments).values({ userId: U.ayse!.id, courseItemId: kursOgeleri[0]!.id, body: "go install derlenen binary'yi $GOPATH/bin'e koyar; go get artık yalnız bağımlılık ekler. Modül dışı için GOFLAGS=-mod=mod dene.", acceptedAt: new Date() });
+  await db.insert(schema.likes).values({ userId: U.can!.id, commentId: soru!.id });
+  await db.insert(schema.courseResources).values([
+    { courseId: kurs!.id, userId: U.can!.id, url: "https://go.dev/tour/welcome/1", note: "Resmî Go turu — 1. videoyla paralel gidiyor.", status: "accepted", acceptedAt: new Date() },
+    { courseId: kurs!.id, userId: U.elif!.id, url: "https://gobyexample.com/", note: "Örnekle öğrenenler için.", status: "pending" },
+  ]);
+  await db.insert(schema.ratings).values({ userId: U.can!.id, courseId: kurs!.id, stars: 5, body: "Video + yazı karışımı çok iyi oturmuş." });
 
   // Etkinlik (yarın) + RSVP'ler (1 öncelikli ⭐)
   const [etkinlik] = await db
@@ -339,7 +385,7 @@ async function kur() {
   kulüp: /kulup/${kulup!.slug} (pano+kitaplık+etkinlik+üyeler dolu)
   kampanya: /kampanya/${kampanya!.id} (6 görev, her Kanban durumu)
   quiz: /kitap/${MINDSET}/quiz (yayında) + 1 bekleyen (admin kuyruğu)
-  kurs: /egitim/${kurs!.id} (video+yazı+quiz karışık, %50 ilerleme)
+  kurs: /kurslar/${kurs!.slug} (video+yazı+quiz karışık, 3 katılımcı, soru-cevap, ek kaynak)
   yazılar: /topluluk (3 yayında — 1'i yalnız-üyeler, 1 bekleyen)
   etkinlik: /etkinlikler (yarın, ⭐ öncelikli koltuklu)
   profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);

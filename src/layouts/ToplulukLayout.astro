@@ -5,18 +5,22 @@
  */
 import Base from "@/layouts/Base.astro";
 import { R } from "@/lib/routes.ts";
+import type { SeoProps } from "@/features/seo/Seo.astro";
 
 interface Props {
   title: string;
   description?: string;
+  seo?: Partial<SeoProps>;
+  /** true ise sayfa kendi JsonLd'sini basar (Base varsayılanı atlanır) */
+  ownJsonLd?: boolean;
 }
-const { title, description } = Astro.props;
+const { title, description, seo, ownJsonLd } = Astro.props;
 
 const sekmeler = [
   { href: R.topluluk, label: "Akış", ikon: "💬" },
   { href: R.gundem, label: "Gündem", ikon: "🔥" },
   { href: R.kulupler, label: "Kulüpler", ikon: "🏛️" },
-  { href: R.dersler, label: "Dersler", ikon: "🎓" },
+  { href: R.kurslar, label: "Kurslar", ikon: "🎓" },
   { href: R.lider, label: "Liderlik", ikon: "🏆" },
   { href: R.etkinlikler, label: "Etkinlikler", ikon: "📅" },
   { href: R.uyeler, label: "Üyeler", ikon: "👥" },
@@ -26,7 +30,7 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const aktifMi = (href: string) => path === href || path.startsWith(href + "/");
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} seo={seo} ownJsonLd={ownJsonLd}>
   <slot name="below-header" slot="below-header" />
   <nav
     class="sticky top-[65px] z-20 -mx-4 border-b border-line bg-surface/85 px-4 backdrop-blur"
