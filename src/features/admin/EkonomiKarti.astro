@@ -1,0 +1,65 @@
+---
+/**
+ * Ekonomi kartı (F5-03, PRD §4.9) — /uye/admin. Sayılar lib/ekonomi.ts ekonomiKarti() tek SQL'inden,
+ * oranlar ve %40 davet eşiği saf ekonomiOzeti()'nden.
+ */
+import { DAVET_PAYI_ESIK, ekonomiOzeti } from "@/lib/economy.ts";
+import type { EkonomiKarti } from "@/lib/ekonomi.ts";
+
+interface Props {
+  kart: EkonomiKarti;
+}
+const { kart } = Astro.props;
+const o = ekonomiOzeti(kart);
+const yuzde = (x: number) => `%${Math.round(x * 100)}`;
+const kutu = "rounded-xl border border-line bg-surface-raised px-4 py-3";
+---
+
+<section class="mt-10" data-ekonomi-karti>
+  <h2 class="font-display text-xl font-semibold text-ink">
+    Ekonomi kartı <span class="text-sm font-normal text-ink-muted">puan son 7 gün · huniler son 30 gün</span>
+  </h2>
+  {
+    o.davetUyari && (
+      <p role="alert" class="mt-3 rounded-xl border border-amber-400 bg-amber-100 px-4 py-2 text-sm text-amber-800" data-davet-uyari>
+        ⚠️ Davet kaynaklı pay {yuzde(o.davetPayi)} (eşik {yuzde(DAVET_PAYI_ESIK)}): ekonomi davet çiftliğine kayıyor olabilir.
+      </p>
+    )
+  }
+  <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div class={kutu}>
+      <dt class="text-xs text-ink-muted">Basılan puan</dt>
+      <dd class="font-display text-2xl font-semibold text-ink" data-basilan>{kart.basilan}</dd>
+    </div>
+    <div class={kutu}>
+      <dt class="text-xs text-ink-muted">Aktif üye başına</dt>
+      <dd class="font-display text-2xl font-semibold text-ink">{o.uyeBasina}</dd>
+      <dd class="text-xs text-ink-muted">{kart.aktif} üye puan kazandı</dd>
+    </div>
+    <div class={kutu}>
+      <dt class="text-xs text-ink-muted">Davet payı</dt>
+      <dd class:list={["font-display text-2xl font-semibold", o.davetUyari ? "text-amber-600" : "text-ink"]} data-davet-payi>{yuzde(o.davetPayi)}</dd>
+      <dd class="text-xs text-ink-muted">{kart.davet} puan</dd>
+    </div>
+    <div class={kutu}>
+      <dt class="text-xs text-ink-muted">Bekleyen puan satırı</dt>
+      <dd class="font-display text-2xl font-semibold text-ink">{kart.bekleyen}</dd>
+      <dd class="text-xs text-ink-muted">kırpılan {yuzde(o.kirpilanOran)} · düşen {yuzde(o.dusenOran)}</dd>
+    </div>
+  </dl>
+  <p class="mt-3 text-sm text-ink-muted">
+    Kurs: <strong class="text-ink">{kart.kursKatilim}</strong> katılım → {kart.kursAktif} aktivasyon ({yuzde(o.kursAktivasyon)}) → {kart.kursBiten} tamamlama ({yuzde(o.kursTamamlama)}) ·
+    Etkinlik: <strong class="text-ink">{kart.etkinlikKayit}</strong> kayıt → {kart.etkinlikGiris} giriş ({yuzde(o.etkinlikGiris)})
+  </p>
+  {
+    kart.kaynaklar.length > 0 && (
+      <ul class="mt-3 flex flex-wrap gap-2 text-xs text-ink-muted" data-kaynaklar>
+        {kart.kaynaklar.map((k) => (
+          <li class="rounded-full border border-line px-3 py-1">
+            <code>{k.reason}</code> <strong class="text-ink">{k.puan}</strong> ({yuzde(kart.basilan ? k.puan / kart.basilan : 0)})
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>

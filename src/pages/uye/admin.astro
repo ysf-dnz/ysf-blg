@@ -6,6 +6,8 @@ import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { turEtiketi } from "@/lib/topluluk.ts";
 import { renderMemberMarkdown } from "@/lib/markdown.ts";
+import EkonomiKarti from "@/features/admin/EkonomiKarti.astro";
+import { ekonomiKarti, isaretliHesaplar } from "@/lib/ekonomi.ts";
 
 export const prerender = false;
 
@@ -119,6 +121,8 @@ const [sikayetOlcum] = await db
   .from(schema.reports)
   .where(eq(schema.reports.status, "open"));
 const kisiselSikayet = Number(sikayetOlcum?.n ?? 0);
+// Faz 5: ekonomi kartı (tek SQL) + suistimal kuyruğu
+const [kart, isaretliler] = await Promise.all([ekonomiKarti(), isaretliHesaplar()]);
 const pendingApps = await db.query.applications.findMany({
   where: eq(schema.applications.status, "pending"),
   orderBy: desc(schema.applications.createdAt),
@@ -127,6 +131,37 @@ const pendingApps = await db.query.applications.findMany({
 
 <Base title="Admin">
   <h1 class="font-display text-3xl font-semibold text-ink">Admin paneli</h1>
+
+  <EkonomiKarti kart={kart} />
+
+  <section class="mt-10" data-suistimal-kuyrugu>
+    <h2 class="font-display text-xl font-semibold text-ink">Suistimal kuyruğu ({isaretliler.length})</h2>
+    <p class="mt-1 text-sm text-ink-muted">
+      İşaretli hesap lider ve lig tablolarında görünmez; ona ya da ondan doğan bekleyen puan olgunlaşmaz.
+      İşaret: davet çiftliği taraması (günlük) ya da "Haklı" bulunan üye / mesaj şikâyeti.
+    </p>
+    {isaretliler.length === 0 && <p class="mt-2 text-ink-muted">İşaretli hesap yok.</p>}
+    <ul class="mt-4 space-y-3">
+      {
+        isaretliler.map((u) => (
+          <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3">
+            <span class="text-sm text-ink">
+              <a href={`/u/${u.handle}`} class="font-medium hover:text-accent">{u.name} (@{u.handle})</a>
+              <span class="block text-xs text-ink-muted">
+                hesap {u.acilis} · işaret {u.isaret}
+                {u.davet_eden && <> · davet eden @{u.davet_eden}</>}
+                {u.tutulan > 0 && <> · tutulan bekleyen <strong class="text-ink">+{u.tutulan}</strong></>}
+              </span>
+            </span>
+            <form method="post" action="/api/uye/admin">
+              <input type="hidden" name="userId" value={u.id} />
+              <button name="action" value="flag_clear" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">Temiz (işareti kaldır)</button>
+            </form>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 
   <section class="mt-8">
     <h2 class="font-display text-xl font-semibold text-ink">
@@ -301,7 +336,7 @@ const pendingApps = await db.query.applications.findMany({
               <form method="post" action="/api/uye/admin" class="flex gap-2">
                 <input type="hidden" name="reportTarget" value={g.targetType} />
                 <input type="hidden" name="reportTargetId" value={g.targetId} />
-                <button name="action" value="report_remove" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">{kisisel ? "Haklı (çözüldü)" : "Kaldır"}{g.targetType === "course" && " (+iade)"}</button>
+                <button name="action" value="report_remove" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">{kisisel ? "Haklı (üyeyi işaretle)" : "Kaldır"}{g.targetType === "course" && " (+iade)"}</button>
                 <button name="action" value="report_restore" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">{kisisel ? "Reddet" : "Geri aç"}</button>
               </form>
             </div>
