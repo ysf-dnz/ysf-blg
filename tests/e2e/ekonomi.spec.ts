@@ -24,3 +24,38 @@ test("işaretli üye liderlik tablolarında görünmez; işaret kalkınca geri g
   }
   expect(await tablo("all")).toContain("/u/elif-celik");
 });
+
+/**
+ * F5-04 sayfa sorguları (devir §4.5): işaretli üye /uyeler dizininde kalır ama sıranın sonuna düşer;
+ * üniversite takım tablosuna ve akışın "Bu hafta" mini liderliğine sayılmaz. Demo üye Elif birkaç saniye işaretlenir.
+ */
+test("işaretli üye /uyeler'de sona düşer; üniversite tablosunda ve akışın 'Bu hafta' listesinde sayılmaz", async ({ request }) => {
+  test.skip(!process.env.POSTGRES_URL, "POSTGRES_URL yok");
+  const sql = neon(process.env.POSTGRES_URL!);
+  const isaret = (deger: "now()" | "null") =>
+    deger === "now()"
+      ? sql`update users set flagged_at = now() where handle = 'elif-celik' and clerk_id like 'demo%'`
+      : sql`update users set flagged_at = null where handle = 'elif-celik' and clerk_id like 'demo%'`;
+  const html = async (yol: string) => (await request.get(yol)).text();
+  const handles = (h: string) => [...new Set([...h.matchAll(/href="\/u\/([a-z0-9-]+)"/g)].map((m) => m[1]!))];
+  const uniSatir = (h: string) => h.match(/Boğaziçi<\/span>\s*<span[^>]*>(\d+) p · (\d+) üye/)?.slice(1).map(Number);
+  const buHafta = (h: string) => {
+    const i = h.indexOf("Bu hafta");
+    return i < 0 ? "" : h.slice(i, h.indexOf("</ol>", i));
+  };
+  const oku = async () => ({ uyeler: handles(await html("/uyeler")), uni: uniSatir(await html("/lider?t=all")), akis: buHafta(await html("/topluluk")) });
+  await isaret("null");
+  const once = await oku();
+  expect(once.uyeler, "demo veri eskimiş olabilir: npm run seed:demo").toContain("elif-celik");
+  expect(once.uyeler.indexOf("elif-celik")).toBeLessThan(once.uyeler.length - 1); // işaretsizken sonuncu değil
+  try {
+    await isaret("now()");
+    const sonra = await oku();
+    expect(sonra.uyeler).toContain("elif-celik"); // dizinde kalır
+    expect(sonra.uyeler.at(-1)).toBe("elif-celik"); // sıranın sonuna düşer
+    if (once.uni) expect(sonra.uni === undefined || sonra.uni[1]! < once.uni[1]!, "Boğaziçi satırı Elif'siz").toBe(true);
+    if (once.akis.includes("/u/elif-celik")) expect(sonra.akis).not.toContain("/u/elif-celik");
+  } finally {
+    await isaret("null");
+  }
+});
