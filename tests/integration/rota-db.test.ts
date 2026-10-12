@@ -205,7 +205,7 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
 
   /* ---------------- api/uye/kampanya.ts + gorev.ts (C2) ---------------- */
 
-  it("C2 (karakterizasyon, Faz 5 öncesi): ONAY BEKLEYEN topluluğun başkanı kampanya açar, görev yaratır; üye üstlenir + teslim eder; başkan onaylar → task_done YAZILIR (clubs.status hiçbir rotada sorulmaz)", async () => {
+  it("C2 (kapandı): onay bekleyen toplulukta kampanya açılamaz (403); topluluk onaylanınca zincir çalışır ve ÜYEYE task_done yazılır", async () => {
     const [baskan, uyeK] = await Promise.all([uye("c2-b"), uye("c2-u")]);
     const [kulup] = await db
       .insert(schema.clubs)
@@ -216,13 +216,15 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
       { clubId: kulup!.id, userId: baskan.id, role: "president" },
       { clubId: kulup!.id, userId: uyeK.id },
     ]);
-    const r1 = await kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2 kampanya", bookId: "itest-kitap" }));
+    const kampanyaAc = () => kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2 kampanya", bookId: "itest-kitap" }));
+    expect((await kampanyaAc()).status).toBe(403); // onay bekleyen topluluk
+    expect(await db.query.campaigns.findFirst({ where: eq(schema.campaigns.clubId, kulup!.id) })).toBeUndefined();
+    await db.update(schema.clubs).set({ status: "approved" }).where(eq(schema.clubs.id, kulup!.id));
+    const r1 = await kampanyaAc();
     expect(r1.status).toBe(303);
     const kampanyaId = Number(r1.headers.get("location")!.split("/").pop());
-    expect(kampanyaId).toBeGreaterThan(0);
     expect((await gorev.POST(baglam(baskan, { action: "create", campaignId: String(kampanyaId), title: "Itest görev", rewardPoints: "20" }))).status).toBe(303);
     const task = (await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.campaignId, kampanyaId) }))!;
-    expect(task.status).toBe("backlog");
     for (const [kim, form] of [
       [uyeK, { action: "claim", taskId: String(task.id) }],
       [uyeK, { action: "submit", taskId: String(task.id), url: "https://example.com/itest-c2" }],
@@ -230,21 +232,23 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     ] as const) {
       const r = await gorev.POST(baglam(kim, form));
       expect(r.status, form.action).toBe(303);
-      expect(r.headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`); // ?limit= / ?katil= / ?kapildi= yok
+      expect(r.headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`);
     }
     expect((await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.id, task.id) }))!.status).toBe("done");
     expect((await ledger(uyeK.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(20 * PUAN.campaignMultiplier)]);
   });
-  it.todo("C2 karar (#42): onay bekleyen topluluğun kampanya / görev ödülü zincirinin kapatılması — kurs (onayliKulupMu) ve etkinlik (etkinlikAcikMi) kuralının üçüncü kopyası (devir §1 C2)");
 
-  it("C2b (karakterizasyon, Faz 5 öncesi): başkan görevi KENDİ üstlenip KENDİ onaylayabiliyor — task_done kendi hesabına yazılır (approve'da atanan ≠ onaylayan kontrolü yok)", async () => {
-    const baskan = await uye("c2b");
+  it("C2b (kapandı): başkan KENDİ görevini onaylayamaz (görev review'da kalır, ledger boş); mod onaylayınca yazılır, kişi başı 7 günlük görev tavanı kırpar", async () => {
+    const [baskan, mod] = await Promise.all([uye("c2b"), uye("c2b-m")]);
     const [kulup] = await db
       .insert(schema.clubs)
-      .values({ slug: `itest-rt-c2b-${t}`, name: "Itest RT C2b", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: baskan.id, status: "pending" })
+      .values({ slug: `itest-rt-c2b-${t}`, name: "Itest RT C2b", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: baskan.id, status: "approved" })
       .returning();
     kulupler.push(kulup!.id);
-    await db.insert(schema.clubMembers).values({ clubId: kulup!.id, userId: baskan.id, role: "president" });
+    await db.insert(schema.clubMembers).values([
+      { clubId: kulup!.id, userId: baskan.id, role: "president" },
+      { clubId: kulup!.id, userId: mod.id, role: "mod" },
+    ]);
     const r1 = await kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2b kampanya", bookId: "itest-kitap" }));
     const kampanyaId = Number(r1.headers.get("location")!.split("/").pop());
     expect((await gorev.POST(baglam(baskan, { action: "create", campaignId: String(kampanyaId), title: "Itest kendi görevi", rewardPoints: "500" }))).status).toBe(303);
@@ -252,13 +256,18 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     const adimlar: Record<string, string>[] = [
       { action: "claim", taskId: String(task.id) },
       { action: "submit", taskId: String(task.id), url: "https://example.com/itest-c2b" },
-      { action: "approve", taskId: String(task.id) },
+      { action: "approve", taskId: String(task.id) }, // kendine onay: sessizce geri döner
     ];
     for (const form of adimlar)
       expect((await gorev.POST(baglam(baskan, form))).headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`);
-    expect((await ledger(baskan.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(500 * PUAN.campaignMultiplier)]); // 750, tek hesap
+    expect((await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.id, task.id) }))!.status).toBe("review");
+    expect((await ledger(baskan.id, "task_done")).length).toBe(0);
+    // Mod (atanan değil) onaylar → yazılır; kişi başı kayan 7 gün tavanı 1000: 750 + ikinci görevde kalan 250
+    expect((await gorev.POST(baglam(mod, { action: "approve", taskId: String(task.id) }))).status).toBe(303);
+    expect((await ledger(baskan.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(500 * PUAN.campaignMultiplier)]);
+    expect(await rw.awardPoints({ userId: baskan.id, delta: 750, reason: "task_done", refId: `itest-rt-c2b-2-${t}` })).toBe(PUAN.taskWeeklyCap - 750);
+    expect(await rw.awardPoints({ userId: baskan.id, delta: 10, reason: "task_done", refId: `itest-rt-c2b-3-${t}` })).toBe(0);
   });
-  it.todo("C2b karar (#42): approve'da atanan ≠ onaylayan; kulüp başına 1000 görev bütçesi kişi başına kulüp sayısıyla çarpılıyor (kulup-kur kişi başı sınırsız, pending kulüpte anında başkan)");
 
   /* ---------------- api/uye/egitim.ts ---------------- */
 

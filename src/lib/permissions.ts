@@ -25,6 +25,17 @@ export function canManage(role: ClubRole): boolean {
   return role === "president" || role === "mod";
 }
 
+/**
+ * Onaylı topluluk: onaysız kurs yayını, kampanya açma ve görev ödülü yalnız burada — onay bekleyen
+ * toplulukta her üye başvurup anında başkan olur (Faz 5 incelemesi C2/C2b: kendi kulübünde kendi görevini
+ * onaylayıp haftada 1000 basılabiliyordu).
+ */
+export async function kulupOnayliMi(clubId: number | null): Promise<boolean> {
+  if (!clubId) return false;
+  const kulup = await db.query.clubs.findFirst({ where: eq(schema.clubs.id, clubId), columns: { status: true } });
+  return kulup?.status === "approved";
+}
+
 /** Site-geneli kampanya açma: rep + admin */
 export function canManageGlobal(member: Member | null): boolean {
   return member?.role === "rep" || member?.role === "admin";

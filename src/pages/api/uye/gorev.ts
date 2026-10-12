@@ -4,7 +4,7 @@ import { awardPoints, sayacRozetleri } from "@/lib/rewards.ts";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { canManage, canManageGlobal, clubRoleOf } from "@/lib/permissions.ts";
+import { canManage, canManageGlobal, clubRoleOf, kulupOnayliMi } from "@/lib/permissions.ts";
 import { PUAN } from "@/lib/points.ts";
 import { gorevOdulKirp } from "@/lib/economy.ts";
 import { gte, inArray, sql, and as andOp } from "drizzle-orm";
@@ -207,7 +207,16 @@ export const POST: APIRoute = async (context) => {
     }
   }
 
-  if (action === "approve" && task.status === "review" && yonetici && task.assigneeId) {
+  // Kendine onay YOK (atanan ≠ onaylayan) ve kulüp kampanyasında topluluk ONAYLI olmalı: onay bekleyen
+  // toplulukta her üye anında başkandı, kendi görevini üstlenip onaylayarak haftada 1000 basabiliyordu (C2/C2b)
+  if (
+    action === "approve" &&
+    task.status === "review" &&
+    yonetici &&
+    task.assigneeId &&
+    task.assigneeId !== member.id &&
+    (!campaign.clubId || (await kulupOnayliMi(campaign.clubId)))
+  ) {
     // ATOMİK onay (claim ile aynı desen): status guard WHERE'de. Eskiden
     // update yalnız id ile filtreliydi ve koşul isteğin başında okunan bayat
     // snapshot'a dayanıyordu → çift tık / paralel onay çift ödül yazıyordu.
@@ -227,8 +236,10 @@ export const POST: APIRoute = async (context) => {
     // dağıtılan task_done toplamına göre ödül otomatik kırpılır.
     const buHafta = await haftalikGorevHarcamasi(campaign.clubId);
     const { verilecek, kirpildi } = gorevOdulKirp(istenen, buHafta);
+    let yazilan = 0;
     if (verilecek > 0) {
-      await awardPoints({
+      // Kişi başı kayan 7 günde tavan (tavanIcin) awardPoints içinde: kulüp bütçesi kulüp sayısıyla çarpılmasın
+      yazilan = await awardPoints({
         userId: task.assigneeId,
         delta: verilecek,
         reason: "task_done",
@@ -240,8 +251,10 @@ export const POST: APIRoute = async (context) => {
       userId: task.assigneeId,
       kind: "task",
       body: kirpildi
-        ? `"${task.title}" onaylandı ✅ +${verilecek} puan (kulübün haftalık ödül bütçesi dolduğu için kırpıldı; hafta başında yenilenir)`
-        : `"${task.title}" görevi onaylandı ✅ +${verilecek} puan`,
+        ? `"${task.title}" onaylandı ✅ +${yazilan} puan (kulübün haftalık ödül bütçesi dolduğu için kırpıldı; hafta başında yenilenir)`
+        : yazilan < verilecek
+          ? `"${task.title}" onaylandı ✅ +${yazilan} puan (kişisel haftalık görev tavanına kırpıldı)`
+          : `"${task.title}" görevi onaylandı ✅ +${verilecek} puan`,
       href: `/kampanya/${task.campaignId}`,
     });
   }

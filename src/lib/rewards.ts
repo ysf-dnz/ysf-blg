@@ -62,6 +62,9 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
     case "event_hosted":
     case "event_well_rated":
       return { reasons: ["event_hosted", "event_well_rated"], since: yediGunOnce(), limit: PUAN.eventHostWeeklyCap };
+    // Görev ödülü (Faz 5 incelemesi C2b): kulüp başına haftalık 1000 bütçe kişi başına kulüp sayısıyla çarpılıyordu
+    case "task_done":
+      return { reasons: ["task_done"], since: yediGunOnce(), limit: PUAN.taskWeeklyCap };
     // Canlılık havuzu (Faz 5 incelemesi): kurs başına 100 sınırı kurs SAYISINI sınırlamıyordu.
     // Pencere içinde bulunulan TR haftası: dağıtım haftada bir kez (pazartesi) topluca yazılır.
     case "vitality_pool":

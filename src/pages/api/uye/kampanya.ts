@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { canManage, canManageGlobal, clubRoleOf } from "@/lib/permissions.ts";
+import { canManage, canManageGlobal, clubRoleOf, kulupOnayliMi } from "@/lib/permissions.ts";
 
 export const prerender = false;
 
@@ -36,8 +36,9 @@ export const POST: APIRoute = async (context) => {
   const bookId = String(form.get("bookId") ?? "");
   if (!title || !bookId) return new Response("Eksik alan", { status: 400 });
 
+  // Onay bekleyen topluluk kampanya AÇAMAZ: görev ödülü zinciri (kurs ve etkinlikteki kuralın eşi)
   const yetkili = clubId
-    ? canManage(await clubRoleOf(member, clubId))
+    ? canManage(await clubRoleOf(member, clubId)) && (await kulupOnayliMi(clubId))
     : canManageGlobal(member);
   if (!yetkili) return new Response("Yetkisiz", { status: 403 });
 

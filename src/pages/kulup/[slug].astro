@@ -215,7 +215,7 @@ if (groups.length && tab === "uyeler") {
   {
     tab === "pano" && (
       <section class="mt-6">
-        {canManage(myRole) && (
+        {canManage(myRole) && (club.status === "approved" || member?.role === "admin") && (
           <form method="post" action="/api/uye/kampanya" class="grid gap-3 rounded-2xl border border-line bg-surface-raised p-4 sm:grid-cols-[1fr_1fr_auto]">
             <input type="hidden" name="clubId" value={club.id} />
             <input name="title" required maxlength="80" placeholder='Kampanya başlığı — örn. "Golang Ayı"' class="rounded-lg border border-line bg-surface px-3 py-2 text-sm" />
@@ -226,6 +226,9 @@ if (groups.length && tab === "uyeler") {
             </select>
             <button class="cursor-pointer rounded-full bg-accent px-5 py-2 text-sm font-medium text-surface">Kampanya aç</button>
           </form>
+        )}
+        {canManage(myRole) && club.status !== "approved" && (
+          <p class="rounded-xl border border-line bg-surface-raised px-4 py-3 text-sm text-ink-muted">Topluluğun onaylanınca kampanya açabilirsin.</p>
         )}
         <ul class="mt-4 space-y-3" data-stagger>
           {campaigns.length === 0 && <p class="text-ink-muted">Henüz kampanya yok{canManage(myRole) ? " — gündem kitabını seç, ilk kampanyayı aç." : "."}</p>}

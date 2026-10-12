@@ -12,7 +12,7 @@ import { awardPoints, puanOlayi } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { earnedPoints, getOrCreateMember, type Member } from "@/lib/member.ts";
 import { levelFor } from "@/lib/levels.ts";
-import { canManage, clubRoleOf } from "@/lib/permissions.ts";
+import { canManage, clubRoleOf, kulupOnayliMi } from "@/lib/permissions.ts";
 import { PUAN } from "@/lib/points.ts";
 import { asgariSureGectiMi } from "@/lib/economy.ts";
 import { slugifyTitle } from "@/lib/markdown.ts";
@@ -42,12 +42,6 @@ function parseYoutubeId(input: string): string | null {
 
 async function bildir(userId: number, body: string, href: string) {
   await db.insert(schema.notifications).values({ userId, kind: "course", body, href });
-}
-
-async function onayliKulupMu(clubId: number | null): Promise<boolean> {
-  if (!clubId) return false;
-  const kulup = await db.query.clubs.findFirst({ where: eq(schema.clubs.id, clubId), columns: { status: true } });
-  return kulup?.status === "approved";
 }
 
 async function kursBul(id: number): Promise<Kurs | undefined> {
@@ -438,7 +432,7 @@ export const POST: APIRoute = async (context) => {
       // ONAYLI topluluğun kursu / admin / Sv7 güvenilir üretici: onaysız yayın; diğerleri admin onayı.
       // Onay bekleyen topluluk sayılmaz: her üye başvurup anında başkan olur (etkinlikteki kuralın eşi).
       status:
-        (await onayliKulupMu(clubId)) || member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
+        (await kulupOnayliMi(clubId)) || member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
           ? "published"
           : "pending",
       createdBy: member.id,
