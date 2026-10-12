@@ -5,7 +5,7 @@
  * - Özel lig: başkanın kulüp içi yarışması; aynı sorgu kulüp-scoped koşar.
  * Sorguların tümü points_ledger'dan türetilir (tek gerçek kaynak).
  */
-import { and, eq, gt, gte, inArray, isNotNull, lt } from "drizzle-orm";
+import { and, asc, eq, gt, gte, inArray, isNotNull, lt, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 
@@ -55,6 +55,17 @@ export async function aktifSezon() {
     .values({ name: sezonAdi(simdi), startsAt: start, endsAt: end })
     .returning();
   return yeni!;
+}
+
+/**
+ * Bitişi geçmiş AKTİF sezonlar (eskiden yeniye) — cron bunları kapatır. aktifSezon() bitmiş sezonu asla
+ * döndürmez; cron'un eski `aktifSezon().endsAt <= now` dalı bu yüzden ölüydü (Faz 5 incelemesi C1).
+ */
+export async function bitenSezonlar(simdi: Date = new Date()) {
+  return db.query.seasons.findMany({
+    where: and(eq(schema.seasons.status, "active"), lte(schema.seasons.endsAt, simdi)),
+    orderBy: asc(schema.seasons.endsAt),
+  });
 }
 
 /** İşaretli (flagged_at) üyeler lig hesabına girmez: ne puanı ne de √üye paydası (F5-04) */

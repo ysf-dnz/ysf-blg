@@ -625,7 +625,7 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
 
   /* ---------------- Faz 5'ten ESKİ hatalar (yalnız kanıt; src değişmedi) ---------------- */
 
-  it("C1 (kanıt): aktifSezon bitişi geçmiş sezonu döndürmez → gunluk.ts'in `sezon.endsAt <= now` dalı hiç çalışmaz; bayat sezon 'active' kalır", async () => {
+  it("C1 (kapandı): aktifSezon bitişi geçmiş sezonu döndürmez (eski cron dalı ölüydü); bitenSezonlar() bayat aktif sezonu listeler (yalnız SELECT), cron onu kapatır", async () => {
     const [bayat] = await db
       .insert(schema.seasons)
       .values({ name: `itest-bayat-${t}`, startsAt: new Date(Date.now() - 40 * 864e5), endsAt: new Date(Date.now() - 3600e3) })
@@ -634,12 +634,16 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
       const s = await lg.aktifSezon();
       expect(s.id).not.toBe(bayat!.id);
       expect(s.endsAt.getTime()).toBeGreaterThan(Date.now()); // kapanış koşulu bu sezon için hiç doğru olmaz
-      expect((await db.query.seasons.findFirst({ where: eq(schema.seasons.id, bayat!.id) }))!.status).toBe("active"); // kimse kapatmaz
+      expect((await db.query.seasons.findFirst({ where: eq(schema.seasons.id, bayat!.id) }))!.status).toBe("active"); // bu testte kimse kapatmaz
+      const bitenler = await lg.bitenSezonlar(); // parametresiz: canlıdaki bitmiş aktif sezonlar da gelir, yalnız okunur
+      expect(bitenler.map((x) => x.id)).toContain(bayat!.id);
+      expect(bitenler.map((x) => x.id)).not.toContain(s.id);
+      expect(bitenler.every((x) => x.status === "active" && x.endsAt.getTime() <= Date.now())).toBe(true);
+      expect(bitenler.map((x) => x.endsAt.getTime())).toEqual([...bitenler.map((x) => x.endsAt.getTime())].sort((p, q) => p - q)); // eskiden yeniye
     } finally {
       await db.delete(schema.seasons).where(eq(schema.seasons.id, bayat!.id));
     }
   });
-  it.todo("C1 karar (#42): sezon kapanışının onarımı + Ağustos / Eylül 2026'nın geriye dönük ödülü (devir §1 C1, §2.7)");
 
   it("C3 (karakterizasyon, Faz 5 öncesi): işaretli beğenenin beğenisi like_received'ı doğrudan yazar — begeniPuaniVer beğenenin işaretine bakmaz", async () => {
     const [yazar, begenen] = await Promise.all([uye("c3-y", 30), uye("c3-b", 30)]);

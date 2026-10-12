@@ -14,6 +14,7 @@ const h = vi.hoisted(() => {
     tarama: vi.fn(async (): Promise<{ id: number; inviter_id: number }[]> => []),
     havuz: vi.fn(async () => ({ kurs: 0, puan: 0 })),
     sezonBitis: new Date("2099-01-01T00:00:00Z"),
+    bitenler: [] as { id: number; name: string; startsAt: Date; endsAt: Date }[],
   };
 });
 vi.mock("@/db/client.ts", async () => ({
@@ -26,6 +27,7 @@ vi.mock("@/lib/cron.ts", () => ({
 }));
 vi.mock("@/lib/league.ts", () => ({
   aktifSezon: vi.fn(async () => (h.log.push("aktifSezon"), { id: 77, name: "itest sezon", startsAt: new Date(0), endsAt: h.sezonBitis })),
+  bitenSezonlar: vi.fn(async () => h.bitenler),
   kulupIciSiralama: vi.fn(),
   kulupSiralamasi: vi.fn(),
 }));
@@ -112,15 +114,21 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     expect(await (await istek()).json()).toMatchObject({ suistimal: 2 });
   });
 
-  it("sezon-kapat kilidi YALNIZ bitişi geçmiş sezonda alınır (aktifSezon böyle bir sezon döndürmez → dal ölü; devir C1)", async () => {
+  it("sezon kapanışı (C1 kapandı): bitişi geçmiş HER aktif sezon için sezon-kapat kilidi alınır (eskiden yeniye), biten yoksa alınmaz; yeni ayın sezonu her koşumda açılır", async () => {
     await istek();
     expect(vi.mocked(birKezCalistir).mock.calls.some((c) => c[0] === "sezon-kapat")).toBe(false);
-    h.sezonBitis.setTime(new Date("2026-10-01T00:00:00Z").getTime());
+    expect(h.log).toContain("aktifSezon");
+    h.bitenler = [
+      { id: 71, name: "2026 Ağustos", startsAt: new Date("2026-07-31T21:00:00Z"), endsAt: new Date("2026-08-31T21:00:00Z") },
+      { id: 72, name: "2026 Eylül", startsAt: new Date("2026-08-31T21:00:00Z"), endsAt: new Date("2026-09-30T21:00:00Z") },
+    ];
     try {
-      await istek();
-      expect(vi.mocked(birKezCalistir).mock.calls.find((c) => c[0] === "sezon-kapat")?.[1]).toBe("77");
+      vi.mocked(birKezCalistir).mockClear();
+      const r = await istek();
+      expect(vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "sezon-kapat").map((c) => c[1])).toEqual(["71", "72"]);
+      expect(await r.json()).toMatchObject({ ok: true }); // sahte kilit işi koşturmaz → rapor.sezonKapandi yok
     } finally {
-      h.sezonBitis.setTime(new Date("2099-01-01T00:00:00Z").getTime());
+      h.bitenler = [];
     }
   });
 });

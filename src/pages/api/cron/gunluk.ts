@@ -11,7 +11,7 @@ import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { birKez, birKezCalistir } from "@/lib/cron.ts";
 import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
-import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
+import { aktifSezon, bitenSezonlar, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
 import { isaretsizKazananSql } from "@/lib/social.ts";
 import { canlilikHavuzuDagit, suistimalTara } from "@/lib/ekonomi.ts";
@@ -174,16 +174,20 @@ export const GET: APIRoute = async ({ request }) => {
   const bayat = await birKezCalistir("bayat-gorev", bugun, bayatGorevSupur);
   if (bayat !== undefined) rapor.bayatGorev = bayat;
 
-  // 2) Sezon döngüsü: biteni kapat, yenisini aç
-  const sezon = await aktifSezon();
-  if (sezon.endsAt <= new Date()) {
+  // 2) Sezon döngüsü: bitişi geçmiş HER aktif sezonu kapat (eskiden yeniye), sonra yeni ayın sezonu.
+  // Eski dal `aktifSezon().endsAt <= now` idi; aktifSezon bitmiş sezonu asla döndürmediği için dal ölüydü
+  // (Ağustos / Eylül 2026 hiç kapanmadı — Faz 5 incelemesi C1). İlk koşumda birikmiş sezonlar peş peşe
+  // kapanır: ilk 10 hazine kitabı ve şampiyon rozeti geç de olsa dağıtılır (işaretliler dışarıda).
+  const kapananlar: string[] = [];
+  for (const sezon of await bitenSezonlar()) {
     const kapandi = await birKezCalistir("sezon-kapat", String(sezon.id), async () => {
       await sezonKapat(sezon);
-      await aktifSezon(); // yeni ayın sezonu
       return sezon.name;
     });
-    if (kapandi !== undefined) rapor.sezonKapandi = kapandi;
+    if (kapandi !== undefined) kapananlar.push(kapandi);
   }
+  if (kapananlar.length) rapor.sezonKapandi = kapananlar;
+  await aktifSezon(); // yeni ayın sezonu (yoksa açar)
 
   // 3) Ayın kitabı (her ayın ilk günü)
   if (new Date().getDate() === 1) {
