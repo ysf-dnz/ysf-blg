@@ -328,7 +328,8 @@ const sayfa = R.uye.mesaj(kisi.handle);
     // Shift+Enter yok, Enter satır atlamalı (gönderim düğmeyle)
     const klavyeli = window.matchMedia("(pointer: fine)").matches;
     form?.querySelector("textarea")?.addEventListener("keydown", (k) => {
-      if (klavyeli && k.key === "Enter" && !k.shiftKey && !k.isComposing) {
+      // isComposing / 229: IME aday onayı (Safari'de keydown'da isComposing false gelebilir) mesaj göndermesin
+      if (klavyeli && k.key === "Enter" && !k.shiftKey && !k.isComposing && k.keyCode !== 229) {
         k.preventDefault();
         form.requestSubmit();
       }
