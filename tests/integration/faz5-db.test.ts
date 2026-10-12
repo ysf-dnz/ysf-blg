@@ -499,6 +499,46 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("A1 karar (#42): tutulan satır tavana takılınca pending kalsın mı / pencere olay tarihinden mi kurulsun — ADR K2 'kırpılan geri kazanılmaz' ve etkinlik-db:463-472 ile çarpışır (devir §2.1–2.2)");
 
+  it("kaynakIsaretli çağrı yerleri: işaretli davetli → davet edenin +15'i, üst davetçinin +5'i, davetlinin karşılaması ve bitirme +10'u TUTULUR; temiz davetli anında alır; işaret kalkınca hepsi kesinleşir (D1 karakterizasyonu dahil)", async () => {
+    const [ust, dEden, uret, tTemiz] = await Promise.all([uye("ki-ust", 30), uye("ki-d", 30), uye("ki-u", 30), uye("ki-t", 30)]);
+    const xHam = await uye("ki-x", 30);
+    await db.insert(schema.referrals).values({ inviterId: ust.id, invitedId: dEden.id });
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, xHam.id));
+    const x = (await db.query.users.findFirst({ where: eq(schema.users.id, xHam.id) }))!; // davetAktivasyonu işareti verilen nesneden okur
+    const { kurs: k } = await kurs("ki", uret.id, 1);
+    await davetleAktive(tTemiz, k, dEden.id);
+    await davetleAktive(x, k, dEden.id);
+    const katilimX = (await db.query.courseEnrollments.findFirst({ where: and(eq(schema.courseEnrollments.userId, x.id), eq(schema.courseEnrollments.courseId, k.id)) }))!;
+    await dv.davetBitirme(katilimX, k, x);
+    // Temiz davetli: anında
+    expect((await ledger(dEden.id, "course_invite_activated")).map((r) => r.refId)).toEqual([`course:${k.id}:u:${tTemiz.id}`]);
+    expect((await ledger(ust.id, "invite_second_level")).map((r) => r.refId)).toEqual([`u:${tTemiz.id}`]);
+    expect((await ledger(tTemiz.id, "course_invite_welcome")).map((r) => r.delta)).toEqual([10]);
+    // İşaretli davetli: dört satır da pending ve tutulur (olgun ama kesinleşmez)
+    const tutulan = (userId: number, reason: string, refId: string) =>
+      db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, userId), eq(schema.pendingPoints.reason, reason), eq(schema.pendingPoints.refId, refId)) });
+    const d15 = await tutulan(dEden.id, "course_invite_activated", `course:${k.id}:u:${x.id}`);
+    expect(d15).toMatchObject({ status: "pending", delta: 15, expiresAt: null });
+    expect(d15!.maturesAt!.getTime()).toBeLessThan(Date.now());
+    expect(await tutulan(dEden.id, "course_invite_completed", `course:${k.id}:u:${x.id}`)).toMatchObject({ status: "pending", delta: 10 });
+    expect(await tutulan(ust.id, "invite_second_level", `u:${x.id}`)).toMatchObject({ status: "pending", delta: 5 });
+    expect(await tutulan(x.id, "course_invite_welcome", `course:${k.id}`)).toMatchObject({ status: "pending", delta: 10 });
+    for (const id of [dEden.id, ust.id, x.id]) expect(await rw.bekleyenleriIsle(new Date(), id)).toMatchObject({ kesinlesen: 0 });
+    // D1 (karakterizasyon, devir §2.9): davet edenin tutulan satırının notu ve bildirimi X'in adını taşır — tek tutulan satır işaretin kimde olduğunu sezdirir
+    expect(d15!.note).toContain(x.name);
+    const bildirimler = (await db.query.notifications.findMany({ where: eq(schema.notifications.userId, dEden.id) })).map((n) => n.body);
+    expect(bildirimler.some((b) => b.includes(tTemiz.name) && b.includes("+15 puan"))).toBe(true);
+    expect(bildirimler.some((b) => b.includes(x.name) && b.includes("Puan bekleyende"))).toBe(true);
+    // İşaret kalkınca ("Temiz") hepsi kesinleşir
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, x.id));
+    expect(await rw.bekleyenleriIsle(new Date(), dEden.id)).toMatchObject({ kesinlesen: 2 });
+    expect(await rw.bekleyenleriIsle(new Date(), ust.id)).toMatchObject({ kesinlesen: 1 });
+    expect(await rw.bekleyenleriIsle(new Date(), x.id)).toMatchObject({ kesinlesen: 1 });
+    expect((await ledger(dEden.id, "course_invite_completed")).map((r) => r.delta)).toEqual([10]);
+    expect((await ledger(ust.id, "invite_second_level")).length).toBe(2);
+  });
+  it.todo("D1 karar (#42): tutulan satırın notu / bildirimi kaynak adını taşımasın mı, yoksa #65 'işaretin kimde olduğu söylenmez' ifadesi daraltılsın mı (devir §2.9)");
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {
