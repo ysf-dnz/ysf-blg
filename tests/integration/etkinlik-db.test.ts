@@ -89,7 +89,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     for (const tbl of [schema.pendingPoints, schema.notifications, schema.badges, schema.bookAccess, schema.pointsLedger])
       await db.delete(tbl).where(inArray(tbl.userId, uyeler));
     await db.delete(schema.users).where(inArray(schema.users.id, uyeler));
-  });
+  }, 60_000);
 
   /* ---------------- F3-02: kayıt ---------------- */
 

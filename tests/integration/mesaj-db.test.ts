@@ -95,7 +95,7 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
     for (const tbl of [schema.notifications, schema.badges, schema.bookAccess, schema.pointsLedger])
       await db.delete(tbl).where(inArray(tbl.userId, uyeler));
     await db.delete(schema.users).where(inArray(schema.users.id, uyeler));
-  });
+  }, 60_000);
 
   /* ---------------- AC-23: izin politikası ---------------- */
 

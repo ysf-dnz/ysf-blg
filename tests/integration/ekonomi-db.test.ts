@@ -25,7 +25,7 @@ describe.skipIf(!URL)("ekonomi — gerçek DB", { timeout: 90_000 }, () => {
       .values({ clerkId: `demo_itest_${Date.now()}`, handle: `itest-${Date.now().toString(36)}`, name: "Itest" })
       .returning();
     userId = u!.id;
-  });
+  }, 60_000);
   afterAll(async () => {
     if (!userId) return;
     await db.delete(schema.pendingPoints).where(eq(schema.pendingPoints.userId, userId));
@@ -34,7 +34,7 @@ describe.skipIf(!URL)("ekonomi — gerçek DB", { timeout: 90_000 }, () => {
     await db.delete(schema.bookAccess).where(eq(schema.bookAccess.userId, userId));
     await db.delete(schema.pointsLedger).where(eq(schema.pointsLedger.userId, userId));
     await db.delete(schema.users).where(eq(schema.users.id, userId));
-  });
+  }, 60_000);
 
   const ledger = async (reason: string, refId: string) =>
     db.query.pointsLedger.findMany({

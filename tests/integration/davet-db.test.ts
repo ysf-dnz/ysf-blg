@@ -51,7 +51,7 @@ describe.skipIf(!URL)("kurs daveti — gerçek DB", { timeout: 120_000 }, () => 
     for (const tbl of [schema.pendingPoints, schema.notifications, schema.badges, schema.bookAccess, schema.pointsLedger])
       await db.delete(tbl).where(inArray(tbl.userId, uyeler));
     await db.delete(schema.users).where(inArray(schema.users.id, uyeler));
-  });
+  }, 60_000);
 
   const ledger = async (userId: number, reason: string, refId: string) =>
     db.query.pointsLedger.findMany({
