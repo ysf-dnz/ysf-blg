@@ -100,13 +100,16 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     expect(h.log).toContain("bekleyen"); // öbür adımlar koşar
   });
 
-  it("D4 (karakterizasyon): havuz telafisi yalnız SON tamamlanan haftaya bakar — bir TR haftası boyunca hiç ulaşılamazsa o hafta hiç denenmez", async () => {
+  it("D4 (kapandı): havuz son tamamlanan haftayı VE bir öncekini dener (eskiden yeniye; kilit hafta etiketiyle) — bütün hafta kaçırılan W43 telafi edilir; açılıştan önceki hafta denenmez", async () => {
     vi.setSystemTime(new Date("2026-11-02T03:00:00Z")); // pazartesi 06:00 TR; son tamamlanan 2026-W44, W43 bütün hafta kaçırıldı
     await istek();
-    const haftalar = vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "canlilik-havuzu").map((c) => c[1]);
-    expect(haftalar).toEqual(["2026-W44"]); // W43 için çağrı yok
+    const haftalar = () => vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "canlilik-havuzu").map((c) => c[1]);
+    expect(haftalar()).toEqual(["2026-W43", "2026-W44"]);
+    vi.mocked(birKezCalistir).mockClear();
+    vi.setSystemTime(PAZARTESI_W43); // son tamamlanan W42 = açılış haftası; W41 denenmez
+    await istek();
+    expect(haftalar()).toEqual(["2026-W42"]);
   });
-  it.todo("D4 karar (#42): atlanan haftaların telafisi (son N tamamlanan hafta) — devir §1 D4");
 
   it("tarama fırlatırsa (B2): yanıt 200, rapor.suistimalHata dolu, 1–8 adımlarının tamamı koşar", async () => {
     h.tarama.mockRejectedValueOnce(new Error("itest: tarama patladı"));

@@ -14,7 +14,7 @@ import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
 import { aktifSezon, bitenSezonlar, kulupIciSiralama, sezonKapat } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey } from "@/lib/rewards.ts";
 import { canlilikHavuzuDagit, suistimalTara } from "@/lib/ekonomi.ts";
-import { sonTamamlananHafta } from "@/lib/economy.ts";
+import { isoHafta, sonTamamlananHafta } from "@/lib/economy.ts";
 import { CANLILIK_ILK_HAFTA } from "@/lib/points.ts";
 
 export const prerender = false;
@@ -173,13 +173,16 @@ export const GET: APIRoute = async ({ request }) => {
   const etkinlik = await etkinlikSonrasiIsle();
   if (etkinlik.host || etkinlik.iyiDegerlendirme || etkinlik.hata) rapor.etkinlik = etkinlik;
 
-  // 8) Canlılık havuzu (F5-02): son TAMAMLANAN TR haftası — ilk kez pazartesi koşar, cron atlanırsa
-  // ertesi gün telafi eder. Açılıştan önceki haftalar ödenmez.
-  const hafta = sonTamamlananHafta();
-  if (hafta.etiket >= CANLILIK_ILK_HAFTA) {
+  // 8) Canlılık havuzu (F5-02): son TAMAMLANAN TR haftası + bir önceki (bütün bir hafta kaçırılsa da ödenir —
+  // D4 kararı; kilit hafta etiketiyle, çift ödeme yok). Açılıştan önceki haftalar ödenmez.
+  const son = sonTamamlananHafta();
+  const havuzlar: Record<string, unknown>[] = [];
+  for (const hafta of [isoHafta(new Date(son.baslangic.getTime() - 1)), son]) {
+    if (hafta.etiket < CANLILIK_ILK_HAFTA) continue;
     const canlilik = await birKezCalistir("canlilik-havuzu", hafta.etiket, () => canlilikHavuzuDagit(hafta));
-    if (canlilik !== undefined) rapor.canlilikHavuzu = { hafta: hafta.etiket, ...canlilik };
+    if (canlilik !== undefined) havuzlar.push({ hafta: hafta.etiket, ...canlilik });
   }
+  if (havuzlar.length) rapor.canlilikHavuzu = havuzlar;
 
   return new Response(JSON.stringify({ ok: true, ...rapor }), {
     headers: { "content-type": "application/json" },
