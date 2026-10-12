@@ -26,6 +26,7 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   const uyeler: number[] = [];
   const kurslar: number[] = [];
   let kulupId = 0;
+  const kulupler: number[] = [];
   // Testler sırayla koşar ve bu kayıtları paylaşır (Promise.all sırası uyeler[] dizisinde garanti değil)
   let uretici: Uye, a: Uye, b: Uye, c: Uye, ana: Kurs, davetci: Uye;
   const kuklalar: Uye[] = [];
@@ -83,9 +84,10 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
 
   afterAll(async () => {
     if (uyeler.length === 0) return;
-    if (kulupId) {
-      await db.delete(schema.clubMembers).where(eq(schema.clubMembers.clubId, kulupId));
-      await db.delete(schema.clubs).where(eq(schema.clubs.id, kulupId));
+    const tumKulupler = [...kulupler, ...(kulupId ? [kulupId] : [])];
+    if (tumKulupler.length) {
+      await db.delete(schema.clubMembers).where(inArray(schema.clubMembers.clubId, tumKulupler));
+      await db.delete(schema.clubs).where(inArray(schema.clubs.id, tumKulupler));
     }
     if (kurslar.length) {
       // Tür filtresi ŞART: aynı sayısal id'li (gerçek) etkinliğin davet kodları silinmesin
@@ -585,6 +587,27 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     // Yayında olmayan kurs: aynı 10 ilerleme, ödeme yok
     expect(await ek.canlilikHavuzuDagit(hafta, [k0.id])).toEqual({ kurs: 0, puan: 0 });
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, f!.id));
+  });
+
+  it("kulupSiralamasi: işaretli üye hem kulüp puanından hem √üye paydasından düşer; işaret kalkınca ikisine de döner", async () => {
+    const [temiz, isaretli] = await Promise.all([uye("ks-t", 30), uye("ks-i", 30)]);
+    const [kulup] = await db
+      .insert(schema.clubs)
+      .values({ slug: `itest-f5-ks-${t}`, name: "Itest F5 Lig Kulübü", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: temiz.id, status: "approved" })
+      .returning();
+    kulupler.push(kulup!.id);
+    await db.insert(schema.clubMembers).values([
+      { clubId: kulup!.id, userId: temiz.id, role: "president" },
+      { clubId: kulup!.id, userId: isaretli.id },
+    ]);
+    await rw.awardPoints({ userId: temiz.id, delta: 30, reason: "quiz", refId: `itest-ks-${t}` });
+    await rw.awardPoints({ userId: isaretli.id, delta: 90, reason: "quiz", refId: `itest-ks-${t}` });
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, isaretli.id));
+    const pencere = [new Date(Date.now() - 864e5), new Date(Date.now() + 864e5)] as const;
+    const skor = async () => (await lg.kulupSiralamasi(...pencere)).find((k) => k.clubId === kulup!.id);
+    expect(await skor()).toMatchObject({ memberCount: 1, raw: 30, normalized: 30 }); // √1
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, isaretli.id));
+    expect(await skor()).toMatchObject({ memberCount: 2, raw: 120, normalized: lg.normalizeSkor(120, 2) }); // √2 → 85
   });
 
   /* ---------------- F5-03: ekonomi kartı ---------------- */
