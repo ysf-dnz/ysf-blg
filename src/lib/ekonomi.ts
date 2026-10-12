@@ -208,9 +208,25 @@ export const SUISTIMAL_TEMIZ = "suistimal-temiz";
  * @param davetciId yalnız bu davetçi (entegrasyon testi)
  */
 export async function suistimalTara(davetciId?: number): Promise<{ id: number; inviter_id: number }[]> {
-  const yalniz = davetciId ? sql`and b.inviter_id = ${davetciId}` : sql``;
   return satirlar(
-    await db.execute(sql`
+    await db.execute(sql`${suistimalCte(davetciId)}
+      update users u set flagged_at = now()
+      from aday a
+      where u.id = a.id
+      returning u.id, a.inviter_id
+    `),
+  );
+}
+
+/** Taramanın işaretleyeceği hesaplar — salt OKUR (UPDATE yok). suistimalTara ile aynı CTE'ler, aynı küme. */
+export async function suistimalAdaylari(davetciId?: number): Promise<{ id: number; inviter_id: number }[]> {
+  return satirlar(await db.execute(sql`${suistimalCte(davetciId)} select id, inviter_id from aday`));
+}
+
+/** Tarama CTE'leri (tek kaynak): aday SELECT'i ve UPDATE aynı kümeyi görsün */
+function suistimalCte(davetciId?: number) {
+  const yalniz = davetciId ? sql`and b.inviter_id = ${davetciId}` : sql``;
+  return sql`
       with bag as (
         select k.user_id, d.inviter_id from course_enrollments k join invite_codes d on d.id = k.invite_code_id
         union
@@ -233,14 +249,12 @@ export async function suistimalTara(davetciId?: number): Promise<{ id: number; i
         select y.inviter_id from yogun y join ip i on i.inviter_id = y.inviter_id
         group by y.inviter_id, y.hesap
         having max(i.n) >= ${SUISTIMAL_ESIK} and count(*) * 2 <= y.hesap
-      )
-      update users u set flagged_at = now()
-      from yeni y join supheli s on s.inviter_id = y.inviter_id
-      where u.id = y.id and u.flagged_at is null and u.role = 'member'
-        and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
-      returning u.id, y.inviter_id
-    `),
-  );
+      ), aday as (
+        select y.id, y.inviter_id
+        from yeni y join supheli s on s.inviter_id = y.inviter_id join users u on u.id = y.id
+        where u.flagged_at is null and u.role = 'member'
+          and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
+      )`;
 }
 
 /** Bir hesaba ait ve ondan doğan (refId sonu `u:{id}`) bekleyen puanları düşür — admin "suistimal" kararı */

@@ -160,9 +160,14 @@ export const GET: APIRoute = async ({ request }) => {
 
   // 0) Suistimal taraması (F5-04) — HER ŞEYDEN ÖNCE: işaretlenen hesap aynı koşumdaki sezon / lig
   // kapanış ödüllerine girmesin, bekleyeni olgunlaşmasın. Kilitsiz: UPDATE idempotent (yalnız
-  // flagged_at IS NULL satırları), her koşumda güvenle çalışır.
-  const isaretlenen = await suistimalTara();
-  if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
+  // flagged_at IS NULL satırları), her koşumda güvenle çalışır. Fırlatırsa öbür işler durmaz (devir B2):
+  // hata rapora yazılır, tarama ertesi gün yeniden denenir.
+  try {
+    const isaretlenen = await suistimalTara();
+    if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
+  } catch (err) {
+    rapor.suistimalHata = err instanceof Error ? err.message : String(err);
+  }
 
   // 1) Bayat görev süpürmesi (günlük)
   const bayat = await birKezCalistir("bayat-gorev", bugun, bayatGorevSupur);

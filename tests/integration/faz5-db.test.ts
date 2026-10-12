@@ -287,13 +287,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     for (const ip of ["a", "b"]) for (let i = 0; i < 6; i++) await ziyaret(ip);
     expect(await ek.suistimalTara(davetci.id)).toEqual([]);
     await db.delete(schema.inviteVisits).where(and(eq(schema.inviteVisits.inviteCodeId, kod.id), ne(schema.inviteVisits.ipHash, `itest-kukla-${t}`)));
+    // Salt-okur aday sorgusu UPDATE ile aynı kümeyi görür (B2: parametresiz UPDATE canlıda koşturulamaz, SELECT'i koşturulur)
+    expect((await ek.suistimalAdaylari(davetci.id)).map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort());
     const isaretlenen = await ek.suistimalTara(davetci.id);
     expect(isaretlenen.map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort());
     expect(isaretlenen.every((r) => r.inviter_id === davetci.id)).toBe(true);
+    expect(await ek.suistimalAdaylari(davetci.id)).toEqual([]); // işaretlenen aday değildir
     const sonra = await db.query.users.findMany({ where: inArray(schema.users.id, kuklalar.map((k) => k.id)) });
     expect(sonra.every((k) => k.flaggedAt)).toBe(true);
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, davetci.id) }))!.flaggedAt).toBeNull();
     expect(await ek.suistimalTara(davetci.id)).toEqual([]); // idempotent
+  });
+
+  it("tarama aday sorgusu parametresiz (tüm davetçiler) fırlatmaz — yalnız SELECT, canlı veriye yazmaz (B2)", async () => {
+    expect(Array.isArray(await ek.suistimalAdaylari())).toBe(true);
   });
 
   it("işaretli KAYNAK ve ALICI: bekleyen olgunlaşmaz; işaret kalkınca kesinleşir", async () => {
