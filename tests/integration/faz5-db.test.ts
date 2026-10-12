@@ -539,6 +539,54 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("D1 karar (#42): tutulan satırın notu / bildirimi kaynak adını taşımasın mı, yoksa #65 'işaretin kimde olduğu söylenmez' ifadesi daraltılsın mı (devir §2.9)");
 
+  it("havuz sayımları: yayında olmayan kurs ödenmez; asgari süreden kısa tamamlama, gizli yorumun ve üreticinin yorumunun beğenisi V'ye girmez; işaretli KATKICININ payı bekleyene gider (yorumu V'ye sayılır)", async () => {
+    const hafta = ec.isoHafta(new Date(Date.now() - 35 * 864e5));
+    const an = (gun: number, dk = 0) => new Date(hafta.baslangic.getTime() + gun * 864e5 + dk * 60e3);
+    const [p, f, ...g] = await Promise.all([uye("hs-p", 30), uye("hs-f", 30), ...Array.from({ length: 10 }, (_, i) => uye(`hs-g${i}`, 30))]);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, f!.id));
+    const { kurs: k, ogeler } = await kurs("hs", p!.id, 2); // 2 öğe → asgari süre 120 sn
+    const { kurs: k0, ogeler: ogeler0 } = await kurs("hs-bekleyen", p!.id, 2);
+    await db.update(schema.courses).set({ status: "pending" }).where(eq(schema.courses.id, k0.id));
+    // ilerleyen = 10 (iki kursta da aynı 10 kişi; ilerleme öğe başına tekil → her kursun kendi öğesi)
+    for (const [kk, oge] of [[k, ogeler[0]!], [k0, ogeler0[0]!]] as const)
+      await db.insert(schema.courseProgress).values(g.map((x, i) => ({ userId: x.id, courseId: kk.id, itemId: oge, completedAt: an(1, i) })));
+    // tamamlama: g0 geçerli (1 gün), g1 asgari süreden kısa (1 dk < 120 sn) → sayılmaz
+    await db.insert(schema.courseEnrollments).values([
+      { userId: g[0]!.id, courseId: k.id, joinedAt: an(0), activatedAt: an(0, 1), completedAt: an(1) },
+      { userId: g[1]!.id, courseId: k.id, joinedAt: an(2), activatedAt: an(2), completedAt: an(2, 1) },
+    ]);
+    // yorumlar: g2'nin yorumu (geçerli), üreticinin yorumu (sayılmaz), g4'ün GİZLİ yorumu (sayılmaz), işaretli f'nin yorumu (yazarın işareti V'de sorulmaz → sayılır)
+    const yorum = async (userId: number, hidden = false) =>
+      (await db.insert(schema.comments).values({ userId, courseItemId: ogeler[0]!, body: "itest", createdAt: an(1), hiddenAt: hidden ? an(2) : null }).returning())[0]!;
+    const [yG2, yP, yGizli, yF] = [await yorum(g[2]!.id), await yorum(p!.id), await yorum(g[4]!.id, true), await yorum(f!.id)];
+    await db.insert(schema.likes).values([
+      { userId: g[3]!.id, commentId: yG2.id, createdAt: an(2) },
+      { userId: g[3]!.id, commentId: yP.id, createdAt: an(2) },
+      { userId: g[3]!.id, commentId: yGizli.id, createdAt: an(2) },
+      { userId: g[5]!.id, commentId: yF.id, createdAt: an(2) },
+    ]);
+    // kaynak: g6'nın kabul edilen kaynağı (sayılır), üreticinin kendi kaynağı (sayılmaz)
+    await db.insert(schema.courseResources).values([
+      { courseId: k.id, userId: g[6]!.id, url: "https://example.com/itest-hs", status: "accepted", acceptedAt: an(3) },
+      { courseId: k.id, userId: p!.id, url: "https://example.com/itest-hs-p", status: "accepted", acceptedAt: an(3) },
+    ]);
+    const toplam = ec.havuz(ec.canlilikV({ ilerleyen: 10, tamamlama: 1, begeniliYorum: 2, kaynak: 1 })); // V = 16
+    const paylar = ec.havuzDagit(toplam, p!.id, new Map([[g[2]!.id, 1], [f!.id, 1]]), new Map());
+    const payF = paylar.get(f!.id)!;
+    const dagitilan = [...paylar.values()].reduce((a, b) => a + b, 0); // sahipsiz davet dilimi dağıtılmaz → toplamdan küçük
+    expect(payF).toBeGreaterThan(0);
+    expect(await ek.canlilikHavuzuDagit(hafta, [k.id])).toEqual({ kurs: 1, puan: dagitilan - payF }); // işaretlinin payı ledger'a yazılmaz
+    expect((await ledger(p!.id, "vitality_pool")).map((r) => r.delta)).toEqual([paylar.get(p!.id)]);
+    expect((await ledger(g[2]!.id, "vitality_pool")).map((r) => r.delta)).toEqual([paylar.get(g[2]!.id)]);
+    expect((await ledger(f!.id, "vitality_pool")).length).toBe(0);
+    expect(
+      await db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, f!.id), eq(schema.pendingPoints.reason, "vitality_pool")) }),
+    ).toMatchObject({ status: "pending", delta: payF, refId: `course:${k.id}:${hafta.etiket}` });
+    // Yayında olmayan kurs: aynı 10 ilerleme, ödeme yok
+    expect(await ek.canlilikHavuzuDagit(hafta, [k0.id])).toEqual({ kurs: 0, puan: 0 });
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, f!.id));
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {
