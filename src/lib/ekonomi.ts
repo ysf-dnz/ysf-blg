@@ -25,8 +25,8 @@ type Hafta = ReturnType<typeof sonTamamlananHafta>;
  * Pay kişi başına TEK `vitality_pool` satırı (refId `course:{id}:{hafta}`): awardPoints idempotent,
  * cron yeniden koşarsa çift ödeme olmaz. Davet tavanına girmez; kişi başı haftalık tavanı var (tavanIcin).
  * V'ye ve pay ağırlıklarına SAYILMAYANLAR: üreticinin kendi eklediği kaynak (otomatik kabul edilir) ve
- * kendi yorumu, işaretli hesabın ilerlemesi / beğenisi / davetliliği, asgari süreden (öğe × 60 sn) kısa
- * tamamlama. İşaretli alıcının payı bekleyene yazılır (puanOlayi).
+ * kendi yorumu, işaretli hesabın ilerlemesi / beğenisi / davetliliği, kursa katılmamış hesabın beğenisi,
+ * asgari süreden (öğe × 60 sn) kısa tamamlama. İşaretli alıcının payı bekleyene yazılır (puanOlayi).
  * @param kursIdleri yalnız bu kurslar (entegrasyon testi canlı kursları ödemesin)
  */
 export async function canlilikHavuzuDagit(
@@ -64,6 +64,7 @@ export async function canlilikHavuzuDagit(
           join users lu on lu.id = l.user_id
           where i.course_id = c.id and y.hidden_at is null and y.user_id <> c.created_by
             and l.user_id <> y.user_id and lu.flagged_at is null
+            and exists (select 1 from course_enrollments ke where ke.course_id = c.id and ke.user_id = l.user_id)
             and l.created_at >= ${b} and l.created_at < ${e})::int as begenili,
         (select count(*) from course_resources r
           where r.course_id = c.id and r.status = 'accepted' and r.user_id <> c.created_by
@@ -92,6 +93,8 @@ export async function canlilikHavuzuDagit(
         join users lu on lu.id = l.user_id
       where i.course_id in (${idler}) and y.hidden_at is null and l.user_id <> y.user_id
         and lu.flagged_at is null
+        -- Beğenen kursa KATILMIŞ olmalı (Faz 5 kararı): kursla ilgisi olmayan kuklanın beğenisi %30 dilimini yönlendirmesin
+        and exists (select 1 from course_enrollments ke where ke.course_id = i.course_id and ke.user_id = l.user_id)
         and l.created_at >= ${b} and l.created_at < ${e}
       group by i.course_id, y.user_id`),
     // Davet edenler: o hafta ilerleme kaydeden İŞARETSİZ davetlileri; ağırlık = aktif davetli sayısı
@@ -232,7 +235,7 @@ function suistimalCte(davetciId?: number) {
         union
         select r.user_id, d.inviter_id from event_rsvps r join invite_codes d on d.id = r.invite_code_id
       ), yeni as (
-        select u.id, b.inviter_id,
+        select u.id, u.created_at, b.inviter_id,
           count(*) over (partition by b.inviter_id order by u.created_at
                          range between interval '24 hours' preceding and current row) as pencere
         from users u join bag b on b.user_id = u.id
@@ -256,6 +259,10 @@ function suistimalCte(davetciId?: number) {
         from yeni y join supheli s on s.inviter_id = y.inviter_id join users u on u.id = y.id
         where u.flagged_at is null and u.role = 'member'
           and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
+          -- yalnız YOĞUN pencerenin üyeleri (B4): eşiği dolduran bir hesabın 24 saatlik penceresinde açılmış olmalı;
+          -- davetçinin 48 saatteki öbür yeni hesapları (patlamanın dışındaki gerçek davetliler) işaretlenmez
+          and exists (select 1 from yeni z where z.inviter_id = y.inviter_id and z.pencere >= ${SUISTIMAL_ESIK}
+                      and y.created_at <= z.created_at and y.created_at >= z.created_at - interval '24 hours')
         order by y.id, y.inviter_id
       )`;
 }

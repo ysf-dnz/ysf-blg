@@ -4,7 +4,7 @@
  * Yalnız POSTGRES_URL_TEST ile koşar; kendi geçici üyelerini / kurslarını açar ve temizler.
  * Havuz ve tarama yalnız test verisine daraltılır (kursIdleri / davetciId): canlı kurslar ödenmez.
  */
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import type { AstroCookies } from "astro";
 
@@ -348,17 +348,18 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("B1 karar (#42): ip CTE'sindeki 48 saat filtresi (30 günlük saklama / çerezle hizalama) — tek-IP koşulunu gevşetir, varsayım #64 değişir (devir §2.3)");
 
-  it("B4 (karakterizasyon): şüpheli davetçinin 48 saatteki TÜM yeni hesapları işaretlenir (yoğun pencerenin dışındaki 40 saatlik dahil); 50 saatlik dışarıda; rep rolü işaretlenmez ama sayıma girer", async () => {
+  it("B4 (kapandı): yalnız YOĞUN 24 saatlik pencerenin üyeleri işaretlenir — 40 saatlik gerçek davetli dışarıda; 50 saatlik 'yeni' değil; rep rolü işaretlenmez ama sayıma girer", async () => {
     const { davetli, ziyaret, adaylar } = await davetci2("b4");
     const yogun = await Promise.all([1, 2, 3, 4].map((i) => davetli(i)));
     const rep = await davetli(5, 0, "rep"); // yoğun pencerenin 5. hesabı: sayılır (hesap=5), işaretlenmez (role)
     const kirkSaat = await davetli(6, 40); // yoğun pencerenin dışında, 48 saatin içinde
     await davetli(7, 50); // 48 saatin dışında: 'yeni' değil
     for (let i = 0; i < 6; i++) await ziyaret("tek-ip");
-    expect(await adaylar()).toEqual([...yogun, kirkSaat].map((g) => g.id).sort());
-    expect(await adaylar()).not.toContain(rep.id);
+    const sonuc = await adaylar();
+    expect(sonuc).toEqual(yogun.map((g) => g.id).sort()); // rep sayıma girdi (hesap=5), kendisi ve 40 saatlik dışarıda
+    expect(sonuc).not.toContain(rep.id);
+    expect(sonuc).not.toContain(kirkSaat.id);
   });
-  it.todo("B4 karar (#42): işaretlenen küme yoğun 24 saatlik pencereyle mi, 48 saatin tamamıyla mı sınırlansın (devir §1 B4)");
 
   it("B5 (karakterizasyon): ziyaret satırı bırakmadan (?d=KOD yedeği / elle çerez) bağlanan 5 hesap görünmez; günde 4 hesap (8 hesap iki güne yayılmış) eşiğin altında kalır", async () => {
     const a = await davetci2("b5");
@@ -510,7 +511,7 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("A3 karar (#42): 'Suistimal' sonrası takılı course_launched satırının akıbeti — düşür + genç aktivasyonda yeniden aç, ya da etiket; ikisi de mevcut kuralla çarpışıyor (devir §2.5)");
 
-  it("A1 (karakterizasyon): 'Temiz' sonrası toplu kesinleşme kesinleşme ANININ günlük tavanına sıkışır — 3 × 50 tutulan → 100 yazılır, bir satır confirmed / yazilan 0", async () => {
+  it("A1 (kapandı): 'Temiz' sonrası toplu kesinleşmede tavana takılan tutulan satır PENDING kalır ve ertesi gün yazılır — 3 × 50 → bugün 100, yarın +50; puan yanmaz", async () => {
     const [p, s] = await Promise.all([uye("tp", 30), uye("ts", 30)]);
     await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, s.id));
     // Üç ayrı günün olayı (her biri tek başına günlük 100'ün altında): işaretli kaynak → tutulur
@@ -520,13 +521,21 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
       ).toBe(0);
     expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 0 });
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, s.id)); // admin "Temiz"
-    expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 3 });
-    const satirlar = await db.query.pendingPoints.findMany({ where: and(eq(schema.pendingPoints.userId, p.id), eq(schema.pendingPoints.reason, "course_learner_completed")) });
-    expect(satirlar.map((r) => r.status)).toEqual(["confirmed", "confirmed", "confirmed"]);
-    expect(satirlar.map((r) => r.yazilan).sort()).toEqual([0, 50, 50]); // üçüncü satır tavana takıldı, puansız kapandı
-    expect((await ledger(p.id, "course_learner_completed")).reduce((t, r) => t + r.delta, 0)).toBe(100); // işaret olmasaydı 150
+    expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 2 }); // günlük 100: üçüncü satır PENDING kalır
+    const satirlar = () => db.query.pendingPoints.findMany({ where: and(eq(schema.pendingPoints.userId, p.id), eq(schema.pendingPoints.reason, "course_learner_completed")) });
+    expect((await satirlar()).map((r) => r.status).sort()).toEqual(["confirmed", "confirmed", "pending"]);
+    expect((await ledger(p.id, "course_learner_completed")).reduce((t, r) => t + r.delta, 0)).toBe(100);
+    // Ertesi gün (TR günü): pencere boşalır, kalan satır yazılır — puan yanmaz (eskiden confirmed / yazilan 0 ile kapanıyordu)
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.now() + 864e5);
+    try {
+      expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect((await satirlar()).map((r) => [r.status, r.yazilan])).toEqual([["confirmed", 50], ["confirmed", 50], ["confirmed", 50]]);
+    expect((await ledger(p.id, "course_learner_completed")).reduce((t, r) => t + r.delta, 0)).toBe(150);
   });
-  it.todo("A1 karar (#42): tutulan satır tavana takılınca pending kalsın mı / pencere olay tarihinden mi kurulsun — ADR K2 'kırpılan geri kazanılmaz' ve etkinlik-db:463-472 ile çarpışır (devir §2.1–2.2)");
 
   it("kaynakIsaretli çağrı yerleri: işaretli davetli → davet edenin +15'i, üst davetçinin +5'i, davetlinin karşılaması ve bitirme +10'u TUTULUR; temiz davetli anında alır; işaret kalkınca hepsi kesinleşir (D1 karakterizasyonu dahil)", async () => {
     const [ust, dEden, uret, tTemiz] = await Promise.all([uye("ki-ust", 30), uye("ki-d", 30), uye("ki-u", 30), uye("ki-t", 30)]);
@@ -568,7 +577,7 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("D1 karar (#42): tutulan satırın notu / bildirimi kaynak adını taşımasın mı, yoksa #65 'işaretin kimde olduğu söylenmez' ifadesi daraltılsın mı (devir §2.9)");
 
-  it("havuz sayımları: yayında olmayan kurs ödenmez; asgari süreden kısa tamamlama, gizli yorumun ve üreticinin yorumunun beğenisi V'ye girmez; işaretli KATKICININ payı bekleyene gider (yorumu V'ye sayılır)", async () => {
+  it("havuz sayımları: yayında olmayan kurs ödenmez; asgari süreden kısa tamamlama, gizli yorumun, üreticinin yorumunun ve KATILMAMIŞ hesabın beğenisi V'ye girmez; işaretli KATKICININ payı bekleyene gider", async () => {
     const hafta = ec.isoHafta(new Date(Date.now() - 35 * 864e5));
     const an = (gun: number, dk = 0) => new Date(hafta.baslangic.getTime() + gun * 864e5 + dk * 60e3);
     const [p, f, ...g] = await Promise.all([uye("hs-p", 30), uye("hs-f", 30), ...Array.from({ length: 10 }, (_, i) => uye(`hs-g${i}`, 30))]);
@@ -583,16 +592,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     await db.insert(schema.courseEnrollments).values([
       { userId: g[0]!.id, courseId: k.id, joinedAt: an(0), activatedAt: an(0, 1), completedAt: an(1) },
       { userId: g[1]!.id, courseId: k.id, joinedAt: an(2), activatedAt: an(2), completedAt: an(2, 1) },
+      // beğenenler katılımcı olmalı: g3 ve g5 katıldı, g9 KATILMADI (beğenisi sayılmaz)
+      { userId: g[3]!.id, courseId: k.id, joinedAt: an(0) },
+      { userId: g[5]!.id, courseId: k.id, joinedAt: an(0) },
     ]);
     // yorumlar: g2'nin yorumu (geçerli), üreticinin yorumu (sayılmaz), g4'ün GİZLİ yorumu (sayılmaz), işaretli f'nin yorumu (yazarın işareti V'de sorulmaz → sayılır)
     const yorum = async (userId: number, hidden = false) =>
       (await db.insert(schema.comments).values({ userId, courseItemId: ogeler[0]!, body: "itest", createdAt: an(1), hiddenAt: hidden ? an(2) : null }).returning())[0]!;
-    const [yG2, yP, yGizli, yF] = [await yorum(g[2]!.id), await yorum(p!.id), await yorum(g[4]!.id, true), await yorum(f!.id)];
+    const [yG2, yP, yGizli, yF, yG8] = [await yorum(g[2]!.id), await yorum(p!.id), await yorum(g[4]!.id, true), await yorum(f!.id), await yorum(g[8]!.id)];
     await db.insert(schema.likes).values([
       { userId: g[3]!.id, commentId: yG2.id, createdAt: an(2) },
       { userId: g[3]!.id, commentId: yP.id, createdAt: an(2) },
       { userId: g[3]!.id, commentId: yGizli.id, createdAt: an(2) },
       { userId: g[5]!.id, commentId: yF.id, createdAt: an(2) },
+      { userId: g[9]!.id, commentId: yG8.id, createdAt: an(2) }, // g9 kursa katılmamış → ne V'ye ne katkı dilimine
     ]);
     // kaynak: g6'nın kabul edilen kaynağı (sayılır), üreticinin kendi kaynağı (sayılmaz)
     await db.insert(schema.courseResources).values([

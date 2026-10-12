@@ -447,13 +447,20 @@ export async function bekleyenYaz(opts: {
  * Arada çökülürse sonraki koşumda awardPoints 0 döner, `yazilan` ledger'dan
  * okunur ve status tamamlanır; ters sıra "confirmed ama ledger'da yok" bırakırdı.
  */
-export async function bekleyeniKesinlestir(b: Bekleyen): Promise<number> {
+export async function bekleyeniKesinlestir(b: Bekleyen): Promise<number | null> {
   const n = await awardPoints({
     userId: b.userId,
     delta: b.delta,
     reason: b.reason as Reason,
     refId: b.refId,
   });
+  if (n === 0) {
+    // 0 iki şey olabilir: anahtar ledger'da zaten var (idem → onarım: yazilan ledger'dan okunur, satır kapanır)
+    // ya da tavan dolu (hiç yazılmadı). Tavanda satır PENDING kalır: olgunlaşma / işaret yüzünden geç kesinleşen
+    // puan kesinleşme ANININ penceresine sıkışıp yanmasın (Faz 5 incelemesi A1); pencere boşalınca yeniden denenir.
+    const [r] = satirlar<{ d: number }>(await db.execute(sql`select ${ledgerDeltaSql(b.userId, b.reason, b.refId)} as d`));
+    if (Number(r?.d ?? 0) === 0) return null;
+  }
   await db
     .update(schema.pendingPoints)
     .set({
@@ -565,13 +572,14 @@ export async function bekleyenleriIsle(
         sql`not ${tutulanBekleyenSql}`,
       ),
     );
-  for (const b of olgunlar) await bekleyeniKesinlestir(b);
+  let kesinlesen = 0;
+  for (const b of olgunlar) if ((await bekleyeniKesinlestir(b)) !== null) kesinlesen++;
   const dusenler = await db
     .update(schema.pendingPoints)
     .set({ status: "expired", resolvedAt: simdi })
     .where(and(eq(schema.pendingPoints.status, "pending"), lt(schema.pendingPoints.expiresAt, simdi), kime))
     .returning({ id: schema.pendingPoints.id });
-  return { kesinlesen: olgunlar.length, dusen: dusenler.length };
+  return { kesinlesen, dusen: dusenler.length };
 }
 
 /**
