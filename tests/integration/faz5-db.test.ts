@@ -208,6 +208,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect((await ledger(b2.id, "course_invite_activated")).length + (await ledger(e.id, "course_invite_activated")).length).toBe(2);
   });
 
+  it("ara halka işaretli: davet eden işaretliyken temiz davetlisinin ilk aktivasyonu üst davetçiye 2. seviye YAZMAZ (ne ledger ne bekleyen); davet edenin kendi +15'i bekleyende tutulur", async () => {
+    const [ust, dEden, uret, z] = await Promise.all([uye("ah-ust", 30), uye("ah-d", 30), uye("ah-u", 30), uye("ah-z", 30)]);
+    await db.insert(schema.referrals).values({ inviterId: ust.id, invitedId: dEden.id });
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, dEden.id));
+    const { kurs: k } = await kurs("ah", uret.id, 1);
+    await davetleAktive(z, k, dEden.id);
+    expect(await ledger(ust.id, "invite_second_level")).toHaveLength(0);
+    expect(await db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, ust.id), eq(schema.pendingPoints.refId, `u:${z.id}`)) })).toBeUndefined();
+    // Davet edenin kendi +15'i: alıcı işaretli → bekleyende tutulur (puanOlayi alıcı okur)
+    expect(await ledger(dEden.id, "course_invite_activated")).toHaveLength(0);
+    expect(await db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, dEden.id), eq(schema.pendingPoints.refId, `course:${k.id}:u:${z.id}`)) })).toMatchObject({ status: "pending", delta: 15 });
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, dEden.id));
+  });
+
   /* ---------------- F5-02: canlılık havuzu ---------------- */
 
   it("havuz: V=11,5 → 38 puan 50/30/20; üretici + davetçi aynı kişi TEK satır; ikinci koşum no-op", async () => {

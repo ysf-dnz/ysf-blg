@@ -337,6 +337,9 @@ async function bekliyorMu(userId: number, reason: string, refId: string): Promis
 async function ikinciSeviye(davetEdenId: number, kurs: Kurs, davetli: Member, katilimId: number) {
   const ust = await db.query.referrals.findFirst({ where: eq(schema.referrals.invitedId, davetEdenId) });
   if (!ust || ust.inviterId === davetli.id) return; // kendine puan yok
+  // Ara halka (davet eden) işaretliyse zincir üst davetçiye puan taşımaz: refId `u:{davetli}` ara halkayı taşımadığı
+  // için bu satır tutulamazdı, doğrudan ödenirdi (Faz 5 kararı 13). Geriye dönük telafi yok.
+  if (await isaretliMi(davetEdenId)) return;
   // "İlk" = bu katılımdan ÖNCE aktive olmuş başka kurs yok. Aktivasyon anına göre sıralanır: iki kursta
   // aynı anda aktive olan davetlide iki istek de birbirini görüp hakkı yakmasın (inceleme bulgusu).
   const [onceki] = await db
