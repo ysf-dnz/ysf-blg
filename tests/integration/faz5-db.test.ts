@@ -787,9 +787,14 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
       expect(await rozet(m2.id)).toBeUndefined(); // işaretli üye rozet almaz
       const sezonBildirimi = async (id: number) => (await db.query.notifications.findMany({ where: and(eq(schema.notifications.userId, id), eq(schema.notifications.kind, "season")) })).length;
       expect([await sezonBildirimi(m1.id), await sezonBildirimi(m2.id), await sezonBildirimi(m3.id)]).toEqual([1, 0, 1]);
+      // yeniden koşum (ertesi gün telafi) çift ödül vermez: rozet unique, ilk-10 bildirimi kişi başı `sezon-ilk10` kilidi
+      await db.update(schema.seasons).set({ status: "active" }).where(eq(schema.seasons.id, s1!.id));
+      expect(await lg.sezonKapat(s1!)).toEqual({ sampiyonKulupId: kulup!.id, ilk10: 2 });
+      expect([await sezonBildirimi(m1.id), await sezonBildirimi(m2.id), await sezonBildirimi(m3.id)]).toEqual([1, 0, 1]);
       expect(await lg.sezonKapat(bos!)).toEqual({ sampiyonKulupId: null, ilk10: 0 }); // puansız: şampiyon yok
       expect((await db.query.seasons.findFirst({ where: eq(schema.seasons.id, bos!.id) }))!.status).toBe("closed");
     } finally {
+      await db.delete(schema.cronRuns).where(and(eq(schema.cronRuns.job, "sezon-ilk10"), inArray(schema.cronRuns.periodKey, [m1, m2, m3].map((m) => `${ad}:${m.id}`))));
       await db.delete(schema.seasons).where(inArray(schema.seasons.name, [ad, `itest-bos-${t}`]));
       await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, m2.id));
     }
@@ -804,11 +809,14 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: taze.id, refId: `yorum:itest-lk-${t}-y` })).toBe(true);
   });
 
-  it("imzalariUnut (varsayılan 7 gün): 8 günlük hesabın kayıt imzası NULL olur, 6 günlük kalır (yalnız verilen id'ler); boş dizi fırlatmaz, 0", async () => {
-    const [eski, genc] = await Promise.all([uye("im-e", 8), uye("im-g", 6)]);
-    await db.update(schema.users).set({ signupIpHash: `itest-imza-${t}` }).where(inArray(schema.users.id, [eski.id, genc.id]));
+  it("imzalariUnut (varsayılan 7 gün): 8 günlük hesabın kayıt imzası NULL olur, 6 günlük ve İŞARETLİ 8 günlük kalır (yalnız verilen id'ler); boş dizi fırlatmaz, 0", async () => {
+    const [eski, genc, isaretliEski] = await Promise.all([uye("im-e", 8), uye("im-g", 6), uye("im-i", 8)]);
+    await db.update(schema.users).set({ signupIpHash: `itest-imza-${t}` }).where(inArray(schema.users.id, [eski.id, genc.id, isaretliEski.id]));
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, isaretliEski.id));
     expect(await ek.imzalariUnut(undefined, [])).toBe(0); // inceleme #3: `in ()` sözdizimi hatasıydı
-    expect(await ek.imzalariUnut(undefined, [eski.id, genc.id])).toBe(1);
+    expect(await ek.imzalariUnut(undefined, [eski.id, genc.id, isaretliEski.id])).toBe(1);
+    expect((await db.query.users.findFirst({ where: eq(schema.users.id, isaretliEski.id) }))!.signupIpHash).toBe(`itest-imza-${t}`); // "Kümeyi temizle" kümeyi görsün
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, isaretliEski.id));
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, eski.id) }))!.signupIpHash).toBeNull();
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, genc.id) }))!.signupIpHash).toBe(`itest-imza-${t}`);
   });

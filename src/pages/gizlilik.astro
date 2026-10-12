@@ -1,20 +1,27 @@
 ---
 /**
- * Gizlilik ve kişisel veriler — KVKK aydınlatma TASLAĞI (Faz 5 hesap imzası incelemesi #8).
- * Metin hukuki danışmanlık değildir; yayından önce Yusuf okur / düzeltir. Veri kalemleri koddan türetildi:
- * Clerk (hesap), users (profil, il rızası), signup imzası (7 gün), davet ziyareti takma adı (30 gün),
- * etkinlik girişi, mesajlar, puan defteri. Yeni bir kişisel veri kalemi eklenirse bu tabloya da eklenir.
+ * Gizlilik ve kişisel veriler — KVKK aydınlatma TASLAĞI (Faz 5 hesap imzası incelemesi #8; merge incelemesi #17–#22).
+ * Metin hukuki danışmanlık değildir; yayından önce Yusuf okur / düzeltir. Veri kalemleri KODDAN türetildi
+ * (users, learning_list/book_access, points_ledger, invite_visits, events/event_rsvps/event_staff, messages, blocks,
+ * reports, applications, notifications); saklama süreleri `SAKLAMA_GUN` sabitinden okunur (cron aynı sayıyı kullanır).
+ * Yeni bir kişisel veri kalemi eklenirse bu tabloya da eklenir. Hesap silme akışı YOK (FK'ler) → talep elle anonimleştirilir.
  */
 import Base from "@/layouts/Base.astro";
+import { SAKLAMA_GUN } from "@/lib/economy.ts";
 
+const UYELIK = "Üyelik süresince (silme talebinde elle anonimleştirilir)";
 const kalemler = [
-  ["Hesap bilgileri", "Ad, e-posta, profil görseli, Google kimliği (Clerk üzerinden giriş)", "Üyelik, giriş, bildirim", "Sözleşme (üyelik)", "Hesap silinene kadar"],
-  ["Profil", "Kullanıcı adı, biyografi, sosyal bağlantılar, üniversite / il", "Topluluk profili, harita (il yalnız açık rızayla)", "Rıza", "Siz silene kadar"],
-  ["Kayıt imzası", "Kayıt anındaki IP adresinin gizli anahtarla özetlenmiş kısa hash'i (ham IP saklanmaz)", "Davet puanı suistimalinin (aynı ağdan açılan çok sayıda hesap) tespiti", "Meşru menfaat", "7 gün"],
-  ["Davet ziyareti", "Davet bağlantısına tıklayan cihazın IP ve tarayıcı özetinin hash'i (kimlikle bağlanmaz)", "Hız sınırı, davet istatistiği", "Meşru menfaat", "30 gün"],
-  ["Etkinlik", "Kayıt, giriş zamanı ve yöntemi, değerlendirme", "Etkinlik katılımı ve puan", "Sözleşme", "Hesap silinene kadar"],
-  ["Mesajlar", "Üyeler arası özel mesaj metni", "Üyeler arası iletişim, şikâyet incelemesi", "Sözleşme", "Hesap silinene kadar"],
-  ["Puan defteri", "Kazanılan / harcanan puan, seviye, rozet, kurs ilerlemesi", "Topluluk ekonomisi, liderlik", "Sözleşme", "Hesap silinene kadar"],
+  ["Hesap bilgileri", "Ad, e-posta, profil görseli ve Google kimliği (Clerk üzerinden giriş); ilk girişte Clerk kaydından alınır", "Üyelik, giriş, bildirim", "Sözleşme (üyelik)", UYELIK],
+  ["Profil", "Kullanıcı adı, biyografi, sosyal bağlantılar, üniversite ve il", "Topluluk profili; il yalnız açık rızanızla üye haritasında", "Rıza / sözleşme", "Siz silene kadar"],
+  ["Topluluk içeriği", "Yazılar, yorumlar, beğeniler, takipler, quiz denemeleri, kitaplık ve açılan kitaplar, kampanya oyları, günlük seri", "Topluluk işleyişi, puan", "Sözleşme", UYELIK],
+  ["Puan defteri", "Kazanılan / harcanan puan, bekleyen puan, seviye, rozet, kurs ilerlemesi", "Topluluk ekonomisi, liderlik ve lig sıralaması", "Sözleşme", UYELIK],
+  ["Kayıt imzası", "Kayıt anındaki IP adresinin gizli anahtarla özetlenmiş kısa hash'i (ham IP saklanmaz; ziyaret kayıtlarıyla eşleştirilemez)", "Davet puanı suistimalinin (aynı ağdan açılan çok sayıda hesap) tespiti", "Meşru menfaat", `${SAKLAMA_GUN.kayitImzasi} gün (inceleme süren hesapta karar verilene kadar)`],
+  ["Davet ziyareti", "Davet bağlantısına tıklayan cihazın IP ve tarayıcı özetinin hash'i (kimlikle bağlanmaz)", "Hız sınırı, davet istatistiği", "Meşru menfaat", `${SAKLAMA_GUN.davetZiyareti} gün`],
+  ["Suistimal işareti", "Kayıt imzası taramasının (aynı davet eden + aynı imzayla 24 saatte 5 ve üzeri hesap) sonucu ve yönetici kararı", "Liderlik / lig sıralaması, bekleyen puanın tutulması", "Meşru menfaat", "Yönetici kaldırana kadar"],
+  ["Etkinlik", "Kayıt, giriş zamanı ve yöntemi, okutan görevli, davet eden, öncelikli koltuk, değerlendirmeniz", "Etkinlik katılımı ve puan; katılımcı listesi (ad, kullanıcı adı, giriş zamanı) etkinliği düzenleyen üyeye ve yöneticiye CSV olarak verilir", "Sözleşme", UYELIK],
+  ["Mesajlar", "Üyeler arası özel mesaj metni ve okunma anı", "Üyeler arası iletişim, şikâyet incelemesi", "Sözleşme", UYELIK],
+  ["Engel ve şikâyet", "Engellediğiniz üyeler; şikâyet ettiğiniz içerik / üye ve gerekçeniz", "Güvenlik, moderasyon", "Meşru menfaat", UYELIK],
+  ["Başvuru ve bildirim", "Temsilcilik başvurusu (tür, yer, mesaj); size gönderilen bildirimler", "Başvuru değerlendirme, bilgilendirme", "Sözleşme", UYELIK],
 ] as const;
 ---
 
@@ -30,6 +37,8 @@ const kalemler = [
       <p>
         Kişisel verileriniz satılmaz ve reklam amacıyla üçüncü kişilerle paylaşılmaz. Giriş hizmeti Clerk, veri tabanı
         Neon ve barındırma Vercel yurt dışında sunucu kullanır; aktarım bu hizmetlerin sözleşmeleriyle sınırlıdır.
+        Harita karoları OpenStreetMap'ten, kurs videoları YouTube'dan (çerezsiz oynatıcı), kitaplar Google Drive ve
+        NotebookLM'den doğrudan tarayıcınıza yüklenir; bu servisler isteği yapan IP adresinizi görür.
       </p>
     </div>
 
@@ -59,11 +68,18 @@ const kalemler = [
     </div>
 
     <div class="prose prose-lg mt-8 dark:prose-invert prose-a:text-accent">
+      <h2>Çerezler</h2>
+      <p>
+        Oturum çerezi Clerk tarafından giriş için kurulur. Bir davet bağlantısıyla geldiyseniz davet çerezleri
+        (<code>ysf_ref</code>, <code>ysf_davet</code>) {SAKLAMA_GUN.davetZiyareti} gün tutulur ve yalnız davet edeni
+        eşlemek için okunur. Tema tercihiniz tarayıcınızda saklanır. Reklam ya da izleme çerezi yoktur.
+      </p>
       <h2>Haklarınız</h2>
       <p>
         KVKK'nın 11. maddesi uyarınca verilerinize erişme, düzeltme, silme, işlemeye itiraz etme ve işlemenin
-        kapsamını öğrenme hakkınız vardır. Profil ve harita görünürlüğünü <a href="/uye/profil">profil ayarlarından</a>
-        değiştirebilir, hesabınızın silinmesini iletişim kanallarından isteyebilirsiniz.
+        kapsamını öğrenme hakkınız vardır. Profil alanlarını, harita görünürlüğünü ve mesaj ayarını
+        <a href="/uye/profil">profil ayarlarından</a> değiştirebilirsiniz. Hesabınızın kapatılmasını iletişim
+        kanallarından isteyebilirsiniz; talep elle işlenir ve kişisel alanlar anonimleştirilir.
       </p>
       <p class="text-sm text-ink-muted">Son güncelleme: 12 Ekim 2026.</p>
     </div>

@@ -6,6 +6,7 @@
  * çerezler isteğe bağlı, redirect 303. Admin dalları: getOrCreateMember kısmi vi.mock ile sahte admin
  * NESNESİ döner — DB'de admin satırı AÇILMAZ. Yalnız POSTGRES_URL_TEST ile koşar; kendi kayıtlarını siler.
  */
+import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, like, or } from "drizzle-orm";
 import { PUAN } from "@/lib/points.ts";
@@ -162,6 +163,26 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     expect(await db.query.cronRuns.findFirst({ where: and(eq(schema.cronRuns.job, ek.SUISTIMAL_TEMIZ), eq(schema.cronRuns.periodKey, String(hedef.id))) })).toBeDefined();
     expect(await rw.bekleyenleriIsle(new Date(), hedef.id)).toMatchObject({ kesinlesen: 1 });
     expect((await ledger(hedef.id, "course_invite_welcome")).map((r) => r.delta)).toEqual([10]);
+  });
+
+  it("admin flag_clear_kume (rota): düğme değeri ↔ rota dizesi ↔ isaretKaldir(id, true) — aynı imza + aynı tarama anıyla işaretli 2 hesap tek POST'la temizlenir, 2 suistimal-temiz kaydı; farklı imzalı 3. hesap kalır", async () => {
+    const [yonetici, a, b, c] = await Promise.all([uye("ky"), uye("ka"), uye("kb"), uye("kc")]);
+    const an = new Date();
+    await db.update(schema.users).set({ flaggedAt: an, signupIpHash: `itest-kume-${t}` }).where(inArray(schema.users.id, [a.id, b.id]));
+    await db.update(schema.users).set({ flaggedAt: an, signupIpHash: `itest-baska-${t}` }).where(eq(schema.users.id, c.id));
+    expect(readFileSync("src/pages/uye/admin.astro", "utf8")).toContain('value="flag_clear_kume"'); // UI düğmesi rota dizesiyle aynı
+    h.adminMi = true;
+    try {
+      expect((await admin.POST(baglam(yonetici, { action: "flag_clear_kume", userId: String(a.id) }))).status).toBe(303);
+    } finally {
+      h.adminMi = false;
+    }
+    expect((await kullanici(a.id))!.flaggedAt).toBeNull();
+    expect((await kullanici(b.id))!.flaggedAt).toBeNull();
+    expect((await kullanici(c.id))!.flaggedAt).not.toBeNull();
+    const temiz = await db.query.cronRuns.findMany({ where: and(eq(schema.cronRuns.job, ek.SUISTIMAL_TEMIZ), inArray(schema.cronRuns.periodKey, [a, b, c].map((u) => String(u.id)))) });
+    expect(temiz.map((r) => r.periodKey).sort()).toEqual([String(a.id), String(b.id)].sort());
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, c.id));
   });
 
   it("admin flag_confirm: YALNIZ işaretli hesapta — işaretsiz hedefin bekleyeni düşmez; işaretli hedefin kendi + ondan doğan bekleyenleri düşer, işaret kalır", async () => {

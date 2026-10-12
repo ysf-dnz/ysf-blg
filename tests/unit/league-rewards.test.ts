@@ -44,15 +44,19 @@ describe("sonrakiStreak", () => {
 });
 
 describe("sezon yardımcıları", () => {
-  it("ay penceresi ayın 1'inden sonraki ayın 1'ine", () => {
-    const { start, end } = ayPenceresi(new Date("2026-08-09T10:00:00"));
-    expect(start.getDate()).toBe(1);
-    expect(start.getMonth()).toBe(7);
-    expect(end.getMonth()).toBe(8);
-    expect(end.getDate()).toBe(1);
+  it("ay penceresi TR takviminde ayın 1'i 00:00 (+03:00) → sonraki ayın 1'i; makine saat diliminden bağımsız (Vercel UTC)", () => {
+    const { start, end } = ayPenceresi(new Date("2026-08-09T10:00:00Z"));
+    expect(start.toISOString()).toBe("2026-07-31T21:00:00.000Z");
+    expect(end.toISOString()).toBe("2026-08-31T21:00:00.000Z");
+    // TR'de 1 Kasım 01:30 ama UTC'de hâlâ 31 Ekim: pencere KASIM (eski yerel hesap Vercel'de Ekim diyordu)
+    const kasim = ayPenceresi(new Date("2026-10-31T22:30:00Z"));
+    expect(kasim.start.toISOString()).toBe("2026-10-31T21:00:00.000Z");
+    expect(kasim.end.toISOString()).toBe("2026-11-30T21:00:00.000Z");
+    expect(ayPenceresi(new Date("2026-12-15T12:00:00Z")).end.toISOString()).toBe("2026-12-31T21:00:00.000Z"); // yıl devri
   });
-  it("sezon adı Türkçe ay içerir", () => {
+  it("sezon adı Türkçe ay içerir ve TR takvimine göre (UTC 31 Ekim gecesi → Kasım)", () => {
     expect(sezonAdi(new Date("2026-08-09"))).toContain("Ağustos");
+    expect(sezonAdi(new Date("2026-10-31T22:30:00Z"))).toContain("Kasım");
   });
   it("gunKey yerel YYYY-MM-DD üretir", () => {
     expect(gunKey(new Date(2026, 0, 5))).toBe("2026-01-05");

@@ -287,8 +287,11 @@ export function ekonomiOzeti(h: EkonomiHam) {
 
 /* ---------------- Suistimal işareti — PRD §4.2, F5-04 ---------------- */
 
-/** Aynı davetçi + AYNI kayıt imzasıyla 24 saatlik pencerede bu kadar hesap → küme işaretlenir */
+/** Aynı davetçi + AYNI kayıt imzasıyla 24 saatlik pencerede bu kadar hesap → küme işaretlenir (Yusuf: 5 kalır) */
 export const SUISTIMAL_ESIK = 5;
+
+/** Kişisel veri saklama (gün) — cron temizlikleri ve /gizlilik metni aynı sayıyı okur */
+export const SAKLAMA_GUN = { kayitImzasi: 7, davetZiyareti: 30 } as const;
 
 /**
  * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalCte'nin SAF EŞLENİĞİ (ikisi birlikte değişir).

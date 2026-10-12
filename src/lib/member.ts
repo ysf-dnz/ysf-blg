@@ -26,7 +26,9 @@ export function ozelAgMi(ip: string): boolean {
  * PREVIEW (canlı DB'yi paylaşır, trafiği gerçek kayıt değil) → null: imzasız hesap taramada hiçbir kümeye girmez.
  */
 export function kayitImzasi(ctx: Ctx): string | null {
-  if (process.env.VERCEL_ENV === "preview") return null;
+  // Preview: VERCEL_ENV yalnız "sistem env'lerini otomatik aç" ayarı açıksa gelir (bu projede `vercel env pull`
+  // çıktısında yok) → yedek olarak Preview ortamına konan proje değişkeni KAYIT_IMZASI=kapali da bekçi
+  if (process.env.VERCEL_ENV === "preview" || process.env.KAYIT_IMZASI === "kapali") return null;
   try {
     const ip = ctx.clientAddress;
     return ip && !ozelAgMi(ip) ? kisaHash(ip, "s") : null;

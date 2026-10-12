@@ -18,6 +18,7 @@ const sayimlar = {
   "invite_visits ip_hash itest-%": n(sql`select count(*)::int as n from invite_visits where ip_hash like 'itest-%'`),
   "pending_points ref_id course:itest-%": n(sql`select count(*)::int as n from pending_points where ref_id like 'course:itest-%'`),
   "users flagged_at dolu (itest)": n(sql`select count(*)::int as n from users where flagged_at is not null and clerk_id like 'demo\\_itest\\_%'`),
+  "cron_runs sezon-ilk10 (itest)": n(sql`select count(*)::int as n from cron_runs where job = 'sezon-ilk10' and period_key like 'itest-%'`),
   "cron_runs suistimal-temiz (sahipsiz)": n(
     sql`select count(*)::int as n from cron_runs c where c.job = 'suistimal-temiz' and not exists (select 1 from users u where u.id::text = c.period_key)`,
   ),

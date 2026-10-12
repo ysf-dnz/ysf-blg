@@ -22,13 +22,20 @@ describe("kayıt imzası (Faz 5 kök çözüm)", () => {
     expect(imza).toMatch(/^[0-9a-f]{32}$/);
     expect(imza).not.toContain(ip);
   });
-  it("Vercel preview → null (canlı DB'yi paylaşır; trafiği gerçek kayıt değil)", () => {
+  it("Vercel preview → null (canlı DB'yi paylaşır; trafiği gerçek kayıt değil) — VERCEL_ENV ya da proje değişkeni KAYIT_IMZASI=kapali", () => {
     process.env.VERCEL_ENV = "preview";
     try {
       expect(kayitImzasi(ctx("203.0.113.7"))).toBeNull();
     } finally {
       delete process.env.VERCEL_ENV;
     }
+    process.env.KAYIT_IMZASI = "kapali";
+    try {
+      expect(kayitImzasi(ctx("203.0.113.7"))).toBeNull();
+    } finally {
+      delete process.env.KAYIT_IMZASI;
+    }
+    expect(kayitImzasi(ctx("203.0.113.7"))).not.toBeNull();
   });
   it("adres yok ya da getter fırlatır → null (statik önizleme, test)", () => {
     expect(kayitImzasi(ctx())).toBeNull();

@@ -16,6 +16,16 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     await expect(page.getByText("1 · Oku")).toBeVisible();
   });
 
+  test("gizlilik: footer bağlantısı, KVKK tablosu ve koddan okunan saklama süreleri (7 / 30 gün)", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("contentinfo").getByRole("link", { name: "Gizlilik" }).click();
+    await expect(page).toHaveURL(/\/gizlilik$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Gizlilik ve kişisel veriler" })).toBeVisible();
+    await expect(page.getByRole("row", { name: /Kayıt imzası/ })).toContainText("7 gün");
+    await expect(page.getByRole("row", { name: /Davet ziyareti/ })).toContainText("30 gün");
+    await expect(page.getByRole("heading", { name: "Çerezler" })).toBeVisible();
+  });
+
   test("harita: Leaflet + OSM, il rozetleri, kulüp-kur CTA'sı; popup DOM'la kurulur ve mobilde görünür kalır", async ({ page }) => {
     await page.route("**/tile.openstreetmap.org/**", (r) => r.abort()); // OSMF karo sunucusunu testte yorma
     await page.setViewportSize({ width: 375, height: 812 });

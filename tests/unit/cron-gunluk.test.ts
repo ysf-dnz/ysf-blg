@@ -12,20 +12,21 @@ const h = vi.hoisted(() => {
   return {
     log: [] as string[],
     tarama: vi.fn(async (): Promise<{ id: number; inviter_id: number }[]> => []),
-    havuz: vi.fn(async () => ({ kurs: 0, puan: 0 })),
+    havuz: vi.fn(async (_hafta?: { etiket: string }) => ({ kurs: 0, puan: 0 })),
+    ligler: [] as { id: number; clubId: number; name: string; startsAt: Date; endsAt: Date; rewardNote: null }[],
     sezonBitis: new Date("2099-01-01T00:00:00Z"),
     bitenler: [] as { id: number; name: string; startsAt: Date; endsAt: Date }[],
     patlayanSezon: "",
   };
 });
 vi.mock("@/db/client.ts", async () => ({
-  db: { query: { clubLeagues: { findMany: async () => (h.log.push("ozelLigleriKapat"), []) } } },
+  db: { query: { clubLeagues: { findMany: async () => (h.log.push("ozelLigleriKapat"), h.ligler) } } },
   schema: await import("@/db/schema.ts"),
 }));
 vi.mock("@/lib/cron.ts", () => ({
   birKez: vi.fn(async () => true),
-  // yalnız sezon-kapat işi gerçekten koşturulur (sahte sezonKapat); öbür işler DB'li → koşturulmaz
-  birKezCalistir: vi.fn(async (job: string, _key: string, fn: () => Promise<unknown>) => (h.log.push(job), job === "sezon-kapat" ? fn() : undefined)),
+  // sahte iş fonksiyonu olanlar gerçekten koşturulur (argümanları denetlenir); DB'li işler koşturulmaz
+  birKezCalistir: vi.fn(async (job: string, _key: string, fn: () => Promise<unknown>) => (h.log.push(job), ["sezon-kapat", "canlilik-havuzu", "imza-temizlik", "ozel-lig"].includes(job) ? fn() : undefined)),
 }));
 vi.mock("@/lib/league.ts", () => ({
   aktifSezon: vi.fn(async () => (h.log.push("aktifSezon"), { id: 77, name: "itest sezon", startsAt: new Date(0), endsAt: h.sezonBitis })),
@@ -35,7 +36,7 @@ vi.mock("@/lib/league.ts", () => ({
     if (sezon.name === h.patlayanSezon) throw new Error("itest: sezon patladı");
     return { sampiyonKulupId: null, ilk10: 0 };
   }),
-  kulupIciSiralama: vi.fn(),
+  kulupIciSiralama: vi.fn(async () => { throw new Error("itest: lig sıralaması patladı"); }),
   kulupSiralamasi: vi.fn(),
 }));
 vi.mock("@/lib/etkinlik.ts", () => ({
@@ -50,11 +51,12 @@ vi.mock("@/lib/rewards.ts", async (orig) => ({
 vi.mock("@/lib/social.ts", () => ({ isaretsizKazananSql: {} }));
 vi.mock("@/lib/ekonomi.ts", () => ({
   suistimalTara: () => (h.log.push("suistimalTara"), h.tarama()),
-  canlilikHavuzuDagit: () => h.havuz(),
+  canlilikHavuzuDagit: (hafta: { etiket: string }) => h.havuz(hafta),
   imzalariUnut: vi.fn(async () => 0),
 }));
 
 import { birKezCalistir } from "@/lib/cron.ts";
+import { imzalariUnut } from "@/lib/ekonomi.ts";
 import { GET } from "@/pages/api/cron/gunluk.ts";
 
 const istek = (yetki = "Bearer itest-cron") =>
@@ -66,6 +68,8 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
   beforeEach(() => {
     h.log.length = 0;
     vi.mocked(birKezCalistir).mockClear();
+    vi.mocked(imzalariUnut).mockClear();
+    h.havuz.mockClear();
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(PAZARTESI_W43);
   });
@@ -92,7 +96,25 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     ]);
     expect(vi.mocked(birKezCalistir).mock.calls.find((c) => c[0] === "canlilik-havuzu")?.[1]).toBe("2026-W42");
     expect(vi.mocked(birKezCalistir).mock.calls.find((c) => c[0] === "bekleyen")?.[1]).toBe("2026-10-19");
-    expect(await r.json()).toEqual({ ok: true }); // sahte işler undefined döndü → rapor boş
+    // iş fonksiyonları doğru argümanla: imzalariUnut üretim varsayılanıyla (argümansız → 7 gün), havuz W42 nesnesiyle
+    expect(vi.mocked(imzalariUnut)).toHaveBeenCalledWith();
+    expect(h.havuz.mock.calls.map((c) => c[0]?.etiket)).toEqual(["2026-W42"]);
+    expect(await r.json()).toEqual({ ok: true, imzaTemizlik: 0, canlilikHavuzu: [{ hafta: "2026-W42", kurs: 0, puan: 0 }] }); // DB'li sahte işler undefined → raporda yok
+  });
+
+  it("özel lig kapanışı: lig başına kilit (ozel-lig, id) işle BİRLİKTE; sıralama fırlatırsa hata rapora + günlüğe, 5–8. adımlar koşar", async () => {
+    h.ligler = [{ id: 9, clubId: 1, name: "Itest Lig", startsAt: new Date(0), endsAt: new Date(1), rewardNote: null }];
+    const hata = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const r = await istek();
+      expect(vi.mocked(birKezCalistir).mock.calls.find((c) => c[0] === "ozel-lig")?.[1]).toBe("9");
+      expect(await r.json()).toMatchObject({ ok: true, ozelLigHata: ["9: itest: lig sıralaması patladı"] });
+      expect(hata).toHaveBeenCalledWith("ozelLigKapat", 9, expect.any(Error));
+      expect(h.log.slice(-5)).toEqual(["bekleyen", "davet-ziyaret-temizlik", "imza-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
+    } finally {
+      h.ligler = [];
+      hata.mockRestore();
+    }
   });
 
   it("CANLILIK_ILK_HAFTA kapısı: açılıştan önceki hafta için havuz adımı hiç çağrılmaz", async () => {
@@ -107,6 +129,7 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     await istek();
     const haftalar = () => vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "canlilik-havuzu").map((c) => c[1]);
     expect(haftalar()).toEqual(["2026-W43", "2026-W44"]);
+    expect(h.havuz.mock.calls.map((c) => c[0]?.etiket)).toEqual(["2026-W43", "2026-W44"]); // dağıtıcıya da aynı haftalar gider
     vi.mocked(birKezCalistir).mockClear();
     vi.setSystemTime(PAZARTESI_W43); // son tamamlanan W42 = açılış haftası; W41 denenmez
     await istek();

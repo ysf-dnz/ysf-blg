@@ -9,13 +9,14 @@
 import type { APIRoute } from "astro";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { birKez, birKezCalistir } from "@/lib/cron.ts";
+import { birKezCalistir } from "@/lib/cron.ts";
 import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
 import { aktifSezon, bitenSezonlar, kulupIciSiralama, sezonKapat } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey } from "@/lib/rewards.ts";
 import { canlilikHavuzuDagit, imzalariUnut, suistimalTara } from "@/lib/ekonomi.ts";
 import { isoHafta, sonTamamlananHafta } from "@/lib/economy.ts";
 import { CANLILIK_ILK_HAFTA } from "@/lib/points.ts";
+import { SAKLAMA_GUN } from "@/lib/economy.ts";
 
 export const prerender = false;
 
@@ -62,30 +63,45 @@ async function ayinKitabi() {
   await db.delete(schema.campaignVotes);
 }
 
-/** Süresi biten özel ligleri kapat: birinciye rozet + bildirim */
-async function ozelLigleriKapat() {
+/**
+ * Süresi biten özel ligleri kapat: birinciye rozet + bildirim. Kilit işle birlikte (`birKezCalistir`: fırlatırsa
+ * geri verilir, ertesi gün yeniden denenir); rozet (unique) `closed`'dan ÖNCE; tek bozuk lig öbürlerini ve
+ * 5–8. adımları durdurmaz (hata rapora + günlüğe).
+ */
+async function ozelLigleriKapat(): Promise<{ kapanan: number; hata: string[] }> {
   const bitenler = await db.query.clubLeagues.findMany({
     where: and(
       eq(schema.clubLeagues.status, "active"),
       lt(schema.clubLeagues.endsAt, new Date()),
     ),
   });
+  let kapanan = 0;
+  const hata: string[] = [];
   for (const lig of bitenler) {
-    if (!(await birKez("ozel-lig", String(lig.id)))) continue;
-    const siralama = await kulupIciSiralama(lig.clubId, lig.startsAt, lig.endsAt, 1);
-    const birinci = siralama[0]?.total ? siralama[0] : null;
-    await db
-      .update(schema.clubLeagues)
-      .set({ status: "closed", winnerId: birinci?.userId ?? null })
-      .where(eq(schema.clubLeagues.id, lig.id));
-    if (birinci) {
-      await awardBadge(
-        birinci.userId,
-        "lig-birincisi",
-        `"${lig.name}" liginin birincisi oldun 🥇${lig.rewardNote ? ` Ödül: ${lig.rewardNote}` : ""}`,
-      );
+    try {
+      const oldu = await birKezCalistir("ozel-lig", String(lig.id), async () => {
+        const siralama = await kulupIciSiralama(lig.clubId, lig.startsAt, lig.endsAt, 1);
+        const birinci = siralama[0]?.total ? siralama[0] : null;
+        if (birinci) {
+          await awardBadge(
+            birinci.userId,
+            "lig-birincisi",
+            `"${lig.name}" liginin birincisi oldun 🥇${lig.rewardNote ? ` Ödül: ${lig.rewardNote}` : ""}`,
+          );
+        }
+        await db
+          .update(schema.clubLeagues)
+          .set({ status: "closed", winnerId: birinci?.userId ?? null })
+          .where(eq(schema.clubLeagues.id, lig.id));
+        return true;
+      });
+      if (oldu) kapanan++;
+    } catch (err) {
+      console.error("ozelLigKapat", lig.id, err);
+      hata.push(`${lig.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
+  return { kapanan, hata };
 }
 
 export const GET: APIRoute = async ({ request }) => {
@@ -150,24 +166,27 @@ export const GET: APIRoute = async ({ request }) => {
     if (secildi !== undefined) rapor.ayinKitabi = secildi;
   }
 
-  // 4) Biten özel ligler
-  await ozelLigleriKapat();
+  // 4) Biten özel ligler (lig başına kilit + try/catch; hata rapora)
+  const ozel = await ozelLigleriKapat();
+  if (ozel.kapanan) rapor.ozelLig = ozel.kapanan;
+  if (ozel.hata.length) rapor.ozelLigHata = ozel.hata;
 
   // 5) Bekleyen puanlar: olgunlaşanlar kesinleşir, süresi dolanlar düşer (ADR 0001 K2)
   const bekleyen = await birKezCalistir("bekleyen", bugun, () => bekleyenleriIsle());
   if (bekleyen !== undefined) rapor.bekleyen = bekleyen;
 
-  // 6) Davet ziyaret kayıtları 30 gün saklanır (PRD §4.3)
+  // 6) Davet ziyaret kayıtları SAKLAMA_GUN.davetZiyareti (30) gün saklanır (PRD §4.3; /gizlilik aynı sabiti okur)
   const temizlik = await birKezCalistir("davet-ziyaret-temizlik", bugun, async () => {
     const silinen = await db
       .delete(schema.inviteVisits)
-      .where(lt(schema.inviteVisits.createdAt, new Date(Date.now() - 30 * 864e5)))
+      .where(lt(schema.inviteVisits.createdAt, new Date(Date.now() - SAKLAMA_GUN.davetZiyareti * 864e5)))
       .returning({ id: schema.inviteVisits.id });
     return silinen.length;
   });
   if (temizlik !== undefined) rapor.davetZiyaretTemizlik = temizlik;
 
-  // 6b) Kayıt imzaları 7 gün saklanır (kişisel veri en az; tarama yalnız 48 saatlik hesaplara bakar)
+  // 6b) Kayıt imzaları SAKLAMA_GUN.kayitImzasi (7) gün saklanır (kişisel veri en az; tarama bağ olayı son 48 saatte
+  // olan hesaplara bakar; işaretli hesabın imzası karar verilene dek kalır — "Kümeyi temizle" kümeyi görsün)
   const imza = await birKezCalistir("imza-temizlik", bugun, () => imzalariUnut());
   if (imza !== undefined) rapor.imzaTemizlik = imza;
 

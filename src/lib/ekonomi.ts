@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import {
   OGE_ASGARI_SN,
+  SAKLAMA_GUN,
   SUISTIMAL_ESIK,
   canlilikV,
   havuz,
@@ -15,7 +16,6 @@ import {
 } from "./economy.ts";
 import { DAVET_KAYNAKLI, puanOlayi, satirlar } from "./rewards.ts";
 import { R } from "./routes.ts";
-import { birKez } from "./cron.ts";
 
 /* ---------------- Canlılık havuzu (F5-02) ---------------- */
 
@@ -199,7 +199,7 @@ export const SUISTIMAL_TEMIZ = "suistimal-temiz";
 /**
  * Davet çiftliği taraması — TEK SQL (saf eşleniği economy.ts suistimalMi; ikisi birlikte değişir).
  * KANIT HESABIN KENDİ KAYIT İMZASI (users.signup_ip_hash — Faz 5 kök çözüm), kimliksiz /d/ ziyareti DEĞİL:
- * aynı davetçiye (kurs / etkinlik kodu YA DA /?ref= platform daveti) bağlı, 48 saatte açılmış, AYNI imzayı taşıyan
+ * aynı davetçiye (kurs / etkinlik kodu YA DA /?ref= platform daveti) bağ olayı son 48 saatte olan, AYNI imzayı taşıyan
  * ≥ SUISTIMAL_ESIK hesabın 24 saatlik penceresindeki üyeler işaretlenir. Dışarıdan eklenen hiçbir istek (ziyaret,
  * curl, OG botu, yabancının kuklaları) bir hesabı kümeye sokamaz ya da çıkaramaz; farklı ağdan gelen gerçek davetli
  * aynı gün gelse de işaretlenmez. İmzasız (NULL) hesap hiçbir kümeye girmez — NULL hiçbir zaman suçlamaz.
@@ -277,17 +277,20 @@ function suistimalCte(davetciId?: number) {
 }
 
 /**
- * Kayıt imzalarını unut (kişisel veri en az): hesap `gunOnce` günden yaşlıysa `signup_ip_hash` NULL — tarama yalnız
- * 48 saatlik yeni hesaplara bakar, 7 gün = 48 s + cron'un birkaç gün fırlatma payı. Cron günlük; `userIds` yalnız
- * entegrasyon testi (canlıyı daraltır). Silme değil NULL'lama: satır üyenin.
+ * Kayıt imzalarını unut (kişisel veri en az): hesap `gunOnce` (SAKLAMA_GUN.kayitImzasi = 7) günden yaşlıysa
+ * `signup_ip_hash` NULL. 7 gün = hesap açılışı ile kodla bağlanma arasına tanınan pay (tarama bağ olayına çapalı,
+ * son 48 saat) + cron'un fırlatma payı. İŞARETLİ hesabın imzası karar verilene dek kalır: "Kümeyi temizle" kümeyi
+ * imzadan bulur; "Temiz" sonrası ertesi cron siler. Cron günlük; `userIds` yalnız entegrasyon testi (canlıyı
+ * daraltır). Silme değil NULL'lama: satır üyenin.
  */
-export async function imzalariUnut(gunOnce = 7, userIds?: number[]): Promise<number> {
+export async function imzalariUnut(gunOnce: number = SAKLAMA_GUN.kayitImzasi, userIds?: number[]): Promise<number> {
   if (userIds?.length === 0) return 0; // `in ()` sözdizimi hatasıdır
   const yalniz = userIds ? sql`and id in (${sql.join(userIds.map((i) => sql`${i}`), sql`, `)})` : sql``;
   return satirlar(
     await db.execute(sql`
       update users set signup_ip_hash = null
-      where signup_ip_hash is not null and created_at < now() - ${gunOnce} * interval '1 day' ${yalniz}
+      where signup_ip_hash is not null and flagged_at is null
+        and created_at < now() - ${gunOnce} * interval '1 day' ${yalniz}
       returning id
     `),
   ).length;
@@ -313,16 +316,20 @@ export async function bekleyenleriDusur(userId: number): Promise<number> {
  * İmzası silinmiş (NULL) hesapta küme yalnız kendisidir. Döndürür: temizlenen id'ler.
  */
 export async function isaretKaldir(userId: number, kume = false): Promise<number[]> {
-  const ids = satirlar<{ id: number }>(
+  // TEK ifade: işaret kalkar VE temiz kaydı yazılır (ayrı INSERT'ler yarıda kalsa hesap markersız kalıp yeniden işaretlenirdi)
+  return satirlar<{ id: number }>(
     await db.execute(sql`
-      update users set flagged_at = null
-      where flagged_at is not null and (id = ${userId} or (${kume}::boolean and signup_ip_hash is not null
-        and (signup_ip_hash, flagged_at) = (select signup_ip_hash, flagged_at from users where id = ${userId})))
-      returning id
+      with t as (
+        update users set flagged_at = null
+        where flagged_at is not null and (id = ${userId} or (${kume}::boolean and signup_ip_hash is not null
+          and (signup_ip_hash, flagged_at) = (select signup_ip_hash, flagged_at from users where id = ${userId})))
+        returning id
+      ), m as (
+        insert into cron_runs (job, period_key) select ${SUISTIMAL_TEMIZ}, id::text from t on conflict do nothing
+      )
+      select id from t
     `),
   ).map((r) => r.id);
-  for (const id of ids) await birKez(SUISTIMAL_TEMIZ, String(id));
-  return ids;
 }
 
 export async function isaretliHesaplar() {

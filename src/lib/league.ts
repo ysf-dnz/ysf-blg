@@ -8,7 +8,8 @@
 import { and, asc, desc, eq, gt, gte, inArray, isNotNull, lt, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
-import { awardBadge, hazineKitabiAc } from "@/lib/rewards.ts";
+import { TOPLULUK_TZ, awardBadge, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
+import { birKezCalistir } from "@/lib/cron.ts";
 import { isaretsizKazananSql } from "@/lib/social.ts";
 
 export interface KulupSkoru {
@@ -29,16 +30,16 @@ export interface UyeSkoru {
   total: number;
 }
 
-/** Ay adı ("2026 Ağustos") — sezon isimlendirmesi */
+/** Ay adı ("2026 Ağustos") — sezon isimlendirmesi, TR takvimine göre (Vercel UTC'de koşar) */
 export function sezonAdi(d: Date): string {
-  return new Intl.DateTimeFormat("tr-TR", { year: "numeric", month: "long" }).format(d);
+  return new Intl.DateTimeFormat("tr-TR", { year: "numeric", month: "long", timeZone: TOPLULUK_TZ }).format(d);
 }
 
-/** Ayın ilk/son anı (UTC yerine yerel — topluluk TR odaklı) */
+/** Ayın ilk/son anı — TR takvimi (sabit +03:00; makine saat dilimi ne olsun aynı pencere; gunKey ile uyumlu) */
 export function ayPenceresi(d: Date): { start: Date; end: Date } {
-  const start = new Date(d.getFullYear(), d.getMonth(), 1);
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-  return { start, end };
+  const [y, m] = gunKey(d).split("-").map(Number) as [number, number];
+  const tr = (yy: number, mm: number) => new Date(`${yy}-${String(mm).padStart(2, "0")}-01T00:00:00+03:00`);
+  return { start: tr(y, m), end: m === 12 ? tr(y + 1, 1) : tr(y, m + 1) };
 }
 
 /**
@@ -74,6 +75,10 @@ export async function bitenSezonlar(simdi: Date = new Date()) {
  * Sezonu kapat: şampiyon kulüp (yalnız puanı > 0 olan; işaretli üyeler puana da rozete de girmez) + site geneli
  * ilk 10 üyeye hazinedeki sıradaki kilitli kitap (hazine boşsa yalnız kutlama). Aynı adlı (yarışta çift açılmış)
  * aktif sezon satırları birlikte kapanır. Cron `birKezCalistir('sezon-kapat', sezon.name)` ile çağırır.
+ * SIRA: ödüller ÖNCE, `closed` EN SONDA — yarıda kalırsa sezon `active` kalır, `bitenSezonlar` ertesi gün yine
+ * listeler ve kapanış tamamlanır (eski sıra `closed`'ı önce yazıyordu: Neon geçici hatasında kalan ilk-10 kitapları
+ * ve rozetler sessizce, kalıcı kayboluyordu). Yeniden koşum çift ödül vermez: rozet unique, ilk-10 kitabı kişi başına
+ * `sezon-ilk10` kilidiyle (`hazineKitabiAc` idempotent DEĞİL — her çağrı sıradaki kitabı açar).
  * Ledger penceresi kolon kodlayıcısından geçer (ham Date parametresi TR makinesinde 3 saat kayardı).
  */
 export async function sezonKapat(
@@ -81,10 +86,6 @@ export async function sezonKapat(
 ): Promise<{ sampiyonKulupId: number | null; ilk10: number }> {
   const siralama = await kulupSiralamasi(sezon.startsAt, sezon.endsAt);
   const sampiyon = siralama[0]?.raw ? siralama[0] : undefined; // puansız sezonun şampiyonu yok
-  await db
-    .update(schema.seasons)
-    .set({ status: "closed", championClubId: sampiyon?.clubId ?? null })
-    .where(and(eq(schema.seasons.name, sezon.name), eq(schema.seasons.status, "active")));
   if (sampiyon) {
     const uyeler = await isaretsizler(
       await db.query.clubMembers.findMany({ where: eq(schema.clubMembers.clubId, sampiyon.clubId) }),
@@ -107,16 +108,22 @@ export async function sezonKapat(
     .orderBy(desc(sql`sum(${schema.pointsLedger.delta})`))
     .limit(10);
   for (const u of ilk10) {
-    const kitap = await hazineKitabiAc(u.userId, "reward");
-    await db.insert(schema.notifications).values({
-      userId: u.userId,
-      kind: "season",
-      body: kitap
-        ? `${sezon.name} sezonunu ilk 10'da bitirdin 🏅 Hazinendeki sıradaki kitap hediye!`
-        : `${sezon.name} sezonunu ilk 10'da bitirdin 🏅`,
-      href: kitap ? `/kutuphane/kitap/${kitap}` : "/lider",
+    await birKezCalistir("sezon-ilk10", `${sezon.name}:${u.userId}`, async () => {
+      const kitap = await hazineKitabiAc(u.userId, "reward");
+      await db.insert(schema.notifications).values({
+        userId: u.userId,
+        kind: "season",
+        body: kitap
+          ? `${sezon.name} sezonunu ilk 10'da bitirdin 🏅 Hazinendeki sıradaki kitap hediye!`
+          : `${sezon.name} sezonunu ilk 10'da bitirdin 🏅`,
+        href: kitap ? `/kutuphane/kitap/${kitap}` : "/lider",
+      });
     });
   }
+  await db
+    .update(schema.seasons)
+    .set({ status: "closed", championClubId: sampiyon?.clubId ?? null })
+    .where(and(eq(schema.seasons.name, sezon.name), eq(schema.seasons.status, "active")));
   return { sampiyonKulupId: sampiyon?.clubId ?? null, ilk10: ilk10.length };
 }
 
