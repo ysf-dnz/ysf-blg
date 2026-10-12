@@ -1,9 +1,9 @@
 /**
- * POST /api/uye/profil — şehir/üniversite/bio/sosyal linkler + haritada görünme rızası (F4-02)
- * ve "kimden mesaj alırım" ayarı (F4-03).
+ * POST /api/uye/profil — iki ayrı form: profil alanları (şehir/üniversite/bio/sosyal linkler) ve
+ * action=gizlilik (haritada görünme rızası F4-02 + "kimden mesaj alırım" ayarı F4-03).
  */
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { dmPolitikasiMi } from "@/lib/economy.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -16,6 +16,25 @@ export const POST: APIRoute = async (context) => {
   if (!member) return new Response("Giriş gerekli", { status: 401 });
   const form = await context.request.formData();
 
+  // Gizlilik ayarları AYRI form ve ayrı yazımdır: profil alanlarını bayat bir sekmeden kaydetmek harita
+  // rızasını / mesaj ayarını o sekmedeki eski değere döndürmesin (inceleme bulgusu).
+  if (form.get("action") === "gizlilik") {
+    const dmPolicy = String(form.get("dmPolicy") ?? "");
+    await db
+      .update(schema.users)
+      .set({
+        // Tek SQL: il yoksa görünmez; rıza anı korunur (yeniden kaydetmek tarihi yenilemez)
+        mapVisibleAt:
+          form.get("mapVisible") === "1"
+            ? sql`case when ${schema.users.city} is null then null else coalesce(${schema.users.mapVisibleAt}, now()) end`
+            : null,
+        // Beyaz liste dışı değer mevcut ayarı korur
+        ...(dmPolitikasiMi(dmPolicy) ? { dmPolicy } : {}),
+      })
+      .where(eq(schema.users.id, member.id));
+    return context.redirect("/uye/profil?durum=gizlilik#gizlilik");
+  }
+
   // Sosyal linkler: yalnızca https URL kabul edilir
   const socials: Record<string, string> = {};
   for (const key of ["linkedin", "github", "instagram", "youtube", "x", "website"]) {
@@ -25,16 +44,13 @@ export const POST: APIRoute = async (context) => {
 
   // İl 81 il listesinden (harita eşleşmesi serbest metinle tutmuyordu); listede yoksa boş
   const city = ilBul(String(form.get("city") ?? ""));
-  const dmPolicy = String(form.get("dmPolicy") ?? "");
 
   await db
     .update(schema.users)
     .set({
       city,
-      // Rıza anı korunur (yeniden kaydetmek tarihi yenilemez); kutu boşsa ya da il yoksa görünmez
-      mapVisibleAt: form.get("mapVisible") === "1" && city ? (member.mapVisibleAt ?? new Date()) : null,
-      // Beyaz liste dışı değer mevcut ayarı korur
-      ...(dmPolitikasiMi(dmPolicy) ? { dmPolicy } : {}),
+      // Şehir boşaldıysa haritada yer yok: rıza da kalkar. Şehir varken rızaya DOKUNULMAZ (ayrı form)
+      ...(city ? {} : { mapVisibleAt: null }),
       university: String(form.get("university") ?? "").trim().slice(0, 80) || null,
       bio: String(form.get("bio") ?? "").trim().slice(0, 280) || null,
       socials: Object.keys(socials).length ? JSON.stringify(socials) : null,
