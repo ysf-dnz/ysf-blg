@@ -6,7 +6,7 @@
  */
 import { createHash, createHmac, randomInt } from "node:crypto";
 import type { AstroCookies } from "astro";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
@@ -281,6 +281,7 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
     reason: "course_invite_welcome",
     refId: `course:${kurs.id}`,
     kaynakOlusturulma: davetli.createdAt,
+    kaynakIsaretli: !!davetli.flaggedAt,
     note: `"${kurs.title}" — davetle katılım karşılaması`,
   });
   const n = await puanOlayi({
@@ -289,6 +290,7 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
     reason: "course_invite_activated",
     refId: `course:${kurs.id}:u:${davetli.id}`,
     kaynakOlusturulma: davetli.createdAt,
+    kaynakIsaretli: !!davetli.flaggedAt,
     note: `${davetli.name} "${kurs.title}" kursunda aktive oldu`,
   });
   await bildir(
@@ -300,6 +302,43 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
         : `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
     R.kurs(kurs.slug),
   );
+  await ikinciSeviye(kod.inviterId, kurs, davetli);
+}
+
+/**
+ * 2. seviye davet (F5-01, AC-10): davet edenin PLATFORM davetçisine (referrals) +5. Tek sıçrama —
+ * 3. seviye yok. Davetli başına 1 (refId `u:{davetli}`) ve yalnız davetlinin İLK kurs aktivasyonunda.
+ * Yalnız aktivasyonu yazan istekten çağrılır: geriye dönük dağıtım yok (PRD §4.3).
+ */
+async function ikinciSeviye(davetEdenId: number, kurs: Kurs, davetli: Member) {
+  const ust = await db.query.referrals.findFirst({ where: eq(schema.referrals.invitedId, davetEdenId) });
+  if (!ust || ust.inviterId === davetli.id) return; // kendine puan yok
+  const [onceki] = await db
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.courseEnrollments)
+    .where(
+      and(
+        eq(schema.courseEnrollments.userId, davetli.id),
+        isNotNull(schema.courseEnrollments.activatedAt),
+        ne(schema.courseEnrollments.courseId, kurs.id),
+      ),
+    );
+  if (Number(onceki?.n ?? 0) > 0) return;
+  const n = await puanOlayi({
+    userId: ust.inviterId,
+    delta: PUAN.inviteSecondLevel,
+    reason: "invite_second_level",
+    refId: `u:${davetli.id}`,
+    kaynakOlusturulma: davetli.createdAt,
+    kaynakIsaretli: !!davetli.flaggedAt,
+    note: `${davetli.name}, davet ettiğin bir üyenin davetiyle ilk kursunda aktive oldu`,
+  });
+  if (n > 0)
+    await bildir(
+      ust.inviterId,
+      `Davet ettiğin bir üyenin davetlisi ${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ +${n} puan (2. seviye davet)`,
+      R.kurs(kurs.slug),
+    );
 }
 
 /** Kurs bitirmede davet edene +10 (asgari süre geçtiyse çağrılır) */
@@ -323,6 +362,7 @@ export async function davetBitirme(katilim: Katilim, kurs: Kurs, davetli: Member
     reason: "course_invite_completed",
     refId: `course:${kurs.id}:u:${davetli.id}`,
     kaynakOlusturulma: davetli.createdAt,
+    kaynakIsaretli: !!davetli.flaggedAt,
     note: `${davetli.name} "${kurs.title}" kursunu bitirdi`,
   });
 }

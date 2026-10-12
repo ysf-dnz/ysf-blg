@@ -494,6 +494,8 @@ async function kur() {
   await db.insert(schema.referrals).values([
     { inviterId: U.ayse!.id, invitedId: U.can!.id, status: "activated" },
     { inviterId: U.elif!.id, invitedId: U.mehmet!.id, status: "joined" },
+    // 2. seviye davet (F5-01): Elif'in kurs davetiyle (DEM0C21) gelen ilk kez aktive olunca Zeynep +5
+    { inviterId: U.zeynep!.id, invitedId: U.elif!.id, status: "joined" },
   ]);
   await db.insert(schema.applications).values({ userId: U.zeynep!.id, kind: "university", place: "Ege Üniversitesi", message: "İzmir'de okuma topluluğu kurmak istiyorum; 12 kişilik çekirdek ekibimiz hazır.", status: "pending" });
   await db.insert(schema.notifications).values([
