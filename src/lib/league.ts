@@ -5,7 +5,7 @@
  * - Özel lig: başkanın kulüp içi yarışması; aynı sorgu kulüp-scoped koşar.
  * Sorguların tümü points_ledger'dan türetilir (tek gerçek kaynak).
  */
-import { and, eq, gt, gte, inArray, lt } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNotNull, lt } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 
@@ -57,6 +57,20 @@ export async function aktifSezon() {
   return yeni!;
 }
 
+/** İşaretli (flagged_at) üyeler lig hesabına girmez: ne puanı ne de √üye paydası (F5-04) */
+async function isaretsizler<T extends { userId: number }>(uyelikler: T[]): Promise<T[]> {
+  if (uyelikler.length === 0) return uyelikler;
+  const isaretli = new Set(
+    (
+      await db.query.users.findMany({
+        where: and(inArray(schema.users.id, uyelikler.map((m) => m.userId)), isNotNull(schema.users.flaggedAt)),
+        columns: { id: true },
+      })
+    ).map((u) => u.id),
+  );
+  return isaretli.size ? uyelikler.filter((m) => !isaretli.has(m.userId)) : uyelikler;
+}
+
 /** Pencere içindeki kullanıcı-başı pozitif puan toplamları */
 async function pozitifPuanlar(
   userIds: number[],
@@ -88,9 +102,11 @@ export async function kulupSiralamasi(start: Date, end: Date): Promise<KulupSkor
     where: eq(schema.clubs.status, "approved"),
   });
   if (kulupler.length === 0) return [];
-  const uyelikler = await db.query.clubMembers.findMany({
-    where: inArray(schema.clubMembers.clubId, kulupler.map((c) => c.id)),
-  });
+  const uyelikler = await isaretsizler(
+    await db.query.clubMembers.findMany({
+      where: inArray(schema.clubMembers.clubId, kulupler.map((c) => c.id)),
+    }),
+  );
   const puan = await pozitifPuanlar([...new Set(uyelikler.map((m) => m.userId))], start, end);
 
   const skorlar = kulupler.map((c) => {
@@ -116,9 +132,11 @@ export async function kulupIciSiralama(
   end: Date,
   limit = 10,
 ): Promise<UyeSkoru[]> {
-  const uyelikler = await db.query.clubMembers.findMany({
-    where: eq(schema.clubMembers.clubId, clubId),
-  });
+  const uyelikler = await isaretsizler(
+    await db.query.clubMembers.findMany({
+      where: eq(schema.clubMembers.clubId, clubId),
+    }),
+  );
   if (uyelikler.length === 0) return [];
   const puan = await pozitifPuanlar(uyelikler.map((m) => m.userId), start, end);
   const users = await db.query.users.findMany({

@@ -121,7 +121,9 @@ const [hostBek, [biletSayi]] = await Promise.all([
 const tarihKisa = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
   b.maturesAt
-    ? `${tarihKisa(b.maturesAt)} kesinleşir (hesap yaşı 24 s)`
+    ? b.maturesAt.getTime() < Date.now()
+      ? "inceleniyor" // olgunlaştı ama kesinleşmedi: alıcı ya da kaynak hesap işaretli (F5-04)
+      : `${tarihKisa(b.maturesAt)} kesinleşir (hesap yaşı 24 s)`
     : b.expiresAt
       ? `son gün ${tarihKisa(b.expiresAt)}`
       : "koşul bekliyor";

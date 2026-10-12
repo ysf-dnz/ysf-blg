@@ -97,6 +97,7 @@ async function bitirmeOdulleri(
     reason: "course_learner_completed",
     refId: `course:${kurs.id}:u:${ogrenen.id}`,
     kaynakOlusturulma: ogrenen.createdAt,
+    kaynakIsaretli: !!ogrenen.flaggedAt,
     note: `${ogrenen.name} "${kurs.title}" kursunu bitirdi`,
   });
   // Davet eden: davetlisi bitirdi (+10; asgari süre bu noktada geçmiş)
@@ -158,10 +159,12 @@ export const POST: APIRoute = async (context) => {
           reason: "course_learner_activated",
           refId: `course:${kurs.id}:u:${member.id}`,
           kaynakOlusturulma: member.createdAt,
+          kaynakIsaretli: !!member.flaggedAt,
           note: `${member.name} "${kurs.title}" kursunda aktive oldu`,
         });
         // Açılış eşiği: aktive olmuş FARKLI katılımcılar; en genç hesabın yaşı
-        // hesap-yaşı frenini belirler (3 kukla hesapla anında +50 yazılamaz)
+        // hesap-yaşı frenini belirler (3 kukla hesapla anında +50 yazılamaz).
+        // İşaretli hesap eşiğe sayılmaz (refId'de kaynak yok: bekleyende tutulamaz).
         const [aktif] = await db
           .select({
             n: sql<number>`count(*)`,
@@ -174,6 +177,7 @@ export const POST: APIRoute = async (context) => {
               eq(schema.courseEnrollments.courseId, kurs.id),
               isNotNull(schema.courseEnrollments.activatedAt),
               ne(schema.courseEnrollments.userId, kurs.createdBy),
+              isNull(schema.users.flaggedAt),
             ),
           );
         if (Number(aktif?.n ?? 0) >= KURS_ACILIS_ESIGI) {

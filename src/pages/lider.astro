@@ -1,9 +1,10 @@
 ---
 /**
  * Liderlik tabloları (Skool formatı): 7 gün / 30 gün / tüm zamanlar,
- * üniversiteler arası takım tablosu. Yalnızca pozitif kazanımlar sayılır.
+ * üniversiteler arası takım tablosu. Yalnızca pozitif kazanımlar sayılır;
+ * işaretli (flagged_at) üyeler hiçbir tabloda görünmez (F5-04).
  */
-import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
 import { levelFor } from "@/lib/levels.ts";
@@ -20,7 +21,7 @@ const since =
       : null;
 
 const earnedExpr = sql<number>`sum(case when ${schema.pointsLedger.delta} > 0 then ${schema.pointsLedger.delta} else 0 end)`;
-const conds = [sql`${schema.pointsLedger.delta} > 0`];
+const conds = [sql`${schema.pointsLedger.delta} > 0`, isNull(schema.users.flaggedAt)];
 if (since) conds.push(gte(schema.pointsLedger.createdAt, since));
 
 const rows = await db
@@ -54,7 +55,7 @@ const uniRows = await db
   })
   .from(schema.pointsLedger)
   .innerJoin(schema.users, sql`${schema.users.id} = ${schema.pointsLedger.userId}`)
-  .where(and(sql`${schema.pointsLedger.delta} > 0`, isNotNull(schema.users.university)))
+  .where(and(sql`${schema.pointsLedger.delta} > 0`, isNotNull(schema.users.university), isNull(schema.users.flaggedAt)))
   .groupBy(schema.users.university)
   .orderBy(desc(earnedExpr))
   .limit(10);

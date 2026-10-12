@@ -327,6 +327,7 @@ async function girisOdulleri(e: Etkinlik, rsvp: Rsvp): Promise<number> {
     reason: "event_invite_attended",
     refId: `event:${e.id}:u:${rsvp.userId}`,
     kaynakOlusturulma: davetli.createdAt,
+    kaynakIsaretli: !!davetli.flaggedAt,
     note: `${davetli.name} "${e.title}" etkinliğine geldi`,
   });
   // Yalnız gerçekten yazıldıysa bildir (tekrar okutma / onarım koşumu bildirim yağdırmasın)

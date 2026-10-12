@@ -1,12 +1,14 @@
 /** POST /api/uye/admin — yazı/başvuru onay-red (yalnızca admin). */
 import type { APIRoute } from "astro";
 import { awardPoints, awardBadge, revokePoints, sayacRozetleri } from "@/lib/rewards.ts";
-import { and, eq, inArray, like, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, like, ne, or } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
 import { sikayetTuruMu } from "@/lib/sikayet.ts";
+import { birKez } from "@/lib/cron.ts";
+import { SUISTIMAL_TEMIZ } from "@/lib/ekonomi.ts";
 
 export const prerender = false;
 
@@ -111,7 +113,7 @@ export const POST: APIRoute = async (context) => {
   // comment → gizli kalır) ya da geri aç (course → published; comment → görünür).
   const reportTarget = String(form.get("reportTarget") ?? "");
   const reportTargetId = Number(form.get("reportTargetId") ?? 0);
-  // Üye/mesaj şikâyetinde (F4-04) içerik etkisi yok: yalnız kuyruk kaydı kapanır (çözüldü / reddedildi).
+  // Üye/mesaj şikâyetinde (F4-04) içerik etkisi yok; "Haklı" şikâyet edilen üyeyi İŞARETLER (F5-04).
   if (
     (action === "report_remove" || action === "report_restore") &&
     reportTargetId &&
@@ -162,6 +164,22 @@ export const POST: APIRoute = async (context) => {
         .update(schema.comments)
         .set({ hiddenAt: kaldir ? new Date() : null })
         .where(eq(schema.comments.id, reportTargetId));
+    } else if (kaldir) {
+      // Yaptırım (F5-04): işaretli üye lider/ligde görünmez, bekleyenleri olgunlaşmaz
+      const hedefId =
+        reportTarget === "user"
+          ? reportTargetId
+          : (
+              await db.query.messages.findFirst({
+                where: eq(schema.messages.id, reportTargetId),
+                columns: { senderId: true },
+              })
+            )?.senderId;
+      if (hedefId)
+        await db
+          .update(schema.users)
+          .set({ flaggedAt: new Date() })
+          .where(and(eq(schema.users.id, hedefId), isNull(schema.users.flaggedAt), ne(schema.users.role, "admin")));
     }
     await db
       .update(schema.reports)
@@ -173,6 +191,14 @@ export const POST: APIRoute = async (context) => {
           eq(schema.reports.status, "open"),
         ),
       );
+  }
+
+  // Suistimal kuyruğu (F5-04): işareti kaldır. cron_runs kaydı taramanın aynı hesabı yeniden
+  // işaretlemesini önler (şikâyetle elle işaretleme yine mümkün).
+  const flagUserId = Number(form.get("userId") ?? 0);
+  if (action === "flag_clear" && flagUserId) {
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, flagUserId));
+    await birKez(SUISTIMAL_TEMIZ, String(flagUserId));
   }
 
   const quizId = Number(form.get("quizId") ?? 0);

@@ -11,7 +11,7 @@ import EmptyState from "@/components/ui/EmptyState.astro";
 import Avatar from "@/components/ui/Avatar.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { getLevelsMap, getUsersMap } from "@/lib/social.ts";
+import { getLevelsMap, getUsersMap, isaretsizKazananSql } from "@/lib/social.ts";
 import { getBookMap, bookTitle } from "@/lib/books-lookup.ts";
 import { levelFor } from "@/lib/levels.ts";
 import { R } from "@/lib/routes.ts";
@@ -50,7 +50,7 @@ const haftalik = await db
   })
   .from(schema.pointsLedger)
   .where(
-    sql`${schema.pointsLedger.delta} > 0 and ${schema.pointsLedger.createdAt} > now() - interval '7 days'`,
+    sql`${schema.pointsLedger.delta} > 0 and ${schema.pointsLedger.createdAt} > now() - interval '7 days' and ${isaretsizKazananSql}`,
   )
   .groupBy(schema.pointsLedger.userId)
   .orderBy(desc(sql`sum(${schema.pointsLedger.delta})`))
