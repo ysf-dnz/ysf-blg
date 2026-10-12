@@ -31,6 +31,7 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
   let ek: typeof import("@/lib/ekonomi.ts");
   let admin: typeof import("@/pages/api/uye/admin.ts");
   let egitim: typeof import("@/pages/api/uye/egitim.ts");
+  let member: typeof import("@/lib/member.ts");
   let kampanya: typeof import("@/pages/api/uye/kampanya.ts");
   let gorev: typeof import("@/pages/api/uye/gorev.ts");
   type Uye = Db["schema"]["users"]["$inferSelect"];
@@ -89,6 +90,7 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     ek = await import("@/lib/ekonomi.ts");
     admin = await import("@/pages/api/uye/admin.ts");
     egitim = await import("@/pages/api/uye/egitim.ts");
+    member = await import("@/lib/member.ts");
     kampanya = await import("@/pages/api/uye/kampanya.ts");
     gorev = await import("@/pages/api/uye/gorev.ts");
   }, 60_000);
@@ -201,6 +203,36 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     expect((await kullanici(gonderen.id))!.flaggedAt).not.toBeNull();
     expect((await kullanici(alici.id))!.flaggedAt).toBeNull();
     expect((await kullanici(yonetici.id))!.flaggedAt).toBeNull();
+  });
+
+  /* ---------------- getOrCreateMember: platform daveti ---------------- */
+
+  it("referral_joined (kapandı): davetle kayıt → davet edene +25 ANINDA değil 24 saat bekleyene (refId u:{yeni}); yeni hesap işaretlenirse tutulur; olgunlaşınca bir kez kesinleşir", async () => {
+    const davetEden = await uye("rj-d");
+    const clerkId = `demo_itest_rt_yeni_${t}`;
+    const ctx = {
+      locals: {
+        auth: () => ({ userId: clerkId }),
+        currentUser: async () => ({ fullName: "Itest Yeni", username: null, primaryEmailAddress: { emailAddress: "itest-yeni@example.com" }, imageUrl: null }),
+      },
+      cookies: { get: (ad: string) => (ad === "ysf_ref" ? { value: davetEden.handle } : undefined), delete() {} },
+    } as never;
+    const yeni = (await member.getOrCreateMember(ctx))!;
+    uyeler.push(yeni.id);
+    expect(yeni.clerkId).toBe(clerkId);
+    expect(await db.query.referrals.findFirst({ where: and(eq(schema.referrals.inviterId, davetEden.id), eq(schema.referrals.invitedId, yeni.id)) })).toBeDefined();
+    expect(await ledger(davetEden.id, "referral_joined")).toHaveLength(0); // anında değil
+    const b = await bekleyen(davetEden.id, "referral_joined", `u:${yeni.id}`);
+    expect(b).toMatchObject({ status: "pending", delta: PUAN.referralJoined });
+    expect(b!.maturesAt!.getTime()).toBeGreaterThan(Date.now() + 23 * 3600e3);
+    expect(await rw.bekleyenleriIsle(new Date(), davetEden.id)).toMatchObject({ kesinlesen: 0 }); // henüz olgun değil
+    // Ertesi sabah tarama / "Haklı" yeni hesabı işaretlerse satır tutulur (refId sonu u:{yeni})
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, yeni.id));
+    expect(await rw.bekleyenleriIsle(new Date(Date.now() + 25 * 3600e3), davetEden.id)).toMatchObject({ kesinlesen: 0 });
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, yeni.id));
+    expect(await rw.bekleyenleriIsle(new Date(Date.now() + 25 * 3600e3), davetEden.id)).toMatchObject({ kesinlesen: 1 });
+    expect((await ledger(davetEden.id, "referral_joined", `u:${yeni.id}`)).map((r) => r.delta)).toEqual([PUAN.referralJoined]);
+    expect((await ledger(yeni.id, "welcome")).map((r) => r.delta)).toEqual([PUAN.welcome]); // yeni üyenin karşılaması değişmedi
   });
 
   /* ---------------- api/uye/kampanya.ts + gorev.ts (C2) ---------------- */

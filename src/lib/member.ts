@@ -3,7 +3,7 @@
  * puan toplamı, kitap erişimi.
  */
 import { and, eq, sql } from "drizzle-orm";
-import { awardPoints, sayacRozetleri } from "@/lib/rewards.ts";
+import { awardPoints, puanOlayi, sayacRozetleri } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { PUAN } from "./points.ts";
 import type { APIContext, AstroGlobal } from "astro";
@@ -88,20 +88,21 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
           inviter.role === "rep"
             ? Math.round(PUAN.referralJoined * PUAN.repReferralMultiplier)
             : PUAN.referralJoined;
-        // Davet tavanı (300/7 gün) awardPoints içinde otomatik; bildirim gerçek miktarı söyler
-        const yazilan = await awardPoints({
+        // Kayıt anında ANINDA değil 24 saat bekleyene (Faz 5 kararı): kaynak = yeni hesap (0 yaş) → puanOlayi
+        // bekleyen yazar; refId `u:{yeni}` taşır ki tarama / "Haklı" yeni hesabı işaretlerse satır tutulsun.
+        // Davet tavanı (300/7 gün) kesinleşmede awardPoints içinde; kırpılırsa pano gösterir.
+        await puanOlayi({
           userId: inviter.id,
           delta: bonus,
           reason: "referral_joined",
-          refId: String(member.id),
+          refId: `u:${member.id}`,
+          kaynakOlusturulma: member.createdAt,
+          note: `${member.name} davetinle katıldı`,
         });
         await db.insert(schema.notifications).values({
           userId: inviter.id,
           kind: "referral",
-          body:
-            yazilan > 0
-              ? `${member.name} davetinle katıldı 🎉 +${yazilan} puan${yazilan < bonus ? " (haftalık davet tavanına kırpıldı)" : ""}`
-              : `${member.name} davetinle katıldı 🎉 Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
+          body: `${member.name} davetinle katıldı 🎉 +${bonus} puan hesabı 24 saatlik olunca kesinleşir.`,
           href: `/u/${member.handle}`,
         });
       }
