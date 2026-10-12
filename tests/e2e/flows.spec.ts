@@ -64,8 +64,8 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
   });
 
   test("üyeler: listedeki puan üyenin profilindeki kazanılan puanla aynı (ilişkili alt sorgu doğru üyeyi toplar)", async ({ page }) => {
-    await page.goto("/u/elif-celik", { waitUntil: "domcontentloaded" });
-    const puan = Number((await page.locator("[data-ticker]").first().textContent())?.trim()); // seed: 460
+    // Sunucu HTML'inden okunur: [data-ticker] tarayıcıda 0→N sayar, animasyon ortasında okunan değer eksik çıkar
+    const puan = Number((await (await page.request.get("/u/elif-celik")).text()).match(/data-ticker[^>]*>(\d+)</)?.[1]); // seed: 460
     expect(puan).toBeGreaterThan(100);
     await page.goto("/uyeler?q=Elif", { waitUntil: "domcontentloaded" });
     await expect(page.locator('a[href="/u/elif-celik"]')).toContainText(`${puan}p`);
