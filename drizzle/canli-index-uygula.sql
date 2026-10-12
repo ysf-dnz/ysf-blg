@@ -181,7 +181,8 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "flagged_at" timestamp;
 
 
 -- ---------------------------------------------------------------------------
--- ADIM 10 — Faz 5 hesap imzası (dal `faz5-hesap-imzasi`; tarih: push günü). HENÜZ UYGULANMADI.
+-- ADIM 10 — Faz 5 hesap imzası (dal `faz5-hesap-imzasi`). UYGULANDI 2026-10-12 (Yusuf "push et"; psql ile tek ifade;
+-- 16 üye NULL; sonrasında `drizzle-kit push --strict < /dev/null` → "No changes detected").
 -- Yalnız ADDITIVE; `drizzle-kit push --strict < /dev/null` önizlemesi TEK ifade göstermeli (index yok).
 -- Yeni kolon: users(signup_ip_hash text NULL) — mevcut satırlar NULL (tarama 48 saatlik hesaplara bakar,
 -- eski hesap etkilenmez). Dal merge'inden ÖNCE uygulanmalı: yeni kod users'ı seçerken kolonu ister.

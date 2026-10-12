@@ -3,7 +3,7 @@
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
 > Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
 
-## 🔐 HESAP İMZASI — taramanın kök çözümü (2026-10-12, dal `faz5-hesap-imzasi`, `faz5-ekonomi` üstüne; ŞEMA push'u YUSUF'UN)
+## 🔐 HESAP İMZASI — taramanın kök çözümü (2026-10-12, dal `faz5-hesap-imzasi`, `faz5-ekonomi` üstüne; ŞEMA kolonu canlıya UYGULANDI — Yusuf "push et")
 Ultracode tasarım paneli (3 bağımsız tasarım: suistimal / gizlilik / büyüme öncelikli + sentezci yargıç) küme kuralını seçti (23/25).
 - **Şema**: `users.signup_ip_hash text` nullable, index yok. Önizleme (`drizzle-kit push --strict < /dev/null`): `ALTER TABLE "users" ADD COLUMN "signup_ip_hash" text;` — **uygulanmadı** (`canli-index-uygula.sql` ADIM 10). Dev = canlı: bu dalda users SELECT'i kolonu bulamaz → **"push et" demeden entegrasyon / dev sunucusu koşmaz**; birim 471 + `astro check` 0 ile hazır. Sıra: push → entegrasyon + e2e bu dalda → `faz5-ekonomi`'ye al → main.
 - **Yazım**: `getOrCreateMember` `ctx.clientAddress` → `kisaHash` (ham IP yok; Vercel XFF gerçek istemci IP'si: canlıda son 30 günde 94 ziyarette 7 farklı imza — salt SELECT); yerel/özel ağ ya da adres yok → NULL. 7 gün sonra cron `imza-temizlik` NULL'lar.
