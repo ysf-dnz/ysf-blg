@@ -27,7 +27,7 @@ export const POST: APIRoute = async (context) => {
     const place = String(form.get("place") ?? "").trim().slice(0, 80);
     // İl 81 il listesinden: harita pini ve il filtresi serbest metinle eşleşmiyordu
     const il = ilBul(String(form.get("il") ?? ""));
-    if (!place || !il) return new Response("Eksik ya da geçersiz alan", { status: 400 });
+    if (!place || !il) return context.redirect("/kulup-kur?hata=alan");
 
     const slug = `${slugifyTitle(name)}-${Date.now().toString(36).slice(-3)}`;
     const [club] = await db

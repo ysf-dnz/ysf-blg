@@ -49,7 +49,7 @@ const KAPANIS: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
 function sonuKirp(ham: string): string {
   let adres = ham;
   for (;;) {
-    const son = adres.at(-1) ?? "";
+    const son = adres[adres.length - 1] ?? ""; // .at() eski Safari'de yok (modül istemcide de koşar)
     const acilis = KAPANIS[son];
     if (acilis ? adres.split(son).length > adres.split(acilis).length : /[.,;:!?'"»]/.test(son)) adres = adres.slice(0, -1);
     else return adres;
@@ -62,7 +62,7 @@ export function metniParcala(govde: string): MesajParcasi[] {
   let son = 0;
   const metinEkle = (s: string) => {
     if (!s) return;
-    const onceki = parcalar.at(-1);
+    const onceki = parcalar[parcalar.length - 1];
     if (onceki?.tur === "metin") onceki.deger += s;
     else parcalar.push({ tur: "metin", deger: s });
   };

@@ -79,7 +79,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
       {dahaEski && (
         <li class="text-center text-xs"><a href={`${sayfa}?once=${dahaEski}`} class="text-accent hover:underline" data-daha-eski>↑ Daha eski mesajlar</a></li>
       )}
-      {mesajlar.length === 0 && <li class="m-auto text-sm text-ink-muted" data-bos>Henüz mesaj yok.{yazabilir && " İlk mesajı sen yaz."}</li>}
+      {mesajlar.length === 0 && <li class="m-auto text-sm text-ink-muted" data-bos>{once ? "Daha eski mesaj yok." : "Henüz mesaj yok."}{yazabilir && " İlk mesajı sen yaz."}</li>}
       {
         mesajlar.map((m) => {
           const benden = m.senderId === member.id;
@@ -229,7 +229,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
     );
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) return clearTimeout(zamanlayici);
-    void yokla?.().then(planla);
+    void yokla?.().finally(planla);
   });
   document.addEventListener("astro:before-swap", () => {
     clearTimeout(zamanlayici);
@@ -238,9 +238,15 @@ const sayfa = R.uye.mesaj(kisi.handle);
 
   document.addEventListener("astro:page-load", () => {
     const liste = document.querySelector<HTMLElement>("#mesajlar");
-    // Geçmiş sayfası (?once=): yoklama ve okundu yok
-    if (!liste || liste.dataset.init || liste.dataset.gecmis) return;
+    if (!liste || liste.dataset.init) return;
     liste.dataset.init = "1";
+    // Şikâyet tek dokunuşla ve geri alınamaz: yanlış dokunuşa karşı onay (geçmiş sayfasında da)
+    liste.addEventListener("submit", (olay) => {
+      if ((olay.target as HTMLElement).querySelector("[data-mesaj-sikayet]") && !confirm("Bu mesajı şikâyet etmek istiyor musun? İnceleme kuyruğuna düşer."))
+        olay.preventDefault();
+    });
+    // Geçmiş sayfası (?once=): yoklama ve okundu yok
+    if (liste.dataset.gecmis) return;
     const kisi = liste.dataset.kisi ?? "";
     const hataKutusu = document.querySelector<HTMLElement>("[data-mesaj-hata]");
     const asagi = () => (liste.scrollTop = liste.scrollHeight);
@@ -289,12 +295,6 @@ const sayfa = R.uye.mesaj(kisi.handle);
     if (liste.querySelector('[data-benden="0"]')) void okundu();
     planla();
 
-    // Şikâyet tek dokunuşla ve geri alınamaz: yanlış dokunuşa karşı onay
-    liste.addEventListener("submit", (olay) => {
-      if ((olay.target as HTMLElement).querySelector("[data-mesaj-sikayet]") && !confirm("Bu mesajı şikâyet etmek istiyor musun? İnceleme kuyruğuna düşer."))
-        olay.preventDefault();
-    });
-
     // Sayfa yenilenmeden gönderim; betik yoksa form düz POST + yönlendirme ile çalışır
     const form = document.querySelector<HTMLFormElement>("[data-mesaj-formu]");
     form?.addEventListener("submit", async (olay) => {
@@ -321,8 +321,11 @@ const sayfa = R.uye.mesaj(kisi.handle);
         if (!alan.value) alan.value = gonderilen;
         return;
       }
-      await yokla?.();
-      planla();
+      try {
+        await yokla?.();
+      } finally {
+        planla();
+      }
     });
     // Enter gönderir, Shift+Enter satır atlar — yalnız fare/klavye cihazında: dokunmatik klavyede
     // Shift+Enter yok, Enter satır atlamalı (gönderim düğmeyle)

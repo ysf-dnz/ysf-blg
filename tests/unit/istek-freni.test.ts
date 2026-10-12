@@ -33,7 +33,9 @@ describe("dönen QR formu yalnız kullanıcının başlattığı gezintide kendi
 
 describe("GET durum değiştirmez — bekçi (her koşumda; e2e kanıtı yalnız seed sonrası ilk koşumda anlamlı)", () => {
   // Bu sayfalar yazan fonksiyonu İÇE AKTARMAMALI (yazım yalnız POST uçlarında); pano bildirimleri güncellememeli
-  const iceAktarimlar = (dosya: string) => (readFileSync(dosya, "utf8").match(/^import .*$/gm) ?? []).join("\n");
+  // Frontmatter'ın kod kısmı (yorumlar atılır): çok satırlı import ve doğrudan çağrı da yakalanır
+  const iceAktarimlar = (dosya: string) =>
+    (readFileSync(dosya, "utf8").split(/^---$/m)[1] ?? "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
   it.each([
     ["src/pages/c/q/[etkinlik]/[token].astro", /\b(donenGiris|kayitOl|girisYap|biletGiris)\b/],
     ["src/pages/uye/mesajlar/[kisi].astro", /\b(okunduYaz|mesajGonder|engelle|engelKaldir)\b/],
