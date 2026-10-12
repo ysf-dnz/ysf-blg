@@ -1020,9 +1020,9 @@
     "semantic_hash": "82ef9a40f33fbff923ea09cce74a8d6e"
   },
   "tests/e2e/flows.spec.ts": {
-    "mtime": 1791829158.2491105,
-    "seen": 1791829706.7497191,
-    "ast_hash": "0fd30b37a55b0e137b0a9d4a4dcc0299",
+    "mtime": 1791830265.8488142,
+    "seen": 1791834349.2683918,
+    "ast_hash": "a80ce59063e7fcda1345fc4d229343ef",
     "semantic_hash": ""
   },
   "tests/e2e/gate.spec.ts": {
@@ -1164,15 +1164,15 @@
     "semantic_hash": "727b32fab0c9a11b1e8741e19adba474"
   },
   "CLAUDE.md": {
-    "mtime": 1791829689.9174519,
-    "seen": 1791829706.759181,
-    "ast_hash": "1e3529898f3c04d738a6b497badfc0ca",
+    "mtime": 1791834313.5115032,
+    "seen": 1791834349.271817,
+    "ast_hash": "87288bc68fc6b6b5831681d70c66d4fe",
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1791829689.9160392,
-    "seen": 1791829706.7592409,
-    "ast_hash": "0f6abc90ae1fa62376166020b8376825",
+    "mtime": 1791834313.5130262,
+    "seen": 1791834349.2718499,
+    "ast_hash": "9d9b63798a2c3b2eee0a904ad86e5c83",
     "semantic_hash": ""
   },
   "README.md": {
@@ -6666,15 +6666,15 @@
     "semantic_hash": ""
   },
   "docs/assumptions.md": {
-    "mtime": 1791829689.9273472,
-    "seen": 1791829706.759557,
-    "ast_hash": "4f8579b336dc1a2f3e3d685566137c4a",
+    "mtime": 1791834313.5141966,
+    "seen": 1791834349.2720718,
+    "ast_hash": "b8175f591a9428b22bed7a794a7195ed",
     "semantic_hash": ""
   },
   "docs/ideas.md": {
-    "mtime": 1791794829.6409817,
-    "seen": 1791798354.4382389,
-    "ast_hash": "a88dafbaff507bd805168a2cb0ffd570",
+    "mtime": 1791834313.5169213,
+    "seen": 1791834349.272114,
+    "ast_hash": "e0527fa87847af2f8866f96cbc39c041",
     "semantic_hash": ""
   },
   "docs/prd/kurs-topluluk-ekosistemi-issue-plani.md": {
@@ -7050,9 +7050,9 @@
     "semantic_hash": ""
   },
   "docs/devir/faz5-fable-devir.md": {
-    "mtime": 1791829689.9256418,
-    "seen": 1791829706.759561,
-    "ast_hash": "0942905434917648b77bbd4e97dc4fb6",
+    "mtime": 1791834313.520229,
+    "seen": 1791834349.272073,
+    "ast_hash": "ce90615f1722aa8e1f49ad69efcbceb1",
     "semantic_hash": ""
   },
   "docs/devir/faz5-fable-prompt.md": {
@@ -7062,9 +7062,9 @@
     "semantic_hash": ""
   },
   "src/pages/gizlilik.astro": {
-    "mtime": 1791829044.1942115,
-    "seen": 1791829706.74282,
-    "ast_hash": "58ad006fa4a0dee62bf53d0013e8bd1e",
+    "mtime": 1791834205.3114085,
+    "seen": 1791834349.2662048,
+    "ast_hash": "9bfc7604ad1209e8e691108c3f3485eb",
     "semantic_hash": ""
   },
   "tests/unit/member.test.ts": {
