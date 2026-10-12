@@ -139,6 +139,7 @@ const pendingApps = await db.query.applications.findMany({
     <p class="mt-1 text-sm text-ink-muted">
       İşaretli hesap lider ve lig tablolarında görünmez; ona ya da ondan doğan bekleyen puan olgunlaşmaz.
       İşaret: davet çiftliği taraması (günlük) ya da "Haklı" bulunan üye / mesaj şikâyeti.
+      "Temiz" tutulan puanı serbest bırakır; "Suistimal" işareti korur ve tutulan puanı düşürür.
     </p>
     {isaretliler.length === 0 && <p class="mt-2 text-ink-muted">İşaretli hesap yok.</p>}
     <ul class="mt-4 space-y-3">
@@ -153,8 +154,11 @@ const pendingApps = await db.query.applications.findMany({
                 {u.tutulan > 0 && <> · tutulan bekleyen <strong class="text-ink">+{u.tutulan}</strong></>}
               </span>
             </span>
-            <form method="post" action="/api/uye/admin">
+            <form method="post" action="/api/uye/admin" class="flex gap-2">
               <input type="hidden" name="userId" value={u.id} />
+              {u.tutulan > 0 && (
+                <button name="action" value="flag_confirm" class="cursor-pointer rounded-full border border-red-400 px-4 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">Suistimal (bekleyeni düşür)</button>
+              )}
               <button name="action" value="flag_clear" class="cursor-pointer rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent hover:text-accent">Temiz (işareti kaldır)</button>
             </form>
           </li>

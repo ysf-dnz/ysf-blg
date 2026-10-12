@@ -25,7 +25,7 @@ export const prerender = false;
 /** Yayın için en az geçerli öğe (PRD §4.1) */
 export const KURS_ASGARI_OGE = 3;
 /** Bu kadar farklı katılımcı aktive olunca üretici "kurs açıldı" puanı alır */
-export const KURS_ACILIS_ESIGI = 3;
+export const KURS_ACILIS_ESIGI = PUAN.courseLaunchThreshold;
 const SEVIYELER = ["baslangic", "orta", "ileri"] as const;
 
 type Kurs = typeof schema.courses.$inferSelect;
@@ -42,6 +42,12 @@ function parseYoutubeId(input: string): string | null {
 
 async function bildir(userId: number, body: string, href: string) {
   await db.insert(schema.notifications).values({ userId, kind: "course", body, href });
+}
+
+async function onayliKulupMu(clubId: number | null): Promise<boolean> {
+  if (!clubId) return false;
+  const kulup = await db.query.clubs.findFirst({ where: eq(schema.clubs.id, clubId), columns: { status: true } });
+  return kulup?.status === "approved";
 }
 
 async function kursBul(id: number): Promise<Kurs | undefined> {
@@ -429,9 +435,10 @@ export const POST: APIRoute = async (context) => {
           : null,
       level: (SEVIYELER as readonly string[]).includes(levelRaw) ? (levelRaw as Kurs["level"]) : null,
       estMinutes: Math.min(Math.max(Math.round(Number(form.get("estMinutes") ?? 0)) || 0, 0), 6000) || null,
-      // Kulüp kursu / admin / Sv7 güvenilir üretici: onaysız yayın; diğerleri admin onayı
+      // ONAYLI topluluğun kursu / admin / Sv7 güvenilir üretici: onaysız yayın; diğerleri admin onayı.
+      // Onay bekleyen topluluk sayılmaz: her üye başvurup anında başkan olur (etkinlikteki kuralın eşi).
       status:
-        clubId || member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
+        (await onayliKulupMu(clubId)) || member.role === "admin" || levelFor(await earnedPoints(member.id)) >= 7
           ? "published"
           : "pending",
       createdBy: member.id,

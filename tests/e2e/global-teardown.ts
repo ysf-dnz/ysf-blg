@@ -6,8 +6,12 @@ export default async function globalTeardown() {
   try {
     process.loadEnvFile(".env.local");
   } catch {}
-  if (!process.env.POSTGRES_URL || !process.env.E2E_CLERK_ID) return;
+  if (!process.env.POSTGRES_URL) return;
   const sql = neon(process.env.POSTGRES_URL);
+  // ekonomi.spec demo üyeyi (Elif) kısa süre işaretler; test yarıda kalırsa işaret canlıda kalmasın.
+  // Demo üyeler (clerk_id demo_*) gerçek hesap değildir: taramanın da şikâyetin de konusu olmazlar.
+  await sql`update users set flagged_at = null where handle = 'elif-celik' and clerk_id like 'demo%'`;
+  if (!process.env.E2E_CLERK_ID) return;
   await sql`
     delete from reports r using users u
     where u.id = r.reporter_id and u.clerk_id = ${process.env.E2E_CLERK_ID}

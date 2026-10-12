@@ -10,10 +10,15 @@ test("işaretli üye liderlik tablolarında görünmez; işaret kalkınca geri g
   test.skip(!process.env.POSTGRES_URL, "POSTGRES_URL yok");
   const sql = neon(process.env.POSTGRES_URL!);
   const tablo = async (t: string) => (await request.get(`/lider?t=${t}`)).text();
-  expect(await tablo("all"), "demo veri eskimiş olabilir: npm run seed:demo").toContain("/u/elif-celik");
+  // Yarıda kalmış bir koşumdan işaret kalmışsa önce temizle (global-teardown da temizler)
+  await sql`update users set flagged_at = null where handle = 'elif-celik'`;
+  // Yalnız işaretlemeden ÖNCE göründüğü sekmeler sınanır (görünmediği sekmede beklenti hep geçerdi)
+  const sekmeler: string[] = [];
+  for (const t of ["7", "30", "all"]) if ((await tablo(t)).includes("/u/elif-celik")) sekmeler.push(t);
+  expect(sekmeler, "demo veri eskimiş olabilir: npm run seed:demo").toContain("all");
   try {
     await sql`update users set flagged_at = now() where handle = 'elif-celik'`;
-    for (const t of ["7", "30", "all"]) expect(await tablo(t), `?t=${t}`).not.toContain("/u/elif-celik");
+    for (const t of sekmeler) expect(await tablo(t), `?t=${t}`).not.toContain("/u/elif-celik");
   } finally {
     await sql`update users set flagged_at = null where handle = 'elif-celik'`;
   }

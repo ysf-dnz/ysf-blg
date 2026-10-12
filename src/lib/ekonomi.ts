@@ -13,7 +13,7 @@ import {
   sonTamamlananHafta,
   type EkonomiHam,
 } from "./economy.ts";
-import { DAVET_KAYNAKLI, awardPoints, satirlar } from "./rewards.ts";
+import { DAVET_KAYNAKLI, puanOlayi, satirlar } from "./rewards.ts";
 import { R } from "./routes.ts";
 
 /* ---------------- Canlılık havuzu (F5-02) ---------------- */
@@ -23,8 +23,10 @@ type Hafta = ReturnType<typeof sonTamamlananHafta>;
 /**
  * Haftanın canlılık havuzunu dağıt (PRD §4.2): yayındaki her kurs için V → havuz → 50/30/20.
  * Pay kişi başına TEK `vitality_pool` satırı (refId `course:{id}:{hafta}`): awardPoints idempotent,
- * cron yeniden koşarsa çift ödeme olmaz. Davet tavanına girmez.
- * İşaretli hesabın ilerlemesi ve asgari süreden (öğe × 60 sn) kısa tamamlama V'ye sayılmaz.
+ * cron yeniden koşarsa çift ödeme olmaz. Davet tavanına girmez; kişi başı haftalık tavanı var (tavanIcin).
+ * V'ye ve pay ağırlıklarına SAYILMAYANLAR: üreticinin kendi eklediği kaynak (otomatik kabul edilir) ve
+ * kendi yorumu, işaretli hesabın ilerlemesi / beğenisi / davetliliği, asgari süreden (öğe × 60 sn) kısa
+ * tamamlama. İşaretli alıcının payı bekleyene yazılır (puanOlayi).
  * @param kursIdleri yalnız bu kurslar (entegrasyon testi canlı kursları ödemesin)
  */
 export async function canlilikHavuzuDagit(
@@ -59,10 +61,12 @@ export async function canlilikHavuzuDagit(
         (select count(distinct y.id) from comments y
           join course_items i on i.id = y.course_item_id
           join likes l on l.comment_id = y.id
-          where i.course_id = c.id and y.hidden_at is null and l.user_id <> y.user_id
+          join users lu on lu.id = l.user_id
+          where i.course_id = c.id and y.hidden_at is null and y.user_id <> c.created_by
+            and l.user_id <> y.user_id and lu.flagged_at is null
             and l.created_at >= ${b} and l.created_at < ${e})::int as begenili,
         (select count(*) from course_resources r
-          where r.course_id = c.id and r.status = 'accepted'
+          where r.course_id = c.id and r.status = 'accepted' and r.user_id <> c.created_by
             and r.accepted_at >= ${b} and r.accepted_at < ${e})::int as kaynak
       from courses c
       where c.status = 'published' ${yalniz}
@@ -80,18 +84,22 @@ export async function canlilikHavuzuDagit(
 
   const idler = sql.join(canli.map((k) => sql`${k.id}`), sql`, `);
   const [katki, davet] = await Promise.all([
-    // Katkıcılar: o hafta yorumuna beğeni alanlar (kendi beğenisi hariç); ağırlık = beğeni sayısı
+    // Katkıcılar: o hafta yorumuna beğeni alanlar (kendi ve işaretli hesabın beğenisi hariç);
+    // ağırlık = beğeni sayısı. Üretici havuzDagit'te bu dilimden çıkarılır.
     db.execute(sql`
       select i.course_id, y.user_id, count(*)::int as n
       from likes l join comments y on y.id = l.comment_id join course_items i on i.id = y.course_item_id
+        join users lu on lu.id = l.user_id
       where i.course_id in (${idler}) and y.hidden_at is null and l.user_id <> y.user_id
+        and lu.flagged_at is null
         and l.created_at >= ${b} and l.created_at < ${e}
       group by i.course_id, y.user_id`),
-    // Davet edenler: o hafta ilerleme kaydeden davetlileri; ağırlık = aktif davetli sayısı
+    // Davet edenler: o hafta ilerleme kaydeden İŞARETSİZ davetlileri; ağırlık = aktif davetli sayısı
     db.execute(sql`
       select k.course_id, d.inviter_id as user_id, count(*)::int as n
       from course_enrollments k join invite_codes d on d.id = k.invite_code_id
-      where k.course_id in (${idler}) and d.inviter_id <> k.user_id
+        join users ku on ku.id = k.user_id
+      where k.course_id in (${idler}) and d.inviter_id <> k.user_id and ku.flagged_at is null
         and exists (select 1 from course_progress p
                     where p.course_id = k.course_id and p.user_id = k.user_id
                       and p.completed_at >= ${b} and p.completed_at < ${e})
@@ -108,11 +116,14 @@ export async function canlilikHavuzuDagit(
   for (const k of canli) {
     const paylar = havuzDagit(k.toplam, k.created_by, agirliklar(katki, k.id), agirliklar(davet, k.id));
     for (const [userId, pay] of paylar) {
-      const n = await awardPoints({
+      // puanOlayi: alıcı işaretliyse pay bekleyene gider. Kaynak tek bir hesap değil → yaş freni yok.
+      const n = await puanOlayi({
         userId,
         delta: pay,
         reason: "vitality_pool",
         refId: `course:${k.id}:${hafta.etiket}`,
+        kaynakOlusturulma: new Date(0),
+        note: `"${k.title}" canlılık havuzu (${hafta.etiket})`,
       });
       if (n <= 0) continue;
       puan += n;
@@ -182,12 +193,18 @@ export async function ekonomiKarti(): Promise<EkonomiKarti> {
 export const SUISTIMAL_TEMIZ = "suistimal-temiz";
 
 /**
- * Davet çiftliği taraması — TEK SQL (saf eşleniği economy.ts suistimalMi): aynı davetçiye 24 saatte
- * ≥ SUISTIMAL_ESIK yeni hesap bağlandıysa (platform, kurs ya da etkinlik daveti) VE o davetçinin
- * kodlarına aynı imzadan (ip + ua) ≥ SUISTIMAL_ESIK ziyaret geldiyse, o hesaplar işaretlenir.
- * Yalnız `member` rolü; adminin temizlediği hesap yeniden işaretlenmez. Cron'da bekleyenlerden ÖNCE koşar.
+ * Davet çiftliği taraması — TEK SQL (saf eşleniği economy.ts suistimalMi; ikisi birlikte değişir).
+ * Bir davetçinin KODUYLA (kurs ya da etkinlik daveti) 24 saatlik bir pencerede ≥ SUISTIMAL_ESIK yeni
+ * hesap katıldıysa, o davetçinin kodlarına tek IP'den ≥ SUISTIMAL_ESIK ziyaret geldiyse ve ziyaret eden
+ * FARKLI IP sayısı bu hesap sayısının yarısını geçmiyorsa ("az ağ, çok hesap"), o hesaplar işaretlenir.
+ * Üçüncü kişinin (ya da davet edenin kendi) tıklamaları yalnız IP ekler: `/d/` bağlantısından gelen
+ * gerçek davetlileri işaretletemez.
+ * Yalnız `member` rolü; adminin temizlediği hesap yeniden işaretlenmez. Cron'da en başta koşar.
+ * shortcut: imza hesabın değil ZİYARETİN — kodsuz platform daveti (`/?ref=`) ve IP dağıtan çiftlik
+ * görünmez; ziyaret satırı bırakmadan (`?d=KOD` yedeği) bağlanan gerçek davetliler farklı IP saymaz.
+ * Kök çözüm kayıt anında hesap imzası (şema + üye oluşturma yolu) — Yusuf'un kararına bırakıldı.
  * shortcut: günlük tarama — küme iki cron arasında tamamlanırsa ilk hesapların bekleyeni panodan
- * kesinleşebilir; ölçülürse tarama katılım anına taşınır.
+ * kesinleşebilir.
  * @param davetciId yalnız bu davetçi (entegrasyon testi)
  */
 export async function suistimalTara(davetciId?: number): Promise<{ id: number; inviter_id: number }[]> {
@@ -195,8 +212,6 @@ export async function suistimalTara(davetciId?: number): Promise<{ id: number; i
   return satirlar(
     await db.execute(sql`
       with bag as (
-        select invited_id as user_id, inviter_id from referrals
-        union
         select k.user_id, d.inviter_id from course_enrollments k join invite_codes d on d.id = k.invite_code_id
         union
         select r.user_id, d.inviter_id from event_rsvps r join invite_codes d on d.id = r.invite_code_id
@@ -207,15 +222,17 @@ export async function suistimalTara(davetciId?: number): Promise<{ id: number; i
         from users u join bag b on b.user_id = u.id
         where u.created_at > now() - interval '48 hours' and b.inviter_id <> u.id ${yalniz}
       ), yogun as (
-        select inviter_id from yeni group by inviter_id having max(pencere) >= ${SUISTIMAL_ESIK}
-      ), imza as (
-        select d.inviter_id, count(*) as n, sum(count(*)) over (partition by d.inviter_id) as toplam
+        select inviter_id, max(pencere) as hesap from yeni group by inviter_id
+        having max(pencere) >= ${SUISTIMAL_ESIK}
+      ), ip as (
+        select d.inviter_id, count(*) as n
         from invite_visits v join invite_codes d on d.id = v.invite_code_id
         where v.created_at > now() - interval '48 hours'
-        group by d.inviter_id, v.ip_hash, coalesce(v.ua_hash, '')
+        group by d.inviter_id, v.ip_hash
       ), supheli as (
-        select distinct y.inviter_id from yogun y join imza i on i.inviter_id = y.inviter_id
-        where i.n >= ${SUISTIMAL_ESIK} and i.n * 2 >= i.toplam
+        select y.inviter_id from yogun y join ip i on i.inviter_id = y.inviter_id
+        group by y.inviter_id, y.hesap
+        having max(i.n) >= ${SUISTIMAL_ESIK} and count(*) * 2 <= y.hesap
       )
       update users u set flagged_at = now()
       from yeni y join supheli s on s.inviter_id = y.inviter_id
@@ -224,6 +241,18 @@ export async function suistimalTara(davetciId?: number): Promise<{ id: number; i
       returning u.id, y.inviter_id
     `),
   );
+}
+
+/** Bir hesaba ait ve ondan doğan (refId sonu `u:{id}`) bekleyen puanları düşür — admin "suistimal" kararı */
+export async function bekleyenleriDusur(userId: number): Promise<number> {
+  return satirlar(
+    await db.execute(sql`
+      update pending_points set status = 'expired', resolved_at = now()
+      where status = 'pending'
+        and (user_id = ${userId} or substring(ref_id from '(?:^|:)u:([0-9]{1,9})$')::int = ${userId})
+      returning id
+    `),
+  ).length;
 }
 
 /** /uye/admin suistimal kuyruğu: işaretli hesaplar, onları getiren ve tutulan bekleyen puan */

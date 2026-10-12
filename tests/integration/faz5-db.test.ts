@@ -5,7 +5,7 @@
  * Havuz ve tarama yalnız test verisine daraltılır (kursIdleri / davetciId): canlı kurslar ödenmez.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import type { AstroCookies } from "astro";
 
 const URL = process.env.POSTGRES_URL_TEST;
@@ -207,6 +207,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
       { userId: u[2]!.id, commentId: yorum!.id, createdAt: an(2) }, // kendi beğenisi sayılmaz
     ]);
     await db.insert(schema.courseResources).values({ courseId: k.id, userId: u[5]!.id, url: "https://example.com/itest", status: "accepted", acceptedAt: an(3) });
+    // SAYILMAYANLAR (inceleme): üreticinin kendi kaynağı (otomatik kabul) ve kendi yorumu; işaretli hesabın
+    // ilerlemesi, beğenisi ve davetliliği. Hiçbiri V'yi (11,5) ve payları değiştirmemeli.
+    const isaretli = await uye("vf");
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, isaretli.id));
+    await db.insert(schema.courseResources).values(
+      [1, 2, 3, 4, 5].map((i) => ({ courseId: k.id, userId: p!.id, url: `https://example.com/uretici-${i}`, status: "accepted" as const, acceptedAt: an(3) })),
+    );
+    const [ureticiYorumu] = await db.insert(schema.comments).values({ userId: p!.id, courseItemId: ogeler[0]!, body: "itest üretici", createdAt: an(1) }).returning();
+    await db.insert(schema.likes).values([
+      { userId: u[3]!.id, commentId: ureticiYorumu!.id, createdAt: an(2) },
+      { userId: isaretli.id, commentId: yorum!.id, createdAt: an(2) },
+    ]);
+    await db.insert(schema.courseEnrollments).values({ userId: isaretli.id, courseId: k.id, joinedAt: an(-1), activatedAt: an(1), inviteCodeId: kodD.id });
+    await db.insert(schema.courseProgress).values({ userId: isaretli.id, courseId: k.id, itemId: ogeler[0]!, completedAt: an(1, 30) });
 
     expect(ec.havuz(ec.canlilikV({ ilerleyen: 6, tamamlama: 1, begeniliYorum: 1, kaynak: 1 }))).toBe(38);
     expect(await ek.canlilikHavuzuDagit(hafta, [k.id])).toEqual({ kurs: 1, puan: 38 });
@@ -218,25 +232,33 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     // Cron yeniden koşarsa (kilit geri verildi) çift ödeme yok
     expect(await ek.canlilikHavuzuDagit(hafta, [k.id])).toEqual({ kurs: 1, puan: 0 });
     expect((await ledger(p!.id, "vitality_pool")).length).toBe(1);
+    // Kişi başı haftalık tavan (kurs sayısıyla çarpılmasın): 200 − bu haftaki 3
+    expect(await rw.awardPoints({ userId: vd!.id, delta: 500, reason: "vitality_pool", refId: `itest-tavan-${t}` })).toBe(197);
     // Hareketsiz hafta: V < 10 → havuz yok
     expect(await ek.canlilikHavuzuDagit(ec.isoHafta(new Date(Date.now() - 70 * 864e5)), [k.id])).toEqual({ kurs: 0, puan: 0 });
   });
 
   /* ---------------- F5-04: suistimal işareti ---------------- */
 
-  it("tarama: eşik altı işaretlemez; aynı davetçiye 24 saatte 5 yeni hesap + aynı imzadan 5 ziyaret → işaret", async () => {
+  it("tarama: eşik altı ve dağınık IP işaretlemez; kodla 24 saatte 5 yeni hesap + tek IP'den 5 ziyaret → işaret", async () => {
     davetci = await uye("sx", 30);
     const kod = await dv.davetKoduUret(davetci.id, ana.id);
-    const ziyaret = () => db.insert(schema.inviteVisits).values({ inviteCodeId: kod.id, ipHash: `itest-ip-${t}`, uaHash: "itest-ua", kanal: "link" });
+    const ziyaret = (ip: string) => db.insert(schema.inviteVisits).values({ inviteCodeId: kod.id, ipHash: `itest-${ip}-${t}`, uaHash: "itest-ua", kanal: "link" });
     const kukla = async (i: number) => {
       const k = await uye(`sk${i}`, 0);
       await db.insert(schema.referrals).values({ inviterId: davetci.id, invitedId: k.id });
-      await ziyaret();
+      await db.insert(schema.courseEnrollments).values({ userId: k.id, courseId: ana.id, inviteCodeId: kod.id });
+      await ziyaret("kukla");
       return k;
     };
     for (const i of [1, 2, 3, 4]) kuklalar.push(await kukla(i));
     expect(await ek.suistimalTara(davetci.id)).toEqual([]);
     kuklalar.push(await kukla(5));
+    // Başka IP'lerden gelen ziyaret (gerçek davetliler, davet edenin kendi tıklaması ya da üçüncü kişinin
+    // curl döngüsü) yalnız IP EKLER: 5 hesap, 3 farklı IP (yarıyı geçer) → işaret yok
+    for (const ip of ["a", "b"]) for (let i = 0; i < 6; i++) await ziyaret(ip);
+    expect(await ek.suistimalTara(davetci.id)).toEqual([]);
+    await db.delete(schema.inviteVisits).where(and(eq(schema.inviteVisits.inviteCodeId, kod.id), ne(schema.inviteVisits.ipHash, `itest-kukla-${t}`)));
     const isaretlenen = await ek.suistimalTara(davetci.id);
     expect(isaretlenen.map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort());
     expect(isaretlenen.every((r) => r.inviter_id === davetci.id)).toBe(true);
@@ -257,12 +279,17 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(
       await rw.puanOlayi({ userId: davetci.id, delta: 5, reason: "course_learner_activated", refId: `course:${kursId}:u:${k2!.id}`, kaynakOlusturulma: new Date(Date.now() - 30 * 864e5), kaynakIsaretli: true }),
     ).toBe(0);
+    // ALICI işaretliyse olay, kaynak temiz ve yaşlı olsa da bekleyene gider (yaptırım kaynağın yaşına bağlı değil)
+    expect(
+      await rw.puanOlayi({ userId: k2!.id, delta: 7, reason: "answer_accepted", refId: `yorum:itest-${t}`, kaynakOlusturulma: new Date(Date.now() - 30 * 864e5) }),
+    ).toBe(0);
+    expect((await ledger(k2!.id, "answer_accepted")).length).toBe(0);
     expect(await rw.bekleyenleriIsle(new Date(), davetci.id)).toMatchObject({ kesinlesen: 0 });
     expect(await rw.bekleyenleriIsle(new Date(), k2!.id)).toMatchObject({ kesinlesen: 0 });
     expect((await ledger(davetci.id, "course_invite_activated")).length).toBe(0);
 
     const kuyruk = await ek.isaretliHesaplar();
-    expect(kuyruk.find((r) => r.id === k2!.id)).toMatchObject({ davet_eden: davetci.handle, tutulan: 15 });
+    expect(kuyruk.find((r) => r.id === k2!.id)).toMatchObject({ davet_eden: davetci.handle, tutulan: 10 + 5 + 7 });
 
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, k1!.id));
     expect(await rw.bekleyenleriIsle(new Date(), davetci.id)).toMatchObject({ kesinlesen: 1 }); // k2 kaynaklı satır hâlâ bekler
@@ -298,6 +325,26 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect((await lg.kulupIciSiralama(kulupId, ...pencere)).map((r) => [r.userId, r.total])).toEqual([[temiz.id, 30]]);
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, isaretli!.id));
     expect((await lg.kulupIciSiralama(kulupId, ...pencere)).map((r) => r.userId)).toEqual([isaretli!.id, temiz.id]);
+  });
+
+  it("course_launched bekleyeni: işaretsiz aktif katılımcı eşiğin altındaysa bekler; admin 'suistimal' deyince düşer", async () => {
+    const [k1, , , k4, k5] = kuklalar; // k1 (yeniden), k4, k5 işaretli
+    const { kurs: kl } = await kurs("acilis", davetci.id);
+    await db.insert(schema.courseEnrollments).values([k1!, k4!, k5!].map((k) => ({ userId: k.id, courseId: kl.id, activatedAt: new Date() })));
+    const gecmis = new Date(Date.now() - 1000);
+    await rw.bekleyenYaz({ userId: davetci.id, delta: 50, reason: "course_launched", refId: `course:${kl.id}`, maturesAt: gecmis });
+    await rw.bekleyenleriIsle(new Date(), davetci.id);
+    expect((await ledger(davetci.id, "course_launched")).length).toBe(0); // üç aktif katılımcının üçü de işaretli
+    // Admin "Suistimal": k5'e ait ve ondan doğan bekleyenler düşer, işaret kalır
+    await rw.bekleyenYaz({ userId: davetci.id, delta: 15, reason: "course_invite_activated", refId: `course:${kl.id}:u:${k5!.id}`, maturesAt: gecmis });
+    await rw.bekleyenYaz({ userId: k5!.id, delta: 10, reason: "course_invite_welcome", refId: `course:${kl.id}`, maturesAt: gecmis });
+    expect(await ek.bekleyenleriDusur(k5!.id)).toBe(2);
+    expect((await db.query.users.findFirst({ where: eq(schema.users.id, k5!.id) }))!.flaggedAt).not.toBeNull();
+    // İşaretler kalkınca (admin "Temiz") açılış puanı kesinleşir; düşürülen davet puanı GERİ GELMEZ
+    await db.update(schema.users).set({ flaggedAt: null }).where(inArray(schema.users.id, [k1!.id, k4!.id, k5!.id]));
+    await rw.bekleyenleriIsle(new Date(), davetci.id);
+    expect((await ledger(davetci.id, "course_launched")).map((r) => r.delta)).toEqual([50]);
+    expect((await ledger(davetci.id, "course_invite_activated", `course:${kl.id}:u:${k5!.id}`)).length).toBe(0);
   });
 
   /* ---------------- F5-03: ekonomi kartı ---------------- */

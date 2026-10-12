@@ -158,6 +158,12 @@ export const GET: APIRoute = async ({ request }) => {
   const bugun = gunKey(new Date());
   const rapor: Record<string, unknown> = {};
 
+  // 0) Suistimal taraması (F5-04) — HER ŞEYDEN ÖNCE: işaretlenen hesap aynı koşumdaki sezon / lig
+  // kapanış ödüllerine girmesin, bekleyeni olgunlaşmasın. Kilitsiz: UPDATE idempotent (yalnız
+  // flagged_at IS NULL satırları), her koşumda güvenle çalışır.
+  const isaretlenen = await suistimalTara();
+  if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
+
   // 1) Bayat görev süpürmesi (günlük)
   const bayat = await birKezCalistir("bayat-gorev", bugun, bayatGorevSupur);
   if (bayat !== undefined) rapor.bayatGorev = bayat;
@@ -184,11 +190,6 @@ export const GET: APIRoute = async ({ request }) => {
 
   // 4) Biten özel ligler
   await ozelLigleriKapat();
-
-  // 5a) Suistimal taraması (F5-04) — bekleyenlerden ÖNCE: işaretlenen hesabın bekleyeni olgunlaşmasın.
-  // Kilitsiz: UPDATE idempotent (yalnız flagged_at IS NULL satırları), her koşumda güvenle çalışır.
-  const isaretlenen = await suistimalTara();
-  if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
 
   // 5) Bekleyen puanlar: olgunlaşanlar kesinleşir, süresi dolanlar düşer (ADR 0001 K2)
   const bekleyen = await birKezCalistir("bekleyen", bugun, () => bekleyenleriIsle());

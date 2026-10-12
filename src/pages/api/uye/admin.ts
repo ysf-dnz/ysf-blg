@@ -8,7 +8,7 @@ import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
 import { sikayetTuruMu } from "@/lib/sikayet.ts";
 import { birKez } from "@/lib/cron.ts";
-import { SUISTIMAL_TEMIZ } from "@/lib/ekonomi.ts";
+import { SUISTIMAL_TEMIZ, bekleyenleriDusur } from "@/lib/ekonomi.ts";
 
 export const prerender = false;
 
@@ -199,6 +199,15 @@ export const POST: APIRoute = async (context) => {
   if (action === "flag_clear" && flagUserId) {
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, flagUserId));
     await birKez(SUISTIMAL_TEMIZ, String(flagUserId));
+  }
+  // Suistimal doğrulandı: işaret KALIR, hesaba ait ve ondan doğan tutulan bekleyenler düşer
+  // (yalnız işaretli hesapta — yanlış id ile temiz üyenin bekleyeni düşürülemesin)
+  if (action === "flag_confirm" && flagUserId) {
+    const hesap = await db.query.users.findFirst({
+      where: eq(schema.users.id, flagUserId),
+      columns: { flaggedAt: true },
+    });
+    if (hesap?.flaggedAt) await bekleyenleriDusur(flagUserId);
   }
 
   const quizId = Number(form.get("quizId") ?? 0);

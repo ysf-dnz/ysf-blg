@@ -24,10 +24,14 @@ describe("2. seviye davet (F5-01)", () => {
     expect(t?.limit).toBe(PUAN.inviteWeeklyCap);
     expect(t?.reasons).toEqual(DAVET_REASONLARI);
   });
-  it("canlılık havuzu tavana GİRMEZ", () => {
-    expect(tavanIcin("vitality_pool")).toBeUndefined();
+  it("canlılık havuzu DAVET tavanına girmez; kendi kişi başı haftalık tavanı var", () => {
     expect(DAVET_REASONLARI).not.toContain("vitality_pool");
     expect(DAVET_KAYNAKLI).not.toContain("vitality_pool");
+    const t = tavanIcin("vitality_pool");
+    expect(t?.reasons).toEqual(["vitality_pool"]);
+    expect(t?.limit).toBe(PUAN.vitalityWeeklyCap);
+    // Pencere içinde bulunulan TR haftası (dağıtım haftada bir, pazartesi yazılır)
+    expect(t?.since.getTime()).toBe(isoHafta(new Date()).baslangic.getTime());
   });
 });
 
@@ -160,14 +164,17 @@ describe("ekonomi kartı özeti (F5-03)", () => {
 
 describe("suistimal eşiği (F5-04) — tarama SQL'inin saf eşleniği", () => {
   it.each([
-    // yeni hesap (24 s), aynı imzadan ziyaret, davetçinin toplam ziyareti → şüpheli mi
-    [SUISTIMAL_ESIK, SUISTIMAL_ESIK, SUISTIMAL_ESIK, true],
-    [SUISTIMAL_ESIK - 1, 9, 9, false], // az hesap
-    [9, SUISTIMAL_ESIK - 1, 4, false], // imza kümesi yok
-    [9, 5, 11, false], // imza ziyaretlerin yarısından az: kalabalık gerçek davet
-    [9, 5, 10, true],
-    [300, 40, 300, false], // konferans: çok hesap, dağınık imza
-  ])("hesap %i, imza %i / %i → %s", (yeniHesap, imzaZiyaret, toplamZiyaret, beklenen) => {
-    expect(suistimalMi({ yeniHesap, imzaZiyaret, toplamZiyaret })).toBe(beklenen);
+    // kodla katılan yeni hesap (24 s), en çok ziyaret eden IP'nin ziyareti, farklı IP → şüpheli mi
+    [SUISTIMAL_ESIK, SUISTIMAL_ESIK, 1, true], // tek cihazdan 5 kukla
+    [SUISTIMAL_ESIK - 1, 9, 1, false], // az hesap
+    [9, SUISTIMAL_ESIK - 1, 3, false], // hiçbir IP yeterince tekrar etmemiş
+    [6, 6, 6, false], // 6 gerçek üye (6 IP), biri 6 kez tıklamış
+    [6, 10, 7, false], // 6 gerçek üye + üçüncü kişinin 10 curl isteği: IP EKLER, işaretletemez
+    [5, 5, 5, false], // davet eden kendi bağlantısını 5 kez açmış, 4 arkadaş + kendisi
+    [5, 5, 3, false], // 3 ağ, 5 hesap: yarıyı geçiyor (aile / yurt) — işaret yok
+    [6, 6, 3, true], // 3 ağ, 6 hesap: "az ağ, çok hesap"
+    [12, 24, 3, true], // aynı ağdan (konferans Wi-Fi) kalabalık: PRD "aynı IP imzası" — admin temizler
+  ])("hesap %i, en çok IP ziyareti %i, farklı IP %i → %s", (yeniHesap, enCokIpZiyaret, farkliIp, beklenen) => {
+    expect(suistimalMi({ yeniHesap, enCokIpZiyaret, farkliIp })).toBe(beklenen);
   });
 });

@@ -81,6 +81,11 @@ export const PUAN = {
   inviteWeeklyCap: 300,
   /** Davet bekleyeni bu kadar gün içinde aktivasyon gelmezse düşer */
   inviteExpiryDays: 14,
+  /** Kursun "açıldı" sayılması için aktive olması gereken farklı katılımcı (course_launched) */
+  courseLaunchThreshold: 3,
+  /** Canlılık havuzundan kişi başı HAFTALIK (TR haftası) tavan: kurs başına 100 sınırı kurs
+   *  SAYISINI sınırlamaz — çok kursla çarpılmasın (bir kitap değeri) */
+  vitalityWeeklyCap: 200,
   /** 2. seviye davet (Faz 5): davet edenin platform davetçisine; davetli başına 1, 3. seviye YOK */
   inviteSecondLevel: 5,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */

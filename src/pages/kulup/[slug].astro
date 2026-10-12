@@ -10,6 +10,7 @@ import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { canManage, clubRoleOf } from "@/lib/permissions.ts";
 import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
+import { isaretsizKazananSql } from "@/lib/social.ts";
 import { formatDate } from "@/lib/dates.ts";
 import { KATEGORILER } from "@/lib/kategorize.ts";
 import { groupByCategory } from "@/lib/books-lookup.ts";
@@ -152,6 +153,7 @@ if (groups.length && tab === "uyeler") {
         inArray(schema.pointsLedger.userId, members.map((m) => m.userId)),
         gt(schema.pointsLedger.delta, 0),
         gte(schema.pointsLedger.createdAt, new Date(Date.now() - 30 * 864e5)),
+        isaretsizKazananSql,
       ),
     )
     .groupBy(schema.pointsLedger.userId);

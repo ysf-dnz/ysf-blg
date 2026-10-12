@@ -9,7 +9,7 @@ import { and, eq, gt, gte, inArray, lt, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { LEVEL_THRESHOLDS, levelFor } from "@/lib/levels.ts";
-import { hesapGencMi, likePuaniVerilirMi, olgunlasmaAni } from "@/lib/economy.ts";
+import { hesapGencMi, isoHafta, likePuaniVerilirMi, olgunlasmaAni } from "@/lib/economy.ts";
 import { PUAN } from "@/lib/points.ts";
 
 export type Reason = (typeof schema.pointsLedger.$inferInsert)["reason"];
@@ -62,6 +62,10 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
     case "event_hosted":
     case "event_well_rated":
       return { reasons: ["event_hosted", "event_well_rated"], since: yediGunOnce(), limit: PUAN.eventHostWeeklyCap };
+    // Canlılık havuzu (Faz 5 incelemesi): kurs başına 100 sınırı kurs SAYISINI sınırlamıyordu.
+    // Pencere içinde bulunulan TR haftası: dağıtım haftada bir kez (pazartesi) topluca yazılır.
+    case "vitality_pool":
+      return { reasons: ["vitality_pool"], since: isoHafta(new Date()).baslangic, limit: PUAN.vitalityWeeklyCap };
     default:
       return undefined;
   }
@@ -81,11 +85,19 @@ export const DAVET_REASONLARI: Reason[] = [
 export const DAVET_KAYNAKLI: Reason[] = [...DAVET_REASONLARI, "referral_activated", "event_invite_welcome"];
 
 /**
- * İşaretli (users.flagged_at) alıcının ya da işaretli KAYNAĞIN (refId sonu `u:{id}`) bekleyeni
- * olgunlaşmaz (F5-04). Düz metin tablo adı: pending_points'in takma adsız seçildiği sorgularda kullanılır.
+ * Olgunlaşsa da KESİNLEŞMEYEN bekleyen (F5-04): işaretli (users.flagged_at) alıcının ya da işaretli
+ * KAYNAĞIN (refId sonu `u:{id}`) satırı; ve `course_launched` (refId'de kaynak yok) için kursun
+ * işaretsiz aktif katılımcısı eşiğin altına düşmüşse. İşaret kalkınca kendiliğinden kesinleşir.
+ * Düz metin tablo adı: pending_points'in takma adsız seçildiği sorgularda kullanılır.
  */
-const isaretliBekleyenSql = sql`exists (select 1 from users f where f.flagged_at is not null
-  and (f.id = pending_points.user_id or f.id = substring(pending_points.ref_id from '(?:^|:)u:([0-9]{1,9})$')::int))`;
+const tutulanBekleyenSql = sql`(exists (select 1 from users f where f.flagged_at is not null
+    and (f.id = pending_points.user_id or f.id = substring(pending_points.ref_id from '(?:^|:)u:([0-9]{1,9})$')::int))
+  or (pending_points.reason = 'course_launched' and pending_points.ref_id ~ '^course:[0-9]{1,9}$'
+    and (select count(*) from course_enrollments k
+         join users u on u.id = k.user_id join courses c on c.id = k.course_id
+         where c.id = substring(pending_points.ref_id from '^course:([0-9]{1,9})$')::int
+           and k.activated_at is not null and k.user_id <> c.created_by and u.flagged_at is null
+        ) < ${PUAN.courseLaunchThreshold}))`;
 
 /** db.execute sonucu sürücüye göre dizi ya da {rows} gelir */
 export function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {
@@ -454,6 +466,8 @@ export async function bekleyeniKesinlestir(b: Bekleyen): Promise<number> {
  * Puan OLAYI geldi (aktivasyon, giriş…): puanı doğuran hesap 24 saatten
  * gençse ledger'a değil bekleyene (matures_at) yazılır; değilse awardPoints.
  * Varsa aynı (user, reason, ref) bekleyen satırı da kapatır (Faz 2 davetleri).
+ * İşaret (F5-04): kaynak hesap (çağıran söyler) ya da ALICI işaretliyse de bekleyene yazılır ve
+ * işaret kalkana dek olgunlaşmaz — yaptırım kaynağın hesap yaşına göre değişmesin.
  * @returns ledger'a yazılan delta (bekleyene gittiyse 0)
  */
 export async function puanOlayi(opts: {
@@ -467,7 +481,11 @@ export async function puanOlayi(opts: {
   kaynakIsaretli?: boolean;
   note?: string;
 }): Promise<number> {
-  if (opts.kaynakIsaretli || hesapGencMi(opts.kaynakOlusturulma)) {
+  const alici = await db.query.users.findFirst({
+    where: eq(schema.users.id, opts.userId),
+    columns: { flaggedAt: true },
+  });
+  if (alici?.flaggedAt || opts.kaynakIsaretli || hesapGencMi(opts.kaynakOlusturulma)) {
     const olgun = olgunlasmaAni(opts.kaynakOlusturulma);
     await db
       .insert(schema.pendingPoints)
@@ -528,7 +546,7 @@ export async function bekleyenleriIsle(
         eq(schema.pendingPoints.status, "pending"),
         lte(schema.pendingPoints.maturesAt, simdi),
         kime,
-        sql`not ${isaretliBekleyenSql}`,
+        sql`not ${tutulanBekleyenSql}`,
       ),
     );
   for (const b of olgunlar) await bekleyeniKesinlestir(b);

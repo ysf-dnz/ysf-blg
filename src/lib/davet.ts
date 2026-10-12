@@ -6,7 +6,7 @@
  */
 import { createHash, createHmac, randomInt } from "node:crypto";
 import type { AstroCookies } from "astro";
-import { and, eq, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
@@ -299,10 +299,27 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
       ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ +${n} puan${n < PUAN.inviteActivated ? " (haftalık davet tavanına kırpıldı)" : ""}`
       : hesapGencMi(davetli.createdAt)
         ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Puan hesap 24 saatlik olunca kesinleşir.`
-        : `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
+        : (await bekliyorMu(kod.inviterId, "course_invite_activated", `course:${kurs.id}:u:${davetli.id}`))
+          ? // İnceleme tutması (işaretli alıcı / kaynak): neden söylenmez, panoda "inceleniyor" görünür
+            `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Puan bekleyende; kesinleşince yazılır.`
+          : `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Haftalık davet puanı tavanın dolu; puan yazılmadı.`,
     R.kurs(kurs.slug),
   );
-  await ikinciSeviye(kod.inviterId, kurs, davetli);
+  await ikinciSeviye(kod.inviterId, kurs, davetli, katilim.id);
+}
+
+/** puanOlayi 0 döndüğünde: puan bekleyende mi (tutuluyor), yoksa tavana mı takıldı? */
+async function bekliyorMu(userId: number, reason: string, refId: string): Promise<boolean> {
+  const b = await db.query.pendingPoints.findFirst({
+    where: and(
+      eq(schema.pendingPoints.userId, userId),
+      eq(schema.pendingPoints.reason, reason),
+      eq(schema.pendingPoints.refId, refId),
+      eq(schema.pendingPoints.status, "pending"),
+    ),
+    columns: { id: true },
+  });
+  return !!b;
 }
 
 /**
@@ -310,17 +327,19 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
  * 3. seviye yok. Davetli başına 1 (refId `u:{davetli}`) ve yalnız davetlinin İLK kurs aktivasyonunda.
  * Yalnız aktivasyonu yazan istekten çağrılır: geriye dönük dağıtım yok (PRD §4.3).
  */
-async function ikinciSeviye(davetEdenId: number, kurs: Kurs, davetli: Member) {
+async function ikinciSeviye(davetEdenId: number, kurs: Kurs, davetli: Member, katilimId: number) {
   const ust = await db.query.referrals.findFirst({ where: eq(schema.referrals.invitedId, davetEdenId) });
   if (!ust || ust.inviterId === davetli.id) return; // kendine puan yok
+  // "İlk" = bu katılımdan ÖNCE aktive olmuş başka kurs yok. Aktivasyon anına göre sıralanır: iki kursta
+  // aynı anda aktive olan davetlide iki istek de birbirini görüp hakkı yakmasın (inceleme bulgusu).
   const [onceki] = await db
     .select({ n: sql<number>`count(*)` })
     .from(schema.courseEnrollments)
     .where(
       and(
         eq(schema.courseEnrollments.userId, davetli.id),
-        isNotNull(schema.courseEnrollments.activatedAt),
         ne(schema.courseEnrollments.courseId, kurs.id),
+        sql`${schema.courseEnrollments.activatedAt} < coalesce((select k.activated_at from course_enrollments k where k.id = ${katilimId}), now())`,
       ),
     );
   if (Number(onceki?.n ?? 0) > 0) return;

@@ -287,16 +287,16 @@ export function ekonomiOzeti(h: EkonomiHam) {
 
 /* ---------------- Suistimal işareti — PRD §4.2, F5-04 ---------------- */
 
-/** Aynı davetçiye 24 saatte bu kadar yeni hesap VE aynı imzadan (ip + ua) bu kadar ziyaret */
+/** Aynı davetçinin koduyla 24 saatte bu kadar yeni hesap VE aynı IP'den bu kadar ziyaret */
 export const SUISTIMAL_ESIK = 5;
 
 /**
  * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalTara SQL'inin SAF EŞLENİĞİ (ikisi birlikte değişir).
- * İmza kümesi davetçinin ziyaretlerinin en az yarısı olmalı: kalabalık gerçek davette (konferans QR'ı)
- * ziyaretler çok imzaya dağılır.
+ * Kanıt "az ağ, çok hesap": yeni hesaplar, davetçinin kodlarını ziyaret eden FARKLI IP sayısının en az
+ * iki katı. Gerçek davette her yeni üye kendi ağından gelir. Üçüncü kişi (ya da davet edenin kendi
+ * tıklamaları) yalnız IP EKLEYEBİLİR: `/d/` bağlantısından gelen davetlileri işaretletemez.
+ * User-agent sayılmaz (isteyen değiştirir).
  */
-export function suistimalMi(d: { yeniHesap: number; imzaZiyaret: number; toplamZiyaret: number }): boolean {
-  return (
-    d.yeniHesap >= SUISTIMAL_ESIK && d.imzaZiyaret >= SUISTIMAL_ESIK && d.imzaZiyaret * 2 >= d.toplamZiyaret
-  );
+export function suistimalMi(d: { yeniHesap: number; enCokIpZiyaret: number; farkliIp: number }): boolean {
+  return d.yeniHesap >= SUISTIMAL_ESIK && d.enCokIpZiyaret >= SUISTIMAL_ESIK && d.farkliIp * 2 <= d.yeniHesap;
 }

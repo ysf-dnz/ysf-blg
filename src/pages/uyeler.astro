@@ -34,7 +34,8 @@ const rows = await db
         )
       : undefined,
   )
-  .orderBy(desc(earnedExpr))
+  // İşaretli üye dizinde kalır ama sıralamanın sonuna düşer (lider tablolarında hiç görünmez — F5-04)
+  .orderBy(sql`${schema.users.flaggedAt} is not null`, desc(earnedExpr))
   .limit(60);
 ---
 
