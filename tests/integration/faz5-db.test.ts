@@ -347,6 +347,27 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect((await ledger(davetci.id, "course_invite_activated", `course:${kl.id}:u:${k5!.id}`)).length).toBe(0);
   });
 
+  it("hayalet bekleyen yok: ledger'da ÖDENMİŞ anahtar için işaretli alıcı ya da genç kaynak yeni bekleyen AÇMAZ (devir A2)", async () => {
+    const [u, g] = await Promise.all([uye("hayalet"), uye("hayalet2")]);
+    const yasli = new Date(Date.now() - 30 * 864e5);
+    // (1) 09fc098'in alıcı-işaretli yolu: açılış 3 yaşlı hesapla ödenmiş; üretici sonradan işaretlenir ("Haklı");
+    // 4. aktivasyon aynı anahtarı yeniden gönderir (egitim.ts `>=` bilinçli) → bekleyen açılmamalı
+    const ref = `course:itest-hayalet-${t}`;
+    expect(await rw.puanOlayi({ userId: u.id, delta: 50, reason: "course_launched", refId: ref, kaynakOlusturulma: yasli })).toBe(50);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, u.id));
+    expect(await rw.puanOlayi({ userId: u.id, delta: 50, reason: "course_launched", refId: ref, kaynakOlusturulma: yasli })).toBe(0);
+    expect(await db.query.pendingPoints.findMany({ where: and(eq(schema.pendingPoints.userId, u.id), eq(schema.pendingPoints.reason, "course_launched")) })).toEqual([]);
+    expect((await ek.isaretliHesaplar()).find((r) => r.id === u.id)).toMatchObject({ tutulan: 0 }); // kuyrukta sahte "tutulan +50" yok
+    expect((await ledger(u.id, "course_launched")).map((r) => r.delta)).toEqual([50]);
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, u.id));
+    // (2) Faz 1'den beri var olan genç-kaynak yolu: ödenmiş açılıştan sonra 24 saatten genç 4. katılımcı
+    const ref2 = `course:itest-hayalet2-${t}`;
+    expect(await rw.awardPoints({ userId: g.id, delta: 50, reason: "course_launched", refId: ref2 })).toBe(50);
+    expect(await rw.puanOlayi({ userId: g.id, delta: 50, reason: "course_launched", refId: ref2, kaynakOlusturulma: new Date() })).toBe(0);
+    expect(await db.query.pendingPoints.findMany({ where: and(eq(schema.pendingPoints.userId, g.id), eq(schema.pendingPoints.refId, ref2)) })).toEqual([]);
+    expect((await ledger(g.id, "course_launched")).length).toBe(1); // çift ödeme yok
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {

@@ -486,6 +486,17 @@ export async function puanOlayi(opts: {
     columns: { flaggedAt: true },
   });
   if (alici?.flaggedAt || opts.kaynakIsaretli || hesapGencMi(opts.kaynakOlusturulma)) {
+    // Hayalet bekleyen yok: anahtar ledger'a yazılmışsa (ödenmiş course_launched'ın yeniden gönderimi, ödenmiş
+    // havuz payının yeniden koşumu) yeni satır açılmaz — açılsa yazilan=delta ile kapanır, puan gelmez, kuyruk şişer
+    const odenmis = await db.query.pointsLedger.findFirst({
+      where: and(
+        eq(schema.pointsLedger.userId, opts.userId),
+        eq(schema.pointsLedger.reason, opts.reason),
+        eq(schema.pointsLedger.refId, opts.refId),
+      ),
+      columns: { id: true },
+    });
+    if (odenmis) return 0;
     const olgun = olgunlasmaAni(opts.kaynakOlusturulma);
     await db
       .insert(schema.pendingPoints)
