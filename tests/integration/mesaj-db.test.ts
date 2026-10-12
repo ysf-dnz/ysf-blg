@@ -17,7 +17,8 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
   type Hr = typeof import("@/lib/harita.ts");
   type Ec = typeof import("@/lib/economy.ts");
   type Rw = typeof import("@/lib/rewards.ts");
-  let db: Db["db"], schema: Db["schema"], ms: Ms, hr: Hr, ec: Ec, rw: Rw;
+  type Sk = typeof import("@/lib/sikayet.ts");
+  let db: Db["db"], schema: Db["schema"], ms: Ms, hr: Hr, ec: Ec, rw: Rw, sk: Sk;
   const uyeler: number[] = [];
   const kulupler: number[] = [];
   const kurslar: number[] = [];
@@ -75,9 +76,11 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
     hr = await import("@/lib/harita.ts");
     ec = await import("@/lib/economy.ts");
     rw = await import("@/lib/rewards.ts");
+    sk = await import("@/lib/sikayet.ts");
   });
   afterAll(async () => {
     if (uyeler.length === 0) return;
+    await db.delete(schema.reports).where(inArray(schema.reports.reporterId, uyeler));
     await db.delete(schema.messages).where(or(inArray(schema.messages.senderId, uyeler), inArray(schema.messages.recipientId, uyeler)));
     await db.delete(schema.blocks).where(or(inArray(schema.blocks.blockerId, uyeler), inArray(schema.blocks.blockedId, uyeler)));
     await db.delete(schema.follows).where(or(inArray(schema.follows.followerId, uyeler), inArray(schema.follows.followedId, uyeler)));
@@ -178,12 +181,34 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
   it("hız penceresi: 12 paralel gönderim → TAM 5 yazılır (danışma kilidi); pencere boşalınca yeniden yazılır", async () => {
     const [g, a] = [await uye("hz-g"), await uye("hz-a")];
     await kulup([g.id, a.id]);
+    expect((await ms.mesajGonder(a.id, g.id, "ben başlattım")).durum).toBe("ok"); // yanıt: yanıtsız tavanı yok
     const sonuclar = await Promise.all(Array.from({ length: 12 }, (_, i) => ms.mesajGonder(g.id, a.id, `paralel ${i}`)));
     expect(sonuclar.filter((s) => s.durum === "ok")).toHaveLength(ec.DM_PENCERE_LIMIT);
     expect(sonuclar.filter((s) => s.durum === "hiz")).toHaveLength(12 - ec.DM_PENCERE_LIMIT);
     expect(await yazilan(g.id, a.id)).toHaveLength(ec.DM_PENCERE_LIMIT);
     expect(await gonderVeKarsilastir(g.id, a.id)).toBe("hiz");
     await pencereyiBosalt(g.id);
+    expect(await gonderVeKarsilastir(g.id, a.id)).toBe("ok");
+  });
+
+  it("yanıtsız konuşma tavanı: alıcı yazana kadar TAM 3 mesaj (8 paralel ilk mesajda da); yanıt gelince kalkar", async () => {
+    const [g, a] = [await uye("yn-g"), await uye("yn-a")];
+    await kulup([g.id, a.id]);
+    const sonuclar = await Promise.all(Array.from({ length: 8 }, (_, i) => ms.mesajGonder(g.id, a.id, `istek ${i}`)));
+    expect(sonuclar.filter((s) => s.durum === "ok")).toHaveLength(ec.DM_YANITSIZ_SINIR);
+    expect(await yazilan(g.id, a.id)).toHaveLength(ec.DM_YANITSIZ_SINIR);
+    await pencereyiBosalt(g.id);
+    expect(await gonderVeKarsilastir(g.id, a.id)).toBe("yanitsiz");
+    expect((await ms.mesajGonder(a.id, g.id, "yanıt")).durum).toBe("ok");
+    expect(await gonderVeKarsilastir(g.id, a.id)).toBe("ok"); // alıcı yanıtladı: tavan yok
+  });
+
+  it("beyaz liste dışı dm_policy değeri SQL'de de saf kararda da 'mutual' sayılır (ayrışmaz)", async () => {
+    const [g, a] = [await uye("bl-g"), await uye("bl-a")];
+    await db.update(schema.users).set({ dmPolicy: "garip" as never }).where(eq(schema.users.id, a.id));
+    expect((await ms.mesajDurumu(g.id, a.id)).politika).toBe("mutual");
+    expect(await gonderVeKarsilastir(g.id, a.id)).toBe("bag");
+    await kulup([g.id, a.id]);
     expect(await gonderVeKarsilastir(g.id, a.id)).toBe("ok");
   });
 
@@ -230,6 +255,50 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
     expect(tumu.map((m) => m.body)).toEqual(["y1", "ben→y"]); // eskiden yeniye
     expect((await ms.konusma(ben.id, y.id, { sonraId: tumu[0]!.id })).map((m) => m.body)).toEqual(["ben→y"]);
     expect(await ms.konusma(x.id, y.id)).toEqual([]); // üçüncü kişi konuşmayı göremez
+    expect((await ms.konusma(ben.id, y.id, { onceId: tumu[1]!.id })).map((m) => m.body)).toEqual(["y1"]); // geçmiş sayfası
+  });
+
+  it("okundu: gösterilen son mesaja kadar yazar; engel varken yazmaz ve engellinin okunmamışı sayaca girmez", async () => {
+    const [ben, x] = [await uye("ok-ben"), await uye("ok-x")];
+    await kulup([ben.id, x.id]);
+    await ms.mesajGonder(ben.id, x.id, "selam"); // x yanıtlıyor: yanıtsız tavanı yok
+    for (const govde of ["x1", "x2", "x3"]) await ms.mesajGonder(x.id, ben.id, govde);
+    const gelenler = (await ms.konusma(ben.id, x.id)).filter((m) => m.senderId === x.id);
+    // Sayfada x2'ye kadar gösterildi; x3 sonradan geldi → okundu sayılmaz
+    expect(await ms.okunduYaz(ben.id, x.id, gelenler[1]!.id)).toBe(2);
+    expect(await ms.okunmamisMesaj(ben.id)).toBe(1);
+    // Engel: okunmamış rozeti şişmez; konuşmayı açmak "Görüldü" yazmaz
+    await ms.engelle(ben.id, x.id);
+    expect(await ms.okunmamisMesaj(ben.id)).toBe(0);
+    expect((await ms.gelenKutusu(ben.id))[0]).toMatchObject({ kisiId: x.id, okunmamis: 0 });
+    expect(await ms.okunduYaz(ben.id, x.id)).toBe(0);
+    expect((await ms.konusma(ben.id, x.id)).at(-1)!.readAt).toBeNull();
+    await ms.engelKaldir(ben.id, x.id);
+    expect(await ms.okunmamisMesaj(ben.id)).toBe(1);
+  });
+
+  /* ---------------- Şikâyet (F4-04) ---------------- */
+
+  it("şikâyet: aynı hedef tekil; KAPANMIŞ üye şikâyeti yeniden açılır, kurs şikâyeti açılmaz; saatte 10 paralelde TAM 10", async () => {
+    const [eden, hedef] = [await uye("sk-eden"), await uye("sk-hedef")];
+    const durum = async (tur: string, id: number) =>
+      (await db.query.reports.findFirst({ where: and(eq(schema.reports.reporterId, eden.id), eq(schema.reports.targetType, tur as never), eq(schema.reports.targetId, id)) }))?.status;
+    expect(await sk.sikayetKaydet(eden.id, "user", hedef.id, "ilk")).toBe("yazildi");
+    expect(await sk.sikayetKaydet(eden.id, "user", hedef.id, "tekrar")).toBe("vardi"); // açık kayıt aynen kalır
+    await db.update(schema.reports).set({ status: "dismissed" }).where(eq(schema.reports.reporterId, eden.id));
+    expect(await sk.sikayetKaydet(eden.id, "user", hedef.id, "sürüyor")).toBe("yazildi"); // admin kapatmıştı → yeniden açıldı
+    expect(await durum("user", hedef.id)).toBe("open");
+    // Kurs/yorumda kapanmış kayıt yeniden AÇILMAZ (adminin geri açtığı içerik yeniden gizlenmesin)
+    expect(await sk.sikayetKaydet(eden.id, "course", 2_000_000_001, null)).toBe("yazildi");
+    await db.update(schema.reports).set({ status: "dismissed" }).where(and(eq(schema.reports.reporterId, eden.id), eq(schema.reports.targetType, "course")));
+    expect(await sk.sikayetKaydet(eden.id, "course", 2_000_000_001, null)).toBe("vardi");
+    expect(await durum("course", 2_000_000_001)).toBe("dismissed");
+    // Saatlik sınır: şimdiye dek 2 kayıt (üye + kurs) → 15 paralel yeni hedeften TAM 8'i yazılır
+    const hedefler = await topluUye(15, "sk");
+    const sonuclar = await Promise.all(hedefler.map((id) => sk.sikayetKaydet(eden.id, "user", id, null)));
+    expect(sonuclar.filter((s) => s === "yazildi")).toHaveLength(sk.SIKAYET_SAATLIK - 2);
+    expect(sonuclar.filter((s) => s === "hiz")).toHaveLength(15 - (sk.SIKAYET_SAATLIK - 2));
+    expect(await sk.sikayetKaydet(eden.id, "user", hedef.id, "x")).toBe("hiz"); // sınır doluyken her deneme "hiz"
   });
 
   /* ---------------- AC-21 / AC-22: harita ---------------- */

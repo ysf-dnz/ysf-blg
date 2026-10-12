@@ -4,7 +4,7 @@
  * bağlantıya çevrilmesidir. Parçalar metin olarak döner: çağıran Astro kaçışı / textContent ile
  * basar, innerHTML KULLANILMAZ (AC-24: `javascript:` bağlantısı tıklanamaz düz metin kalır).
  */
-import { DM_AZAMI_UZUNLUK } from "./economy.ts";
+import { DM_AZAMI_UZUNLUK, DM_YANITSIZ_SINIR } from "./economy.ts";
 
 /**
  * Satır sonlarını tekilleştirir; kontrol karakterlerini (\n ve \t dışında) ve bidi yön
@@ -27,6 +27,20 @@ export function govdeGecerliMi(temiz: string): boolean {
 export type MesajParcasi = { tur: "metin" | "link"; deger: string };
 
 const HTTPS = /https:\/\/[^\s<>"'`]+/g;
+/**
+ * Bağlantı olabilir mi: ayrıştırılabilir https adresi ve kullanıcı bilgisi (user:pass@) YOK —
+ * "https://yusufdeniz.com@kotu.example/…" görünürde bizim alan adımızı okutup başka yere götürür.
+ * URL.canParse KULLANILMAZ: bu modül konuşma sayfasının istemci betiğinde de koşar ve eski
+ * tarayıcıda (Safari < 17, Chrome < 120) tanımsızdır → yoklama döngüsü kalıcı dururdu.
+ */
+function baglantiMi(adres: string): boolean {
+  try {
+    const u = new URL(adres);
+    return u.protocol === "https:" && !u.username && !u.password && adres.length > "https://".length;
+  } catch {
+    return false;
+  }
+}
 /** Adresin sonuna yapışan noktalama cümleye aittir ("…bak https://x.com." → nokta bağlantıda değil) */
 const SON_NOKTALAMA = /[.,;:!?)\]}'"»]+$/;
 
@@ -44,7 +58,7 @@ export function metniParcala(govde: string): MesajParcasi[] {
     const ham = m[0];
     const adres = ham.replace(SON_NOKTALAMA, "");
     metinEkle(govde.slice(son, m.index));
-    if (adres.length > "https://".length && URL.canParse(adres)) {
+    if (baglantiMi(adres)) {
       parcalar.push({ tur: "link", deger: adres });
       metinEkle(ham.slice(adres.length));
     } else metinEkle(ham);
@@ -65,7 +79,8 @@ const zamanBicimi = new Intl.DateTimeFormat("tr-TR", {
 export const mesajZamani = (d: Date): string => zamanBicimi.format(d);
 
 /** Mesajın gönderilememe gerekçesi (form yerine ve hata bandında aynı metin) */
-export type RetDurumu = "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gunluk" | "bos";
+export type RetDurumu = "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gunluk" | "yanitsiz" | "bos";
+export const RET_DURUMLARI: RetDurumu[] = ["kendin", "engel", "hiz", "kapali", "bag", "gunluk", "yanitsiz", "bos"];
 export function retMetni(
   durum: RetDurumu,
   o: { ad: string; politika: "everyone" | "mutual" | "nobody"; benEngelledim: boolean },
@@ -77,6 +92,8 @@ export function retMetni(
       return `Mesaj boş olamaz ve en çok ${DM_AZAMI_UZUNLUK} karakter olabilir.`;
     case "gunluk":
       return "Bugün başlatabileceğin yeni konuşma sayısı doldu; süren konuşmalarına yazabilirsin, yenisi için yarını bekle.";
+    case "yanitsiz":
+      return `${o.ad} yanıtlayana kadar en çok ${DM_YANITSIZ_SINIR} mesaj gönderebilirsin.`;
     case "bag":
       return o.politika === "everyone"
         ? `${o.ad} ile ortak topluluğun ya da karşılıklı takibin yok; bağın olmayan birine yazmak için Seviye 4 gerekir.`

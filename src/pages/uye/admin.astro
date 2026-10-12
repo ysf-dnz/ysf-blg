@@ -40,11 +40,12 @@ const sikayetGruplari = [
   ...acikSikayetler
     .reduce((m, r) => {
       const k = `${r.targetType}:${r.targetId}`;
-      const g = m.get(k) ?? { targetType: r.targetType, targetId: r.targetId, adet: 0, nedenler: [] as string[] };
+      const g = m.get(k) ?? { targetType: r.targetType, targetId: r.targetId, adet: 0, nedenler: [] as string[], edenler: [] as number[] };
       g.adet++;
+      g.edenler.push(r.reporterId);
       if (r.reason) g.nedenler.push(r.reason);
       return m.set(k, g);
-    }, new Map<string, { targetType: string; targetId: number; adet: number; nedenler: string[] }>())
+    }, new Map<string, { targetType: string; targetId: number; adet: number; nedenler: string[]; edenler: number[] }>())
     .values(),
 ];
 const sikayetliKurslar = new Map(
@@ -86,7 +87,12 @@ const sikayetliUyeler = new Map(
         sikayetGruplari
           .filter((g) => g.targetType === "user")
           .map((g) => g.targetId)
-          .concat([...sikayetliMesajlar.values()].map((m) => m.senderId), [0]),
+          .concat(
+            [...sikayetliMesajlar.values()].map((m) => m.senderId),
+            // Üye/mesaj şikâyetinde şikâyet eden de gösterilir (toplu/kötü niyetli şikâyet ayırt edilsin)
+            sikayetGruplari.filter((g) => g.targetType === "user" || g.targetType === "message").flatMap((g) => g.edenler),
+            [0],
+          ),
       ),
       columns: { id: true, handle: true, name: true },
     })
@@ -259,7 +265,12 @@ const pendingApps = await db.query.applications.findMany({
                   )}
                 </p>
                 {/* Mesaj gövdesi düz metin: yalnız Astro kaçışı, bağlantıya ÇEVRİLMEZ (admin oturumu) */}
-                {mesaj && <p class="mt-1 whitespace-pre-wrap break-words rounded-lg bg-surface p-2 text-sm text-ink">{mesaj.body.slice(0, 500)}</p>}
+                {mesaj && <p class="mt-1 max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-surface p-2 text-sm text-ink">{mesaj.body}</p>}
+                {kisisel && (
+                  <p class="mt-1 text-xs text-ink-muted">
+                    Şikâyet eden: {g.edenler.map((id) => sikayetliUyeler.get(id)).filter(Boolean).map((u) => `@${u!.handle}`).join(", ") || "—"}
+                  </p>
+                )}
                 {g.nedenler.length > 0 && <p class="mt-1 text-sm text-ink-muted">{g.nedenler.slice(0, 3).join(" · ")}</p>}
               </div>
               <form method="post" action="/api/uye/admin" class="flex gap-2">

@@ -127,15 +127,24 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   });
 
   test("AC-22 + AC-21: engelleyene mesaj atılamaz, Mesaj düğmesi yok, haritada görünmez; rızasız üye haritada yok; filtre", async ({ page }) => {
-    // Zeynep test üyesini engelledi (global-setup): düğme yok, form yok, uç reddeder — engel SÖYLENMEZ
+    // Zeynep test üyesini engelledi (global-setup): form yok, uç reddeder — ama engel SÖYLENMEZ:
+    // Mesaj düğmesi yerinde, metin / adres / durum kodu "kimse" ayarlı Mehmet'inkiyle birebir aynı
     await page.goto(`/u/${ZEYNEP}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-profil-islemler]")).toBeVisible();
-    await expect(page.locator("[data-mesaj-gonder]")).toHaveCount(0);
+    await expect(page.locator("[data-mesaj-gonder]")).toHaveCount(1);
     await page.goto(`/uye/mesajlar/${ZEYNEP}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-mesaj-kapali]")).toHaveText(/şu an yeni mesaj almıyor/);
     await expect(page.locator("[data-mesaj-kapali]")).not.toContainText(/engel/i);
     await expect(page.locator("[data-mesaj-formu]")).toHaveCount(0);
-    expect((await gonder(page, ZEYNEP)).headers()["location"]).toBe(`/uye/mesajlar/${ZEYNEP}?hata=engel`);
+    expect((await gonder(page, ZEYNEP)).headers()["location"]).toBe(`/uye/mesajlar/${ZEYNEP}?hata=kapali`);
+    const zeynepJson = await gonder(page, ZEYNEP, true);
+    expect(zeynepJson.status()).toBe(403);
+    expect(JSON.stringify(await zeynepJson.json())).not.toMatch(/engel/i);
+    expect((await zeynepJson.json()).durum).toBe("kapali");
+    // Engel varken takip de yazılmaz (takip et / bırak döngüsü bildirim kanalı olmasın)
+    await page.locator('form[action="/api/uye/takip"] button').click();
+    await expect(page).toHaveURL(new RegExp(`/u/${ZEYNEP}$`));
+    await expect(page.locator('form[action="/api/uye/takip"] button')).toHaveText("Takip et");
     await page.goto(`/u/${ELIF}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-mesaj-gonder]")).toHaveAttribute("href", `/uye/mesajlar/${ELIF}`);
 
@@ -191,17 +200,25 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     await page.locator("[data-sikayet-ac]").click();
     await page.locator('[data-profil-islemler] input[name="reason"]').fill("e2e deneme şikâyeti");
     await page.getByRole("button", { name: "Şikâyeti gönder" }).click();
-    await expect(page).toHaveURL(new RegExp(`/u/${CAN}\\?sikayet=(1|hiz)`));
+    await expect(page).toHaveURL(new RegExp(`/u/${CAN}\\?sikayet=(1|var|hiz)`));
     await expect(page.locator("[data-sikayet-bandi]")).toBeVisible();
     // Mesaj şikâyeti (konuşma): yalnız GELEN mesajda düğme var
     await page.goto(`/uye/mesajlar/${ELIF}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator('#mesajlar [data-benden="1"] [data-mesaj-sikayet]')).toHaveCount(0);
+    // Yanlış dokunuşa karşı onay: reddedilirse gönderilmez, kabul edilirse gönderilir
+    page.once("dialog", (d) => d.dismiss());
     await page.locator('#mesajlar [data-benden="0"] [data-mesaj-sikayet]').first().click();
-    await expect(page).toHaveURL(new RegExp(`/uye/mesajlar/${ELIF}\\?sikayet=(1|hiz)`));
+    await expect(page).toHaveURL(new RegExp(`/uye/mesajlar/${ELIF}$`));
+    page.once("dialog", (d) => d.accept());
+    await page.locator('#mesajlar [data-benden="0"] [data-mesaj-sikayet]').first().click();
+    await expect(page).toHaveURL(new RegExp(`/uye/mesajlar/${ELIF}\\?sikayet=(1|var|hiz)`));
     await expect(page.locator("[data-sikayet-bandi]")).toBeVisible();
     // Kendini ve başkasının mesajını şikâyet edemez (id deneyerek yazışma kuyruğa düşürülemez)
     const kendi = await page.request.post("/api/uye/sikayet", { form: { targetType: "message", targetId: "999999999" }, maxRedirects: 0 });
     expect(kendi.status()).toBe(404);
+    // int4'ü aşan id Postgres hatası (500) değil, doğrulama hatası
+    expect((await page.request.post("/api/uye/sikayet", { form: { targetType: "user", targetId: "99999999999" }, maxRedirects: 0 })).status()).toBe(400);
+    expect(await (await page.request.get(`/api/uye/mesaj?kisi=${ELIF}&since=99999999999`)).json()).toHaveProperty("mesajlar");
   });
 
   test("F4-02: profilde açık rıza → haritada kendini görür; rızayı kaldırınca çıkar (varsayılan kapalı)", async ({ page }) => {

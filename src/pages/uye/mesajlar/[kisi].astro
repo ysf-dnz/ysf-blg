@@ -12,8 +12,8 @@ import Avatar from "@/components/ui/Avatar.astro";
 import { db, schema } from "@/db/client.ts";
 import { DM_AZAMI_UZUNLUK, dmKarar } from "@/lib/economy.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { engelDurumu, konusma, mesajDurumu } from "@/lib/mesaj.ts";
-import { mesajZamani, metniParcala, retMetni, type RetDurumu } from "@/lib/mesaj-kural.ts";
+import { engelDurumu, idMi, konusma, KONUSMA_SAYFASI, mesajDurumu } from "@/lib/mesaj.ts";
+import { mesajZamani, metniParcala, RET_DURUMLARI, retMetni, type RetDurumu } from "@/lib/mesaj-kural.ts";
 import { R } from "@/lib/routes.ts";
 import { getLevelsMap } from "@/lib/social.ts";
 
@@ -27,19 +27,22 @@ const kisi = /^[a-z0-9-]{1,60}$/.test(handle)
   : undefined;
 if (!kisi || kisi.id === member.id) return Astro.redirect(R.uye.mesajlar);
 
+// ?once=<id>: o mesajdan eskiler (geçmiş sayfası — yoklama, okundu ve form yok; en yeniye dönülür)
+const onceParam = Number(Astro.url.searchParams.get("once") ?? 0);
+const once = idMi(onceParam) ? onceParam : undefined;
 const [mesajlar, durum, engel, seviyeler] = await Promise.all([
-  konusma(member.id, kisi.id),
+  konusma(member.id, kisi.id, { onceId: once }),
   mesajDurumu(member.id, kisi.id),
   engelDurumu(member.id, kisi.id),
   getLevelsMap([kisi.id]),
 ]);
 const karar = dmKarar(durum);
 // Hız freni geçicidir: form görünür kalır, gerekçe gönderimde söylenir
-const yazabilir = karar === "ok" || karar === "hiz";
+const yazabilir = !once && (karar === "ok" || karar === "hiz");
 const metinSecenekleri = { ad: kisi.name, politika: durum.politika, benEngelledim: engel.benim };
-const HATALAR: RetDurumu[] = ["kendin", "engel", "hiz", "kapali", "bag", "gunluk", "bos"];
 const hataParam = Astro.url.searchParams.get("hata") as RetDurumu | null;
-const hata = hataParam && HATALAR.includes(hataParam) ? retMetni(hataParam, metinSecenekleri) : null;
+const hata = hataParam && RET_DURUMLARI.includes(hataParam) ? retMetni(hataParam, metinSecenekleri) : null;
+const dahaEski = mesajlar.length === KONUSMA_SAYFASI ? mesajlar[0]!.id : null;
 const sikayet = Astro.url.searchParams.get("sikayet");
 const sayfa = R.uye.mesaj(kisi.handle);
 ---
@@ -68,11 +71,14 @@ const sayfa = R.uye.mesaj(kisi.handle);
 
     {sikayet && (
       <p class="menu-pop mt-4 rounded-2xl border border-accent bg-accent-soft p-3 text-center text-sm text-ink" data-sikayet-bandi>
-        {sikayet === "hiz" ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene." : "Şikâyetin alındı; inceleme kuyruğuna düştü."}
+        {sikayet === "hiz" ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene." : sikayet === "var" ? "Bu şikâyetin zaten inceleme kuyruğunda." : "Şikâyetin alındı; inceleme kuyruğuna düştü."}
       </p>
     )}
 
-    <ol id="mesajlar" class="flex max-h-[60vh] min-h-48 flex-col gap-2 overflow-y-auto py-4" data-kisi={kisi.handle} data-son={mesajlar.at(-1)?.id ?? 0} aria-live="polite">
+    <ol id="mesajlar" class="flex max-h-[60vh] min-h-48 flex-col gap-2 overflow-y-auto py-4" data-kisi={kisi.handle} data-son={mesajlar.at(-1)?.id ?? 0} data-gecmis={once ? "1" : undefined} aria-live="polite">
+      {dahaEski && (
+        <li class="text-center text-xs"><a href={`${sayfa}?once=${dahaEski}`} class="text-accent hover:underline" data-daha-eski>↑ Daha eski mesajlar</a></li>
+      )}
       {mesajlar.length === 0 && <li class="m-auto text-sm text-ink-muted" data-bos>Henüz mesaj yok.{yazabilir && " İlk mesajı sen yaz."}</li>}
       {
         mesajlar.map((m) => {
@@ -89,7 +95,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
                     <input type="hidden" name="targetType" value="message" />
                     <input type="hidden" name="targetId" value={m.id} />
                     <input type="hidden" name="next" value={sayfa} />
-                    <button class="cursor-pointer hover:text-red-500" title="Bu mesajı şikâyet et" data-mesaj-sikayet>Şikâyet et</button>
+                    <button class="-my-1 cursor-pointer rounded px-1 py-1 hover:text-red-500" title="Bu mesajı şikâyet et" data-mesaj-sikayet>Şikâyet et</button>
                   </form>
                 )}
               </div>
@@ -112,6 +118,10 @@ const sayfa = R.uye.mesaj(kisi.handle);
           </label>
           <button class="cursor-pointer rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Gönder</button>
         </form>
+      ) : once ? (
+        <p class="mt-3 border-t border-line pt-4 text-center text-sm">
+          <a href={sayfa} class="font-medium text-accent hover:underline">↓ En yeni mesajlara dön</a>
+        </p>
       ) : (
         <p class="mt-3 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-ink-muted" data-mesaj-kapali>
           {retMetni(karar as RetDurumu, metinSecenekleri)}
@@ -191,7 +201,8 @@ const sayfa = R.uye.mesaj(kisi.handle);
 
   document.addEventListener("astro:page-load", () => {
     const liste = document.querySelector<HTMLElement>("#mesajlar");
-    if (!liste || liste.dataset.init) return;
+    // Geçmiş sayfası (?once=): yoklama ve okundu yok
+    if (!liste || liste.dataset.init || liste.dataset.gecmis) return;
     liste.dataset.init = "1";
     const kisi = liste.dataset.kisi ?? "";
     const hataKutusu = document.querySelector<HTMLElement>("[data-mesaj-hata]");
@@ -203,6 +214,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
       const veri = new FormData();
       veri.set("action", "okundu");
       veri.set("kisi", kisi);
+      veri.set("son", liste.dataset.son ?? "0"); // gösterilen en yeni mesaja kadar
       const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" } }).catch(() => null);
       if (!r?.ok) return;
       const { okunmamis } = (await r.json()) as { okunmamis: number };
@@ -237,6 +249,12 @@ const sayfa = R.uye.mesaj(kisi.handle);
     if (liste.querySelector('[data-benden="0"]')) void okundu();
     planla();
 
+    // Şikâyet tek dokunuşla ve geri alınamaz: yanlış dokunuşa karşı onay
+    liste.addEventListener("submit", (olay) => {
+      if ((olay.target as HTMLElement).querySelector("[data-mesaj-sikayet]") && !confirm("Bu mesajı şikâyet etmek istiyor musun? İnceleme kuyruğuna düşer."))
+        olay.preventDefault();
+    });
+
     // Sayfa yenilenmeden gönderim; betik yoksa form düz POST + yönlendirme ile çalışır
     const form = document.querySelector<HTMLFormElement>("[data-mesaj-formu]");
     form?.addEventListener("submit", async (olay) => {
@@ -259,9 +277,11 @@ const sayfa = R.uye.mesaj(kisi.handle);
       await yokla?.();
       planla();
     });
-    // Enter gönderir, Shift+Enter satır atlar
+    // Enter gönderir, Shift+Enter satır atlar — yalnız fare/klavye cihazında: dokunmatik klavyede
+    // Shift+Enter yok, Enter satır atlamalı (gönderim düğmeyle)
+    const klavyeli = window.matchMedia("(pointer: fine)").matches;
     form?.querySelector("textarea")?.addEventListener("keydown", (k) => {
-      if (k.key === "Enter" && !k.shiftKey && !k.isComposing) {
+      if (klavyeli && k.key === "Enter" && !k.shiftKey && !k.isComposing) {
         k.preventDefault();
         form.requestSubmit();
       }

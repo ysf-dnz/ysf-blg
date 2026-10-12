@@ -3,6 +3,7 @@ import {
   DM_AZAMI_UZUNLUK,
   DM_GUNLUK_YENI_KONUSMA,
   DM_PENCERE_LIMIT,
+  DM_YANITSIZ_SINIR,
   dmKarar,
   dmPolitikasiMi,
   type DmDurum,
@@ -55,8 +56,12 @@ describe("yalnız https otomatik bağlantı (AC-24)", () => {
     ["[tıkla](javascript:alert(1))", [metin("[tıkla](javascript:alert(1))")]],
     ['<a href="https://x.com">x</a>', [metin('<a href="'), link("https://x.com"), metin('">x</a>')]],
     ["<img src=x onerror=alert(1)>", [metin("<img src=x onerror=alert(1)>")]],
+    // Kullanıcı bilgisi (user@host) taklidi bağlantı olmaz: görünen alan adı ile gidilen farklıdır
+    ["https://yusufdeniz.com@kotu.example/giris", [metin("https://yusufdeniz.com@kotu.example/giris")]],
+    ["https://kullanici:parola@kotu.example", [metin("https://kullanici:parola@kotu.example")]],
     // Adres değil
     ["https://", [metin("https://")]],
+    ["https://[bozuk", [metin("https://[bozuk")]],
     ["", []],
   ])("%j", (govde, beklenen) => {
     expect(metniParcala(govde)).toEqual(beklenen);
@@ -83,6 +88,7 @@ describe("mesaj izni — dmKarar (AC-23)", () => {
     politika: "mutual",
     penceredeGonderilen: 0,
     bugunYeniKonusma: 0,
+    aliciyaGonderilen: 0,
   };
   it.each<[string, Partial<DmDurum>, ReturnType<typeof dmKarar>]>([
     // mutual (varsayılan): yalnız bağ
@@ -110,6 +116,11 @@ describe("mesaj izni — dmKarar (AC-23)", () => {
     ["günlük sınır · bir eksik", { bag: true, bugunYeniKonusma: DM_GUNLUK_YENI_KONUSMA - 1 }, "ok"],
     ["günlük sınır · süren konuşma etkilenmez", { bag: true, benYazmis: true, bugunYeniKonusma: DM_GUNLUK_YENI_KONUSMA }, "ok"],
     ["günlük sınır · yanıt etkilenmez", { karsiYazmis: true, bugunYeniKonusma: DM_GUNLUK_YENI_KONUSMA }, "ok"],
+    // Yanıtsız konuşma tavanı: alıcı yazana kadar en çok 3 mesaj ("mesaj isteği")
+    ["yanıtsız · tavan altında", { bag: true, benYazmis: true, aliciyaGonderilen: DM_YANITSIZ_SINIR - 1 }, "ok"],
+    ["yanıtsız · tavan doldu", { bag: true, benYazmis: true, aliciyaGonderilen: DM_YANITSIZ_SINIR }, "yanitsiz"],
+    ["yanıtsız · alıcı yanıtladıysa tavan yok", { karsiYazmis: true, benYazmis: true, aliciyaGonderilen: 500 }, "ok"],
+    ["yanıtsız · Sv4 ile (everyone) de geçerli", { politika: "everyone", sv4: true, benYazmis: true, aliciyaGonderilen: DM_YANITSIZ_SINIR }, "yanitsiz"],
     // Süren konuşma politikayı aşmaz: alıcı yanıtlamadıysa ayar her gönderimde geçerli
     ["ben yazmışım · alıcı kapatmış → yazamaz", { benYazmis: true, politika: "nobody" }, "kapali"],
     ["ben yazmışım · bağ kopmuş → yazamaz", { benYazmis: true }, "bag"],
@@ -123,12 +134,28 @@ describe("mesaj izni — dmKarar (AC-23)", () => {
   });
 });
 
+describe("bağlantı ayrıştırması eski tarayıcıda da çalışır", () => {
+  it("URL.canParse yokken (Safari < 17, Chrome < 120) fırlatmaz: istemci yoklaması kilitlenmesin", () => {
+    const asil = URL.canParse;
+    // @ts-expect-error eski tarayıcı benzetimi
+    URL.canParse = undefined;
+    try {
+      expect(metniParcala("bak https://go.dev/doc")).toEqual([metin("bak "), link("https://go.dev/doc")]);
+    } finally {
+      URL.canParse = asil;
+    }
+  });
+});
+
 describe("ret metni ve zaman", () => {
   const o = { ad: "Elif", politika: "mutual" as const, benEngelledim: false };
   it("karşı tarafın engeli söylenmez: 'mesaj almıyor' ile aynı metin", () => {
     expect(retMetni("engel", o)).toBe(retMetni("kapali", o));
     expect(retMetni("engel", o)).not.toMatch(/engel/i);
     expect(retMetni("engel", { ...o, benEngelledim: true })).toMatch(/engeli kaldır/);
+  });
+  it("yanıtsız tavanı gerekçesi sınırı söyler", () => {
+    expect(retMetni("yanitsiz", o)).toBe(`Elif yanıtlayana kadar en çok ${DM_YANITSIZ_SINIR} mesaj gönderebilirsin.`);
   });
   it("bağ gerekçesi alıcının ayarına göre", () => {
     expect(retMetni("bag", o)).toMatch(/ortak topluluğu olan ya da karşılıklı takipleştiği/);

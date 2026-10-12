@@ -103,6 +103,11 @@ export const DM_PENCERE_SN = 30;
 export const DM_PENCERE_LIMIT = 5;
 /** TR gününde başlatılabilecek yeni konuşma (ilk mesajı gönderenin attığı konuşma) */
 export const DM_GUNLUK_YENI_KONUSMA = 20;
+/**
+ * Alıcı yanıtlayana kadar aynı kişiye yazılabilecek mesaj ("mesaj isteği" tavanı): bağ tek taraflı
+ * da kurulabilir (onaylı topluluğa katılmak tek tık) — yanıtsız konuşma taciz kanalı olmasın.
+ */
+export const DM_YANITSIZ_SINIR = 3;
 export const DM_AZAMI_UZUNLUK = 1000;
 
 export type DmPolitika = "everyone" | "mutual" | "nobody";
@@ -128,8 +133,10 @@ export type DmDurum = {
   penceredeGonderilen: number;
   /** Gönderenin bugün başlattığı yeni konuşma */
   bugunYeniKonusma: number;
+  /** Gönderenin bu alıcıya yazdığı toplam mesaj (alıcı yanıtlamadıysa tavana sayılır) */
+  aliciyaGonderilen: number;
 };
-export type DmKarar = "ok" | "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gunluk";
+export type DmKarar = "ok" | "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gunluk" | "yanitsiz";
 
 /**
  * Mesaj gönderilebilir mi? Gönderim SQL'inin (lib/mesaj.ts mesajGonder WHERE'i) SAF EŞLENİĞİ:
@@ -137,6 +144,7 @@ export type DmKarar = "ok" | "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gu
  *  - mutual (varsayılan): yalnız bağ (AC-23) — Sv4 yetmez.
  *  - everyone: bağ ya da Sv4+ (PRD: bağ yoksa yeni konuşma için Sv4+).
  *  - nobody: kimse başlatamaz; alıcının kendi yazdığı kişi yanıtlayabilir.
+ *  - Alıcı hiç yazmadıysa gönderen en çok DM_YANITSIZ_SINIR mesaj yazar (yanıt gelince tavan kalkar).
  */
 export function dmKarar(d: DmDurum): DmKarar {
   if (d.kendisi) return "kendin";
@@ -146,5 +154,6 @@ export function dmKarar(d: DmDurum): DmKarar {
   if (d.politika === "nobody") return "kapali";
   if (!d.bag && !(d.politika === "everyone" && d.sv4)) return "bag";
   if (!d.benYazmis && d.bugunYeniKonusma >= DM_GUNLUK_YENI_KONUSMA) return "gunluk";
+  if (d.aliciyaGonderilen >= DM_YANITSIZ_SINIR) return "yanitsiz";
   return "ok";
 }

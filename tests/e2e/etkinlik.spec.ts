@@ -182,6 +182,15 @@ test.describe("etkinlik akışı — üye", () => {
     expect(bayat.headers()["location"]).toBe("/etkinlik/go-okuma-maratonu-demo?giris=sure");
     expect(await girisli()).toBe(once);
 
+    // Bir sayfadaki BAĞLANTIDAN gelen ziyaret (sec-fetch-site ≠ none) kendiliğinden göndermez: düğme bekler
+    // (eski "başka siteden açılamaz" freninin karşılığı — tıklatarak kayıt + giriş yazdırılamaz)
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    await page.evaluate((u) => (location.href = u), `/c/q/${id}/${donenToken(id, donenPencere())}`);
+    await expect(page.getByRole("heading", { name: "Girişini doğrula" })).toBeVisible();
+    await expect(page.locator("form[data-donen-formu]")).not.toHaveAttribute("data-otomatik", "1");
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL(/\/c\/q\//); // gönderilmedi
+
     // Güncel token: sayfa betiği formu POST'lar (ek dokunuş yok) → giriş yazılır (ilk koşum) ya da zaten yazılmıştır
     await page.goto(`/c/q/${id}/${donenToken(id, donenPencere())}`, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/go-okuma-maratonu-demo\?giris=(geldi|zaten)/);

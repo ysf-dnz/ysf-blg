@@ -21,6 +21,8 @@ export default async function globalSetup() {
   const clerkId =
     data[0]?.id ?? (await clerk.users.createUser({ emailAddress: [emailAddress], skipPasswordRequirement: true })).id;
 
+  process.env.E2E_CLERK_ID = clerkId; // global-teardown test üyesinin şikâyetlerini bununla temizler
+
   // Görevli tarayıcısı e2e'si (F3-04): test üyesi DEMO maraton etkinliğinde giriş görevlisi olur
   // (idempotent; yalnız seed'in açtığı demo etkinlik). Üyenin DB satırı ilk SSR isteğinde açılır —
   // henüz yoksa satır yazılmaz ve spec kendini atlar. Dev = canlı DB: yalnız demo veriye dokunur.

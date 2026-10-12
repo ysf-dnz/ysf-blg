@@ -6,19 +6,18 @@
  * yazışması id deneyerek kuyruğa düşürülemesin); engel şikâyeti kapatmaz.
  */
 import type { APIRoute } from "astro";
-import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { SV4_PUAN } from "@/lib/levels.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { idMi } from "@/lib/mesaj.ts";
+import { sikayetKaydet, sikayetTuruMu } from "@/lib/sikayet.ts";
 import { guvenliYol } from "@/lib/urls.ts";
 
 export const prerender = false;
 
 /** Gizleme eşiği: bu kadar farklı Sv4+ üye */
 export const SIKAYET_ESIGI = 3;
-const TURLER = ["course", "comment", "user", "message"] as const;
-type SikayetTuru = (typeof TURLER)[number];
-const sikayetTuruMu = (s: string): s is SikayetTuru => (TURLER as readonly string[]).includes(s);
 
 export const POST: APIRoute = async (context) => {
   const member = await getOrCreateMember(context);
@@ -29,7 +28,7 @@ export const POST: APIRoute = async (context) => {
   const targetId = Number(form.get("targetId") ?? 0);
   const reason = String(form.get("reason") ?? "").trim().slice(0, 300) || null;
   const geri = guvenliYol(form, "/kurslar");
-  if (!sikayetTuruMu(targetType) || !Number.isSafeInteger(targetId) || targetId <= 0)
+  if (!sikayetTuruMu(targetType) || !idMi(targetId))
     return new Response("Geçersiz hedef", { status: 400 });
 
   // Hedef var ve şikâyet edilebilir durumda mı (kuyruk olmayan/zaten kapalı hedeflerle dolmasın).
@@ -58,23 +57,10 @@ export const POST: APIRoute = async (context) => {
   if (!hedefVar) return new Response("Hedef bulunamadı", { status: 404 });
   const don = (durum: string) => context.redirect(`${geri}${geri.includes("?") ? "&" : "?"}sikayet=${durum}`);
 
-  // Hız sınırı: şikâyetçi başına saatte 10
-  const [sonSaat] = await db
-    .select({ n: sql<number>`count(*)` })
-    .from(schema.reports)
-    .where(
-      and(
-        eq(schema.reports.reporterId, member.id),
-        gte(schema.reports.createdAt, new Date(Date.now() - 3600_000)),
-      ),
-    );
-  // Düz metin 429 değil yönlendirme: ClientRouter HTML olmayan yanıtta kullanıcıya 404 gösterirdi
-  if (Number(sonSaat?.n ?? 0) >= 10) return don("hiz");
-
-  await db
-    .insert(schema.reports)
-    .values({ reporterId: member.id, targetType, targetId, reason })
-    .onConflictDoNothing();
+  // Saatte 10 freni + yazım tek transaction'da (lib/sikayet.ts). Düz metin 429 değil yönlendirme:
+  // ClientRouter HTML olmayan yanıtta kullanıcıya 404 gösterirdi.
+  const kayit = await sikayetKaydet(member.id, targetType, targetId, reason);
+  if (kayit === "hiz") return don("hiz");
 
   // Sv4+ farklı şikâyetçi sayısı eşiği aşıyorsa gizle — sayım WHERE'de
   const sayim = sql`(
@@ -93,5 +79,5 @@ export const POST: APIRoute = async (context) => {
     );
   }
   // user | message: otomatik gizleme yok (aynı id'li yorumu gizleme tuzağı — dal AÇIKÇA comment)
-  return don("1");
+  return don(kayit === "vardi" ? "var" : "1");
 };

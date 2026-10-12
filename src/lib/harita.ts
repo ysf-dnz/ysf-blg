@@ -20,6 +20,7 @@ import { ilBul } from "./topluluk.ts";
 export type HaritaUye = { h: string; ad: string; av: string | null; sv: number };
 export type HaritaFiltre = { kulupId?: number; kursId?: number; takip?: boolean };
 export type HaritaEtkinlik = { yol: string; ad: string; zaman: string };
+export type HaritaIl = { uyeler: HaritaUye[]; toplam: number };
 
 /** İl popup'ında gösterilen üye üst sınırı (gerisi "+N" sayısı) */
 export const IL_UYE_SINIRI = 24;
@@ -33,7 +34,7 @@ export const IL_ETKINLIK_SINIRI = 3;
 export async function haritaUyeleri(
   bakanId: number,
   f: HaritaFiltre = {},
-): Promise<Map<string, { uyeler: HaritaUye[]; toplam: number }>> {
+): Promise<Map<string, HaritaIl>> {
   const u = schema.users;
   const rows = await db
     .select({ id: u.id, handle: u.handle, name: u.name, avatarUrl: u.avatarUrl, city: u.city })
@@ -55,7 +56,7 @@ export async function haritaUyeleri(
       ),
     )
     .orderBy(desc(u.mapVisibleAt))
-    .limit(2000);
+    .limit(2000); // shortcut: 2000'den çok görünen üyede il toplamları eksik sayılır; o ölçekte il başına sorguya geçilir
 
   const ilGruplari = new Map<string, typeof rows>();
   for (const r of rows) {
@@ -82,7 +83,10 @@ export async function haritaUyeleri(
   );
 }
 
-/** İl → yaklaşan (bitmemiş) herkese açık etkinlikler, en yakın üstte; il'i boş (çevrimiçi) olan haritada yok */
+/**
+ * İl → yaklaşan (bitmemiş) herkese açık etkinlikler, en yakın üstte. Çevrimiçi etkinlik haritada yok:
+ * il'i boş olabilir ya da topluluk etkinliğinde topluluğun iliyle dolmuştur (yer değil).
+ */
 export async function haritaEtkinlikleri(simdi: Date = new Date()): Promise<Map<string, HaritaEtkinlik[]>> {
   const e = schema.events;
   const rows = await db
@@ -91,6 +95,7 @@ export async function haritaEtkinlikleri(simdi: Date = new Date()): Promise<Map<
     .where(
       and(
         isNotNull(e.il),
+        sql`${e.kind} is distinct from 'cevrimici'`,
         etkinlikGorunurSql,
         sql`coalesce(${e.endsAt}, ${e.startsAt} + ${VARSAYILAN_SURE_SAAT}::int * interval '1 hour') > ${simdi.toISOString()}::timestamp`,
       ),

@@ -31,7 +31,9 @@ export const KULUP_ADI_AZAMI = 60;
 export function kulupAdiTemizle(girdi: string | null | undefined): string | null {
   const ad = String(girdi ?? "").replace(/\s+/g, " ").trim();
   if (ad.length < KULUP_ADI_ASGARI || ad.length > KULUP_ADI_AZAMI) return null;
-  if (/[<>\p{Cc}\p{Cf}]/u.test(ad) || !/\p{L}/u.test(ad)) return null;
+  // Görünmez "harf"ler (Hangul dolgu U+115F/1160/3164/FFA0) \p{L} sayılır, Braille boşluğu (U+2800) simge:
+  // tamamen boş görünen ad geçmesin
+  if (/[<>\p{Cc}\p{Cf}\u115F\u1160\u3164\uFFA0\u2800]/u.test(ad) || !/\p{L}/u.test(ad)) return null;
   return ad;
 }
 

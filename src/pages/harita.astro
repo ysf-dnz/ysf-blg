@@ -16,7 +16,7 @@ import { asc, eq, sql } from "drizzle-orm";
 import { SignInButton } from "@clerk/astro/components";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
-import { haritaEtkinlikleri, haritaUyeleri } from "@/lib/harita.ts";
+import { haritaEtkinlikleri, haritaUyeleri, type HaritaIl } from "@/lib/harita.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { R } from "@/lib/routes.ts";
 import { ilBul } from "@/lib/topluluk.ts";
@@ -71,7 +71,7 @@ const filtreli = !!(seciliKulup || seciliKurs || takip);
 const [gorunenler, etkinlikler] = await Promise.all([
   member
     ? haritaUyeleri(member.id, { kulupId: seciliKulup?.id, kursId: seciliKurs?.id, takip })
-    : new Map<string, Awaited<ReturnType<typeof haritaUyeleri>> extends Map<string, infer V> ? V : never>(),
+    : new Map<string, HaritaIl>(),
   haritaEtkinlikleri(),
 ]);
 

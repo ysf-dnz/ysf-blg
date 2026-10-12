@@ -8,6 +8,7 @@ import type { APIRoute } from "astro";
 import { and, eq, isNull, lte } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { idMi } from "@/lib/mesaj.ts";
 
 export const prerender = false;
 
@@ -15,7 +16,7 @@ export const POST: APIRoute = async (context) => {
   const member = await getOrCreateMember(context);
   if (!member) return new Response("Giriş gerekli", { status: 401 });
   const son = Number((await context.request.formData()).get("son") ?? 0);
-  if (!Number.isSafeInteger(son) || son <= 0) return new Response("Geçersiz istek", { status: 400 });
+  if (!idMi(son)) return new Response("Geçersiz istek", { status: 400 });
   await db
     .update(schema.notifications)
     .set({ readAt: new Date() })

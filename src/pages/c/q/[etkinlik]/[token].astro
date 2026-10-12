@@ -9,6 +9,9 @@
  * POST /api/uye/etkinlik action=donen-giris ile gönderir (telefon kamerasıyla okutma belge
  * gezintisidir → ek dokunuş yok), betik yoksa "Girişimi doğrula" düğmesi. Buradaki ön kontrol
  * saftır (imza + pencere); asıl karar POST'ta. Sonuç etkinlik sayfasında ?giris= bandıyla.
+ * Form yalnız kullanıcının kendi başlattığı gezintide (sec-fetch-site: none — QR okutma) kendiliğinden
+ * gönderilir: bir web sayfasındaki bağlantıdan (başka site ya da üye içeriği) gelen ziyaretçi düğmeye
+ * kendisi dokunur (eski "başka siteden açılamaz" freninin karşılığı; tıklatarak kayıt + giriş yazdırılamaz).
  */
 import { eq } from "drizzle-orm";
 import { SignInButton } from "@clerk/astro/components";
@@ -18,6 +21,7 @@ import { etkinlikGorunurMu, slugGaranti } from "@/lib/etkinlik.ts";
 import { donenGecerli, girisPenceresinde } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { R } from "@/lib/routes.ts";
+import { kullaniciGezintisiMi } from "@/lib/urls.ts";
 
 export const prerender = false;
 
@@ -43,7 +47,9 @@ const METIN = {
   sure: ["Bu QR'ın süresi doldu", "Girişteki ekranda QR 30 saniyede bir yenilenir. Güncel QR'ı yeniden okut."],
   pencere: ["Giriş şu an kapalı", "Giriş doğrulaması kapı açılışından etkinlik bitişine kadar yapılır."],
 } as const;
-const [baslik, aciklama] = METIN[durum];
+const otomatik = kullaniciGezintisiMi(Astro.request);
+const [baslik, aciklama] =
+  durum === "dogrula" && !otomatik ? ["Girişini doğrula", "Bu etkinlikte girişini doğrulamak için düğmeye dokun."] : METIN[durum];
 ---
 
 <Base title={`Giriş · ${e.title}`} description="Etkinlik giriş doğrulaması" seo={{ noindex: true }}>
@@ -57,7 +63,7 @@ const [baslik, aciklama] = METIN[durum];
         <button type="button" class="mt-5 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Giriş yap</button>
       </SignInButton>
     ) : durum === "dogrula" ? (
-      <form method="post" action="/api/uye/etkinlik" data-donen-formu>
+      <form method="post" action="/api/uye/etkinlik" data-donen-formu data-otomatik={otomatik ? "1" : undefined}>
         <input type="hidden" name="action" value="donen-giris" />
         <input type="hidden" name="eventId" value={e.id} />
         <input type="hidden" name="token" value={token} />
@@ -73,7 +79,7 @@ const [baslik, aciklama] = METIN[durum];
   // Form kendiliğinden gönderilir; aynı adres için yalnız BİR kez (Geri tuşuyla dönüşte yeniden
   // gönderip "zaten"e atmasın) — sonrası düğmeyle. Görsel isteği ve ön-yükleme betik çalıştırmaz.
   function gonder() {
-    const form = document.querySelector<HTMLFormElement>("form[data-donen-formu]");
+    const form = document.querySelector<HTMLFormElement>("form[data-donen-formu][data-otomatik]");
     if (!form || form.dataset.gonderildi) return;
     const anahtar = `ysf_donen:${location.pathname}`;
     try {

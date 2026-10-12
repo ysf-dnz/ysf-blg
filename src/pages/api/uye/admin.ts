@@ -6,6 +6,7 @@ import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
+import { sikayetTuruMu } from "@/lib/sikayet.ts";
 
 export const prerender = false;
 
@@ -111,11 +112,10 @@ export const POST: APIRoute = async (context) => {
   const reportTarget = String(form.get("reportTarget") ?? "");
   const reportTargetId = Number(form.get("reportTargetId") ?? 0);
   // Üye/mesaj şikâyetinde (F4-04) içerik etkisi yok: yalnız kuyruk kaydı kapanır (çözüldü / reddedildi).
-  const SIKAYET_TURLERI = ["course", "comment", "user", "message"] as const;
   if (
     (action === "report_remove" || action === "report_restore") &&
     reportTargetId &&
-    (SIKAYET_TURLERI as readonly string[]).includes(reportTarget)
+    sikayetTuruMu(reportTarget)
   ) {
     const kaldir = action === "report_remove";
     if (reportTarget === "course") {
@@ -168,7 +168,7 @@ export const POST: APIRoute = async (context) => {
       .set({ status: kaldir ? "resolved" : "dismissed" })
       .where(
         and(
-          eq(schema.reports.targetType, reportTarget as (typeof SIKAYET_TURLERI)[number]),
+          eq(schema.reports.targetType, reportTarget),
           eq(schema.reports.targetId, reportTargetId),
           eq(schema.reports.status, "open"),
         ),

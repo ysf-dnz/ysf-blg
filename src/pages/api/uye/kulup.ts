@@ -19,8 +19,8 @@ export const POST: APIRoute = async (context) => {
   if (action === "apply") {
     // Ad kuralı (F4-01): uzunluk + görünmez/işaretleme karakteri; eskiden yalnız trim + kesme vardı
     const name = kulupAdiTemizle(String(form.get("name") ?? ""));
-    if (!name)
-      return new Response("Topluluk adı 3–60 karakter olmalı; < > ve görünmez karakter içeremez", { status: 400 });
+    // Düz metin 400 değil yönlendirme: ClientRouter HTML olmayan yanıtta 404 gösterir, form kaybolurdu
+    if (!name) return context.redirect("/kulup-kur?hata=ad");
     // clubs.kind DB'de düz text: beyaz liste yoksa her string yazılabiliyordu
     const kind = String(form.get("kind") ?? "");
     if (!kulupTuruMu(kind)) return new Response("Geçersiz topluluk türü", { status: 400 });

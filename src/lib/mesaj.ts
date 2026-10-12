@@ -7,12 +7,13 @@
  * görmesin diye gönderen başına danışma kilidiyle aynı HTTP transaction'ında (K1.5 deseni).
  * Puan üretmez; `notifications`'a yazılmaz (okunmamış sayısı BildirimZili'nde ayrı sayılır).
  */
-import { and, desc, eq, gt, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt, lte, or, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import {
   DM_GUNLUK_YENI_KONUSMA,
   DM_PENCERE_LIMIT,
   DM_PENCERE_SN,
+  DM_YANITSIZ_SINIR,
   dmKarar,
   dmPolitikasiMi,
   type DmDurum,
@@ -34,6 +35,12 @@ export const engelSql = (a: number | SQL, b: number | SQL): SQL =>
   sql`exists (select 1 from blocks bl where (bl.blocker_id = ${a} and bl.blocked_id = ${b}) or (bl.blocker_id = ${b} and bl.blocked_id = ${a}))`;
 const yazmisSql = (kimden: number, kime: number): SQL =>
   sql`exists (select 1 from messages mm where mm.sender_id = ${kimden} and mm.recipient_id = ${kime})`;
+/** kimden → kime toplam mesaj (alıcı yanıtlamadıysa "yanıtsız" tavanına sayılır) */
+const gonderilenSql = (kimden: number, kime: number): SQL =>
+  sql`(select count(*) from messages mg where mg.sender_id = ${kimden} and mg.recipient_id = ${kime})`;
+/** serial/int4 üst sınırı: aşan değer Postgres'te "out of range" hatası (500) üretir */
+export const INT4_AZAMI = 2_147_483_647;
+export const idMi = (n: number): boolean => Number.isSafeInteger(n) && n > 0 && n <= INT4_AZAMI;
 /**
  * Bağ: ortak ONAYLI topluluk (pending/arşivli sayılmaz) ya da karşılıklı takip.
  * shortcut: club_members'ta user_id öncelikli index yok (küçük tablo), üye sayısı büyüyünce eklenir.
@@ -66,6 +73,7 @@ export async function mesajDurumu(gonderenId: number, aliciId: number): Promise<
     politika: string | null;
     pencere: number;
     yeni: number;
+    aliciya: number;
   }>(
     await db.execute(sql`
       select ${engelSql(gonderenId, aliciId)} as engel,
@@ -75,7 +83,8 @@ export async function mesajDurumu(gonderenId: number, aliciId: number): Promise<
              ${sv4Sql(gonderenId)} as sv4,
              (select coalesce(u.dm_policy, 'mutual') from users u where u.id = ${aliciId}) as politika,
              ${pencereSql(gonderenId)}::int as pencere,
-             ${yeniKonusmaSql(gonderenId, gunBaslangici())}::int as yeni`),
+             ${yeniKonusmaSql(gonderenId, gunBaslangici())}::int as yeni,
+             ${gonderilenSql(gonderenId, aliciId)}::int as aliciya`),
   );
   return {
     kendisi: gonderenId === aliciId,
@@ -84,10 +93,12 @@ export async function mesajDurumu(gonderenId: number, aliciId: number): Promise<
     benYazmis: !!r?.ben,
     bag: !!r?.bag,
     sv4: !!r?.sv4,
-    // Alıcı yoksa (ya da beyaz liste dışı değer yazılmışsa) kimse yazamaz
-    politika: r?.politika && dmPolitikasiMi(r.politika) ? r.politika : "nobody",
+    // Alıcı yoksa (alt sorgu NULL) kimse yazamaz; beyaz liste dışı değer gönderim SQL'indeki
+    // CASE'in else dalıyla AYNI yorumlanır (mutual) — iki karar ayrışmasın
+    politika: !r?.politika ? "nobody" : dmPolitikasiMi(r.politika) ? r.politika : "mutual",
     penceredeGonderilen: Number(r?.pencere ?? 0),
     bugunYeniKonusma: Number(r?.yeni ?? 0),
+    aliciyaGonderilen: Number(r?.aliciya ?? 0),
   };
 }
 
@@ -116,7 +127,8 @@ export async function mesajGonder(gonderenId: number, aliciId: number, govde: st
                     when 'nobody' then false
                     when 'everyone' then (${bagSql(g, a)} or ${sv4Sql(g)})
                     else ${bagSql(g, a)} end)
-                 and (${yazmisSql(g, a)} or ${yeniKonusmaSql(g, gunBaslangici())} < ${DM_GUNLUK_YENI_KONUSMA})))
+                 and (${yazmisSql(g, a)} or ${yeniKonusmaSql(g, gunBaslangici())} < ${DM_GUNLUK_YENI_KONUSMA})
+                 and ${gonderilenSql(g, a)} < ${DM_YANITSIZ_SINIR}))
       returning id`),
   ]);
   const id = Number(satirlar<{ id: number }>(sonuc)[0]?.id ?? 0);
@@ -126,11 +138,16 @@ export async function mesajGonder(gonderenId: number, aliciId: number, govde: st
   return { durum: karar === "ok" ? "hiz" : karar };
 }
 
-/** İki üye arasındaki mesajlar, eskiden yeniye (en yeni `limit` adet). sonraId: yalnız ondan yeniler (yoklama). */
+export const KONUSMA_SAYFASI = 100;
+
+/**
+ * İki üye arasındaki mesajlar, eskiden yeniye (en yeni `limit` adet). sonraId: yalnız ondan
+ * yeniler (yoklama); onceId: yalnız ondan eskiler ("daha eski mesajlar" sayfası).
+ */
 export async function konusma(
   benId: number,
   kisiId: number,
-  o: { sonraId?: number; limit?: number } = {},
+  o: { sonraId?: number; onceId?: number; limit?: number } = {},
 ): Promise<Mesaj[]> {
   const m = schema.messages;
   const rows = await db
@@ -140,10 +157,11 @@ export async function konusma(
       and(
         or(and(eq(m.senderId, benId), eq(m.recipientId, kisiId)), and(eq(m.senderId, kisiId), eq(m.recipientId, benId))),
         o.sonraId ? gt(m.id, o.sonraId) : undefined,
+        o.onceId ? lt(m.id, o.onceId) : undefined,
       ),
     )
     .orderBy(desc(m.id))
-    .limit(o.limit ?? 100);
+    .limit(o.limit ?? KONUSMA_SAYFASI);
   return rows.reverse();
 }
 
@@ -165,7 +183,7 @@ export async function gelenKutusu(benId: number, limit = 100): Promise<KonusmaOz
     db
       .select({ kisiId: m.senderId, n: sql<number>`count(*)` })
       .from(m)
-      .where(and(eq(m.recipientId, benId), isNull(m.readAt)))
+      .where(okunmamisKosulu(benId))
       .groupBy(m.senderId),
   ]);
   const okunmamis = new Map(okunmamislar.map((r) => [r.kisiId, Number(r.n)]));
@@ -175,24 +193,37 @@ export async function gelenKutusu(benId: number, limit = 100): Promise<KonusmaOz
   });
 }
 
-/** Bu kişiden gelenleri okundu yaz (yalnız POST'tan çağrılır: GET durum değiştirmez). Yazılan satır sayısı. */
-export async function okunduYaz(benId: number, kisiId: number): Promise<number> {
+/**
+ * Okunmamış sayılan mesajlar: bana gelmiş, okunmamış ve göndereniyle aramda ENGEL YOK. Engelli
+ * kişinin eski okunmamışları rozeti şişirmez (temizlemek için tacizcinin konuşmasını açıp ona
+ * "Görüldü" göstermek gerekmesin).
+ */
+const okunmamisKosulu = (benId: number) => {
+  const m = schema.messages;
+  return and(eq(m.recipientId, benId), isNull(m.readAt), sql`not ${engelSql(benId, sql`${m.senderId}`)}`);
+};
+
+/**
+ * Bu kişiden gelenleri okundu yaz (yalnız POST'tan çağrılır: GET durum değiştirmez). Yazılan satır
+ * sayısı. sonId: sayfada gösterilen en yeni mesaj — görülmemiş (sonradan gelen) mesaj okundu olmasın.
+ * Arada engel varsa yazılmaz ("Görüldü" engellenen kişiye sinyal olmasın).
+ */
+export async function okunduYaz(benId: number, kisiId: number, sonId?: number): Promise<number> {
   const m = schema.messages;
   const rows = await db
     .update(m)
     .set({ readAt: new Date() })
-    .where(and(eq(m.recipientId, benId), eq(m.senderId, kisiId), isNull(m.readAt)))
+    .where(and(okunmamisKosulu(benId), eq(m.senderId, kisiId), sonId ? lte(m.id, sonId) : undefined))
     .returning({ id: m.id });
   return rows.length;
 }
 
 /** Okunmamış mesaj toplamı (BildirimZili; messages_recipient_read_idx) */
 export async function okunmamisMesaj(benId: number): Promise<number> {
-  const m = schema.messages;
   const [r] = await db
     .select({ n: sql<number>`count(*)` })
-    .from(m)
-    .where(and(eq(m.recipientId, benId), isNull(m.readAt)));
+    .from(schema.messages)
+    .where(okunmamisKosulu(benId));
   return Number(r?.n ?? 0);
 }
 

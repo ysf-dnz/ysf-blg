@@ -66,6 +66,9 @@ describe("topluluk adı (F4-01)", () => {
     ["Okuma\u0000Kulübü", null], // kontrol karakteri
     ["Okuma\u202EübüluK", null], // bidi yön değiştirici (görsel taklit)
     ["Oku\u200Bma Kulübü", null], // sıfır genişlikli boşluk
+    ["\u3164\u3164\u3164", null], // Hangul dolgu: \p{L} ama görünmez → tamamen boş görünen ad
+    ["Okuma\u3164Kulübü", null],
+    ["\u2800\u2800abc", null], // Braille boşluğu
     [null, null],
   ])("ad %j → %j", (girdi, beklenen) => {
     expect(kulupAdiTemizle(girdi)).toBe(beklenen);

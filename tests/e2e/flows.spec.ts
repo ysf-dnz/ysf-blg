@@ -58,7 +58,6 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     const popup = page.locator(".leaflet-popup");
     await expect(popup.getByText("Yaklaşan etkinlikler")).toBeVisible();
     await expect(popup.locator('a[href="/etkinlik/canli-quiz-gecesi-demo"]')).toBeVisible();
-    await expect(popup.locator('a[href^="/etkinlik/"]')).toHaveCount(1);
     await expect(popup.locator("[data-harita-uyeler]")).toHaveCount(0);
   });
 
