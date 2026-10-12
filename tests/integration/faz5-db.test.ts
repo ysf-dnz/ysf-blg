@@ -645,14 +645,15 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     }
   });
 
-  it("C3 (karakterizasyon, Faz 5 öncesi): işaretli beğenenin beğenisi like_received'ı doğrudan yazar — begeniPuaniVer beğenenin işaretine bakmaz", async () => {
+  it("C3 (kapandı): işaretli beğenenin beğenisi like_received üretmez; işaret kalkınca aynı beğenen puan üretir", async () => {
     const [yazar, begenen] = await Promise.all([uye("c3-y", 30), uye("c3-b", 30)]);
     await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, begenen.id));
+    expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: yazar.id, refId: `yorum:itest-c3-${t}` })).toBe(false);
+    expect((await ledger(yazar.id, "like_received")).length).toBe(0);
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, begenen.id));
     expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: yazar.id, refId: `yorum:itest-c3-${t}` })).toBe(true);
     expect((await ledger(yazar.id, "like_received")).length).toBe(1);
-    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, begenen.id));
   });
-  it.todo("C3 karar (#42): like_received / event_hosted / event_well_rated sayımından işaretli kaynağı dışlama (devir §1 C3, §4.3 kural 12)");
 
   it("D3: davetli hem GENÇ hem işaretliyse davet edenin bildirimi 'Puan bekleyende' der ('24 saatlik olunca kesinleşir' değil — satır işaret kalkana dek kesinleşmez)", async () => {
     const [dEden, uret] = await Promise.all([uye("d3-d", 30), uye("d3-u", 30)]);

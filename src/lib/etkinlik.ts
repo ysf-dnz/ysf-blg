@@ -484,6 +484,8 @@ async function girisSayisi(eventId: number, hostlar: number[]): Promise<number> 
         eq(schema.eventRsvps.eventId, eventId),
         isNotNull(schema.eventRsvps.checkedInAt),
         sql`${schema.eventRsvps.checkinMethod} is distinct from 'manual'`,
+        // İşaretli hesabın girişi düzenleyen payına sayılmaz (Faz 5 C3): kukla girişiyle event_hosted şişmesin
+        sql`not exists (select 1 from users f where f.id = event_rsvps.user_id and f.flagged_at is not null)`,
         hostlar.length ? notInArray(schema.eventRsvps.userId, hostlar) : undefined,
       ),
     );

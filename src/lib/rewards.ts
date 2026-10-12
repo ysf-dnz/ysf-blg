@@ -625,6 +625,9 @@ export async function begeniPuaniVer(opts: {
   yazarId: number;
   refId: string;
 }): Promise<boolean> {
+  // İşaretli (flagged_at) beğenenin beğenisi puan üretmez (Faz 5 C3): kukla beğenisiyle like_received basılmasın
+  const begenen = await db.query.users.findFirst({ where: eq(schema.users.id, opts.begenenId), columns: { flaggedAt: true } });
+  if (begenen?.flaggedAt) return false;
   const bugun = gunBaslangici();
   const [feedSayi, yaziSayi, yorumSayi] = await Promise.all([
     db

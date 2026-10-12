@@ -193,7 +193,7 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect(await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).toHaveLength(0);
   });
 
-  it("işaretli davetli girişi (F5-04): davetlinin kendi +10/+5'i yazılır, davet edenin +10'u bekleyende TUTULUR (kaynakIsaretli), işaret kalkınca kesinleşir; C3 (karakterizasyon): işaretli giriş düzenleyen payına sayılır", async () => {
+  it("işaretli davetli girişi (F5-04): davetlinin kendi +10/+5'i yazılır, davet edenin +10'u bekleyende TUTULUR (kaynakIsaretli), işaret kalkınca kesinleşir; C3 (kapandı): işaretli giriş düzenleyen payına sayılmaz", async () => {
     const acan = await uye("fl-acan");
     const e = await etkinlik(acan.id); // kapı açık (başlangıç −1 s), bitiş +3 s
     const davetEden = await uye("fl-eden");
@@ -212,9 +212,10 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect(await ledger(davetEden.id, "event_invite_attended", ref)).toHaveLength(0);
     expect(await bekleyen(davetEden.id, ref)).toMatchObject({ status: "pending", delta: 10, expiresAt: null });
     expect(await rw.bekleyenleriIsle(new Date(), davetEden.id)).toMatchObject({ kesinlesen: 0 });
-    // C3 (devir §1): işaretli hesabın girişi event_hosted sayımına girer — bugünkü davranış, karar #42
-    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 1, toplam: 5 });
+    // C3 (kapandı): işaretli hesabın girişi düzenleyen payına sayılmaz; işaret kalkınca sayılır
+    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 0, toplam: 0 });
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, davetli.id));
+    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 1, toplam: 5 });
     expect(await rw.bekleyenleriIsle(new Date(), davetEden.id)).toMatchObject({ kesinlesen: 1 });
     expect((await ledger(davetEden.id, "event_invite_attended", ref)).map((r) => r.delta)).toEqual([10]);
   });
