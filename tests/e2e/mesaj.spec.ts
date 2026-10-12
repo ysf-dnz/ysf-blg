@@ -177,6 +177,9 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   });
 
   test("AC-22 + AC-21: engelleyene mesaj atılamaz, Mesaj düğmesi yok, haritada görünmez; rızasız üye haritada yok; filtre", async ({ page }) => {
+    // Yarıda kesilmiş bir önceki koşumdan (F4-04 testi zaman aşımına uğradıysa) kalmış engel bu testin
+    // harita beklentisini bozmasın: test üyesinin Ayşe engeli varsa kaldır (idempotent)
+    await page.request.post("/api/uye/mesaj", { form: { action: "engel-kaldir", kisi: AYSE }, maxRedirects: 0 });
     // Zeynep test üyesini engelledi (global-setup): düğme yok, form yok, uç reddeder — ama engel
     // SÖYLENMEZ: düğmenin yokluğu, metin, adres ve durum kodu "kimse" ayarlı Mehmet'inkiyle birebir aynı
     await page.goto(`/u/${MEHMET}`, { waitUntil: "domcontentloaded" });
