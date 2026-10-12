@@ -637,6 +637,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("C3 karar (#42): like_received / event_hosted / event_well_rated sayımından işaretli kaynağı dışlama (devir §1 C3, §4.3 kural 12)");
 
+  it("D3: davetli hem GENÇ hem işaretliyse davet edenin bildirimi 'Puan bekleyende' der ('24 saatlik olunca kesinleşir' değil — satır işaret kalkana dek kesinleşmez)", async () => {
+    const [dEden, uret] = await Promise.all([uye("d3-d", 30), uye("d3-u", 30)]);
+    const gencHam = await uye("d3-g", 0);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, gencHam.id));
+    const genc = (await db.query.users.findFirst({ where: eq(schema.users.id, gencHam.id) }))!;
+    const { kurs: k } = await kurs("d3", uret.id, 1);
+    await davetleAktive(genc, k, dEden.id);
+    const b = (await db.query.notifications.findMany({ where: eq(schema.notifications.userId, dEden.id) })).map((n) => n.body).filter((x) => x.includes("aktive oldu"));
+    expect(b).toHaveLength(1);
+    expect(b[0]).toContain("Puan bekleyende");
+    expect(b[0]).not.toContain("24 saatlik");
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, genc.id));
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {
