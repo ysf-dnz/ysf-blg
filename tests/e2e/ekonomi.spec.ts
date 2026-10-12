@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { neon } from "@neondatabase/serverless";
 
+// İki test de demo Elif'in işaretini yazıp geri alır; misafir projesi paralel → aynı dosyada seri
+test.describe.configure({ mode: "serial" });
+
 /**
  * Faz 5 (F5-04): işaretli (users.flagged_at) üye liderlik tablolarında görünmez.
  * Demo üyeyle sınanır; işaret `finally`'de geri alınır (dev = canlı DB). Ekonomi kartı ve suistimal

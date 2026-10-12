@@ -212,7 +212,7 @@ export async function suistimalTara(davetciId?: number): Promise<{ id: number; i
     await db.execute(sql`${suistimalCte(davetciId)}
       update users u set flagged_at = now()
       from aday a
-      where u.id = a.id
+      where u.id = a.id and u.flagged_at is null -- hedefte de: eşzamanlı ikinci tarama satırı yeniden güncellemesin
       returning u.id, a.inviter_id
     `),
   );
@@ -250,10 +250,13 @@ function suistimalCte(davetciId?: number) {
         group by y.inviter_id, y.hesap
         having max(i.n) >= ${SUISTIMAL_ESIK} and count(*) * 2 <= y.hesap
       ), aday as (
-        select y.id, y.inviter_id
+        -- iki şüpheli davetçinin koduyla gelen üye TEK satır: UPDATE … FROM belirsiz davetçiyi seçerdi,
+        -- aday SELECT'i aynı hesabı iki kez sayardı
+        select distinct on (y.id) y.id, y.inviter_id
         from yeni y join supheli s on s.inviter_id = y.inviter_id join users u on u.id = y.id
         where u.flagged_at is null and u.role = 'member'
           and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
+        order by y.id, y.inviter_id
       )`;
 }
 

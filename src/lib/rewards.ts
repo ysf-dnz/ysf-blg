@@ -487,7 +487,9 @@ export async function puanOlayi(opts: {
   });
   if (alici?.flaggedAt || opts.kaynakIsaretli || hesapGencMi(opts.kaynakOlusturulma)) {
     // Hayalet bekleyen yok: anahtar ledger'a yazılmışsa (ödenmiş course_launched'ın yeniden gönderimi, ödenmiş
-    // havuz payının yeniden koşumu) yeni satır açılmaz — açılsa yazilan=delta ile kapanır, puan gelmez, kuyruk şişer
+    // havuz payının yeniden koşumu) yeni satır açılmaz — açılsa yazilan=delta ile kapanır, puan gelmez, kuyruk şişer.
+    // like_received bu kapıdan GEÇMEMELİ: idem index onu dışlar (aynı refId'ye çok satır), kontrol ikinciyi yutardı.
+    // Kontrol ile INSERT ayrı ifade: eşzamanlı ödeme + genç aktivasyonda dar bir hayalet penceresi kalır (kozmetik).
     const odenmis = await db.query.pointsLedger.findFirst({
       where: and(
         eq(schema.pointsLedger.userId, opts.userId),

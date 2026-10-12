@@ -17,6 +17,7 @@
     "test:e2e": "playwright test",
     "sinirlar:cek": "node --experimental-strip-types scripts/il-sinirlari-cek.ts",
     "seed:demo": "node --env-file=.env.local --experimental-strip-types scripts/seed-demo.ts",
+    "itest:artik": "node --env-file=.env.local scripts/itest-artik-kontrol.mjs",
     "qa": "astro check && vitest run && npm run build && node scripts/check-build-output.mjs && playwright test"
   },
   "dependencies": {

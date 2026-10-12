@@ -237,6 +237,28 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
   });
   it.todo("C2 karar (#42): onay bekleyen topluluğun kampanya / görev ödülü zincirinin kapatılması — kurs (onayliKulupMu) ve etkinlik (etkinlikAcikMi) kuralının üçüncü kopyası (devir §1 C2)");
 
+  it("C2b (karakterizasyon, Faz 5 öncesi): başkan görevi KENDİ üstlenip KENDİ onaylayabiliyor — task_done kendi hesabına yazılır (approve'da atanan ≠ onaylayan kontrolü yok)", async () => {
+    const baskan = await uye("c2b");
+    const [kulup] = await db
+      .insert(schema.clubs)
+      .values({ slug: `itest-rt-c2b-${t}`, name: "Itest RT C2b", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: baskan.id, status: "pending" })
+      .returning();
+    kulupler.push(kulup!.id);
+    await db.insert(schema.clubMembers).values({ clubId: kulup!.id, userId: baskan.id, role: "president" });
+    const r1 = await kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2b kampanya", bookId: "itest-kitap" }));
+    const kampanyaId = Number(r1.headers.get("location")!.split("/").pop());
+    expect((await gorev.POST(baglam(baskan, { action: "create", campaignId: String(kampanyaId), title: "Itest kendi görevi", rewardPoints: "500" }))).status).toBe(303);
+    const task = (await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.campaignId, kampanyaId) }))!;
+    for (const form of [
+      { action: "claim", taskId: String(task.id) },
+      { action: "submit", taskId: String(task.id), url: "https://example.com/itest-c2b" },
+      { action: "approve", taskId: String(task.id) },
+    ])
+      expect((await gorev.POST(baglam(baskan, form))).headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`);
+    expect((await ledger(baskan.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(500 * PUAN.campaignMultiplier)]); // 750, tek hesap
+  });
+  it.todo("C2b karar (#42): approve'da atanan ≠ onaylayan; kulüp başına 1000 görev bütçesi kişi başına kulüp sayısıyla çarpılıyor (kulup-kur kişi başı sınırsız, pending kulüpte anında başkan)");
+
   /* ---------------- api/uye/egitim.ts ---------------- */
 
   it("davetle katıl → ilk öğe (rota): aktivasyon yazılır, davet eden +15, üst davetçi +5, davetli +10, üretici +5; ikinci tamamlama idempotent", async () => {
@@ -277,7 +299,9 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     expect(await tamamla(x3)).toBe(0); // işaretsiz 2 < 3
     expect(await tamamla(x4)).toBe(1); // işaretsiz 3 → +50 (en genç işaretsiz 30 günlük → doğrudan ledger)
     expect((await ledger(uretici.id, "course_launched", `course:${k.id}`)).map((r) => r.delta)).toEqual([50]);
-    expect(await bekleyen(uretici.id, "course_launched", `course:${k.id}`)).toBeUndefined(); // hayalet yok (A2)
+    // Ödemeden SONRA 24 saatten genç 5. katılımcı: eşik yeniden gönderilir (>=), ledger'da anahtar var → hayalet yok (A2)
+    expect(await tamamla(await uye("x5", 0))).toBe(1);
+    expect(await bekleyen(uretici.id, "course_launched", `course:${k.id}`)).toBeUndefined();
   });
 
   it("onayliKulupMu (rota create): onay bekleyen topluluğun başkanı kurs açar → pending (?onay=1); topluluk onaylanınca → published (?yayin=1)", async () => {

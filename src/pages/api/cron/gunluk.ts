@@ -166,6 +166,7 @@ export const GET: APIRoute = async ({ request }) => {
     const isaretlenen = await suistimalTara();
     if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
   } catch (err) {
+    console.error("suistimalTara", err); // yanıt 200 kalır; hata Vercel günlüğünde de görünsün
     rapor.suistimalHata = err instanceof Error ? err.message : String(err);
   }
 
