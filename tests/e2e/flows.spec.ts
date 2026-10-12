@@ -21,8 +21,9 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     await page.getByRole("contentinfo").getByRole("link", { name: "Gizlilik" }).click();
     await expect(page).toHaveURL(/\/gizlilik$/);
     await expect(page.getByRole("heading", { level: 1, name: "Gizlilik ve kişisel veriler" })).toBeVisible();
-    await expect(page.getByRole("row", { name: /Kayıt imzası/ })).toContainText("7 gün");
-    await expect(page.getByRole("row", { name: /Davet ziyareti/ })).toContainText("30 gün");
+    // satır adı başlık hücresiyle BAŞLAR ("Suistimal işareti" satırı da "Kayıt imzası" geçirir → başa çapalı)
+    await expect(page.getByRole("row", { name: /^Kayıt imzası / })).toContainText("7 gün");
+    await expect(page.getByRole("row", { name: /^Davet ziyareti / })).toContainText("30 gün");
     await expect(page.getByRole("heading", { name: "Çerezler" })).toBeVisible();
   });
 

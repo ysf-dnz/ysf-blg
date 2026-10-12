@@ -261,7 +261,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 - **Faz 2:** `invite_codes`, `invite_visits`, `course_enrollments.invite_code_id`, reason +3. Cron: bekleyen (zaten Faz 1) + `invite_visits` 30 gün temizliği (F2-01).
 - **Faz 3:** clubs.kind, events (+slug 3 adım, ends_at, kind, il+backfill, capacity, rsvp_closes_at, cover_url), event_rsvps (+checked_in_at, checkin_method, checked_in_by, invite_code_id), `event_staff`, `ratings.event_id`, reason +4.
 - **Faz 4:** users (+map_visible_at, dm_policy), `messages`, `blocks`.
-- **Faz 5:** `users.flagged_at`, reason +2; tablo yok (2. seviye `referrals_invited_idx` ile tek sorgu).
+- **Faz 5:** `users.flagged_at`, `users.signup_ip_hash` (ADIM 9–10; ikisi nullable, canlıda), reason +2; tablo yok (2. seviye `referrals_invited_idx` ile tek sorgu).
 
 ### Belirsiz (çalıştırılmadı)
 `drizzle-kit push`'un dolu tabloya NOT NULL kolon eklerkenki davranışı (nullable-first bunu atlar) · canlı DB'nin `schema.ts` ile birebir aynı olduğu · canlıdaki kurs/etkinlik sayısı.
