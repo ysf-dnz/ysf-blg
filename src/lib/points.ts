@@ -90,6 +90,8 @@ export const PUAN = {
   inviteSecondLevel: 5,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
+  /** Kişi başı kayan 7 günde alınan beğeni puanı tavanı: kodsuz kukla hiç işaretlenmez, tek fren günde 5'ti */
+  likeWeeklyCap: 100,
   /** Kişi başı kayan 7 günde görev puanı tavanı: kulüp başına 1000 bütçesi kulüp SAYISIYLA çarpılmasın */
   taskWeeklyCap: 1000,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */

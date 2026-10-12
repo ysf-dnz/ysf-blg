@@ -275,7 +275,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | `course_learner_activated` | `course:{id}:u:{learner}` | üretici | üretici günde 100 (tavan param., TR günü) |
 | `course_learner_completed` | `course:{id}:u:{learner}` | üretici | aynı günlük tavan; asgari süre |
 | `course_completed` (mevcut) | `course:{id}` | öğrenen | kayan 7 gün 100 (tavan param.); asgari süre |
-| `like_received` (yorum) | `yorum:{id}` | cevap yazarı | günde 5 (begeniPuaniVer; idem index HARİÇ) |
+| `like_received` (yorum) | `yorum:{id}` | cevap yazarı | günde 5 (begeniPuaniVer; idem index HARİÇ); **Faz 5 kararı:** kişi başı kayan 7 gün 100 (`tavanIcin`), işaretli beğenen puansız |
 | `answer_accepted` | `yorum:{id}` | cevap yazarı | üreticinin kendi cevabı hariç (WHERE) |
 | `resource_accepted` | `kaynak:{id}` | öneren | günde 3 (tavan param. limit 45) |
 | `referral_joined` (mevcut) | `u:{invitee}` (**Faz 5 kararı**; eskiden `{invitee}`) | davet eden | davet tavanı; kayıtta ANINDA değil 24 s bekleyen (`puanOlayi`, kaynak yeni hesap) — yeni hesap işaretlenirse tutulur |
@@ -290,7 +290,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | `event_well_rated` | `event:{id}` | her host | etkinlik başına 1 |
 | `vitality_pool` | `course:{id}:{YYYY-Www}` | üretici/katkıcı/davetçi | kurs başına haftada 100; DAVET tavanına girmez; **Faz 5 incelemesi:** kişi başı haftalık tavan 200 (`tavanIcin`, TR haftası — kurs sayısıyla çarpılmasın). Aynı kişi birden çok dilimden pay alabilir (üretici + davetçi) → paylar **kullanıcı başına toplanıp tek insert** yazılır, yoksa idem index ikinci payı yutar |
 | `admin_adjust` (iade) | `iade:{reason}:{refId}` | — | orijinal satır varsa, bir kez |
-| `task_done` (mevcut) | `{taskId}` | üstlenen | kulüp haftalık 1000 (`gorevOdulKirp`) + **Faz 5 kararı:** kişi başı kayan 7 gün 1000 (`tavanIcin`); yalnız ONAYLI kulüp kampanyası; atanan ≠ onaylayan |
+| `task_done` (mevcut) | `{taskId}` | üstlenen | kulüp haftalık 1000 (`gorevOdulKirp`) + **Faz 5 kararı:** kişi başı kayan 7 gün 1000 (`tavanIcin`); kulüp kampanyasında topluluk ONAYLI (admin hariç; site-geneli kampanya serbest); atanan ≠ onaylayan |
 
 **Davet tavanı 300 / kayan 7 gün:** `referral_joined` (mevcut), `course_invite_welcome`, `course_invite_activated`, `course_invite_completed`, `invite_second_level`, `event_invite_attended` (PRD §4.2 listesi birebir; `course_invite_*` welcome'ı kapsar). `referral_activated` (admin onaylı) ve `event_invite_welcome` (PRD listesinde yok) hariç.
 **Kendine puan yok** (WHERE'de): kendi kursu, kendi yorumu, kendi davet kodu, kendi etkinliği; host'lar davet puanı almaz.

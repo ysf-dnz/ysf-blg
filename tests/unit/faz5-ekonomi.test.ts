@@ -24,6 +24,9 @@ describe("2. seviye davet (F5-01)", () => {
     expect(t?.limit).toBe(PUAN.inviteWeeklyCap);
     expect(t?.reasons).toEqual(DAVET_REASONLARI);
   });
+  it("beğeni puanı kişi başı kayan 7 günde 100 (kodsuz kukla işaretlenmez; günde 5 freni yetmiyordu)", () => {
+    expect(tavanIcin("like_received")).toMatchObject({ reasons: ["like_received"], limit: PUAN.likeWeeklyCap });
+  });
   it("görev ödülü kişi başı kayan 7 günde 1000 (kulüp bütçesi kulüp sayısıyla çarpılmasın — C2b)", () => {
     expect(tavanIcin("task_done")).toMatchObject({ reasons: ["task_done"], limit: PUAN.taskWeeklyCap });
     expect(DAVET_REASONLARI).not.toContain("task_done");

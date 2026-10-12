@@ -15,6 +15,7 @@ const h = vi.hoisted(() => {
     havuz: vi.fn(async () => ({ kurs: 0, puan: 0 })),
     sezonBitis: new Date("2099-01-01T00:00:00Z"),
     bitenler: [] as { id: number; name: string; startsAt: Date; endsAt: Date }[],
+    patlayanSezon: "",
   };
 });
 vi.mock("@/db/client.ts", async () => ({
@@ -23,11 +24,17 @@ vi.mock("@/db/client.ts", async () => ({
 }));
 vi.mock("@/lib/cron.ts", () => ({
   birKez: vi.fn(async () => true),
-  birKezCalistir: vi.fn(async (job: string) => (h.log.push(job), undefined)),
+  // yalnız sezon-kapat işi gerçekten koşturulur (sahte sezonKapat); öbür işler DB'li → koşturulmaz
+  birKezCalistir: vi.fn(async (job: string, _key: string, fn: () => Promise<unknown>) => (h.log.push(job), job === "sezon-kapat" ? fn() : undefined)),
 }));
 vi.mock("@/lib/league.ts", () => ({
   aktifSezon: vi.fn(async () => (h.log.push("aktifSezon"), { id: 77, name: "itest sezon", startsAt: new Date(0), endsAt: h.sezonBitis })),
   bitenSezonlar: vi.fn(async () => h.bitenler),
+  sezonKapat: vi.fn(async (sezon: { name: string }) => {
+    h.log.push(`sezonKapat:${sezon.name}`);
+    if (sezon.name === h.patlayanSezon) throw new Error("itest: sezon patladı");
+    return { sampiyonKulupId: null, ilk10: 0 };
+  }),
   kulupIciSiralama: vi.fn(),
   kulupSiralamasi: vi.fn(),
 }));
@@ -103,7 +110,10 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
 
   it("tarama fırlatırsa (B2): yanıt 200, rapor.suistimalHata dolu, 1–8 adımlarının tamamı koşar", async () => {
     h.tarama.mockRejectedValueOnce(new Error("itest: tarama patladı"));
+    const hata = vi.spyOn(console, "error").mockImplementation(() => {});
     const r = await istek();
+    expect(hata).toHaveBeenCalledWith("suistimalTara", expect.any(Error)); // günlüğe de yazılır
+    hata.mockRestore();
     expect(r.status).toBe(200);
     expect(await r.json()).toMatchObject({ ok: true, suistimalHata: "itest: tarama patladı" });
     expect(h.log.slice(1)).toEqual(["bayat-gorev", "aktifSezon", "ozelLigleriKapat", "bekleyen", "davet-ziyaret-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
@@ -125,10 +135,31 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     try {
       vi.mocked(birKezCalistir).mockClear();
       const r = await istek();
-      expect(vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "sezon-kapat").map((c) => c[1])).toEqual(["71", "72"]);
-      expect(await r.json()).toMatchObject({ ok: true }); // sahte kilit işi koşturmaz → rapor.sezonKapandi yok
+      expect(vi.mocked(birKezCalistir).mock.calls.filter((c) => c[0] === "sezon-kapat").map((c) => c[1])).toEqual(["2026 Ağustos", "2026 Eylül"]); // kilit sezon ADIYLA
+      expect(h.log.filter((x) => x.startsWith("sezonKapat:"))).toEqual(["sezonKapat:2026 Ağustos", "sezonKapat:2026 Eylül"]);
+      expect(await r.json()).toMatchObject({ ok: true, sezonKapandi: ["2026 Ağustos", "2026 Eylül"] });
     } finally {
       h.bitenler = [];
+    }
+  });
+
+  it("sezon kapanışı fırlatırsa: hata rapora (sezonHata) ve günlüğe, öbür sezon kapanır, 3–8. adımlar koşar", async () => {
+    h.bitenler = [
+      { id: 71, name: "2026 Ağustos", startsAt: new Date(0), endsAt: new Date("2026-08-31T21:00:00Z") },
+      { id: 72, name: "2026 Eylül", startsAt: new Date(0), endsAt: new Date("2026-09-30T21:00:00Z") },
+    ];
+    h.patlayanSezon = "2026 Ağustos";
+    const hata = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const r = await istek();
+      expect(r.status).toBe(200);
+      expect(await r.json()).toMatchObject({ ok: true, sezonKapandi: ["2026 Eylül"], sezonHata: ["2026 Ağustos: itest: sezon patladı"] });
+      expect(hata).toHaveBeenCalled();
+      expect(h.log.slice(-4)).toEqual(["bekleyen", "davet-ziyaret-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
+    } finally {
+      h.bitenler = [];
+      h.patlayanSezon = "";
+      hata.mockRestore();
     }
   });
 });

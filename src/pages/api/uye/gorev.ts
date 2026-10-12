@@ -215,7 +215,7 @@ export const POST: APIRoute = async (context) => {
     yonetici &&
     task.assigneeId &&
     task.assigneeId !== member.id &&
-    (!campaign.clubId || (await kulupOnayliMi(campaign.clubId)))
+    (!campaign.clubId || member.role === "admin" || (await kulupOnayliMi(campaign.clubId)))
   ) {
     // ATOMİK onay (claim ile aynı desen): status guard WHERE'de. Eskiden
     // update yalnız id ile filtreliydi ve koşul isteğin başında okunan bayat

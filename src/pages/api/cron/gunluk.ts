@@ -11,9 +11,8 @@ import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { birKez, birKezCalistir } from "@/lib/cron.ts";
 import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
-import { aktifSezon, bitenSezonlar, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
-import { awardBadge, bekleyenleriIsle, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
-import { isaretsizKazananSql } from "@/lib/social.ts";
+import { aktifSezon, bitenSezonlar, kulupIciSiralama, sezonKapat } from "@/lib/league.ts";
+import { awardBadge, bekleyenleriIsle, gunKey } from "@/lib/rewards.ts";
 import { canlilikHavuzuDagit, suistimalTara } from "@/lib/ekonomi.ts";
 import { sonTamamlananHafta } from "@/lib/economy.ts";
 import { CANLILIK_ILK_HAFTA } from "@/lib/points.ts";
@@ -33,62 +32,6 @@ async function bayatGorevSupur(): Promise<number> {
     )
     .returning({ id: schema.campaignTasks.id });
   return rows.length;
-}
-
-/** Sezonu kapat: şampiyon kulüp + ilk 10 üyeye hazine kitabı */
-async function sezonKapat(sezon: typeof schema.seasons.$inferSelect) {
-  const siralama = await kulupSiralamasi(sezon.startsAt, sezon.endsAt);
-  const sampiyon = siralama[0];
-  await db
-    .update(schema.seasons)
-    .set({ status: "closed", championClubId: sampiyon?.clubId ?? null })
-    .where(eq(schema.seasons.id, sezon.id));
-
-  if (sampiyon) {
-    const uyeler = await db.query.clubMembers.findMany({
-      where: eq(schema.clubMembers.clubId, sampiyon.clubId),
-    });
-    for (const u of uyeler) {
-      await awardBadge(
-        u.userId,
-        "sezon-sampiyonu",
-        `"${sampiyon.name}" ${sezon.name} sezonunun şampiyonu oldu 🏆`,
-        `/kulup/${sampiyon.slug}`,
-      );
-    }
-  }
-
-  // Site geneli ilk 10 üye: hazinedeki sıradaki kilitli kitap hediye
-  const [ilk10] = await Promise.all([
-    db
-      .select({
-        userId: schema.pointsLedger.userId,
-        t: sql<number>`sum(${schema.pointsLedger.delta})`,
-      })
-      .from(schema.pointsLedger)
-      .where(
-        and(
-          sql`${schema.pointsLedger.delta} > 0`,
-          sql`${schema.pointsLedger.createdAt} >= ${sezon.startsAt}`,
-          sql`${schema.pointsLedger.createdAt} < ${sezon.endsAt}`,
-          isaretsizKazananSql,
-        ),
-      )
-      .groupBy(schema.pointsLedger.userId)
-      .orderBy(desc(sql`sum(${schema.pointsLedger.delta})`))
-      .limit(10),
-  ]);
-  for (const u of ilk10) {
-    const kitap = await hazineKitabiAc(u.userId, "reward");
-    await db.insert(schema.notifications).values({
-      userId: u.userId,
-      kind: "season",
-      body: kitap
-        ? `${sezon.name} sezonunu ilk 10'da bitirdin 🏅 Hazinendeki sıradaki kitap hediye!`
-        : `${sezon.name} sezonunu ilk 10'da bitirdin 🏅`,
-      href: kitap ? `/kutuphane/kitap/${kitap}` : "/lider",
-    });
-  }
 }
 
 /** Ayın kitabı: en çok oyu alan kitap site-geneli kampanyaya dönüşür */
@@ -178,15 +121,24 @@ export const GET: APIRoute = async ({ request }) => {
   // Eski dal `aktifSezon().endsAt <= now` idi; aktifSezon bitmiş sezonu asla döndürmediği için dal ölüydü
   // (Ağustos / Eylül 2026 hiç kapanmadı — Faz 5 incelemesi C1). İlk koşumda birikmiş sezonlar peş peşe
   // kapanır: ilk 10 hazine kitabı ve şampiyon rozeti geç de olsa dağıtılır (işaretliler dışarıda).
+  // Kilit sezon ADIYLA: yarışta çift açılmış aynı ayın satırları tek kapanışta (sezonKapat ada göre günceller).
+  // Tek bozuk sezon öbür sezonları ve 3–8. adımları durdurmasın: hata rapora + günlüğe, ertesi gün yeniden denenir.
   const kapananlar: string[] = [];
+  const sezonHatalari: string[] = [];
   for (const sezon of await bitenSezonlar()) {
-    const kapandi = await birKezCalistir("sezon-kapat", String(sezon.id), async () => {
-      await sezonKapat(sezon);
-      return sezon.name;
-    });
-    if (kapandi !== undefined) kapananlar.push(kapandi);
+    try {
+      const kapandi = await birKezCalistir("sezon-kapat", sezon.name, async () => {
+        await sezonKapat(sezon);
+        return sezon.name;
+      });
+      if (kapandi !== undefined) kapananlar.push(kapandi);
+    } catch (err) {
+      console.error("sezonKapat", sezon.name, err);
+      sezonHatalari.push(`${sezon.name}: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
   if (kapananlar.length) rapor.sezonKapandi = kapananlar;
+  if (sezonHatalari.length) rapor.sezonHata = sezonHatalari;
   await aktifSezon(); // yeni ayın sezonu (yoksa açar)
 
   // 3) Ayın kitabı (her ayın ilk günü)

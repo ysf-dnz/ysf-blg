@@ -267,11 +267,13 @@ const TUR: Record<string, string> = {
                         )}
                         {t.status === "review" && yonetici && (
                           <>
+                            {t.assigneeId !== member?.id && (
                             <form method="post" action="/api/uye/gorev">
                               <input type="hidden" name="action" value="approve" />
                               <input type="hidden" name="taskId" value={t.id} />
                               <button class="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-medium text-surface">Onayla</button>
                             </form>
+                            )}
                             <form method="post" action="/api/uye/gorev">
                               <input type="hidden" name="action" value="reopen" />
                               <input type="hidden" name="taskId" value={t.id} />

@@ -710,6 +710,51 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, dEdenHam.id));
   });
 
+  it("sezonKapat (C1): 2023 pencereli itest sezonu — puanlı onaylı itest kulübü şampiyon, işaretli üye puana ve rozete girmez, ilk 10 bildirimi; puansız sezona şampiyon yok; aynı adlı çift aktif satır birlikte kapanır", async () => {
+    const [m1, m2, m3] = await Promise.all([uye("sz-m1", 30), uye("sz-m2", 30), uye("sz-m3", 30)]);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, m2.id));
+    const [kulup] = await db
+      .insert(schema.clubs)
+      .values({ slug: `itest-f5-sz-${t}`, name: "Itest F5 Sezon Kulübü", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: m1.id, status: "approved" })
+      .returning();
+    kulupler.push(kulup!.id);
+    await db.insert(schema.clubMembers).values([{ clubId: kulup!.id, userId: m1.id, role: "president" }, { clubId: kulup!.id, userId: m2.id }]);
+    const [bas, bit] = [new Date("2023-01-01T00:00:00Z"), new Date("2023-02-01T00:00:00Z")];
+    // Pencere canlı veriden boş (2023): yalnız bu satırlar sayılır — test kurulumu ledger'a tarihli yazar
+    await db.insert(schema.pointsLedger).values([
+      { userId: m1.id, delta: 30, reason: "quiz", refId: `itest-sz-1-${t}`, createdAt: new Date("2023-01-10T00:00:00Z") },
+      { userId: m2.id, delta: 90, reason: "quiz", refId: `itest-sz-2-${t}`, createdAt: new Date("2023-01-10T00:00:00Z") }, // işaretli: sayılmaz
+      { userId: m3.id, delta: 500, reason: "quiz", refId: `itest-sz-3-${t}`, createdAt: new Date("2023-01-15T00:00:00Z") }, // kulüpsüz, ilk 10'da
+    ]);
+    const ad = `itest-sezon-${t}`;
+    const [s1] = await db.insert(schema.seasons).values([{ name: ad, startsAt: bas, endsAt: bit }, { name: ad, startsAt: bas, endsAt: bit }]).returning(); // çift açılmış
+    const [bos] = await db.insert(schema.seasons).values({ name: `itest-bos-${t}`, startsAt: new Date("2022-01-01T00:00:00Z"), endsAt: new Date("2022-02-01T00:00:00Z") }).returning();
+    try {
+      expect(await lg.sezonKapat(s1!)).toEqual({ sampiyonKulupId: kulup!.id, ilk10: 2 }); // m1 + m3; işaretli m2 yok
+      const satirlar = await db.query.seasons.findMany({ where: eq(schema.seasons.name, ad) });
+      expect(satirlar.map((x) => [x.status, x.championClubId])).toEqual([["closed", kulup!.id], ["closed", kulup!.id]]); // aynı adlı ikisi de kapandı
+      const rozet = async (id: number) => db.query.badges.findFirst({ where: and(eq(schema.badges.userId, id), eq(schema.badges.kind, "sezon-sampiyonu")) });
+      expect(await rozet(m1.id)).toBeDefined();
+      expect(await rozet(m2.id)).toBeUndefined(); // işaretli üye rozet almaz
+      const sezonBildirimi = async (id: number) => (await db.query.notifications.findMany({ where: and(eq(schema.notifications.userId, id), eq(schema.notifications.kind, "season")) })).length;
+      expect([await sezonBildirimi(m1.id), await sezonBildirimi(m2.id), await sezonBildirimi(m3.id)]).toEqual([1, 0, 1]);
+      expect(await lg.sezonKapat(bos!)).toEqual({ sampiyonKulupId: null, ilk10: 0 }); // puansız: şampiyon yok
+      expect((await db.query.seasons.findFirst({ where: eq(schema.seasons.id, bos!.id) }))!.status).toBe("closed");
+    } finally {
+      await db.delete(schema.seasons).where(inArray(schema.seasons.name, [ad, `itest-bos-${t}`]));
+      await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, m2.id));
+    }
+  });
+
+  it("like_received kişi başı kayan 7 gün tavanı (100): dolu yazara beğeni puan üretmez, taze yazara üretir", async () => {
+    const [dolu, taze, begenen] = await Promise.all([uye("lk-d", 30), uye("lk-t", 30), uye("lk-b", 30)]);
+    // Kurulum: 100 beğeni puanı bu hafta alınmış (idem index like_received'ı dışlar → aynı yazara çok satır)
+    await db.insert(schema.pointsLedger).values(Array.from({ length: 100 }, (_, i) => ({ userId: dolu.id, delta: 1, reason: "like_received" as const, refId: `yorum:itest-lk-${t}-${i}` })));
+    expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: dolu.id, refId: `yorum:itest-lk-${t}-x` })).toBe(false);
+    expect((await ledger(dolu.id, "like_received")).length).toBe(100);
+    expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: taze.id, refId: `yorum:itest-lk-${t}-y` })).toBe(true);
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {

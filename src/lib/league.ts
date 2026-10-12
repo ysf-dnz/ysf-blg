@@ -5,9 +5,11 @@
  * - Özel lig: başkanın kulüp içi yarışması; aynı sorgu kulüp-scoped koşar.
  * Sorguların tümü points_ledger'dan türetilir (tek gerçek kaynak).
  */
-import { and, asc, eq, gt, gte, inArray, isNotNull, lt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, lt, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
+import { awardBadge, hazineKitabiAc } from "@/lib/rewards.ts";
+import { isaretsizKazananSql } from "@/lib/social.ts";
 
 export interface KulupSkoru {
   clubId: number;
@@ -66,6 +68,56 @@ export async function bitenSezonlar(simdi: Date = new Date()) {
     where: and(eq(schema.seasons.status, "active"), lte(schema.seasons.endsAt, simdi)),
     orderBy: asc(schema.seasons.endsAt),
   });
+}
+
+/**
+ * Sezonu kapat: şampiyon kulüp (yalnız puanı > 0 olan; işaretli üyeler puana da rozete de girmez) + site geneli
+ * ilk 10 üyeye hazinedeki sıradaki kilitli kitap (hazine boşsa yalnız kutlama). Aynı adlı (yarışta çift açılmış)
+ * aktif sezon satırları birlikte kapanır. Cron `birKezCalistir('sezon-kapat', sezon.name)` ile çağırır.
+ * Ledger penceresi kolon kodlayıcısından geçer (ham Date parametresi TR makinesinde 3 saat kayardı).
+ */
+export async function sezonKapat(
+  sezon: typeof schema.seasons.$inferSelect,
+): Promise<{ sampiyonKulupId: number | null; ilk10: number }> {
+  const siralama = await kulupSiralamasi(sezon.startsAt, sezon.endsAt);
+  const sampiyon = siralama[0]?.raw ? siralama[0] : undefined; // puansız sezonun şampiyonu yok
+  await db
+    .update(schema.seasons)
+    .set({ status: "closed", championClubId: sampiyon?.clubId ?? null })
+    .where(and(eq(schema.seasons.name, sezon.name), eq(schema.seasons.status, "active")));
+  if (sampiyon) {
+    const uyeler = await isaretsizler(
+      await db.query.clubMembers.findMany({ where: eq(schema.clubMembers.clubId, sampiyon.clubId) }),
+    );
+    for (const u of uyeler)
+      await awardBadge(u.userId, "sezon-sampiyonu", `"${sampiyon.name}" ${sezon.name} sezonunun şampiyonu oldu 🏆`, `/kulup/${sampiyon.slug}`);
+  }
+  const ilk10 = await db
+    .select({ userId: schema.pointsLedger.userId, t: sql<number>`sum(${schema.pointsLedger.delta})` })
+    .from(schema.pointsLedger)
+    .where(
+      and(
+        gt(schema.pointsLedger.delta, 0),
+        gte(schema.pointsLedger.createdAt, sezon.startsAt),
+        lt(schema.pointsLedger.createdAt, sezon.endsAt),
+        isaretsizKazananSql,
+      ),
+    )
+    .groupBy(schema.pointsLedger.userId)
+    .orderBy(desc(sql`sum(${schema.pointsLedger.delta})`))
+    .limit(10);
+  for (const u of ilk10) {
+    const kitap = await hazineKitabiAc(u.userId, "reward");
+    await db.insert(schema.notifications).values({
+      userId: u.userId,
+      kind: "season",
+      body: kitap
+        ? `${sezon.name} sezonunu ilk 10'da bitirdin 🏅 Hazinendeki sıradaki kitap hediye!`
+        : `${sezon.name} sezonunu ilk 10'da bitirdin 🏅`,
+      href: kitap ? `/kutuphane/kitap/${kitap}` : "/lider",
+    });
+  }
+  return { sampiyonKulupId: sampiyon?.clubId ?? null, ilk10: ilk10.length };
 }
 
 /** İşaretli (flagged_at) üyeler lig hesabına girmez: ne puanı ne de √üye paydası (F5-04) */

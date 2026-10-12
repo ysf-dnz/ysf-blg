@@ -20,7 +20,7 @@ test("admin olmayan üye /uye/admin'e girince /uye'ye yönlendirilir; suistimal 
   await expect(page.locator("[data-suistimal-kuyrugu]")).toHaveCount(0);
 });
 
-test("panoda işaretli kaynaktan doğan olgun bekleyen 'inceleniyor' görünür ve kesinleşmez (işaretin kimde olduğu yazılmaz)", async ({ page }) => {
+test("panoda işaretli kaynaktan doğan olgun bekleyen 'sırada' görünür ve kesinleşmez (işaretin kimde olduğu yazılmaz)", async ({ page }) => {
   test.skip(!process.env.E2E_CLERK_USER || !process.env.POSTGRES_URL || !process.env.E2E_CLERK_ID, "auth e2e için Clerk + DB gerekir");
   const { neon } = await import("@neondatabase/serverless");
   const sql = neon(process.env.POSTGRES_URL!);
@@ -35,7 +35,7 @@ test("panoda işaretli kaynaktan doğan olgun bekleyen 'inceleniyor' görünür 
     await clerk.signIn({ page, emailAddress: process.env.E2E_CLERK_USER! });
     await page.goto("/uye");
     const satir = page.locator('[aria-label="Bekleyen puan"] li', { hasText: "Itest E2E kaynağı" });
-    await expect(satir).toContainText("inceleniyor");
+    await expect(satir).toContainText("sırada");
     await expect(satir).not.toContainText(/işaret|suistimal/i);
     const [row] = await sql`select status from pending_points where user_id = ${ben!.id} and ref_id = ${refId}`;
     expect(row!.status).toBe("pending"); // pano GET'i kesinleştirmedi (tutulan)

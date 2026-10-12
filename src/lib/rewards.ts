@@ -62,6 +62,9 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
     case "event_hosted":
     case "event_well_rated":
       return { reasons: ["event_hosted", "event_well_rated"], since: yediGunOnce(), limit: PUAN.eventHostWeeklyCap };
+    // Beğeni puanı (Faz 5 kararı): idem index like_received'ı dışlar (aynı refId'ye çok satır) → INSERT…SELECT yolu çalışır
+    case "like_received":
+      return { reasons: ["like_received"], since: yediGunOnce(), limit: PUAN.likeWeeklyCap };
     // Görev ödülü (Faz 5 incelemesi C2b): kulüp başına haftalık 1000 bütçe kişi başına kulüp sayısıyla çarpılıyordu
     case "task_done":
       return { reasons: ["task_done"], since: yediGunOnce(), limit: PUAN.taskWeeklyCap };
@@ -573,7 +576,14 @@ export async function bekleyenleriIsle(
       ),
     );
   let kesinlesen = 0;
-  for (const b of olgunlar) if ((await bekleyeniKesinlestir(b)) !== null) kesinlesen++;
+  const tikali = new Set<string>(); // tavana takılan (üye, tavan grubu): aynı koşumda yeniden denenmez
+  for (const b of olgunlar) {
+    const grup = `${b.userId}:${tavanIcin(b.reason as Reason)?.reasons.join(",") ?? ""}`;
+    if (tikali.has(grup)) continue;
+    const sonuc = await bekleyeniKesinlestir(b);
+    if (sonuc === null) tikali.add(grup);
+    else kesinlesen++;
+  }
   const dusenler = await db
     .update(schema.pendingPoints)
     .set({ status: "expired", resolvedAt: simdi })

@@ -122,7 +122,7 @@ const tarihKisa = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", m
 const bekleyenZaman = (b: (typeof bekleyenler)[number]) =>
   b.maturesAt
     ? b.maturesAt.getTime() < Date.now()
-      ? "inceleniyor" // olgunlaştı ama kesinleşmedi: alıcı ya da kaynak hesap işaretli (F5-04)
+      ? "sırada" // olgunlaştı ama kesinleşmedi: tavan boşalınca ya da inceleme bitince yazılır (A1 / F5-04) — nedeni söylenmez
       : `${tarihKisa(b.maturesAt)} kesinleşir (hesap yaşı 24 s)`
     : b.expiresAt
       ? `son gün ${tarihKisa(b.expiresAt)}`

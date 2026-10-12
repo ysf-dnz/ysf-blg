@@ -102,7 +102,9 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
         await db.insert(schema.notifications).values({
           userId: inviter.id,
           kind: "referral",
-          body: `${member.name} davetinle katıldı 🎉 +${bonus} puan hesabı 24 saatlik olunca kesinleşir.`,
+          body: inviter.flaggedAt
+            ? `${member.name} davetinle katıldı 🎉 Puan bekleyende; kesinleşince yazılır.`
+            : `${member.name} davetinle katıldı 🎉 +${bonus} puan hesabı 24 saatlik olunca kesinleşir.`,
           href: `/u/${member.handle}`,
         });
       }

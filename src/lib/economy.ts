@@ -295,7 +295,8 @@ export const SUISTIMAL_ESIK = 5;
  * Kanıt "az ağ, çok hesap": yeni hesaplar, davetçinin kodlarını ziyaret eden FARKLI IP sayısının en az
  * iki katı. Gerçek davette her yeni üye kendi ağından gelir. Üçüncü kişi (ya da davet edenin kendi
  * tıklamaları) yalnız IP EKLEYEBİLİR: `/d/` bağlantısından gelen davetlileri işaretletemez.
- * User-agent sayılmaz (isteyen değiştirir).
+ * User-agent sayılmaz (isteyen değiştirir). İşaretlenen KÜME (yalnız yoğun 24 saatlik pencerenin üyeleri — B4)
+ * kapsam kuralıdır, bu eşleniğin dışındadır.
  */
 export function suistimalMi(d: { yeniHesap: number; enCokIpZiyaret: number; farkliIp: number }): boolean {
   return d.yeniHesap >= SUISTIMAL_ESIK && d.enCokIpZiyaret >= SUISTIMAL_ESIK && d.farkliIp * 2 <= d.yeniHesap;

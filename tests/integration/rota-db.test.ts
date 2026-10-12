@@ -251,6 +251,12 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     const kampanyaAc = () => kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2 kampanya", bookId: "itest-kitap" }));
     expect((await kampanyaAc()).status).toBe(403); // onay bekleyen topluluk
     expect(await db.query.campaigns.findFirst({ where: eq(schema.campaigns.clubId, kulup!.id) })).toBeUndefined();
+    h.adminMi = true; // admin her kulüpte başkan: onay bekleyen toplulukta da açabilir (kurs / etkinlik kuralıyla aynı)
+    try {
+      expect((await kampanyaAc()).status).toBe(303);
+    } finally {
+      h.adminMi = false;
+    }
     await db.update(schema.clubs).set({ status: "approved" }).where(eq(schema.clubs.id, kulup!.id));
     const r1 = await kampanyaAc();
     expect(r1.status).toBe(303);
