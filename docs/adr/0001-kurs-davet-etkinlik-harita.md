@@ -107,6 +107,7 @@ Tek SQL'e gömülü **toplam-tabanlı** koşul (toplam < tavan) READ COMMITTED a
 - `matures_at`: zamanla kesinleşir (hesap yaşı 24 s). `expires_at`: olay gelmezse düşer (kurs daveti 14 gün, etkinlik daveti `ends_at`). İkisi de nullable; olay-tetikli satırlarda yalnız `expires_at` dolu.
 - **Hesap yaşı (PRD §4.2) tüm bekleyenlere uygulanır:** olay geldi (aktivasyon, giriş) ama puanı doğuran hesap (`users.created_at`) 24 saatten gençse kesinleştirme yapılmaz; `UPDATE … SET matures_at = <created_at> + interval '24 hours', expires_at = NULL WHERE id=$i AND status='pending'`, cron olgunlaşınca kesinleştirir. Üretici puanları için de aynı yol (kaynak = öğrenen hesabı). QR'la kapıda ya da karşılama sayfasında yeni kaydolan davetli tam bu durumdadır (AC-5 notu).
 - **Kırpma ayrı status değil:** `confirmed` + `yazilan < delta` → panoda "kırpıldı" ve gerekçe (PRD §2.5). Kırpılan kısım geri kazanılmaz.
+- **Faz 5 kararı (A1, 2026-10-12):** olgunlaşma / işaret yüzünden GEÇ kesinleşen satır tavana takılırsa (`awardPoints` 0 döner ve anahtar ledger'da yoksa) satır `pending` KALIR, sonraki işlemede yeniden denenir — kırpma yalnız kısmi yazımda (`least`) ve doğrudan olay yolunda (`puanOlayi` ödeme dalı) kesindir. Gerekçe: toplu "Temiz" sonrası günlere yayılmış puan tek günün tavanına sıkışıp yanıyordu.
 - **`event_hosted` ve `event_well_rated` için bekleyen satır YOK.** Kaynak veri zaten tabloda: `count(event_rsvps.checked_in_at)` ve `ratings`. Cron `ends_at + 48h`'te `toplam = min(katılımcı, 100) × 5` hesaplar, saf `hostPaylari(toplam, hostlar)` (eşit böl, aşağı yuvarla, kalan açana) ile her host'a `awardPoints(event_hosted, 'event:{id}')` yazar (idem). Pano host'a "bekleyen ≈ N puan, {tarih}" satırını canlı sayımdan gösterir. Upsert/birikim mantığı ve "ortak düzenleyen sonradan eklendi, pay değişti" sorunu böylece yok.
 
 **Kesinleşme sırası (zorunlu): ÖNCE ledger, SONRA status.**
@@ -277,6 +278,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | `like_received` (yorum) | `yorum:{id}` | cevap yazarı | günde 5 (begeniPuaniVer; idem index HARİÇ) |
 | `answer_accepted` | `yorum:{id}` | cevap yazarı | üreticinin kendi cevabı hariç (WHERE) |
 | `resource_accepted` | `kaynak:{id}` | öneren | günde 3 (tavan param. limit 45) |
+| `referral_joined` (mevcut) | `u:{invitee}` (**Faz 5 kararı**; eskiden `{invitee}`) | davet eden | davet tavanı; kayıtta ANINDA değil 24 s bekleyen (`puanOlayi`, kaynak yeni hesap) — yeni hesap işaretlenirse tutulur |
 | `course_invite_welcome` | `course:{id}` | davetli | kurs başına 1 (bekleyen → aktivasyon); davet tavanı |
 | `course_invite_activated` | `course:{id}:u:{invitee}` | davet eden | davet tavanı (bekleyen; 14 g `expires_at`) |
 | `course_invite_completed` | `course:{id}:u:{invitee}` | davet eden | davet tavanı; asgari süre |
@@ -288,6 +290,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | `event_well_rated` | `event:{id}` | her host | etkinlik başına 1 |
 | `vitality_pool` | `course:{id}:{YYYY-Www}` | üretici/katkıcı/davetçi | kurs başına haftada 100; DAVET tavanına girmez; **Faz 5 incelemesi:** kişi başı haftalık tavan 200 (`tavanIcin`, TR haftası — kurs sayısıyla çarpılmasın). Aynı kişi birden çok dilimden pay alabilir (üretici + davetçi) → paylar **kullanıcı başına toplanıp tek insert** yazılır, yoksa idem index ikinci payı yutar |
 | `admin_adjust` (iade) | `iade:{reason}:{refId}` | — | orijinal satır varsa, bir kez |
+| `task_done` (mevcut) | `{taskId}` | üstlenen | kulüp haftalık 1000 (`gorevOdulKirp`) + **Faz 5 kararı:** kişi başı kayan 7 gün 1000 (`tavanIcin`); yalnız ONAYLI kulüp kampanyası; atanan ≠ onaylayan |
 
 **Davet tavanı 300 / kayan 7 gün:** `referral_joined` (mevcut), `course_invite_welcome`, `course_invite_activated`, `course_invite_completed`, `invite_second_level`, `event_invite_attended` (PRD §4.2 listesi birebir; `course_invite_*` welcome'ı kapsar). `referral_activated` (admin onaylı) ve `event_invite_welcome` (PRD listesinde yok) hariç.
 **Kendine puan yok** (WHERE'de): kendi kursu, kendi yorumu, kendi davet kodu, kendi etkinliği; host'lar davet puanı almaz.

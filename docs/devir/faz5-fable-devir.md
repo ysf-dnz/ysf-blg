@@ -1638,3 +1638,21 @@ Yöntem: her iddia önce test (HEAD'de kırmızı → düzelt → yeşil; karakt
 **Faz sonu düşman inceleme (`cb1d541..16bb837`; 4 mercek + fix incelemesi + 3 çürütücü, hepsi salt okur).** Kod gerilemesi yok. Bulguların akıbeti: *doğruluk* — tarama fırlatınca bekleyen koşar (karar #42; `/uye` aynı sızıntıyı zaten yapıyor), rota A2 beklentisi boştu (**kapandı**: genç 5. katılımcı), aday CTE çift satır + EPQ (**kapandı**: `distinct on` + hedefte `flagged_at is null`), Y1 (**kapandı**), artık betiği sahipsiz `cron_runs` (**bilgi satırı**; seed:demo artığı meşru). *Suistimal* — **C2b** başkan kendi görevini üstlenip onaylıyor, tek pending kulüp haftada 1000, kulüp sayısıyla çarpılır, `task_done` kişi tavansız ve işaretle tutulamaz (ESKİ; karakterize `e615ff5` rota-db.test.ts, karar #42 — çürütücü: "tek kulüp bile yeter"); cron 200 + hata yalnız JSON (**`console.error` eklendi**); e2e kuklası yarıda kalırsa (**teardown süpürmesi**); rota testinin yayında itest kursu (rota `published` ister — tasarım); `like_received` latent (not; isteğe bağlı tip daraltma `Exclude<Reason,"like_received">`). *SQL/yarış* — `puanOlayi` kontrol + INSERT ayrı ifade (kozmetik, doğrulanmış; not), C1 testinin `aktifSezon` yazımı (**çürütüldü**: üretim davranışı). *Gerileme* — `ekonomi.spec` paralel çakışma (**`default` kip**), `/uyeler` 60 sınırı (**ön koşul**), belge bayatlıkları (**güncellendi**: PROGRESS, CLAUDE, assumptions #65/#67, bu belge).
 
 **Düzeltme yolu:** worktree `faz5-fable-fix` (4 commit, ayrı incelendi) → `faz5-ekonomi`'ye cherry-pick (`e615ff5`, `286ba27`, `09329c4`, `72f2126`; `git merge` kullanılmadı) → yeni kilitler mutasyonla kırmızı görüldü (`distinct on`, `isaretliMi`, ledger ön kontrolü/rota x5) → `astro check` 0, birim 466, rota-db 9 + faz5-db 28 yeşil, artık 0.
+
+## 6. Kararların uygulanması (2026-10-12, Yusuf: "ne gerekiyorsa en zekice yap")
+
+Ölçüt: büyüme (rekabet döngüsü + davet mıknatısı) zarar görmesin, tek hesaplı basma ve sahte pozitif azalsın. Her kalem test + mutasyon.
+
+| Karar | Seçim | Commit | Kilit |
+|---|---|---|---|
+| C2 / C2b | onaylı kulüp kapısı (kampanya + onay), atanan ≠ onaylayan, kişi başı 7 gün 1000 | `4b3a7f0` | rota-db C2/C2b, birim tavanIcin; 3 mutant |
+| C1 | `bitenSezonlar()` + cron her bitenı kapatır; geriye dönük: ilk koşumda Ağustos/Eylül (merge'de karar) | `1b29f00` | cron-gunluk, faz5-db C1; 2 mutant |
+| C3 | işaretli beğenen puansız; işaretli giriş `event_hosted` dışı (`event_well_rated` değerlendirme sayımı değişmedi) | `7cd0e9f` | faz5-db C3, etkinlik-db; 2 mutant |
+| referral_joined | 24 s bekleyen, refId `u:{yeni}` | `b7ea6bd` | rota-db getOrCreateMember; mutant (refId) |
+| ara halka (13) | işaretliyse 2. seviye yazılmaz (geriye dönük yok) | `918d017` | faz5-db; mutant |
+| B4 | yalnız yoğun 24 s pencere üyeleri | `9f4e867` | faz5-db B4; mutant |
+| A1 | tavana takılan tutulan satır pending kalır, ertesi gün yazılır | `9f4e867` | faz5-db A1 (sahte ertesi gün); mutant |
+| havuz beğenen | kursa katılmış beğenen | `9f4e867` | faz5-db havuz sayımları; 2 mutant |
+
+**Kodlanmayan (hâlâ #42):** hesap imzası (şema + `drizzle-kit push` → "push et" onayı), B1 ip penceresi (genişletme farklı-IP koşulunu zayıflatır; hesap imzasıyla birlikte ele alınmalı), A3 takılı `course_launched`, D1, D4, `CANLILIK_ILK_HAFTA` (merge 19 Ekim 06:00 TR sonrasıysa W43), "Suistimal"de ledger iadesi, işaretli üyenin mesaj kısıtı. Y1 ve D3 kapandı.
+

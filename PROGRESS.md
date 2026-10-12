@@ -3,6 +3,17 @@
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
 > Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
 
+## 🎯 KARARLAR UYGULANDI — Fable, "ne gerekiyorsa en zekice yap" (2026-10-12, dal `faz5-ekonomi`; main'e MERGE EDİLMEDİ)
+Büyüme (rekabet + davet mıknatısı) lehine, mantıksal tedbirlerle; her kalem test + mutasyonla kilitli (`2b7c0cf..HEAD`).
+- **C2/C2b** (`4b3a7f0`): onay bekleyen topluluk kampanya açamaz (403, form gizli); kendine görev onayı yok; kişi başı 7 günlük görev tavanı 1000 — tek hesaplı kendi kendine basma kapandı, gerçek kulüp görevleri değişmedi.
+- **C1** (`1b29f00`): sezonlar artık KAPANIR (`bitenSezonlar()`; ilk canlı koşumda Ağustos + Eylül birikmişi peş peşe) — rekabet döngüsünün ödülleri (ilk 10 hazine kitabı, şampiyon rozeti) dağıtılmaya başlar. **Merge kararı: geriye dönük ödül istemiyorsan merge'den önce söyle.**
+- **C3** (`7cd0e9f`): işaretli beğenen `like_received` üretmez; işaretli giriş düzenleyen payına sayılmaz.
+- **`referral_joined`** (`b7ea6bd`): kayıtta +25 anında değil 24 s bekleyen (refId `u:{yeni}`, işaretle tutulur) — kayıt çiftliği tedbiri; davet eden puanı panoda "bekleyen" görür.
+- **Ara halka** (`918d017`): davet eden işaretliyse üst davetçiye 2. seviye yazılmaz.
+- **B4 + A1 + havuz** (`9f4e867`): tarama yalnız yoğun pencerenin üyelerini işaretler (gerçek davetliler dışarıda); tutulan satır tavana takılınca pending kalır, ertesi gün yazılır (puan yanmaz); havuzda beğenen kursa katılmış olmalı.
+- **Hâlâ karar (kodlanmadı)**: hesap imzası (şema), B1 ip penceresi, A3, D1, D4, `CANLILIK_ILK_HAFTA` (merge 19 Ekim 06:00 TR sonrasıysa W43), "Suistimal"de ledger iadesi, işaretli üyenin mesaj kısıtı.
+- **Kanıt**: aşağıdaki FABLE İNCELEMESİ bloğunun sayıları + bu commit'lerin testleri: rota-db 10, faz5-db 29 (+6 todo), etkinlik-db 29, cron-gunluk 7 (+1 todo); tam koşum sonuçları raporda.
+
 ## ✅ FABLE İNCELEMESİ — Faz 5 testlere göre inceleme (2026-10-12, dal `faz5-ekonomi`, `cb1d541..HEAD`; main'e MERGE EDİLMEDİ — kararlar #42'de)
 Devir belgesinin (`docs/devir/faz5-fable-devir.md`) her iddiası TEST koşturularak ele alındı; sonuç §1 durum satırları + §5. Hiçbir iddia çürümedi.
 - **Kapanan**: A2 hayalet bekleyen (`puanOlayi` bekleyen dalı ledger'a bakar) · B2 tarama `try/catch` + `rapor.suistimalHata`, CTE'ler `suistimalCte()` tek kaynak (`suistimalAdaylari` salt okur) · D2 bayat metin · D3 genç+işaretli bildirim · E1 kanca süreleri (60 sn) + `scripts/itest-artik-kontrol.mjs`.
