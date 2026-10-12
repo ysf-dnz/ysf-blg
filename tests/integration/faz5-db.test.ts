@@ -58,8 +58,10 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     const katilim = (await db.query.courseEnrollments.findFirst({
       where: and(eq(schema.courseEnrollments.userId, davetli.id), eq(schema.courseEnrollments.courseId, k.id)),
     }))!;
-    await dv.davetAktivasyonu(katilim, k, davetli);
+    // Üretim sırası (egitim.ts `complete`): ÖNCE activated_at yazılır, SONRA davet ödülleri — ikinciSeviye bu
+    // katılımın aktivasyon anını DB'den okur; ters sıra onu now() yedeğine düşürüyordu (devir §2.6)
     await db.update(schema.courseEnrollments).set({ activatedAt: new Date() }).where(eq(schema.courseEnrollments.id, katilim.id));
+    await dv.davetAktivasyonu(katilim, k, davetli);
   }
   const ledger = async (userId: number, reason: string, refId?: string) =>
     (
@@ -176,6 +178,32 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     await rw.bekleyenleriIsle(new Date(Date.now() + 25 * 3600e3), a.id);
     await rw.bekleyenleriIsle(new Date(Date.now() + 25 * 3600e3), a.id);
     expect((await ledger(a.id, "invite_second_level", `u:${genc.id}`)).map((r) => r.delta)).toEqual([5]);
+  });
+
+  it("AC-10: iki kursta aktivasyon — yalnız ERKEN aktivasyonun zinciri 2. seviye öder (üst davetçiler FARKLI; geç istek önce işlenir)", async () => {
+    const [p2, a2, b2, g, e, z] = await Promise.all([uye("p2"), uye("a2"), uye("b2"), uye("g"), uye("e"), uye("z")]);
+    const [{ kurs: k1 }, { kurs: k2 }] = [await kurs("ik1", p2.id), await kurs("ik2", p2.id)];
+    await db.insert(schema.referrals).values([
+      { inviterId: a2.id, invitedId: b2.id }, // a2 → b2 (platform); b2 z'yi k1'e davet eder
+      { inviterId: g.id, invitedId: e.id }, // g → e (platform); e z'yi k2'ye davet eder
+    ]);
+    const [kod1, kod2] = [await dv.davetKoduUret(b2.id, k1.id), await dv.davetKoduUret(e.id, k2.id)];
+    await dv.kursaKatil(z, k1, cerez(`course:${k1.id}:${kod1.id}`));
+    await dv.kursaKatil(z, k2, cerez(`course:${k2.id}:${kod2.id}`));
+    const katilim = async (k: Kurs) =>
+      (await db.query.courseEnrollments.findFirst({ where: and(eq(schema.courseEnrollments.userId, z.id), eq(schema.courseEnrollments.courseId, k.id)) }))!;
+    const [kt1, kt2] = [await katilim(k1), await katilim(k2)];
+    // Eşzamanlı iki isteğin ikisi de aktivasyonu yazmış: k1 erken, k2 geç
+    await db.update(schema.courseEnrollments).set({ activatedAt: new Date(Date.now() - 2000) }).where(eq(schema.courseEnrollments.id, kt1.id));
+    await db.update(schema.courseEnrollments).set({ activatedAt: new Date(Date.now() - 1000) }).where(eq(schema.courseEnrollments.id, kt2.id));
+    // Önce GEÇ olanın ödülleri işlenir: "ilk" aktivasyon işlem sırasına değil aktivasyon ANINA göre
+    await dv.davetAktivasyonu(kt2, k2, z);
+    await dv.davetAktivasyonu(kt1, k1, z);
+    expect((await ledger(a2.id, "invite_second_level")).map((r) => [r.delta, r.refId])).toEqual([[5, `u:${z.id}`]]);
+    expect((await ledger(g.id, "invite_second_level")).length).toBe(0);
+    expect(await db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, g.id), eq(schema.pendingPoints.refId, `u:${z.id}`)) })).toBeUndefined();
+    // Davet edenlerin kendi +15'i iki kursta da yazılır (2. seviye kuralı onları etkilemez)
+    expect((await ledger(b2.id, "course_invite_activated")).length + (await ledger(e.id, "course_invite_activated")).length).toBe(2);
   });
 
   /* ---------------- F5-02: canlılık havuzu ---------------- */
