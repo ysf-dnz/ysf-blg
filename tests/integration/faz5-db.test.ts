@@ -303,6 +303,59 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(Array.isArray(await ek.suistimalAdaylari())).toBe(true);
   });
 
+  /** Tarama karakterizasyonları: kendi davetçisi + kursu; aday sorgusu (salt okur) işaretlemeden kümeyi gösterir */
+  async function davetci2(ad: string) {
+    const d = await uye(`${ad}d`, 30);
+    const { kurs: k } = await kurs(ad, (await uye(`${ad}u`, 30)).id);
+    const kod = await dv.davetKoduUret(d.id, k.id);
+    const davetli = async (i: number, saatOnce = 0, rol: "member" | "rep" = "member") => {
+      const g = await uye(`${ad}g${i}`, saatOnce / 24);
+      if (rol !== "member") await db.update(schema.users).set({ role: rol }).where(eq(schema.users.id, g.id));
+      await db.insert(schema.courseEnrollments).values({ userId: g.id, courseId: k.id, inviteCodeId: kod.id });
+      return g;
+    };
+    const ziyaret = (ip: string, saatOnce = 0) =>
+      db.insert(schema.inviteVisits).values({ inviteCodeId: kod.id, ipHash: `itest-${ad}-${ip}-${t}`, uaHash: "itest-ua", kanal: "link", createdAt: new Date(Date.now() - saatOnce * 3600e3) });
+    const adaylar = async () => (await ek.suistimalAdaylari(d.id)).map((r) => r.id).sort();
+    return { d, k, kod, davetli, ziyaret, adaylar };
+  }
+
+  it("B1 (karakterizasyon): ziyaret penceresi 48 s, atıf çerezi 30 gün — 3 gün önce tıklayıp bugün kaydolan 5 gerçek davetli + davet edenin bugün 5 tıklaması → BUGÜN işaretlenir", async () => {
+    const { kod, davetli, ziyaret, adaylar } = await davetci2("b1");
+    const gercek = await Promise.all([1, 2, 3, 4, 5].map((i) => davetli(i)));
+    for (const i of [1, 2, 3, 4, 5]) await ziyaret(`g${i}`, 72); // her davetli kendi ağından, cuma tıkladı
+    for (let i = 0; i < 5; i++) await ziyaret("davetci"); // davet eden kendi bağlantısını 5 kez açtı
+    expect(await adaylar()).toEqual(gercek.map((g) => g.id).sort()); // 5 hesap, pencerede tek IP (n=5), 1×2 ≤ 5
+    // Nedeni sabitle: aynı ziyaretler pencere içinde olsa 6 IP × 2 > 5 → işaret yok
+    await db.update(schema.inviteVisits).set({ createdAt: new Date() }).where(eq(schema.inviteVisits.inviteCodeId, kod.id));
+    expect(await adaylar()).toEqual([]);
+  });
+  it.todo("B1 karar (#42): ip CTE'sindeki 48 saat filtresi (30 günlük saklama / çerezle hizalama) — tek-IP koşulunu gevşetir, varsayım #64 değişir (devir §2.3)");
+
+  it("B4 (karakterizasyon): şüpheli davetçinin 48 saatteki TÜM yeni hesapları işaretlenir (yoğun pencerenin dışındaki 40 saatlik dahil); 50 saatlik dışarıda; rep rolü işaretlenmez ama sayıma girer", async () => {
+    const { davetli, ziyaret, adaylar } = await davetci2("b4");
+    const yogun = await Promise.all([1, 2, 3, 4].map((i) => davetli(i)));
+    const rep = await davetli(5, 0, "rep"); // yoğun pencerenin 5. hesabı: sayılır (hesap=5), işaretlenmez (role)
+    const kirkSaat = await davetli(6, 40); // yoğun pencerenin dışında, 48 saatin içinde
+    await davetli(7, 50); // 48 saatin dışında: 'yeni' değil
+    for (let i = 0; i < 6; i++) await ziyaret("tek-ip");
+    expect(await adaylar()).toEqual([...yogun, kirkSaat].map((g) => g.id).sort());
+    expect(await adaylar()).not.toContain(rep.id);
+  });
+  it.todo("B4 karar (#42): işaretlenen küme yoğun 24 saatlik pencereyle mi, 48 saatin tamamıyla mı sınırlansın (devir §1 B4)");
+
+  it("B5 (karakterizasyon): ziyaret satırı bırakmadan (?d=KOD yedeği / elle çerez) bağlanan 5 hesap görünmez; günde 4 hesap (8 hesap iki güne yayılmış) eşiğin altında kalır", async () => {
+    const a = await davetci2("b5");
+    await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i)));
+    expect(await a.adaylar()).toEqual([]); // ip CTE boş → join düşer
+    const b = await davetci2("b6");
+    await Promise.all([1, 2, 3, 4].map((i) => b.davetli(i, 30)));
+    await Promise.all([5, 6, 7, 8].map((i) => b.davetli(i)));
+    for (let i = 0; i < 8; i++) await b.ziyaret("tek-ip");
+    expect(await b.adaylar()).toEqual([]); // 24 saatlik pencerede en çok 4 < 5
+  });
+  it.todo("B5 karar (#42): kayıt anında hesap imzası (şema + getOrCreateMember) — ziyaretsiz çiftlik ve /?ref= çiftliği ancak böyle görünür (devir §1 B5, #64 kök çözüm)");
+
   it("işaretli KAYNAK ve ALICI: bekleyen olgunlaşmaz; işaret kalkınca kesinleşir", async () => {
     const [k1, k2] = kuklalar;
     const kursId = ana.id;
