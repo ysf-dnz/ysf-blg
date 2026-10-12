@@ -104,7 +104,7 @@ API: `src/pages/api/uye/*` (form-POST + redirect deseni; hız sınırı feed'de)
 - Kurulum tuzağı: Keystatic setup formunun "Create GitHub App" submit'i sessizce takılabiliyor; manifest'i elle POST etmek çözdü (GitHub sudo/passkey doğrulaması KULLANICIDA).
 
 ## Bekleyenler / sonraki adımlar
-- **Faz 4 eksikler `faz4-eksikler` dalında HAZIR (2026-10-12; main'e MERGE EDİLMEDİ — karar Yusuf'ta)**: ortak topluluk/kurs satırı, canlı "Görüldü", ayrı gizlilik formu, akış hız bandı, admin ölçümleri (varsayım #60; PROGRESS "FAZ 4 EKSİKLER").
+- **Faz 4 eksikler main'de ve CANLIDA (2026-10-12, merge 713beb3; `faz4-eksikler` dalı silindi)**: ortak topluluk/kurs satırı, canlı "Görüldü", ayrı gizlilik formu, akış hız bandı, admin ölçümleri (varsayım #60; PROGRESS "FAZ 4 EKSİKLER"). Misafir akışları canlıda curl ile doğrulandı; girişli olanlar #37'de.
 - **Faz 4 main'de ve CANLIDA (2026-10-12, merge 90f58fa)**: GitHub #33–#36 + #32 kapandı; canlıda misafir akışları ve çapraz köken POST reddi (403) curl ile doğrulandı. Kalan (#37, Yusuf): girişli akışların elle doğrulaması (iki gerçek hesapla mesaj/engel, gerçek telefonda dönen QR), rıza metni onayı ve kararlar ("ortak topluluk" bağı — varsayım #50; fren değerleri; dönen QR otomatik gönderim kuralı). Sıradaki: **Faz 5** (GitHub #17; issue planı F5-01…F5-04).
 - **Faz 3 main'de ve CANLIDA (2026-10-12, merge 2700928; `faz3-etkinlik` dalı silindi)**. Kalan (#31, Yusuf): gerçek cihaz testi, isteğe bağlı `events.slug` NOT NULL (`canli-index-uygula.sql` ADIM 7b). **Faz 2 CANLIDA** (#22 kapandı).
 - **Clerk production (#24, KULLANICI)** hâlâ açık: canlı DEV instance'ta çalışıyor (çerezsiz her belge isteğinde `clerk.accounts.dev`'e 3 ek yönlendirme; QR akışını yavaşlatır).
