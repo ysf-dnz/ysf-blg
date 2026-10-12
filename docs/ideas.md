@@ -27,3 +27,8 @@ PRD §0.7: belgede olmayan fikirler burada bekler; hiçbiri onaysız uygulanmaz.
 | 21 | 2026-10-12 | Etkinlik kaydında da kurs sayfasındaki `data-niyet` deseni (girişten dönüşte ek dokunuşsuz "Yerimi ayır"). | Bugün iki dokunuş (assumptions #37). |
 | 22 | 2026-10-12 | ~~Gizlilik ayarlarını profil formundan ayırmak~~ — **yapıldı** (`action=gizlilik`, ayrı form ve yazım). | — |
 | 23 | 2026-10-12 | Harita il popup'ında 24'ten fazla görünen üye için sayfalama / "tümünü gör". | Sıra artık rıza anına değil seviyeye göre (Faz 4 eksikler); 24'ten fazlası hâlâ yalnız "+N üye daha". `/uyeler?q=<il>` rızasızları da listelediği için bağlanmadı. |
+| 24 | 2026-10-12 | Suistimal kuyruğunda davetçi başına toplu "Temiz" (konferans gibi sahte pozitif kümelerde tek tık) ve işaret kanıtının (kaç hesap, hangi imza) gösterimi. | Bugün hesap başına tek tek; ölçek küçük (assumptions #64). |
+| 25 | 2026-10-12 | İşaretli hesabın yeni konuşma başlatamaması (mesaj şikâyetinin daha güçlü yaptırımı) ve haritada görünmemesi. | `mesajGonder` WHERE'i ile `dmKarar` birlikte değişmeli; Faz 5 kapsamı lider/lig + bekleyen. |
+| 26 | 2026-10-12 | Suistimal taramasını katılım anına taşımak (davetle kayıt / kursa katılımda tek SQL) ve `/?ref=` platform bağlantılarına da ziyaret imzası yazmak. | Bugün günlük cron + yalnız `/d/` kodlu davetler (assumptions #64). |
+| 27 | 2026-10-12 | Ekonomi kartında reason kodları yerine Türkçe etiket, haftalık eğilim (önceki 7 güne göre) ve canlılık havuzunun kurs kırılımı. | Kart yalnız admin'e; ham kod yeterli. |
+

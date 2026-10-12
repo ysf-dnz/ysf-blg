@@ -121,8 +121,19 @@ Bir katılımcının kursa önerdiği, üretici onaylayınca önerenin adıyla l
 _Avoid_: kaynak önerisi, link
 
 **Canlılık havuzu**:
-Yayındaki bir kursun son 7 gündeki ilerleme, tamamlama, beğeni ve ek kaynak hareketinden hesaplanan, her pazartesi üretici, katkıcılar ve davet edenler arasında dağıtılan haftalık puan havuzu (en fazla 100).
+Yayındaki bir kursun tamamlanan haftadaki (pazartesi–pazar, TR saati) ilerleme, tamamlama, beğeni ve ek kaynak hareketinden hesaplanan, her pazartesi üretici (%50), beğeni alan katkıcılar (%30) ve aktif davetlilerin davet edenleri (%20) arasında dağıtılan haftalık puan havuzu (en fazla 100; hareket eşiğin altındaysa yok). Davet tavanına girmez.
 _Avoid_: bonus havuzu, airdrop
+
+**2. seviye davet**:
+Bir üyenin platforma getirdiği kişinin (davet edenin) kursa davet ettiği üye ilk kez bir kursta aktive olunca, o üst davetçiye yazılan küçük puan (+5, davetli başına bir kez, davet tavanında). Zincir burada biter: 3. seviye yoktur. Yalnız kurs davetinde işler.
+_Avoid_: alt ekip, downline, kazanç zinciri, MLM
+
+**İşaretli hesap**:
+Suistimal şüphesiyle (davet çiftliği taraması ya da "haklı" bulunan üye / mesaj şikâyeti) işaret konmuş üye. Kullanmaya ve kendi puanını kazanmaya devam eder; liderlik ve lig tablolarında görünmez, ona ya da ondan doğan bekleyen puan admin işareti kaldırana dek kesinleşmez. Üyeye bildirilmez (sessiz fren).
+_Avoid_: banlı, engelli (o *Engel*dir), cezalı
+
+**Ekonomi kartı**:
+Admin panelindeki sağlık özeti: son 7 günde basılan puan, aktif üye başına düşen, kaynağa göre dağılım, davet payı (%40'ı geçerse uyarı), kırpılan / düşen bekleyen oranları ve kurs / etkinlik hunileri.
 
 ### Harita ve mesaj
 

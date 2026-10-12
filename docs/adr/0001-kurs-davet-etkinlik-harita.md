@@ -241,7 +241,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | | `checkin_secret` | **Gerekmez**: dönen QR token = base32(HMAC(env sırrı, `"c:" + eventId + ":" + pencere`)); adres `/c/{events.id}/{token}`. |
 | `event_rsvps` | `checked_in_at, checkin_method ticket\|rotating\|manual, checked_in_by, invite_code_id` | `checked_in_by` PRD'de eksik: görevli 120/dk ve denetim. Check-in C ilkeli. |
 | | `ticket_token_hash` | **Gerekmez**: bilet token = `{rsvpId}.{base32(HMAC(env sırrı, "t:" + rsvpId))}` — ilk parça RSVP'yi bulur, ikinci parça doğrular; kolonsuz. `"t:"`/`"c:"` önekleri bilet ile dönen QR'ı aynı sırla ayırır. `shortcut: sızan bilet tek tek iptal edilemez (RSVP silinir); gereksinim çıkarsa nullable kolon + unique eklenir.` |
-| `users` | `flagged_at` | **Faz 5** (tek kullanıcısı F5-04); lider/lig sorgularına `flagged_at IS NULL`. |
+| `users` | `flagged_at` | **Faz 5** (tek kullanıcısı F5-04); lider/lig sorgularına `flagged_at IS NULL`. **Uygulandı (2026-10-12):** ayrıca `puanOlayi` (kaynak ya da alıcı işaretliyse bekleyene) ve `bekleyenleriIsle` (olgunlaştırmaz) — K2 kesinleşme sırası değişmedi. Hesap imzası kolonu (suistimal kanıtının kök çözümü) AÇILMADI; karar #42. |
 | | `map_visible_at` | PRD'nin `map_visible + map_consent_at` yerine tek kolon: null = görünmez, dolu = rıza anı. |
 | | `dm_policy everyone\|mutual\|nobody` default `mutual` | Faz 4. Uygulamada NULLABLE + varsayılan (NULL = mutual): kolon canlıya koddan önce çıkar. |
 | | `il` | **Açılmaz**; `city` var (`schema.ts:26`), `profil.ts:24`'e il beyaz listesi. Hesap yaşı `created_at`'ten. |
@@ -286,7 +286,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | `event_invite_attended` | `event:{id}:u:{invitee}` | davet eden | davet tavanı (bekleyen; `ends_at`'te düşer) |
 | `event_hosted` | `event:{id}` | her host | bekleyen satır yok; `ends_at+48h` cron'u `min(giriş, 100)×5`'i saf fonksiyonla böler (K2) |
 | `event_well_rated` | `event:{id}` | her host | etkinlik başına 1 |
-| `vitality_pool` | `course:{id}:{YYYY-Www}` | üretici/katkıcı/davetçi | kurs başına haftada 100; tavana girmez. Aynı kişi birden çok dilimden pay alabilir (üretici + davetçi) → paylar **kullanıcı başına toplanıp tek insert** yazılır, yoksa idem index ikinci payı yutar |
+| `vitality_pool` | `course:{id}:{YYYY-Www}` | üretici/katkıcı/davetçi | kurs başına haftada 100; DAVET tavanına girmez; **Faz 5 incelemesi:** kişi başı haftalık tavan 200 (`tavanIcin`, TR haftası — kurs sayısıyla çarpılmasın). Aynı kişi birden çok dilimden pay alabilir (üretici + davetçi) → paylar **kullanıcı başına toplanıp tek insert** yazılır, yoksa idem index ikinci payı yutar |
 | `admin_adjust` (iade) | `iade:{reason}:{refId}` | — | orijinal satır varsa, bir kez |
 
 **Davet tavanı 300 / kayan 7 gün:** `referral_joined` (mevcut), `course_invite_welcome`, `course_invite_activated`, `course_invite_completed`, `invite_second_level`, `event_invite_attended` (PRD §4.2 listesi birebir; `course_invite_*` welcome'ı kapsar). `referral_activated` (admin onaylı) ve `event_invite_welcome` (PRD listesinde yok) hariç.
