@@ -8,6 +8,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray, like, or } from "drizzle-orm";
+import { PUAN } from "@/lib/points.ts";
 
 const URL = process.env.POSTGRES_URL_TEST;
 const h = vi.hoisted(() => ({ adminMi: false }));
@@ -30,6 +31,8 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
   let ek: typeof import("@/lib/ekonomi.ts");
   let admin: typeof import("@/pages/api/uye/admin.ts");
   let egitim: typeof import("@/pages/api/uye/egitim.ts");
+  let kampanya: typeof import("@/pages/api/uye/kampanya.ts");
+  let gorev: typeof import("@/pages/api/uye/gorev.ts");
   type Uye = Db["schema"]["users"]["$inferSelect"];
   const uyeler: number[] = [];
   const kurslar: number[] = [];
@@ -86,6 +89,8 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     ek = await import("@/lib/ekonomi.ts");
     admin = await import("@/pages/api/uye/admin.ts");
     egitim = await import("@/pages/api/uye/egitim.ts");
+    kampanya = await import("@/pages/api/uye/kampanya.ts");
+    gorev = await import("@/pages/api/uye/gorev.ts");
   }, 60_000);
 
   afterAll(async () => {
@@ -105,6 +110,11 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
       await db.delete(schema.courses).where(inArray(schema.courses.id, tumKurslar));
     }
     if (kulupler.length) {
+      const kampanyalar = await db.query.campaigns.findMany({ where: inArray(schema.campaigns.clubId, kulupler), columns: { id: true } });
+      if (kampanyalar.length) {
+        await db.delete(schema.campaignTasks).where(inArray(schema.campaignTasks.campaignId, kampanyalar.map((k) => k.id)));
+        await db.delete(schema.campaigns).where(inArray(schema.campaigns.id, kampanyalar.map((k) => k.id)));
+      }
       await db.delete(schema.clubMembers).where(inArray(schema.clubMembers.clubId, kulupler));
       await db.delete(schema.clubs).where(inArray(schema.clubs.id, kulupler));
     }
@@ -192,6 +202,40 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     expect((await kullanici(alici.id))!.flaggedAt).toBeNull();
     expect((await kullanici(yonetici.id))!.flaggedAt).toBeNull();
   });
+
+  /* ---------------- api/uye/kampanya.ts + gorev.ts (C2) ---------------- */
+
+  it("C2 (karakterizasyon, Faz 5 öncesi): ONAY BEKLEYEN topluluğun başkanı kampanya açar, görev yaratır; üye üstlenir + teslim eder; başkan onaylar → task_done YAZILIR (clubs.status hiçbir rotada sorulmaz)", async () => {
+    const [baskan, uyeK] = await Promise.all([uye("c2-b"), uye("c2-u")]);
+    const [kulup] = await db
+      .insert(schema.clubs)
+      .values({ slug: `itest-rt-c2-${t}`, name: "Itest RT C2", kind: "sehir", place: "Itest", il: "Ardahan", presidentId: baskan.id, status: "pending" })
+      .returning();
+    kulupler.push(kulup!.id);
+    await db.insert(schema.clubMembers).values([
+      { clubId: kulup!.id, userId: baskan.id, role: "president" },
+      { clubId: kulup!.id, userId: uyeK.id },
+    ]);
+    const r1 = await kampanya.POST(baglam(baskan, { clubId: String(kulup!.id), title: "Itest C2 kampanya", bookId: "itest-kitap" }));
+    expect(r1.status).toBe(303);
+    const kampanyaId = Number(r1.headers.get("location")!.split("/").pop());
+    expect(kampanyaId).toBeGreaterThan(0);
+    expect((await gorev.POST(baglam(baskan, { action: "create", campaignId: String(kampanyaId), title: "Itest görev", rewardPoints: "20" }))).status).toBe(303);
+    const task = (await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.campaignId, kampanyaId) }))!;
+    expect(task.status).toBe("backlog");
+    for (const [kim, form] of [
+      [uyeK, { action: "claim", taskId: String(task.id) }],
+      [uyeK, { action: "submit", taskId: String(task.id), url: "https://example.com/itest-c2" }],
+      [baskan, { action: "approve", taskId: String(task.id) }],
+    ] as const) {
+      const r = await gorev.POST(baglam(kim, form));
+      expect(r.status, form.action).toBe(303);
+      expect(r.headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`); // ?limit= / ?katil= / ?kapildi= yok
+    }
+    expect((await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.id, task.id) }))!.status).toBe("done");
+    expect((await ledger(uyeK.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(20 * PUAN.campaignMultiplier)]);
+  });
+  it.todo("C2 karar (#42): onay bekleyen topluluğun kampanya / görev ödülü zincirinin kapatılması — kurs (onayliKulupMu) ve etkinlik (etkinlikAcikMi) kuralının üçüncü kopyası (devir §1 C2)");
 
   /* ---------------- api/uye/egitim.ts ---------------- */
 
