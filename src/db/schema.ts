@@ -42,6 +42,11 @@ export const users = pgTable(
      * nullable + varsayılan (eski kodun insert'i kırılmaz).
      */
     dmPolicy: text("dm_policy", { enum: ["everyone", "mutual", "nobody"] }).default("mutual"),
+    /**
+     * Suistimal işareti (F5-04): NULL = temiz. Doluysa üye lider/lig hesaplarında görünmez ve
+     * ona ya da ondan doğan bekleyen puanlar olgunlaşmaz (admin işareti kaldırınca kesinleşir).
+     */
+    flaggedAt: timestamp("flagged_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
@@ -95,6 +100,9 @@ export const pointsLedger = pgTable(
         "event_invite_attended", // davet eden: davetlisi giriş yaptı (event:{id}:u:{invitee}) — bekleyen, ends_at'te düşer
         "event_hosted", // her host: ends_at+48s cron'u, min(giriş,100)×5 eşit bölünür (event:{id}) — bekleyen satır YOK
         "event_well_rated", // her host: ort ≥ 4,0 ve ≥ 10 değerlendirme, 7. gün cron'u (event:{id})
+        // Faz 5
+        "invite_second_level", // üst davetçi: davetlinin davetlisi ilk kez bir kursta aktive oldu (u:{invitee}) — davet tavanında
+        "vitality_pool", // haftalık canlılık havuzu payı, kişi başına TEK satır (course:{id}:{YYYY-Www}) — tavana girmez
       ],
     }).notNull(),
     refId: text("ref_id"),

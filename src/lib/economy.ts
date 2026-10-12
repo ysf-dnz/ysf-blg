@@ -157,3 +157,146 @@ export function dmKarar(d: DmDurum): DmKarar {
   if (d.aliciyaGonderilen >= DM_YANITSIZ_SINIR) return "yanitsiz";
   return "ok";
 }
+
+/* ---------------- Canlılık havuzu — PRD §4.2, F5-02 ---------------- */
+
+export type Canlilik = {
+  /** Hafta içinde ilerleme kaydeden katılımcı */
+  ilerleyen: number;
+  tamamlama: number;
+  /** Hafta içinde beğeni alan yorum/cevap */
+  begeniliYorum: number;
+  /** Hafta içinde kabul edilen ek kaynak */
+  kaynak: number;
+};
+export function canlilikV(c: Canlilik): number {
+  return c.ilerleyen + 3 * c.tamamlama + 0.5 * c.begeniliYorum + 2 * c.kaynak;
+}
+
+export const HAVUZ_ESIK = 10;
+/** Kurs başına haftalık havuz tavanı */
+export const HAVUZ_TAVAN = 100;
+/** Logaritmik: 100 kat canlı kurs ~3 kat alır — büyük kurs ekonomiyi yutmaz */
+export function havuz(v: number): number {
+  return v < HAVUZ_ESIK ? 0 : Math.min(HAVUZ_TAVAN, Math.round(15 * Math.log(1 + v)));
+}
+
+/**
+ * Havuz payları: %50 üretici · %30 beğeni alan katkıcılar (üretici hariç, beğeni payına göre) ·
+ * %20 aktif davetlilerin davet edenleri (davetli payına göre). Aşağı yuvarla, artık üreticiye;
+ * hak sahibi olmayan dilim DAĞITILMAZ. Aynı kişinin birden çok dilimdeki payı TOPLANIR:
+ * refId `course:{id}:{hafta}` kişi başına tek ledger satırı taşır (ikinci insert'i idem index yutardı).
+ * Payı 0 olan sonuca girmez.
+ */
+export function havuzDagit(
+  toplam: number,
+  ureticiId: number,
+  katkicilar: Map<number, number>,
+  davetciler: Map<number, number>,
+): Map<number, number> {
+  const paylar = new Map<number, number>();
+  if (toplam <= 0) return paylar;
+  const ekle = (id: number, n: number) => {
+    if (n > 0) paylar.set(id, (paylar.get(id) ?? 0) + n);
+  };
+  // Tam sayı aritmetiği: 100 * 0.3 kayan noktada 30.000000000000004 verir
+  const katkiDilim = Math.floor((toplam * 3) / 10);
+  const davetDilim = Math.floor((toplam * 2) / 10);
+  // Üretici: toplamın yarısı + yuvarlama artıkları; sahipsiz dilim buraya AKTARILMAZ
+  let uretici = toplam - katkiDilim - davetDilim;
+  const dilimler: [number, [number, number][]][] = [
+    [katkiDilim, [...katkicilar].filter(([id]) => id !== ureticiId)],
+    [davetDilim, [...davetciler]],
+  ];
+  for (const [dilim, hak] of dilimler) {
+    const sahipler = hak.filter(([, agirlik]) => agirlik > 0);
+    const agirlikToplam = sahipler.reduce((t, [, a]) => t + a, 0);
+    if (agirlikToplam === 0) continue;
+    let dagitilan = 0;
+    for (const [id, agirlik] of sahipler) {
+      const pay = Math.floor((dilim * agirlik) / agirlikToplam);
+      ekle(id, pay);
+      dagitilan += pay;
+    }
+    uretici += dilim - dagitilan;
+  }
+  ekle(ureticiId, uretici);
+  return paylar;
+}
+
+/** Türkiye kalıcı UTC+3 (yaz saati yok): kaydırılmış anın UTC alanları = TR duvar saati */
+const TR_OFSET_MS = 3 * 3600 * 1000;
+
+/** TR saatli ISO hafta: etiket "2026-W42", pencere pazartesi 00:00 TR → sonraki pazartesi */
+export function isoHafta(an: Date): { etiket: string; baslangic: Date; bitis: Date } {
+  const tr = new Date(an.getTime() + TR_OFSET_MS);
+  const pazartesi = Date.UTC(tr.getUTCFullYear(), tr.getUTCMonth(), tr.getUTCDate() - ((tr.getUTCDay() + 6) % 7));
+  // ISO yılı, haftanın perşembesinin yılıdır
+  const persembe = new Date(pazartesi + 3 * 864e5);
+  const yil = persembe.getUTCFullYear();
+  const hafta = Math.floor((persembe.getTime() - Date.UTC(yil, 0, 1)) / (7 * 864e5)) + 1;
+  const baslangic = new Date(pazartesi - TR_OFSET_MS);
+  return {
+    etiket: `${yil}-W${String(hafta).padStart(2, "0")}`,
+    baslangic,
+    bitis: new Date(baslangic.getTime() + 7 * 864e5),
+  };
+}
+
+/** Havuzun dağıtılacağı hafta: şu an içinde bulunulandan bir önceki (ilk kez pazartesi koşar) */
+export function sonTamamlananHafta(simdi: Date = new Date()) {
+  return isoHafta(new Date(isoHafta(simdi).baslangic.getTime() - 1));
+}
+
+/* ---------------- Ekonomi kartı — PRD §4.9, F5-03 ---------------- */
+
+/** Davet kaynaklı pay bu oranı geçerse ekonomi davet çiftliğine kayıyor demektir */
+export const DAVET_PAYI_ESIK = 0.4;
+
+/** lib/ekonomi.ts ekonomiKarti() tek SQL'inin sayıları (son 7 gün; huniler son 30 gün) */
+export type EkonomiHam = {
+  basilan: number;
+  /** Son 7 günde puan kazanan üye */
+  aktif: number;
+  davet: number;
+  kesinlesen: number;
+  kirpilan: number;
+  dusen: number;
+  kursKatilim: number;
+  kursAktif: number;
+  kursBiten: number;
+  etkinlikKayit: number;
+  etkinlikGiris: number;
+};
+
+const oran = (pay: number, payda: number) => (payda > 0 ? pay / payda : 0);
+
+export function ekonomiOzeti(h: EkonomiHam) {
+  const davetPayi = oran(h.davet, h.basilan);
+  return {
+    uyeBasina: Math.round(oran(h.basilan, h.aktif)),
+    davetPayi,
+    davetUyari: davetPayi >= DAVET_PAYI_ESIK,
+    kirpilanOran: oran(h.kirpilan, h.kesinlesen),
+    dusenOran: oran(h.dusen, h.kesinlesen + h.dusen),
+    kursAktivasyon: oran(h.kursAktif, h.kursKatilim),
+    kursTamamlama: oran(h.kursBiten, h.kursKatilim),
+    etkinlikGiris: oran(h.etkinlikGiris, h.etkinlikKayit),
+  };
+}
+
+/* ---------------- Suistimal işareti — PRD §4.2, F5-04 ---------------- */
+
+/** Aynı davetçiye 24 saatte bu kadar yeni hesap VE aynı imzadan (ip + ua) bu kadar ziyaret */
+export const SUISTIMAL_ESIK = 5;
+
+/**
+ * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalTara SQL'inin SAF EŞLENİĞİ (ikisi birlikte değişir).
+ * İmza kümesi davetçinin ziyaretlerinin en az yarısı olmalı: kalabalık gerçek davette (konferans QR'ı)
+ * ziyaretler çok imzaya dağılır.
+ */
+export function suistimalMi(d: { yeniHesap: number; imzaZiyaret: number; toplamZiyaret: number }): boolean {
+  return (
+    d.yeniHesap >= SUISTIMAL_ESIK && d.imzaZiyaret >= SUISTIMAL_ESIK && d.imzaZiyaret * 2 >= d.toplamZiyaret
+  );
+}

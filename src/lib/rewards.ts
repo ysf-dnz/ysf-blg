@@ -48,11 +48,11 @@ export function tavanIcin(reason: Reason): Tavan | undefined {
       return { reasons: ["course_completed"], since: yediGunOnce(), limit: PUAN.courseWeeklyCap };
     // Davet tavanı (PRD §4.2): tüm davet kaynaklı puanlar tek havuzda, kayan 7 gün 300.
     // referral_activated (admin onaylı) ve event_invite_welcome (PRD listesinde yok) HARİÇ.
-    // Faz 5: invite_second_level.
     case "referral_joined":
     case "course_invite_welcome":
     case "course_invite_activated":
     case "course_invite_completed":
+    case "invite_second_level":
     case "event_invite_attended":
       return { reasons: DAVET_REASONLARI, since: yediGunOnce(), limit: PUAN.inviteWeeklyCap };
     // Etkinlik (Faz 3 incelemesi): etkinlik başına frenler (idem; ilk 100 katılımcı) etkinlikler
@@ -73,8 +73,19 @@ export const DAVET_REASONLARI: Reason[] = [
   "course_invite_welcome",
   "course_invite_activated",
   "course_invite_completed",
+  "invite_second_level",
   "event_invite_attended",
 ];
+
+/** Davetten doğan TÜM puanlar — ekonomi kartındaki davet payı (%40 eşiği); tavan dışındakiler dahil */
+export const DAVET_KAYNAKLI: Reason[] = [...DAVET_REASONLARI, "referral_activated", "event_invite_welcome"];
+
+/**
+ * İşaretli (users.flagged_at) alıcının ya da işaretli KAYNAĞIN (refId sonu `u:{id}`) bekleyeni
+ * olgunlaşmaz (F5-04). Düz metin tablo adı: pending_points'in takma adsız seçildiği sorgularda kullanılır.
+ */
+const isaretliBekleyenSql = sql`exists (select 1 from users f where f.flagged_at is not null
+  and (f.id = pending_points.user_id or f.id = substring(pending_points.ref_id from '(?:^|:)u:([0-9]{1,9})$')::int))`;
 
 /** db.execute sonucu sürücüye göre dizi ya da {rows} gelir */
 export function satirlar<T = Record<string, unknown>>(sonuc: unknown): T[] {
@@ -452,9 +463,11 @@ export async function puanOlayi(opts: {
   refId: string;
   /** puanı doğuran (kaynak) hesabın açılış anı — alıcı değil */
   kaynakOlusturulma: Date;
+  /** kaynak hesap işaretli (flagged_at): puan bekleyene yazılır, işaret kalkana dek olgunlaşmaz */
+  kaynakIsaretli?: boolean;
   note?: string;
 }): Promise<number> {
-  if (hesapGencMi(opts.kaynakOlusturulma)) {
+  if (opts.kaynakIsaretli || hesapGencMi(opts.kaynakOlusturulma)) {
     const olgun = olgunlasmaAni(opts.kaynakOlusturulma);
     await db
       .insert(schema.pendingPoints)
@@ -500,15 +513,24 @@ export async function puanOlayi(opts: {
 /**
  * Olgunlaşanları kesinleştir, süresi dolanları düşür. Günlük cron'da tümü;
  * /uye panosunda yalnız o üye için (userId) — "anında his" günlük cron'u beklemez.
+ * İşaretli alıcının / kaynağın bekleyeni olgunlaşmaz (düşme süresi işlemeye devam eder).
  */
 export async function bekleyenleriIsle(
   simdi: Date = new Date(),
   userId?: number,
 ): Promise<{ kesinlesen: number; dusen: number }> {
   const kime = userId ? eq(schema.pendingPoints.userId, userId) : undefined;
-  const olgunlar = await db.query.pendingPoints.findMany({
-    where: and(eq(schema.pendingPoints.status, "pending"), lte(schema.pendingPoints.maturesAt, simdi), kime),
-  });
+  const olgunlar = await db
+    .select()
+    .from(schema.pendingPoints)
+    .where(
+      and(
+        eq(schema.pendingPoints.status, "pending"),
+        lte(schema.pendingPoints.maturesAt, simdi),
+        kime,
+        sql`not ${isaretliBekleyenSql}`,
+      ),
+    );
   for (const b of olgunlar) await bekleyeniKesinlestir(b);
   const dusenler = await db
     .update(schema.pendingPoints)

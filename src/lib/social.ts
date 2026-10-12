@@ -5,6 +5,13 @@ import { levelFor } from "./levels.ts";
 
 export type User = typeof schema.users.$inferSelect;
 
+/**
+ * Lider tablolarının points_ledger sorgularına WHERE parçası: işaretli üyenin satırları sayılmaz
+ * (F5-04). Düz metin tablo adı: yalnız points_ledger'ın takma adsız seçildiği sorgularda.
+ */
+export const isaretsizKazananSql = sql`not exists (select 1 from users f
+  where f.id = points_ledger.user_id and f.flagged_at is not null)`;
+
 export async function getUsersMap(ids: number[]): Promise<Map<number, User>> {
   const tekil = [...new Set(ids)];
   if (tekil.length === 0) return new Map();

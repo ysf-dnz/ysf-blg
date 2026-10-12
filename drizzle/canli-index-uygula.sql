@@ -169,3 +169,12 @@ CREATE INDEX IF NOT EXISTS "messages_recipient_read_idx" ON "messages" USING btr
 CREATE INDEX IF NOT EXISTS "messages_pair_idx" ON "messages" USING btree ("sender_id", "recipient_id", "created_at");
 CREATE INDEX IF NOT EXISTS "messages_pair_rev_idx" ON "messages" USING btree ("recipient_id", "sender_id", "created_at");
 
+
+-- ---------------------------------------------------------------------------
+-- ADIM 9 — Faz 5 suistimal işareti (2026-10-12). `drizzle-kit push` ile uygulandı
+-- (yalnız ADDITIVE; önce `push --strict` ile önizlendi: tek ifade, sapma yok); kayıt.
+-- Yeni kolon: users(flagged_at timestamp NULL) — mevcut 16 satır NULL (işaretli yok).
+-- points_ledger.reason +2 (invite_second_level, vitality_pool) DB'de düz text: şema değişmedi.
+-- Yeni tablo / index YOK; mevcut veriye bağlı adım YOK.
+-- ---------------------------------------------------------------------------
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "flagged_at" timestamp;

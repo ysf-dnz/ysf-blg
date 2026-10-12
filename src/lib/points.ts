@@ -81,6 +81,8 @@ export const PUAN = {
   inviteWeeklyCap: 300,
   /** Davet bekleyeni bu kadar gün içinde aktivasyon gelmezse düşer */
   inviteExpiryDays: 14,
+  /** 2. seviye davet (Faz 5): davet edenin platform davetçisine; davetli başına 1, 3. seviye YOK */
+  inviteSecondLevel: 5,
   /** Kampanya görevi varsayılan ödülü (görev başına ayarlanabilir) */
   taskDefault: 50,
   /** Kampanya çarpanı: gündem kitabıyla ilgili üretim */
@@ -96,6 +98,9 @@ export const PUAN = {
   /** Avatar flair süsü */
   flairCost: 50,
 } as const;
+
+/** Canlılık havuzunun dağıtıldığı İLK hafta (TR ISO haftası): açılıştan önceki haftalar ödenmez */
+export const CANLILIK_ILK_HAFTA = "2026-W42";
 
 /** Hediye seçim vitrini öne çıkanı: "Learning Go" (books.json id'si) */
 export const FEATURED_GIFT_BOOK_ID = "1h6nwQ-jHvqKuCtpiP3kdb5GsBtOcPww6";
