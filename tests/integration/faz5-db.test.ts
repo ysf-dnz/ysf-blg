@@ -610,6 +610,33 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(await skor()).toMatchObject({ memberCount: 2, raw: 120, normalized: lg.normalizeSkor(120, 2) }); // √2 → 85
   });
 
+  /* ---------------- Faz 5'ten ESKİ hatalar (yalnız kanıt; src değişmedi) ---------------- */
+
+  it("C1 (kanıt): aktifSezon bitişi geçmiş sezonu döndürmez → gunluk.ts'in `sezon.endsAt <= now` dalı hiç çalışmaz; bayat sezon 'active' kalır", async () => {
+    const [bayat] = await db
+      .insert(schema.seasons)
+      .values({ name: `itest-bayat-${t}`, startsAt: new Date(Date.now() - 40 * 864e5), endsAt: new Date(Date.now() - 3600e3) })
+      .returning();
+    try {
+      const s = await lg.aktifSezon();
+      expect(s.id).not.toBe(bayat!.id);
+      expect(s.endsAt.getTime()).toBeGreaterThan(Date.now()); // kapanış koşulu bu sezon için hiç doğru olmaz
+      expect((await db.query.seasons.findFirst({ where: eq(schema.seasons.id, bayat!.id) }))!.status).toBe("active"); // kimse kapatmaz
+    } finally {
+      await db.delete(schema.seasons).where(eq(schema.seasons.id, bayat!.id));
+    }
+  });
+  it.todo("C1 karar (#42): sezon kapanışının onarımı + Ağustos / Eylül 2026'nın geriye dönük ödülü (devir §1 C1, §2.7)");
+
+  it("C3 (karakterizasyon, Faz 5 öncesi): işaretli beğenenin beğenisi like_received'ı doğrudan yazar — begeniPuaniVer beğenenin işaretine bakmaz", async () => {
+    const [yazar, begenen] = await Promise.all([uye("c3-y", 30), uye("c3-b", 30)]);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, begenen.id));
+    expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: yazar.id, refId: `yorum:itest-c3-${t}` })).toBe(true);
+    expect((await ledger(yazar.id, "like_received")).length).toBe(1);
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, begenen.id));
+  });
+  it.todo("C3 karar (#42): like_received / event_hosted / event_well_rated sayımından işaretli kaynağı dışlama (devir §1 C3, §4.3 kural 12)");
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {

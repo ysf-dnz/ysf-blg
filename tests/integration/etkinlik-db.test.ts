@@ -193,6 +193,32 @@ describe.skipIf(!URL)("etkinlik — gerçek DB", { timeout: 180_000 }, () => {
     expect(await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).toHaveLength(0);
   });
 
+  it("işaretli davetli girişi (F5-04): davetlinin kendi +10/+5'i yazılır, davet edenin +10'u bekleyende TUTULUR (kaynakIsaretli), işaret kalkınca kesinleşir; C3 (karakterizasyon): işaretli giriş düzenleyen payına sayılır", async () => {
+    const acan = await uye("fl-acan");
+    const e = await etkinlik(acan.id); // kapı açık (başlangıç −1 s), bitiş +3 s
+    const davetEden = await uye("fl-eden");
+    await ev.kayitOl(davetEden, e);
+    const kod = await dv.davetKoduUret(davetEden.id, e.id, "event");
+    const ham = await uye("fl-davetli", 30);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, ham.id));
+    const davetli = (await db.query.users.findFirst({ where: eq(schema.users.id, ham.id) }))!;
+    expect((await ev.kayitOl(davetli, e, { cookies: cerez(`event:${e.id}:${kod.id}`) })).rsvp?.inviteCodeId).toBe(kod.id);
+    expect((await ev.girisYap(e, davetli.id, "ticket", acan.id)).durum).toBe("geldi");
+    // İşaretli üyenin KENDİ doğrudan puanları yazılır (#65: kullanıcı engellenmez)
+    expect(await ledger(davetli.id, "event_attended", String(e.id))).toHaveLength(1);
+    expect(await ledger(davetli.id, "event_invite_welcome", `event:${e.id}`)).toHaveLength(1);
+    // Davet edenin +10'u: kaynak işaretli → bekleyen tutulur (olgun ama kesinleşmez)
+    const ref = `event:${e.id}:u:${davetli.id}`;
+    expect(await ledger(davetEden.id, "event_invite_attended", ref)).toHaveLength(0);
+    expect(await bekleyen(davetEden.id, ref)).toMatchObject({ status: "pending", delta: 10, expiresAt: null });
+    expect(await rw.bekleyenleriIsle(new Date(), davetEden.id)).toMatchObject({ kesinlesen: 0 });
+    // C3 (devir §1): işaretli hesabın girişi event_hosted sayımına girer — bugünkü davranış, karar #42
+    expect(await ev.hostPayHesabi(e)).toMatchObject({ katilimci: 1, toplam: 5 });
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, davetli.id));
+    expect(await rw.bekleyenleriIsle(new Date(), davetEden.id)).toMatchObject({ kesinlesen: 1 });
+    expect((await ledger(davetEden.id, "event_invite_attended", ref)).map((r) => r.delta)).toEqual([10]);
+  });
+
   it("atıfsız durumlar: kendi kodu, başka etkinliğin çerezi, kurs çerezi, iptal edilmiş kod", async () => {
     const acan = await uye("at-acan");
     const e = await etkinlik(acan.id, { baslangic: 2, bitis: 4 });
