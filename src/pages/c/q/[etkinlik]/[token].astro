@@ -89,7 +89,9 @@ const [baslik, aciklama] =
       /* depolama kapalı: tek gönderim korumasını form bayrağı sağlar */
     }
     form.dataset.gonderildi = "1";
-    form.requestSubmit();
+    // requestSubmit iOS < 16'da yok: düz submit (ClientRouter'ı atlar; POST + yönlendirme yine çalışır)
+    if (typeof form.requestSubmit === "function") form.requestSubmit();
+    else form.submit();
   }
   // İlk yüklemede astro:page-load pencere "load"ını bekler (yavaş ağda QR'ın 30–60 sn'si dolabilir): hemen dene
   gonder();

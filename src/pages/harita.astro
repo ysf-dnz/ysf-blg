@@ -349,16 +349,23 @@ const veri = { pinler, bakan: member?.handle ?? null, filtreli };
       // Filtre açıkken rozet yalnız filtreye uyan görünen üyesi olan ilde; değilse veri olan her ilde
       if (filtreli ? p.gorunen === 0 : p.uye === 0 && p.kulupler.length === 0 && p.etkinlikler.length === 0) continue;
       const kulup = p.kulupler.length > 0;
-      const sayi = filtreli ? p.gorunen : kulup ? p.kulupler.length : p.uye || p.etkinlikler.length; // sayı: güvenli HTML
+      // Yalnız etkinliği olan ilde (üye ve kulüp yok) sayı yerine takvim: "N üye" diye okunmasın
+      const yalnizEtkinlik = !filtreli && !kulup && p.uye === 0;
+      const sayi = filtreli ? p.gorunen : kulup ? p.kulupler.length : p.uye; // sayı: güvenli HTML
       const sinif = filtreli ? " harita-rozet-filtre" : kulup ? " harita-rozet-kulup" : "";
+      const baslik = filtreli
+        ? `${p.il}: filtreye uyan ${p.gorunen} üye`
+        : yalnizEtkinlik
+          ? `${p.il}: ${p.etkinlikler.length} yaklaşan etkinlik`
+          : `${p.il}: ${p.uye} üye, ${p.kulupler.length} kulüp`;
       const icon = L.divIcon({
         className: "",
-        html: `<span class="harita-rozet${sinif}">${Number(sayi)}</span>`,
+        html: `<span class="harita-rozet${sinif}">${yalnizEtkinlik ? "📅" : Number(sayi)}</span>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
         popupAnchor: [0, -14],
       });
-      L.marker([p.lat, p.lon], { icon, title: `${p.il}: ${p.uye} üye, ${p.kulupler.length} kulüp` })
+      L.marker([p.lat, p.lon], { icon, title: baslik })
         .bindPopup(() => popupIcerigi(p, bakan), POPUP)
         .addTo(map);
     }

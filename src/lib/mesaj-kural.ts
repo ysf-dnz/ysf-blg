@@ -41,8 +41,20 @@ function baglantiMi(adres: string): boolean {
     return false;
   }
 }
-/** Adresin sonuna yapışan noktalama cümleye aittir ("…bak https://x.com." → nokta bağlantıda değil) */
-const SON_NOKTALAMA = /[.,;:!?)\]}'"»]+$/;
+/**
+ * Adresin sonuna yapışan noktalama cümleye aittir ("…bak https://x.com." → nokta bağlantıda değil).
+ * Kapanış parantezi yalnız adres içinde açılışı YOKSA kırpılır: "…/wiki/Go_(programlama_dili)" bütün kalır.
+ */
+const KAPANIS: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
+function sonuKirp(ham: string): string {
+  let adres = ham;
+  for (;;) {
+    const son = adres.at(-1) ?? "";
+    const acilis = KAPANIS[son];
+    if (acilis ? adres.split(son).length > adres.split(acilis).length : /[.,;:!?'"»]/.test(son)) adres = adres.slice(0, -1);
+    else return adres;
+  }
+}
 
 /** Gövdeyi metin ve `https://` bağlantı parçalarına böler; başka hiçbir şema bağlantı olmaz */
 export function metniParcala(govde: string): MesajParcasi[] {
@@ -56,7 +68,7 @@ export function metniParcala(govde: string): MesajParcasi[] {
   };
   for (const m of govde.matchAll(HTTPS)) {
     const ham = m[0];
-    const adres = ham.replace(SON_NOKTALAMA, "");
+    const adres = sonuKirp(ham);
     metinEkle(govde.slice(son, m.index));
     if (baglantiMi(adres)) {
       parcalar.push({ tur: "link", deger: adres });

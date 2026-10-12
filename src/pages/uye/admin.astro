@@ -1,6 +1,6 @@
 ---
 /** Admin paneli: bekleyen yazılar + başvurular (yalnızca role=admin). */
-import { desc, eq, inArray } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -31,9 +31,10 @@ const pendingCourses = await db.query.courses.findMany({
   orderBy: desc(schema.courses.createdAt),
 });
 // Şikâyet kuyruğu (F1-10): hedef başına grupla
+// En ESKİ açık kayıttan başlar (FIFO): yeni şikâyet seli eski gerçek şikâyeti 200'lük pencereden itemesin
 const acikSikayetler = await db.query.reports.findMany({
   where: eq(schema.reports.status, "open"),
-  orderBy: desc(schema.reports.createdAt),
+  orderBy: asc(schema.reports.createdAt),
   limit: 200,
 });
 const sikayetGruplari = [

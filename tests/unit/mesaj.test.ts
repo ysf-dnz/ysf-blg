@@ -46,6 +46,10 @@ describe("yalnız https otomatik bağlantı (AC-24)", () => {
     // Cümle sonu noktalama bağlantıya girmez
     ["(bkz. https://go.dev/doc).", [metin("(bkz. "), link("https://go.dev/doc"), metin(").")]],
     ["sor: https://x.com/a?", [metin("sor: "), link("https://x.com/a"), metin("?")]],
+    // Parantezle BİTEN adres bütün kalır (Vikipedi); açılışı olmayan kapanış cümleye aittir
+    ["https://tr.wikipedia.org/wiki/Go_(programlama_dili)", [link("https://tr.wikipedia.org/wiki/Go_(programlama_dili)")]],
+    ["(https://tr.wikipedia.org/wiki/Go_(dil)).", [metin("("), link("https://tr.wikipedia.org/wiki/Go_(dil)"), metin(").")]],
+    ["[bkz: https://x.com/a]", [metin("[bkz: "), link("https://x.com/a"), metin("]")]],
     // Başka HİÇBİR şema bağlantı olmaz
     ["javascript:alert(1)", [metin("javascript:alert(1)")]],
     ["tıkla: JAVASCRIPT:alert(document.cookie)", [metin("tıkla: JAVASCRIPT:alert(document.cookie)")]],

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clerk } from "@clerk/testing/playwright";
+import { neon } from "@neondatabase/serverless";
 
 // seed:demo üyeleri. Ön koşullar global-setup'ta: Elif test üyesine okunmamış mesaj yazmış,
 // Zeynep test üyesini engellemiş. Can ile bağ yok (ayarı varsayılan), Mehmet "kimse", Mehmet ve Can
@@ -17,6 +18,11 @@ async function haritaVerisi(page: Page, yol = "/harita") {
   const veri = JSON.parse((await page.locator("#harita-veri").textContent()) ?? "{}") as { pinler: Pin[]; bakan: string | null; filtreli: boolean };
   return { ...veri, handlelar: veri.pinler.flatMap((p) => p.uyeler.map((u) => u.h)).sort() };
 }
+// Ön koşulu TESTİN İÇİNDE kurmak için (global-setup'ın kurduğu durum, önce koşan başka bir spec'te
+// tüketilebiliyor → test skip'e düşüp hiçbir şey sınamıyordu). Dev = canlı DB: yalnız test üyesi + demo üye.
+const db = () => neon(process.env.POSTGRES_URL!);
+const benimId = async () => Number((await db()`select id from users where clerk_id = ${process.env.E2E_CLERK_ID!}`)[0]!.id);
+
 const gonder = (page: Page, kisi: string, json = false) =>
   page.request.post("/api/uye/mesaj", {
     form: { action: "send", kisi, body: "e2e ret denemesi" },
@@ -70,11 +76,19 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     await dogrula(); // sunucu render'ı
     await expect(page.locator('#mesajlar a[href^="javascript"]')).toHaveCount(0);
 
-    // Okundu yazıldı: gelen kutusunda rozet yok, en üstte bu konuşma ve "Sen:" önizlemesi
+    // Yoklama (12 sn): konuşma açıkken gelen mesaj yenilemeden görünür, şikâyet düğmesiyle birlikte,
+    // ve okundu yazılır
+    const gelen = `e2e gelen ${Date.now()}`;
+    await db()`insert into messages (sender_id, recipient_id, body) select e.id, ${await benimId()}, ${gelen} from users e where e.handle = ${ELIF}`;
+    const gelenBalon = page.locator('#mesajlar [data-mesaj][data-benden="0"]', { hasText: gelen });
+    await expect(gelenBalon).toHaveCount(1, { timeout: 25_000 });
+    await expect(gelenBalon.locator("[data-mesaj-sikayet]")).toBeVisible();
+
+    // Okundu yazıldı: gelen kutusunda rozet yok, en üstte bu konuşma
     await page.goto("/uye/mesajlar", { waitUntil: "domcontentloaded" });
     await expect(satir.locator("[data-okunmamis]")).toHaveCount(0);
     await expect(page.locator("[data-gelen-kutusu] [data-konusma]").first()).toHaveAttribute("data-konusma", ELIF);
-    await expect(satir).toContainText(`Sen: ${damga}`);
+    await expect(satir).toContainText(gelen);
 
     // Yoklama ucu: imleçten sonrası boş, önbelleksiz; başka üyenin konuşması okunamaz
     const son = await page.request.get(`/api/uye/mesaj?kisi=${ELIF}&since=999999999`);
@@ -86,15 +100,14 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   test("bildirimler: /uye GET'i okundu yazmaz (ön-yükleme sayacı sıfırlamasın); pano açılınca betik POST'lar", async ({ page }) => {
     const rozet = page.locator("[data-bildirim-rozet]");
     const zil = page.locator('header a[href="/uye#bildirimler"]');
+    // Ön koşul burada: okunmamış bir bildirim (auth.spec gibi /uye'yi açan önceki testler okundu yazmış olabilir)
+    await db()`insert into notifications (user_id, kind, body, href) values (${await benimId()}, 'system', 'e2e: pano açılınca okundu olur', '/uye')`;
     await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
-    await expect(zil).toBeVisible(); // ada geldi
-    const okunmamisVardi = (await rozet.count()) > 0; // yeniden denemede okunmuş olabilir
+    await expect(rozet).toBeVisible();
     // Betiksiz GET (zile hover ön-yüklemesi, görsel isteği): sayaç DEĞİŞMEZ
     expect((await page.request.get("/uye")).status()).toBe(200);
     await page.reload({ waitUntil: "domcontentloaded" });
-    await expect(zil).toBeVisible();
-    expect((await rozet.count()) > 0).toBe(okunmamisVardi);
-    test.skip(!okunmamisVardi, "okunmamış bildirim yok (yeniden deneme) — GET kanıtı yukarıda");
+    await expect(rozet).toBeVisible();
     // Pano gerçekten açılınca betik okundu POST'unu atar
     const okundu = page.waitForResponse((r) => r.url().endsWith("/api/uye/bildirim") && r.request().method() === "POST");
     await page.goto("/uye");
@@ -165,12 +178,18 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
 
     // Filtre (sorgu parametresi): İzmir vakfının üyeleri Zeynep (engelli → yok) ve Elif
     const vakif = await haritaVerisi(page, "/harita?topluluk=izmir-okuma-vakfi-demo");
+    // (Demo topluluklar canlıda herkese açık: gerçek bir üye katılıp rıza verirse tam eşitlik kırılırdı →
+    // "içerir" + "engelleyen/rızasız yok" beklentileri)
     expect(vakif.filtreli).toBe(true);
-    expect(vakif.handlelar).toEqual([ELIF]);
-    await expect(page.locator(".harita-rozet-filtre")).toHaveCount(1);
-    await expect(page.locator("[data-harita-gorunen]")).toContainText("Filtreye uyan 1 üye");
+    expect(vakif.handlelar).toContain(ELIF);
+    expect(vakif.handlelar).not.toContain(ZEYNEP);
+    expect(vakif.handlelar).not.toContain(AYSE); // vakıf üyesi değil: filtre gerçekten süzüyor
+    expect(await page.locator(".harita-rozet-filtre").count()).toBeGreaterThanOrEqual(1);
+    await expect(page.locator("[data-harita-gorunen]")).toContainText(/Filtreye uyan \d+ üye/);
     // ODTÜ kulübü: Ayşe, Elif, Mehmet, Can üye — yalnız rızalı ikisi
-    expect((await haritaVerisi(page, "/harita?topluluk=odtu-yz-okuma-demo")).handlelar).toEqual([AYSE, ELIF]);
+    const odtu = (await haritaVerisi(page, "/harita?topluluk=odtu-yz-okuma-demo")).handlelar;
+    expect(odtu).toEqual(expect.arrayContaining([AYSE, ELIF]));
+    for (const yok of [MEHMET, CAN, ZEYNEP]) expect(odtu).not.toContain(yok);
   });
 
   test("F4-04: engelle → Mesaj düğmesi ve form kaybolur → engeli kaldır; üye ve mesaj şikâyeti alınır", async ({ page }) => {
@@ -214,8 +233,18 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     await expect(page).toHaveURL(new RegExp(`/uye/mesajlar/${ELIF}\\?sikayet=(1|var|hiz)`));
     await expect(page.locator("[data-sikayet-bandi]")).toBeVisible();
     // Kendini ve başkasının mesajını şikâyet edemez (id deneyerek yazışma kuyruğa düşürülemez)
-    const kendi = await page.request.post("/api/uye/sikayet", { form: { targetType: "message", targetId: "999999999" }, maxRedirects: 0 });
+    // Mesajı yalnız ALICISI şikâyet eder: var olan ama benim GÖNDERDİĞİM mesaj → 404 (id deneyerek başkasının
+    // yazışması admin kuyruğuna düşürülemez); kendini şikâyet → 404; olmayan id → 404
+    const benimMesajim = await page.locator('#mesajlar [data-benden="1"]').last().getAttribute("data-mesaj");
+    expect(benimMesajim).toMatch(/^\d+$/);
+    const sikayet = (form: Record<string, string>) => page.request.post("/api/uye/sikayet", { form, maxRedirects: 0 });
+    expect((await sikayet({ targetType: "message", targetId: benimMesajim! })).status()).toBe(404);
+    expect((await sikayet({ targetType: "user", targetId: String(await benimId()) })).status()).toBe(404);
+    const kendi = await sikayet({ targetType: "message", targetId: "999999999" });
     expect(kendi.status()).toBe(404);
+    // Şikâyet gerçekten kuyruğa düştü (açık kayıt): Can (üye) + Elif'in mesajı
+    const acik = await db()`select target_type from reports where reporter_id = ${await benimId()} and status = 'open' and target_type in ('user', 'message')`;
+    expect(acik.map((r) => r.target_type).sort()).toEqual(expect.arrayContaining(["message", "user"]));
     // int4'ü aşan id Postgres hatası (500) değil, doğrulama hatası
     expect((await page.request.post("/api/uye/sikayet", { form: { targetType: "user", targetId: "99999999999" }, maxRedirects: 0 })).status()).toBe(400);
     expect(await (await page.request.get(`/api/uye/mesaj?kisi=${ELIF}&since=99999999999`)).json()).toHaveProperty("mesajlar");

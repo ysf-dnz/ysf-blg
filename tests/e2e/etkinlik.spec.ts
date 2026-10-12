@@ -180,6 +180,7 @@ test.describe("etkinlik akışı — üye", () => {
     const bayat = await donenPost(donenToken(id, donenPencere(new Date(Date.now() - 120_000))));
     expect(bayat.status()).toBe(302);
     expect(bayat.headers()["location"]).toBe("/etkinlik/go-okuma-maratonu-demo?giris=sure");
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
     expect(await girisli()).toBe(once);
 
     // Bir sayfadaki BAĞLANTIDAN gelen ziyaret (sec-fetch-site ≠ none) kendiliğinden göndermez: düğme bekler

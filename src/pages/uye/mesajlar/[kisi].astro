@@ -165,10 +165,33 @@ const sayfa = R.uye.mesaj(kisi.handle);
       } else govde.append(p.deger);
     }
     kutu.append(govde);
-    const zaman = document.createElement("p");
-    zaman.className = "mt-0.5 px-1 text-[10px] text-ink-muted";
+    const alt = document.createElement("div");
+    alt.className = "mt-0.5 flex items-center gap-2 px-1 text-[10px] text-ink-muted";
+    const zaman = document.createElement("span");
     zaman.textContent = m.zaman;
-    li.append(kutu, zaman);
+    alt.append(zaman);
+    if (!m.benden) {
+      // Sunucu render'ındaki şikâyet formunun aynısı: yoklamayla gelen mesaj da yenilemeden şikâyet edilebilsin
+      const form = document.createElement("form");
+      form.method = "post";
+      form.setAttribute("action", "/api/uye/sikayet");
+      form.className = "inline";
+      for (const [ad, deger] of [["targetType", "message"], ["targetId", String(m.id)], ["next", location.pathname]]) {
+        const alan = document.createElement("input");
+        alan.type = "hidden";
+        alan.name = ad!;
+        alan.value = deger!;
+        form.append(alan);
+      }
+      const dugme = document.createElement("button");
+      dugme.className = "-my-1 cursor-pointer rounded px-1 py-1 hover:text-red-500";
+      dugme.title = "Bu mesajı şikâyet et";
+      dugme.dataset.mesajSikayet = "";
+      dugme.textContent = "Şikâyet et";
+      form.append(dugme);
+      alt.append(form);
+    }
+    li.append(kutu, alt);
     return li;
   }
 
@@ -183,13 +206,27 @@ const sayfa = R.uye.mesaj(kisi.handle);
     if (!yokla || document.hidden) return;
     zamanlayici = window.setTimeout(
       async () => {
-        await yokla?.();
-        planla();
+        try {
+          await yokla?.();
+        } finally {
+          planla(); // tek bir hata yoklamayı kalıcı durdurmasın
+        }
       },
-      Date.now() - sonHareket > 120_000 ? BOSTA_MS : AKTIF_MS,
+      bosta() ? BOSTA_MS : AKTIF_MS,
     );
   }
-  for (const olay of ["pointerdown", "keydown"]) document.addEventListener(olay, () => (sonHareket = Date.now()), { passive: true });
+  const bosta = () => Date.now() - sonHareket > 120_000;
+  // Boşta (60 sn) moddayken etkinlik gelirse hemen hızlı aralığa dön
+  for (const olay of ["pointerdown", "keydown"])
+    document.addEventListener(
+      olay,
+      () => {
+        const bostaydi = bosta();
+        sonHareket = Date.now();
+        if (bostaydi) planla();
+      },
+      { passive: true },
+    );
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) return clearTimeout(zamanlayici);
     void yokla?.().then(planla);
@@ -207,6 +244,8 @@ const sayfa = R.uye.mesaj(kisi.handle);
     const kisi = liste.dataset.kisi ?? "";
     const hataKutusu = document.querySelector<HTMLElement>("[data-mesaj-hata]");
     const asagi = () => (liste.scrollTop = liste.scrollHeight);
+    // Eski mesajları okumak için yukarı kaydırmış kullanıcıyı gelen mesaj en alta atmasın
+    const altta = () => liste.scrollHeight - liste.scrollTop - liste.clientHeight < 80;
     asagi();
 
     // Okundu POST'la yazılır (GET durum değiştirmez). Zil adası gecikmeli gelir: rozet iki kez güncellenir.
@@ -235,6 +274,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
       if (!r?.ok) return;
       const { mesajlar } = (await r.json()) as { mesajlar: Gelen[] };
       let gelenVar = false;
+      const kaydir = altta() || mesajlar.some((m) => m.benden);
       for (const m of mesajlar) {
         if (liste.querySelector(`[data-mesaj="${m.id}"]`)) continue;
         liste.querySelector("[data-bos]")?.remove();
@@ -242,7 +282,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
         liste.dataset.son = String(Math.max(Number(liste.dataset.son ?? 0), m.id));
         gelenVar ||= !m.benden;
       }
-      if (mesajlar.length > 0) asagi();
+      if (mesajlar.length > 0 && kaydir) asagi();
       if (gelenVar) void okundu();
     };
 
@@ -263,8 +303,13 @@ const sayfa = R.uye.mesaj(kisi.handle);
       const dugme = form.querySelector("button");
       if (!alan?.value.trim() || dugme?.disabled) return;
       if (dugme) dugme.disabled = true;
+      // Alan HEMEN boşalır: istek sürerken yazılan sonraki mesaj yanıt gelince silinmesin.
+      // Başarısızlıkta gönderilemeyen metin (alan hâlâ boşsa) geri konur.
+      const veri = new FormData(form);
+      const gonderilen = alan.value;
+      alan.value = "";
       // form.action DEĞİL: formdaki name="action" alanı o özelliği gölgeler (DOM adlandırılmış erişimi)
-      const r = await fetch("/api/uye/mesaj", { method: "POST", body: new FormData(form), headers: { accept: "application/json" } }).catch(() => null);
+      const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" } }).catch(() => null);
       if (dugme) dugme.disabled = false;
       const sonuc = r ? ((await r.json().catch(() => null)) as { durum?: string; mesaj?: string } | null) : null;
       if (hataKutusu) {
@@ -272,8 +317,10 @@ const sayfa = R.uye.mesaj(kisi.handle);
         hataKutusu.textContent = hata;
         hataKutusu.classList.toggle("hidden", !hata);
       }
-      if (sonuc?.durum !== "ok") return;
-      alan.value = "";
+      if (sonuc?.durum !== "ok") {
+        if (!alan.value) alan.value = gonderilen;
+        return;
+      }
       await yokla?.();
       planla();
     });
