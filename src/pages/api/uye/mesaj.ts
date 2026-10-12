@@ -1,6 +1,6 @@
 /**
  * /api/uye/mesaj — birebir mesaj (DM v1, F4-03) ve engel (F4-04).
- *  GET  ?kisi=<handle>&since=<mesaj id>  → yoklama (JSON; YAZMAZ — "okundu" ayrı POST'tur).
+ *  GET  ?kisi=<handle>&since=<mesaj id>  → yoklama (JSON: yeni mesajlar + gorulenSon; YAZMAZ — "okundu" ayrı POST'tur).
  *  POST action=send | okundu | engelle | engel-kaldir  (form; kisi=<handle>).
  * Hata yanıtları düz metin DEĞİL yönlendirmedir: ClientRouter form POST'unu fetch ile gönderir ve
  * HTML olmayan yanıtta aksiyon adresine GET atar (kullanıcı 404 görürdü). İstemci betiği
@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { dmPolitikasiMi } from "@/lib/economy.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
-import { engelDurumu, engelKaldir, engelle, idMi, konusma, mesajGonder, okunduYaz, okunmamisMesaj } from "@/lib/mesaj.ts";
+import { engelDurumu, engelKaldir, engelle, gorulenSon, idMi, konusma, mesajGonder, okunduYaz, okunmamisMesaj } from "@/lib/mesaj.ts";
 import { mesajZamani, retMetni } from "@/lib/mesaj-kural.ts";
 import { R } from "@/lib/routes.ts";
 import { guvenliYol } from "@/lib/urls.ts";
@@ -30,9 +30,14 @@ export const GET: APIRoute = async (context) => {
   const kisi = await kisiBul(context.url.searchParams.get("kisi") ?? "");
   if (!kisi || kisi.id === member.id) return Response.json({ durum: "yok" }, { status: 404, headers: ONBELLEKSIZ });
   const since = Number(context.url.searchParams.get("since") ?? 0);
-  const mesajlar = await konusma(member.id, kisi.id, { sonraId: idMi(since) ? since : 0 });
+  const [mesajlar, gorulen] = await Promise.all([
+    konusma(member.id, kisi.id, { sonraId: idMi(since) ? since : 0 }),
+    gorulenSon(member.id, kisi.id),
+  ]);
   return Response.json(
     {
+      // Karşı tarafın okuduğu en yeni mesajım: açık konuşmada "Görüldü" yenilemeden görünür
+      gorulenSon: gorulen,
       mesajlar: mesajlar.map((m) => ({
         id: m.id,
         benden: m.senderId === member.id,

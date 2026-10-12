@@ -84,12 +84,12 @@ const sayfa = R.uye.mesaj(kisi.handle);
         mesajlar.map((m) => {
           const benden = m.senderId === member.id;
           return (
-            <li class:list={["flex flex-col", benden ? "items-end" : "items-start"]} data-mesaj={m.id} data-benden={benden ? "1" : "0"}>
+            <li class:list={["flex flex-col", benden ? "items-end" : "items-start"]} data-mesaj={m.id} data-benden={benden ? "1" : "0"} data-goruldu={benden && m.readAt ? "1" : undefined}>
               <div class:list={["max-w-[85%] rounded-2xl px-4 py-2 text-sm", benden ? "bg-accent text-surface" : "border border-line bg-surface-raised text-ink"]}>
                 <p class="whitespace-pre-wrap break-words" data-govde>{metniParcala(m.body).map((p) => (p.tur === "link" ? <a href={p.deger} target="_blank" rel="noopener noreferrer nofollow ugc" class="underline">{p.deger}</a> : p.deger))}</p>
               </div>
               <div class="mt-0.5 flex items-center gap-2 px-1 text-[10px] text-ink-muted">
-                <span>{mesajZamani(m.createdAt)}{benden && m.readAt && " · Görüldü"}</span>
+                <span data-zaman>{mesajZamani(m.createdAt)}{benden && m.readAt && " · Görüldü"}</span>
                 {!benden && (
                   <form method="post" action="/api/uye/sikayet" class="inline">
                     <input type="hidden" name="targetType" value="message" />
@@ -168,6 +168,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
     const alt = document.createElement("div");
     alt.className = "mt-0.5 flex items-center gap-2 px-1 text-[10px] text-ink-muted";
     const zaman = document.createElement("span");
+    zaman.dataset.zaman = "";
     zaman.textContent = m.zaman;
     alt.append(zaman);
     if (!m.benden) {
@@ -278,7 +279,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
         headers: { accept: "application/json" },
       }).catch(() => null);
       if (!r?.ok) return;
-      const { mesajlar } = (await r.json()) as { mesajlar: Gelen[] };
+      const { mesajlar, gorulenSon } = (await r.json()) as { mesajlar: Gelen[]; gorulenSon?: number };
       let gelenVar = false;
       const kaydir = altta() || mesajlar.some((m) => m.benden);
       for (const m of mesajlar) {
@@ -288,6 +289,13 @@ const sayfa = R.uye.mesaj(kisi.handle);
         liste.dataset.son = String(Math.max(Number(liste.dataset.son ?? 0), m.id));
         gelenVar ||= !m.benden;
       }
+      // Canlı "Görüldü": karşı tarafın okuduğu son mesajıma kadar olan balonlar işaretlenir
+      if (gorulenSon)
+        for (const li of liste.querySelectorAll<HTMLElement>('[data-benden="1"]:not([data-goruldu])')) {
+          if (Number(li.dataset.mesaj) > gorulenSon) continue;
+          li.dataset.goruldu = "1";
+          li.querySelector("[data-zaman]")?.append(" · Görüldü");
+        }
       if (mesajlar.length > 0 && kaydir) asagi();
       if (gelenVar) void okundu();
     };
