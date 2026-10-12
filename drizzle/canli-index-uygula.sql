@@ -178,3 +178,12 @@ CREATE INDEX IF NOT EXISTS "messages_pair_rev_idx" ON "messages" USING btree ("r
 -- Yeni tablo / index YOK; mevcut veriye bağlı adım YOK.
 -- ---------------------------------------------------------------------------
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "flagged_at" timestamp;
+
+
+-- ---------------------------------------------------------------------------
+-- ADIM 10 — Faz 5 hesap imzası (dal `faz5-hesap-imzasi`; tarih: push günü). HENÜZ UYGULANMADI.
+-- Yalnız ADDITIVE; `drizzle-kit push --strict < /dev/null` önizlemesi TEK ifade göstermeli (index yok).
+-- Yeni kolon: users(signup_ip_hash text NULL) — mevcut satırlar NULL (tarama 48 saatlik hesaplara bakar,
+-- eski hesap etkilenmez). Dal merge'inden ÖNCE uygulanmalı: yeni kod users'ı seçerken kolonu ister.
+-- ---------------------------------------------------------------------------
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "signup_ip_hash" text;

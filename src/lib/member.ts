@@ -12,11 +12,22 @@ import type { APIContext, AstroGlobal } from "astro";
 type Ctx = Pick<AstroGlobal | APIContext, "locals"> &
   Partial<Pick<AstroGlobal | APIContext, "cookies" | "clientAddress">>;
 
-/** Kayıt imzası: istemci IP'sinin HMAC'li kısa hash'i (ham IP yok); statik önizleme / test / dev'de adres yoksa null */
+/** Yerel / özel ağ adresi — dev = CANLI DB: loopback imzası dev'de açılan hesapları canlıda kümeleyip işaretletmesin */
+export function ozelAgMi(ip: string): boolean {
+  const a = ip.trim().replace(/^::ffff:/i, "");
+  if (a === "::1" || a === "0.0.0.0" || /^127\./.test(a) || /^10\./.test(a) || /^192\.168\./.test(a)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(a)) return true;
+  return /^f[cd][0-9a-f]{2}:/i.test(a) || /^fe[89ab][0-9a-f]:/i.test(a); // fc00::/7 (ULA), fe80::/10 (link-local)
+}
+
+/**
+ * Kayıt imzası: istemci IP'sinin HMAC'li kısa hash'i (davet.ts kisaHash — ham IP saklanmaz). Adres yok / getter
+ * fırlatır (statik önizleme, test) ya da yerel-özel ağ (dev) → null: imzasız hesap taramada hiçbir kümeye girmez.
+ */
 export function kayitImzasi(ctx: Ctx): string | null {
   try {
     const ip = ctx.clientAddress;
-    return ip ? kisaHash(ip) : null;
+    return ip && !ozelAgMi(ip) ? kisaHash(ip) : null;
   } catch {
     return null;
   }

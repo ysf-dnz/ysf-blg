@@ -197,17 +197,16 @@ export const SUISTIMAL_TEMIZ = "suistimal-temiz";
 
 /**
  * Davet çiftliği taraması — TEK SQL (saf eşleniği economy.ts suistimalMi; ikisi birlikte değişir).
- * Bir davetçinin KODUYLA (kurs ya da etkinlik daveti) 24 saatlik bir pencerede ≥ SUISTIMAL_ESIK yeni
- * hesap katıldıysa, o davetçinin kodlarına tek IP'den ≥ SUISTIMAL_ESIK ziyaret geldiyse ve ziyaret eden
- * FARKLI IP sayısı bu hesap sayısının yarısını geçmiyorsa ("az ağ, çok hesap"), o hesaplar işaretlenir.
- * Üçüncü kişinin (ya da davet edenin kendi) tıklamaları yalnız IP ekler: `/d/` bağlantısından gelen
- * gerçek davetlileri işaretletemez.
+ * KANIT HESABIN KENDİ KAYIT İMZASI (users.signup_ip_hash — Faz 5 kök çözüm), kimliksiz /d/ ziyareti DEĞİL:
+ * aynı davetçiye (kurs / etkinlik kodu YA DA /?ref= platform daveti) bağlı, 48 saatte açılmış, AYNI imzayı taşıyan
+ * ≥ SUISTIMAL_ESIK hesabın 24 saatlik penceresindeki üyeler işaretlenir. Dışarıdan eklenen hiçbir istek (ziyaret,
+ * curl, OG botu, yabancının kuklaları) bir hesabı kümeye sokamaz ya da çıkaramaz; farklı ağdan gelen gerçek davetli
+ * aynı gün gelse de işaretlenmez. İmzasız (NULL) hesap hiçbir kümeye girmez — NULL hiçbir zaman suçlamaz.
  * Yalnız `member` rolü; adminin temizlediği hesap yeniden işaretlenmez. Cron'da en başta koşar.
- * shortcut: imza hesabın değil ZİYARETİN — kodsuz platform daveti (`/?ref=`) ve IP dağıtan çiftlik
- * görünmez; ziyaret satırı bırakmadan (`?d=KOD` yedeği) bağlanan gerçek davetliler farklı IP saymaz.
- * Kök çözüm kayıt anında hesap imzası (şema + üye oluşturma yolu) — Yusuf'un kararına bırakıldı.
- * shortcut: günlük tarama — küme iki cron arasında tamamlanırsa ilk hesapların bekleyeni panodan
- * kesinleşebilir.
+ * shortcut: iki ağa yayılan çiftlik (3+3) ve günde ≤ 4 hesap eşiğin altında; IP dağıtan çiftlik görünmez
+ * (tavanlar sınırlar: davet 300/7g, referral_joined 24 s bekleyen, havuz 200, beğeni 100). Kuyrukta çok-ağlı
+ * küme görülürse davetçi düzeyi "farklı imza ×2 ≤ imzalı" kuralı eklenir (oda arkadaşı çiftlerini de işaretler —
+ * bilinçli ertelendi). Aynı ağdan gerçek kalabalık (yurt / kampüs Wi-Fi) sahte pozitif → admin "Temiz".
  * @param davetciId yalnız bu davetçi (entegrasyon testi)
  */
 export async function suistimalTara(davetciId?: number): Promise<{ id: number; inviter_id: number }[]> {
@@ -234,44 +233,40 @@ function suistimalCte(davetciId?: number) {
         select k.user_id, d.inviter_id from course_enrollments k join invite_codes d on d.id = k.invite_code_id
         union
         select r.user_id, d.inviter_id from event_rsvps r join invite_codes d on d.id = r.invite_code_id
+        union
+        -- /?ref= platform daveti GERİ (09fc098 ziyaret kanıtı yüzünden çıkarmıştı): kanıt artık hesabın imzası,
+        -- ziyaretsiz gerçek platform davetlisi kümelenmez; tek ağdan açılan /?ref= kuklaları kümelenir
+        select r.invited_id, r.inviter_id from referrals r
       ), yeni as (
-        select u.id, u.created_at, b.inviter_id,
-          count(*) over (partition by b.inviter_id order by u.created_at
+        -- davetçi × imza: AYNI imzalı hesapların 24 saatlik kayan sayımı. İmzasız hesap ne sayılır ne işaretlenir
+        -- (PARTITION BY NULL'ları tek gruba koyar — filtre olmadan 5 imzasız hesap "küme" olurdu)
+        select u.id, u.created_at, u.signup_ip_hash as imza, b.inviter_id,
+          count(*) over (partition by b.inviter_id, u.signup_ip_hash order by u.created_at
                          range between interval '24 hours' preceding and current row) as pencere
         from users u join bag b on b.user_id = u.id
-        where u.created_at > now() - interval '48 hours' and b.inviter_id <> u.id ${yalniz}
-      ), yogun as (
-        select inviter_id, max(pencere) as hesap from yeni group by inviter_id
-        having max(pencere) >= ${SUISTIMAL_ESIK}
-      ), ip as (
-        select d.inviter_id, count(*) as n
-        from invite_visits v join invite_codes d on d.id = v.invite_code_id
-        where v.created_at > now() - interval '48 hours'
-        group by d.inviter_id, v.ip_hash
-      ), supheli as (
-        select y.inviter_id from yogun y join ip i on i.inviter_id = y.inviter_id
-        group by y.inviter_id, y.hesap
-        having max(i.n) >= ${SUISTIMAL_ESIK} and count(*) * 2 <= y.hesap
+        where u.created_at > now() - interval '48 hours' and b.inviter_id <> u.id
+          and u.signup_ip_hash is not null ${yalniz}
       ), aday as (
-        -- iki şüpheli davetçinin koduyla gelen üye TEK satır: UPDATE … FROM belirsiz davetçiyi seçerdi,
-        -- aday SELECT'i aynı hesabı iki kez sayardı
+        -- iki şüpheli davetçinin ortak üyesi TEK satır (UPDATE … FROM belirsiz davetçiyi seçerdi)
         select distinct on (y.id) y.id, y.inviter_id
-        from yeni y join supheli s on s.inviter_id = y.inviter_id join users u on u.id = y.id
+        from yeni y join users u on u.id = y.id
         where u.flagged_at is null and u.role = 'member'
           and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
-          -- yalnız YOĞUN pencerenin üyeleri (B4): eşiği dolduran bir hesabın 24 saatlik penceresinde açılmış olmalı;
-          -- davetçinin 48 saatteki öbür yeni hesapları (patlamanın dışındaki gerçek davetliler) işaretlenmez
-          and exists (select 1 from yeni z where z.inviter_id = y.inviter_id and z.pencere >= ${SUISTIMAL_ESIK}
+          -- yalnız KÜMENİN penceresi: aynı davetçi + AYNI imzayla 24 saatte ≥ eşik hesabın 24 saatlik penceresinde
+          -- açılmış olmalı; farklı imzalı ya da pencere dışı hesap işaretlenmez (B4'ün imzalı hâli)
+          and exists (select 1 from yeni z where z.inviter_id = y.inviter_id and z.imza = y.imza
+                      and z.pencere >= ${SUISTIMAL_ESIK}
                       and y.created_at <= z.created_at and y.created_at >= z.created_at - interval '24 hours')
         order by y.id, y.inviter_id
       )`;
 }
 
 /**
- * Kayıt imzalarını unut (kişisel veri en az): hesap `gunOnce` günden yaşlıysa `signup_ip_hash` NULL — tarama zaten
- * yalnız 48 saatlik yeni hesaplara bakar. Cron günlük; `userIds` yalnız entegrasyon testi (canlıyı daraltır).
+ * Kayıt imzalarını unut (kişisel veri en az): hesap `gunOnce` günden yaşlıysa `signup_ip_hash` NULL — tarama yalnız
+ * 48 saatlik yeni hesaplara bakar, 7 gün = 48 s + cron'un birkaç gün fırlatma payı. Cron günlük; `userIds` yalnız
+ * entegrasyon testi (canlıyı daraltır). Silme değil NULL'lama: satır üyenin.
  */
-export async function imzalariUnut(gunOnce = 30, userIds?: number[]): Promise<number> {
+export async function imzalariUnut(gunOnce = 7, userIds?: number[]): Promise<number> {
   const yalniz = userIds ? sql`and id in (${sql.join(userIds.map((i) => sql`${i}`), sql`, `)})` : sql``;
   return satirlar(
     await db.execute(sql`

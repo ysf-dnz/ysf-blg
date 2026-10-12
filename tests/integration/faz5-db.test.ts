@@ -32,10 +32,10 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   const kuklalar: Uye[] = [];
   const t = Date.now().toString(36);
 
-  async function uye(ad: string, gunOnce = 2): Promise<Uye> {
+  async function uye(ad: string, gunOnce = 2, imza: string | null = null): Promise<Uye> {
     const [u] = await db
       .insert(schema.users)
-      .values({ clerkId: `demo_itest_f5_${ad}_${t}`, handle: `itest-f5-${ad}-${t}`, name: `Itest ${ad}`, createdAt: new Date(Date.now() - gunOnce * 864e5) })
+      .values({ clerkId: `demo_itest_f5_${ad}_${t}`, handle: `itest-f5-${ad}-${t}`, name: `Itest ${ad}`, createdAt: new Date(Date.now() - gunOnce * 864e5), signupIpHash: imza })
       .returning();
     uyeler.push(u!.id);
     return u!;
@@ -284,34 +284,32 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
 
   /* ---------------- F5-04: suistimal işareti ---------------- */
 
-  it("tarama: eşik altı ve dağınık IP işaretlemez; kodla 24 saatte 5 yeni hesap + tek IP'den 5 ziyaret → işaret", async () => {
+  it("tarama (kayıt imzası): aynı davetçi + AYNI imzayla 24 saatte 5 yeni hesap → küme işaretlenir; 4'te değil; farklı imzalı ve imzasız hesaplar kümeye girmez; ziyaret deseni etkisiz", async () => {
     davetci = await uye("sx", 30);
     const kod = await dv.davetKoduUret(davetci.id, ana.id);
-    const ziyaret = (ip: string) => db.insert(schema.inviteVisits).values({ inviteCodeId: kod.id, ipHash: `itest-${ip}-${t}`, uaHash: "itest-ua", kanal: "link" });
-    const kukla = async (i: number) => {
-      const k = await uye(`sk${i}`, 0);
+    const IMZA = `itest-imza-${t}`;
+    const kukla = async (ad: string, imza: string | null = IMZA) => {
+      const k = await uye(ad, 0, imza);
       await db.insert(schema.referrals).values({ inviterId: davetci.id, invitedId: k.id });
       await db.insert(schema.courseEnrollments).values({ userId: k.id, courseId: ana.id, inviteCodeId: kod.id });
-      await ziyaret("kukla");
       return k;
     };
-    for (const i of [1, 2, 3, 4]) kuklalar.push(await kukla(i));
-    expect(await ek.suistimalTara(davetci.id)).toEqual([]);
-    kuklalar.push(await kukla(5));
-    // Başka IP'lerden gelen ziyaret (gerçek davetliler, davet edenin kendi tıklaması ya da üçüncü kişinin
-    // curl döngüsü) yalnız IP EKLER: 5 hesap, 3 farklı IP (yarıyı geçer) → işaret yok
-    for (const ip of ["a", "b"]) for (let i = 0; i < 6; i++) await ziyaret(ip);
-    expect(await ek.suistimalTara(davetci.id)).toEqual([]);
-    await db.delete(schema.inviteVisits).where(and(eq(schema.inviteVisits.inviteCodeId, kod.id), ne(schema.inviteVisits.ipHash, `itest-kukla-${t}`)));
-    // Salt-okur aday sorgusu UPDATE ile aynı kümeyi görür (B2: parametresiz UPDATE canlıda koşturulamaz, SELECT'i koşturulur)
+    for (const i of [1, 2, 3, 4]) kuklalar.push(await kukla(`sk${i}`));
+    expect(await ek.suistimalAdaylari(davetci.id)).toEqual([]); // 4 < eşik
+    const farkli = await kukla("sk-farkli", `itest-imza-baska-${t}`); // aynı gün, kendi ağından gelen gerçek davetli
+    const imzasiz = await kukla("sk-imzasiz", null); // adres alınamadı: hiçbir kümeye girmez
+    // Dışarıdan eklenen ziyaretler (davet edenin tıklaması, curl döngüsü) kümeyi ne kurar ne bozar
+    for (let i = 0; i < 9; i++) await db.insert(schema.inviteVisits).values({ inviteCodeId: kod.id, ipHash: `itest-ziyaret-${i}-${t}`, uaHash: "itest-ua", kanal: "link" });
+    expect(await ek.suistimalAdaylari(davetci.id)).toEqual([]); // hâlâ 4 aynı imzalı
+    kuklalar.push(await kukla("sk5"));
+    // Salt-okur aday sorgusu UPDATE ile aynı kümeyi görür (B2)
     expect((await ek.suistimalAdaylari(davetci.id)).map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort());
     const isaretlenen = await ek.suistimalTara(davetci.id);
-    expect(isaretlenen.map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort());
+    expect(isaretlenen.map((r) => r.id).sort()).toEqual(kuklalar.map((k) => k.id).sort()); // yalnız aynı imzalı 5
     expect(isaretlenen.every((r) => r.inviter_id === davetci.id)).toBe(true);
     expect(await ek.suistimalAdaylari(davetci.id)).toEqual([]); // işaretlenen aday değildir
-    const sonra = await db.query.users.findMany({ where: inArray(schema.users.id, kuklalar.map((k) => k.id)) });
-    expect(sonra.every((k) => k.flaggedAt)).toBe(true);
-    expect((await db.query.users.findFirst({ where: eq(schema.users.id, davetci.id) }))!.flaggedAt).toBeNull();
+    const sonra = await db.query.users.findMany({ where: inArray(schema.users.id, [...kuklalar.map((k) => k.id), farkli.id, imzasiz.id, davetci.id]) });
+    expect(sonra.filter((u) => u.flaggedAt).map((u) => u.id).sort()).toEqual(kuklalar.map((k) => k.id).sort()); // farklı imzalı, imzasız ve davetçi temiz
     expect(await ek.suistimalTara(davetci.id)).toEqual([]); // idempotent
   });
 
@@ -324,8 +322,10 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     const d = await uye(`${ad}d`, 30);
     const { kurs: k } = await kurs(ad, (await uye(`${ad}u`, 30)).id);
     const kod = await dv.davetKoduUret(d.id, k.id);
-    const davetli = async (i: number, saatOnce = 0, rol: "member" | "rep" = "member") => {
-      const g = await uye(`${ad}g${i}`, saatOnce / 24);
+    const IMZA = `itest-imza-${ad}-${t}`;
+    /** imza: undefined → davetçinin ortak imzası (çiftlik), string → verilen, null → imzasız */
+    const davetli = async (i: number, saatOnce = 0, rol: "member" | "rep" = "member", imza: string | null | undefined = undefined) => {
+      const g = await uye(`${ad}g${i}`, saatOnce / 24, imza === undefined ? IMZA : imza);
       if (rol !== "member") await db.update(schema.users).set({ role: rol }).where(eq(schema.users.id, g.id));
       await db.insert(schema.courseEnrollments).values({ userId: g.id, courseId: k.id, inviteCodeId: kod.id });
       return g;
@@ -336,48 +336,54 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     return { d, k, kod, davetli, ziyaret, adaylar };
   }
 
-  it("B1 (karakterizasyon): ziyaret penceresi 48 s, atıf çerezi 30 gün — 3 gün önce tıklayıp bugün kaydolan 5 gerçek davetli + davet edenin bugün 5 tıklaması → BUGÜN işaretlenir", async () => {
-    const { kod, davetli, ziyaret, adaylar } = await davetci2("b1");
-    const gercek = await Promise.all([1, 2, 3, 4, 5].map((i) => davetli(i)));
-    for (const i of [1, 2, 3, 4, 5]) await ziyaret(`g${i}`, 72); // her davetli kendi ağından, cuma tıkladı
-    for (let i = 0; i < 5; i++) await ziyaret("davetci"); // davet eden kendi bağlantısını 5 kez açtı
-    expect(await adaylar()).toEqual(gercek.map((g) => g.id).sort()); // 5 hesap, pencerede tek IP (n=5), 1×2 ≤ 5
-    // Nedeni sabitle: aynı ziyaretler pencere içinde olsa 6 IP × 2 > 5 → işaret yok
-    await db.update(schema.inviteVisits).set({ createdAt: new Date() }).where(eq(schema.inviteVisits.inviteCodeId, kod.id));
+  it("B1 (kapandı): 3 gün önce tıklayıp bugün farklı ağlardan kaydolan 5 gerçek davetli, davet edenin 5 tıklamasına rağmen İŞARETLENMEZ (kanıt imza, ziyaret değil)", async () => {
+    const { davetli, ziyaret, adaylar } = await davetci2("b1");
+    await Promise.all([1, 2, 3, 4, 5].map((i) => davetli(i, 0, "member", `itest-imza-b1-g${i}-${t}`))); // her biri kendi ağından
+    for (const i of [1, 2, 3, 4, 5]) await ziyaret(`g${i}`, 72);
+    for (let i = 0; i < 5; i++) await ziyaret("davetci");
     expect(await adaylar()).toEqual([]);
   });
-  it.todo("B1 karar (#42): ip CTE'sindeki 48 saat filtresi (30 günlük saklama / çerezle hizalama) — tek-IP koşulunu gevşetir, varsayım #64 değişir (devir §2.3)");
 
-  it("B4 (kapandı): yalnız YOĞUN 24 saatlik pencerenin üyeleri işaretlenir — 40 saatlik gerçek davetli dışarıda; 50 saatlik 'yeni' değil; rep rolü işaretlenmez ama sayıma girer", async () => {
-    const { davetli, ziyaret, adaylar } = await davetci2("b4");
+  it("B4 (kapandı, imzalı): yalnız aynı imzalı KÜMENİN 24 saatlik penceresi işaretlenir — aynı imzalı 40 saatlik hesap dışarıda; 50 saatlik 'yeni' değil; rep rolü işaretlenmez ama sayıma girer", async () => {
+    const { davetli, adaylar } = await davetci2("b4");
     const yogun = await Promise.all([1, 2, 3, 4].map((i) => davetli(i)));
-    const rep = await davetli(5, 0, "rep"); // yoğun pencerenin 5. hesabı: sayılır (hesap=5), işaretlenmez (role)
-    const kirkSaat = await davetli(6, 40); // yoğun pencerenin dışında, 48 saatin içinde
+    const rep = await davetli(5, 0, "rep"); // yoğun pencerenin 5. hesabı: sayılır (pencere=5), işaretlenmez (role)
+    const kirkSaat = await davetli(6, 40); // aynı imza ama kümenin 24 saatlik penceresinin dışında
     await davetli(7, 50); // 48 saatin dışında: 'yeni' değil
-    for (let i = 0; i < 6; i++) await ziyaret("tek-ip");
     const sonuc = await adaylar();
     expect(sonuc).toEqual(yogun.map((g) => g.id).sort()); // rep sayıma girdi (hesap=5), kendisi ve 40 saatlik dışarıda
     expect(sonuc).not.toContain(rep.id);
     expect(sonuc).not.toContain(kirkSaat.id);
   });
 
-  it("B5 (karakterizasyon): ziyaret satırı bırakmadan (?d=KOD yedeği / elle çerez) bağlanan 5 hesap görünmez; günde 4 hesap (8 hesap iki güne yayılmış) eşiğin altında kalır", async () => {
+  it("B5 (kapandı): ziyaret satırı bırakmadan (?d=KOD yedeği / elle çerez) açılan 5 aynı imzalı hesap ARTIK görünür; günde 4 hesap (8 hesap iki güne yayılmış) eşiğin altında kalır", async () => {
     const a = await davetci2("b5");
-    await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i)));
-    expect(await a.adaylar()).toEqual([]); // ip CTE boş → join düşer
+    const kukla = await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i)));
+    expect(await a.adaylar()).toEqual(kukla.map((g) => g.id).sort()); // ziyaret yok, imza var → küme
     const b = await davetci2("b6");
     await Promise.all([1, 2, 3, 4].map((i) => b.davetli(i, 30)));
     await Promise.all([5, 6, 7, 8].map((i) => b.davetli(i)));
-    for (let i = 0; i < 8; i++) await b.ziyaret("tek-ip");
-    expect(await b.adaylar()).toEqual([]); // 24 saatlik pencerede en çok 4 < 5
+    expect(await b.adaylar()).toEqual([]); // 24 saatlik pencerede en çok 4 < 5 (bilinen sınır)
   });
-  it.todo("B5 karar (#42): kayıt anında hesap imzası (şema + getOrCreateMember) — ziyaretsiz çiftlik ve /?ref= çiftliği ancak böyle görünür (devir §1 B5, #64 kök çözüm)");
+
+  it("/?ref= platform daveti çiftliği (kodsuz; eskiden hiç görünmezdi): davetçinin referrals'ındaki 5 aynı imzalı yeni hesap kümelenir, referral_joined bekleyenleri tutulur", async () => {
+    const d = await uye("refd", 30);
+    const IMZA = `itest-imza-ref-${t}`;
+    const kuklalarRef = await Promise.all([1, 2, 3, 4, 5].map((i) => uye(`refk${i}`, 0, IMZA)));
+    await db.insert(schema.referrals).values(kuklalarRef.map((k) => ({ inviterId: d.id, invitedId: k.id })));
+    for (const k of kuklalarRef) await rw.bekleyenYaz({ userId: d.id, delta: 25, reason: "referral_joined", refId: `u:${k.id}`, maturesAt: new Date(Date.now() - 1000) });
+    const ids = kuklalarRef.map((k) => k.id).sort();
+    expect((await ek.suistimalAdaylari(d.id)).map((r) => r.id).sort()).toEqual(ids);
+    expect((await ek.suistimalTara(d.id)).map((r) => r.id).sort()).toEqual(ids);
+    expect(await rw.bekleyenleriIsle(new Date(), d.id)).toMatchObject({ kesinlesen: 0 }); // u:{kukla} satırları tutulur
+    expect(await ledger(d.id, "referral_joined")).toHaveLength(0);
+    await db.update(schema.users).set({ flaggedAt: null }).where(inArray(schema.users.id, ids));
+  });
 
   it("tarama aday sorgusu: iki şüpheli davetçinin ORTAK üyeleri parametresiz adaylarda kişi başına TEK satır (en küçük inviter_id) — UPDATE … FROM ile aynı küme", async () => {
     const [a, b] = [await davetci2("ds1"), await davetci2("ds2")];
-    const ortak = await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i)));
+    const ortak = await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i, 0, "member", `itest-imza-ds-${t}`)));
     await db.insert(schema.courseEnrollments).values(ortak.map((g) => ({ userId: g.id, courseId: b.k.id, inviteCodeId: b.kod.id })));
-    for (let i = 0; i < 5; i++) await Promise.all([a.ziyaret("tek"), b.ziyaret("tek")]);
     const ids = ortak.map((g) => g.id).sort();
     expect(await a.adaylar()).toEqual(ids);
     expect(await b.adaylar()).toEqual(ids);

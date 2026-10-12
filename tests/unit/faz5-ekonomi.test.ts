@@ -169,19 +169,15 @@ describe("ekonomi kartı özeti (F5-03)", () => {
   });
 });
 
-describe("suistimal eşiği (F5-04) — tarama SQL'inin saf eşleniği", () => {
+describe("suistimal eşiği (F5-04) — tarama SQL'inin saf eşleniği (kanıt: hesabın kendi kayıt imzası)", () => {
   it.each([
-    // kodla katılan yeni hesap (24 s), en çok ziyaret eden IP'nin ziyareti, farklı IP → şüpheli mi
-    [SUISTIMAL_ESIK, SUISTIMAL_ESIK, 1, true], // tek cihazdan 5 kukla
-    [SUISTIMAL_ESIK - 1, 9, 1, false], // az hesap
-    [9, SUISTIMAL_ESIK - 1, 3, false], // hiçbir IP yeterince tekrar etmemiş
-    [6, 6, 6, false], // 6 gerçek üye (6 IP), biri 6 kez tıklamış
-    [6, 10, 7, false], // 6 gerçek üye + üçüncü kişinin 10 curl isteği: IP EKLER, işaretletemez
-    [5, 5, 5, false], // davet eden kendi bağlantısını 5 kez açmış, 4 arkadaş + kendisi
-    [5, 5, 3, false], // 3 ağ, 5 hesap: yarıyı geçiyor (aile / yurt) — işaret yok
-    [6, 6, 3, true], // 3 ağ, 6 hesap: "az ağ, çok hesap"
-    [12, 24, 3, true], // aynı ağdan (konferans Wi-Fi) kalabalık: PRD "aynı IP imzası" — admin temizler
-  ])("hesap %i, en çok IP ziyareti %i, farklı IP %i → %s", (yeniHesap, enCokIpZiyaret, farkliIp, beklenen) => {
-    expect(suistimalMi({ yeniHesap, enCokIpZiyaret, farkliIp })).toBe(beklenen);
+    // [kayıt imzası, aynı davetçi + aynı imzayla 24 saatte hesap] → şüpheli mi
+    [null, 5, false], // imzasız hesaplar küme olmaz — NULL hiçbir zaman suçlamaz
+    [null, 0, false],
+    ["x", SUISTIMAL_ESIK - 1, false], // günde 4 — bilinen kaçış
+    ["x", SUISTIMAL_ESIK, true], // tek cihazdan 5 kukla (B5 artık görünür)
+    ["x", 12, true], // kampüs Wi-Fi'ından 12 gerçek kayıt — bilinçli sahte pozitif, admin "Temiz"
+  ])("imza %s, aynı imza hesap %i → %s", (imza, ayniImzaHesap, beklenen) => {
+    expect(suistimalMi({ imza, ayniImzaHesap })).toBe(beklenen);
   });
 });

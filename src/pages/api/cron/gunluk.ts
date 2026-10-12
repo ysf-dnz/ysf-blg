@@ -167,7 +167,7 @@ export const GET: APIRoute = async ({ request }) => {
   });
   if (temizlik !== undefined) rapor.davetZiyaretTemizlik = temizlik;
 
-  // 6b) Kayıt imzaları 30 gün saklanır (kişisel veri en az; tarama yalnız 48 saatlik hesaplara bakar)
+  // 6b) Kayıt imzaları 7 gün saklanır (kişisel veri en az; tarama yalnız 48 saatlik hesaplara bakar)
   const imza = await birKezCalistir("imza-temizlik", bugun, () => imzalariUnut());
   if (imza !== undefined) rapor.imzaTemizlik = imza;
 

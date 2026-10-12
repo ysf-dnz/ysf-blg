@@ -287,17 +287,16 @@ export function ekonomiOzeti(h: EkonomiHam) {
 
 /* ---------------- Suistimal işareti — PRD §4.2, F5-04 ---------------- */
 
-/** Aynı davetçinin koduyla 24 saatte bu kadar yeni hesap VE aynı IP'den bu kadar ziyaret */
+/** Aynı davetçi + AYNI kayıt imzasıyla 24 saatlik pencerede bu kadar hesap → küme işaretlenir */
 export const SUISTIMAL_ESIK = 5;
 
 /**
- * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalTara SQL'inin SAF EŞLENİĞİ (ikisi birlikte değişir).
- * Kanıt "az ağ, çok hesap": yeni hesaplar, davetçinin kodlarını ziyaret eden FARKLI IP sayısının en az
- * iki katı. Gerçek davette her yeni üye kendi ağından gelir. Üçüncü kişi (ya da davet edenin kendi
- * tıklamaları) yalnız IP EKLEYEBİLİR: `/d/` bağlantısından gelen davetlileri işaretletemez.
- * User-agent sayılmaz (isteyen değiştirir). İşaretlenen KÜME (yalnız yoğun 24 saatlik pencerenin üyeleri — B4)
- * kapsam kuralıdır, bu eşleniğin dışındadır.
+ * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalCte'nin SAF EŞLENİĞİ (ikisi birlikte değişir).
+ * Kanıt hesabın KENDİ kayıt imzası (users.signup_ip_hash), kimliksiz /d/ ziyareti DEĞİL: dışarıdan eklenen hiçbir
+ * istek bir hesabı kümeye sokamaz ya da çıkaramaz. İmzasız (NULL) hesap hiçbir kümeye girmez — NULL hiçbir zaman
+ * suçlamaz. User-agent sayılmaz. Kapsam kuralları (yalnız kümenin 24 s penceresi, role=member, admin "Temiz") SQL'de.
+ * shortcut: iki ağa yayılan çiftlik (3+3) eşiğin altında kalır — bilinçli ertelendi (bkz. ekonomi.ts).
  */
-export function suistimalMi(d: { yeniHesap: number; enCokIpZiyaret: number; farkliIp: number }): boolean {
-  return d.yeniHesap >= SUISTIMAL_ESIK && d.enCokIpZiyaret >= SUISTIMAL_ESIK && d.farkliIp * 2 <= d.yeniHesap;
+export function suistimalMi(d: { imza: string | null; ayniImzaHesap: number }): boolean {
+  return d.imza !== null && d.ayniImzaHesap >= SUISTIMAL_ESIK;
 }

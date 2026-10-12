@@ -3,6 +3,14 @@
 > Oturum kapanış kaydı (2026-08-09). Mimari anayasa: `CLAUDE.md`.
 > Bu dosya: son durum + kalan işler. Yeni oturum buradan devam eder.
 
+## 🔐 HESAP İMZASI — taramanın kök çözümü (2026-10-12, dal `faz5-hesap-imzasi`, `faz5-ekonomi` üstüne; ŞEMA push'u YUSUF'UN)
+Ultracode tasarım paneli (3 bağımsız tasarım: suistimal / gizlilik / büyüme öncelikli + sentezci yargıç) küme kuralını seçti (23/25).
+- **Şema**: `users.signup_ip_hash text` nullable, index yok. Önizleme (`drizzle-kit push --strict < /dev/null`): `ALTER TABLE "users" ADD COLUMN "signup_ip_hash" text;` — **uygulanmadı** (`canli-index-uygula.sql` ADIM 10). Dev = canlı: bu dalda users SELECT'i kolonu bulamaz → **"push et" demeden entegrasyon / dev sunucusu koşmaz**; birim 471 + `astro check` 0 ile hazır. Sıra: push → entegrasyon + e2e bu dalda → `faz5-ekonomi`'ye al → main.
+- **Yazım**: `getOrCreateMember` `ctx.clientAddress` → `kisaHash` (ham IP yok; Vercel XFF gerçek istemci IP'si: canlıda son 30 günde 94 ziyarette 7 farklı imza — salt SELECT); yerel/özel ağ ya da adres yok → NULL. 7 gün sonra cron `imza-temizlik` NULL'lar.
+- **Tarama**: kanıt hesabın imzası — aynı davetçi (kod YA DA `/?ref=` `referrals`) + aynı imzayla 24 saatte ≥ 5 hesabın penceresi işaretlenir; ziyaret kuralı kaldırıldı → **B1 sahte pozitifi kökten bitti, B5 ve kodsuz `/?ref=` çiftliği görünür oldu**; imzasız hesap suçlanmaz; dışarıdan eklenen istek kümeyi kuramaz/bozamaz. Bilinen sınırlar: 3+3 iki ağlı çiftlik, günde ≤ 4, IP dağıtan/VPN (tavanlar sınırlar), aynı Wi-Fi gerçek sınıf (admin Temiz).
+- **Testler**: birim (`suistimalMi` tablosu, `kayitImzasi`/`ozelAgMi`, sızıntı bekçisi: imza yalnız schema/member/ekonomi'de), entegrasyon yeniden yazıldı (tarama kümesi, B1/B4/B5 kapandı, `/?ref=` çiftliği + tutulan `referral_joined`, imzasız hesaplar, 7 gün unutma, kayıt imzası yazımı) — **push sonrası koşulacak**.
+- **Yusuf**: (1) "push et" (tek ALTER) → ben entegrasyon + e2e koşup raporlarım; (2) KVKK aydınlatma cümlesi (kayıt / davet tıklamasında IP özeti 7 / 30 gün, meşru menfaat) sitede yok; (3) merge sırası kolon-önce.
+
 ## 🎯 KARARLAR UYGULANDI — Fable, "ne gerekiyorsa en zekice yap" (2026-10-12, dal `faz5-ekonomi`; main'e MERGE EDİLMEDİ)
 Büyüme (rekabet + davet mıknatısı) lehine, mantıksal tedbirlerle; her kalem test + mutasyonla kilitli (`2b7c0cf..HEAD`).
 - **C2/C2b** (`4b3a7f0`): onay bekleyen topluluk kampanya açamaz (403, form gizli); kendine görev onayı yok; kişi başı 7 günlük görev tavanı 1000 — tek hesaplı kendi kendine basma kapandı, gerçek kulüp görevleri değişmedi.
