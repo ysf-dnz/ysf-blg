@@ -3,16 +3,25 @@
  * Dönen QR'ın indiği sayfa (F3-05): girişteki ekranda 30 sn'de bir yenilenen QR
  * HTTPS://HOST/C/{events.id}/{TOKEN} → astro.config 301 → burası. Katılımcı kendi
  * telefonuyla okutur; girişli olmalı. Kayıtsızsa kayıt otomatik açılır (kontenjan varsa).
- * GET durum değiştirdiği için yalnız aynı site / doğrudan gezinme (sec-fetch-site); iş bitince
- * etkinlik sayfasına yönlenir (yenilemede bayat token'la tekrar denenmesin).
+ *
+ * GET kayıt/giriş YAZMAZ (F4-05, GitHub #32): aynı kökenli görsel isteği ya da ClientRouter
+ * ön-yüklemesi girişi tetikleyemesin. Sayfa yalnız formu render eder; betik formu
+ * POST /api/uye/etkinlik action=donen-giris ile gönderir (telefon kamerasıyla okutma belge
+ * gezintisidir → ek dokunuş yok), betik yoksa "Girişimi doğrula" düğmesi. Buradaki ön kontrol
+ * saftır (imza + pencere); asıl karar POST'ta. Sonuç etkinlik sayfasında ?giris= bandıyla.
+ * Form yalnız kullanıcının kendi başlattığı gezintide (sec-fetch-site: none — QR okutma) kendiliğinden
+ * gönderilir: bir web sayfasındaki bağlantıdan (başka site ya da üye içeriği) gelen ziyaretçi düğmeye
+ * kendisi dokunur (eski "başka siteden açılamaz" freninin karşılığı; tıklatarak kayıt + giriş yazdırılamaz).
  */
 import { eq } from "drizzle-orm";
 import { SignInButton } from "@clerk/astro/components";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
-import { donenGiris, etkinlikGorunurMu, slugGaranti } from "@/lib/etkinlik.ts";
+import { etkinlikGorunurMu, slugGaranti } from "@/lib/etkinlik.ts";
+import { donenGecerli, girisPenceresinde } from "@/lib/etkinlik-kural.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { R } from "@/lib/routes.ts";
+import { kullaniciGezintisiMi } from "@/lib/urls.ts";
 
 export const prerender = false;
 
@@ -24,29 +33,28 @@ const sayfa = R.etkinlik(await slugGaranti(e));
 
 const member = await getOrCreateMember(Astro);
 const buSayfa = Astro.url.pathname;
-const ayniSite = Astro.request.headers.get("sec-fetch-site") !== "cross-site";
-let durum: "giris" | "capraz" | "sure" | "pencere" | "dolu" | "kapali" = "giris";
-if (member && !ayniSite) durum = "capraz";
-else if (member) {
-  const s = await donenGiris(e, member, Astro.params.token ?? "", Astro.cookies);
-  if (s.durum === "geldi") return Astro.redirect(`${sayfa}?giris=geldi&puan=${s.puan}`);
-  if (s.durum === "zaten") return Astro.redirect(`${sayfa}?giris=zaten`);
-  durum = s.durum;
-}
+const token = Astro.params.token ?? "";
+const durum: "giris" | "dogrula" | "sure" | "pencere" = !member
+  ? "giris"
+  : !donenGecerli(e.id, token)
+    ? "sure"
+    : girisPenceresinde(e)
+      ? "dogrula"
+      : "pencere";
 const METIN = {
   giris: ["Girişini doğrulamak için giriş yap", "Giriş yaptıktan sonra ekrandaki QR'ı yeniden okut (QR 30 saniyede bir yenilenir)."],
-  capraz: ["Girişini doğrula", "Güvenlik için bu bağlantı başka bir siteden açılamaz. Ekrandaki QR'ı telefonunun kamerasıyla okut."],
+  dogrula: ["Girişin doğrulanıyor…", "Birkaç saniye içinde etkinlik sayfasına geçersin. Geçmezse düğmeye dokun."],
   sure: ["Bu QR'ın süresi doldu", "Girişteki ekranda QR 30 saniyede bir yenilenir. Güncel QR'ı yeniden okut."],
   pencere: ["Giriş şu an kapalı", "Giriş doğrulaması kapı açılışından etkinlik bitişine kadar yapılır."],
-  dolu: ["Kontenjan dolu", "Bu etkinliğe önceden kayıt gerekiyordu ve kontenjan doldu."],
-  kapali: ["Kayıtlar kapandı", "Bu etkinliğe önceden kayıt gerekiyordu; kayıtlar kapanmış."],
 } as const;
-const [baslik, aciklama] = METIN[durum];
+const otomatik = kullaniciGezintisiMi(Astro.request);
+const [baslik, aciklama] =
+  durum === "dogrula" && !otomatik ? ["Girişini doğrula", "Bu etkinlikte girişini doğrulamak için düğmeye dokun."] : METIN[durum];
 ---
 
 <Base title={`Giriş · ${e.title}`} description="Etkinlik giriş doğrulaması" seo={{ noindex: true }}>
   <section class="mx-auto mt-16 max-w-md rounded-2xl border border-line bg-surface-raised px-6 py-10 text-center" data-donen={durum}>
-    <p class="text-4xl" aria-hidden="true">{durum === "giris" ? "🎟️" : "⏳"}</p>
+    <p class="text-4xl" aria-hidden="true">{durum === "giris" || durum === "dogrula" ? "🎟️" : "⏳"}</p>
     <p class="mt-3 text-sm text-ink-muted">{e.title}</p>
     <h1 class="mt-1 font-display text-2xl font-semibold text-ink">{baslik}</h1>
     <p class="mt-2 text-sm text-ink-muted">{aciklama}</p>
@@ -54,8 +62,38 @@ const [baslik, aciklama] = METIN[durum];
       <SignInButton mode="modal" forceRedirectUrl={buSayfa} signUpForceRedirectUrl={buSayfa} asChild>
         <button type="button" class="mt-5 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Giriş yap</button>
       </SignInButton>
+    ) : durum === "dogrula" ? (
+      <form method="post" action="/api/uye/etkinlik" data-donen-formu data-otomatik={otomatik ? "1" : undefined}>
+        <input type="hidden" name="action" value="donen-giris" />
+        <input type="hidden" name="eventId" value={e.id} />
+        <input type="hidden" name="token" value={token} />
+        <button class="mt-5 cursor-pointer rounded-full bg-accent px-6 py-3 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">Girişimi doğrula</button>
+      </form>
     ) : (
       <a href={sayfa} class="mt-5 inline-block rounded-full border border-accent px-6 py-3 font-medium text-accent hover:bg-accent hover:text-surface">Etkinlik sayfası</a>
     )}
   </section>
 </Base>
+
+<script>
+  // Form kendiliğinden gönderilir; aynı adres için yalnız BİR kez (Geri tuşuyla dönüşte yeniden
+  // gönderip "zaten"e atmasın) — sonrası düğmeyle. Görsel isteği ve ön-yükleme betik çalıştırmaz.
+  function gonder() {
+    const form = document.querySelector<HTMLFormElement>("form[data-donen-formu][data-otomatik]");
+    if (!form || form.dataset.gonderildi) return;
+    const anahtar = `ysf_donen:${location.pathname}`;
+    try {
+      if (sessionStorage.getItem(anahtar)) return;
+      sessionStorage.setItem(anahtar, "1");
+    } catch {
+      /* depolama kapalı: tek gönderim korumasını form bayrağı sağlar */
+    }
+    form.dataset.gonderildi = "1";
+    // requestSubmit iOS < 16'da yok: düz submit (ClientRouter'ı atlar; POST + yönlendirme yine çalışır)
+    if (typeof form.requestSubmit === "function") form.requestSubmit();
+    else form.submit();
+  }
+  // İlk yüklemede astro:page-load pencere "load"ını bekler (yavaş ağda QR'ın 30–60 sn'si dolabilir): hemen dene
+  gonder();
+  document.addEventListener("astro:page-load", gonder);
+</script>

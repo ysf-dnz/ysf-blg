@@ -31,9 +31,44 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     await rozet.click();
     const popup = page.locator(".leaflet-popup");
     await expect(popup.locator("a[href^='/kulup/']").first()).toBeVisible();
+    // Üye sayısı kulübün GERÇEK üye sayısı (seed: ODTÜ 4, vakıf 2) — ilişkili alt sorgu tablo adı atılınca hep "1" çıkıyordu
+    expect(Number((await popup.locator("a[href^='/kulup/']").first().textContent())?.match(/· (\d+) üye/)?.[1])).toBeGreaterThanOrEqual(2);
     // Popup harita kutusunun içinde tamamen görünür (autoPan) — eski SVG popover'ı overflow-hidden'da kesiliyordu
-    const [p, h] = await Promise.all([popup.boundingBox(), page.locator("#harita").boundingBox()]);
-    expect(p && h && p.y >= h.y && p.y + p.height <= h.y + h.height && p.x >= h.x && p.x + p.width <= h.x + h.width).toBe(true);
+    // Yaklaşan etkinliklerle uzayan popup için autoPan animasyonu sürer → oturana kadar yokla
+    await expect
+      .poll(async () => {
+        const [p, h] = await Promise.all([popup.boundingBox(), page.locator("#harita").boundingBox()]);
+        return !!(p && h && p.y >= h.y && p.y + p.height <= h.y + h.height && p.x >= h.x && p.x + p.width <= h.x + h.width);
+      })
+      .toBe(true);
+  });
+
+  test("harita (F4-02 · AC-21): misafire üye ızgarası gömülmez, filtre yok; il popup'ında yaklaşan etkinlikler", async ({ page }) => {
+    await page.route("**/tile.openstreetmap.org/**", (r) => r.abort());
+    await page.goto("/harita?topluluk=odtu-yz-okuma-demo&takip=1"); // misafirde filtre parametresi etkisiz
+    await expect(page.locator("[data-harita-misafir]")).toContainText("giriş yap");
+    await expect(page.locator("[data-harita-filtre]")).toHaveCount(0);
+    const veri = JSON.parse((await page.locator("#harita-veri").textContent()) ?? "{}");
+    expect(veri.bakan).toBeNull();
+    expect(veri.filtreli).toBe(false);
+    // Rıza verenler dahil HİÇBİR üye bireysel olarak sayfa kaynağında yok (ızgara yalnız girişli üyeye)
+    expect(veri.pinler.every((p: { uyeler: unknown[]; gorunen: number }) => p.uyeler.length === 0 && p.gorunen === 0)).toBe(true);
+    for (const h of ["elif-celik", "ayse-demir", "mehmet-kaya"]) expect(JSON.stringify(veri)).not.toContain(h);
+    expect(veri.pinler.find((p: { il: string }) => p.il === "İstanbul").uye).toBeGreaterThanOrEqual(2); // anonim il sayımı kalır
+    // seed:demo: Ankara'da yaklaşan quiz gecesi (biten buluşma ve il'siz site geneli maraton haritada yok)
+    await page.locator('.leaflet-marker-icon[title^="Ankara:"]').click();
+    const popup = page.locator(".leaflet-popup");
+    await expect(popup.getByText("Yaklaşan etkinlikler")).toBeVisible();
+    await expect(popup.locator('a[href="/etkinlik/canli-quiz-gecesi-demo"]')).toBeVisible();
+    await expect(popup.locator("[data-harita-uyeler]")).toHaveCount(0);
+  });
+
+  test("üyeler: listedeki puan üyenin profilindeki kazanılan puanla aynı (ilişkili alt sorgu doğru üyeyi toplar)", async ({ page }) => {
+    await page.goto("/u/elif-celik", { waitUntil: "domcontentloaded" });
+    const puan = Number((await page.locator("[data-ticker]").first().textContent())?.trim()); // seed: 460
+    expect(puan).toBeGreaterThan(100);
+    await page.goto("/uyeler?q=Elif", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('a[href="/u/elif-celik"]')).toContainText(`${puan}p`);
   });
 
   test("kulüp kurma sayfası misafiri üyeliğe yönlendirir", async ({ page }) => {

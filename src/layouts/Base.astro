@@ -145,14 +145,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
             </SignInButton>
           </Show>
           <Show when="signed-in">
+            {/* Dar ekranda başlık ✉️ + 🔔 ile dolar (Faz 4): pano bağlantısı mobil menüye iner */}
             <a
               href="/uye"
-              class="nav-underline rounded-md px-2 py-2 text-sm text-ink-muted transition-colors hover:text-accent"
+              class="nav-underline hidden rounded-md px-2 py-2 text-sm text-ink-muted transition-colors hover:text-accent sm:inline-block"
               title={t("uye.panel")}
             >
               {t("uye.panel")}
             </a>
-            {/* Okunmamış bildirim sayacı — server island, sayfa statik kalır */}
+            {/* Okunmamış bildirim + mesaj sayaçları — server island, sayfa statik kalır */}
             <BildirimZili server:defer />
             <UserButton />
           </Show>
@@ -186,6 +187,11 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
                   </a>
                 ))
               }
+              <Show when="signed-in">
+                <a href="/uye" class="block rounded-md px-3 py-2.5 text-sm text-ink transition-colors hover:bg-accent-soft hover:text-accent">
+                  {t("uye.panel")}
+                </a>
+              </Show>
             </div>
           </details>
         </nav>

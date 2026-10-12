@@ -6,6 +6,7 @@ import { db, schema } from "@/db/client.ts";
 import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts";
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
+import { sikayetTuruMu } from "@/lib/sikayet.ts";
 
 export const prerender = false;
 
@@ -110,7 +111,12 @@ export const POST: APIRoute = async (context) => {
   // comment → gizli kalır) ya da geri aç (course → published; comment → görünür).
   const reportTarget = String(form.get("reportTarget") ?? "");
   const reportTargetId = Number(form.get("reportTargetId") ?? 0);
-  if ((action === "report_remove" || action === "report_restore") && reportTargetId) {
+  // Üye/mesaj şikâyetinde (F4-04) içerik etkisi yok: yalnız kuyruk kaydı kapanır (çözüldü / reddedildi).
+  if (
+    (action === "report_remove" || action === "report_restore") &&
+    reportTargetId &&
+    sikayetTuruMu(reportTarget)
+  ) {
     const kaldir = action === "report_remove";
     if (reportTarget === "course") {
       // Durum kapısı: "geri aç" yalnız gizleneni yayına döndürür (pending/rejected
@@ -162,7 +168,7 @@ export const POST: APIRoute = async (context) => {
       .set({ status: kaldir ? "resolved" : "dismissed" })
       .where(
         and(
-          eq(schema.reports.targetType, reportTarget as "course" | "comment"),
+          eq(schema.reports.targetType, reportTarget),
           eq(schema.reports.targetId, reportTargetId),
           eq(schema.reports.status, "open"),
         ),

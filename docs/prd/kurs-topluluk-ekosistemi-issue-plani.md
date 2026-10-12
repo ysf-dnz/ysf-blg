@@ -145,7 +145,10 @@ Cron `ends_at+48h` (`birKezCalistir('etkinlik-host', String(eventId))`): `katili
 
 ---
 
-## Faz 4 — Harita ve mesaj (4)
+## Faz 4 — Harita ve mesaj (4 + F4-05)
+
+> **Uygulandı (2026-10-12, dal `faz4-harita-dm`, GitHub #33–#36 + #32; merge kararı Yusuf'ta).** Aşağıdaki metin Faz 0 planıdır; uygulamadaki farklar için `docs/assumptions.md` #47–#58 bağlayıcıdır: üye ızgarası yalnız girişli üyeye (AC-22), veri `data-*` değil `#harita-veri` JSON bloğunda (Leaflet), filtre parametreleri `?topluluk=&kurs=&takip=1`, hız freni 30 sn'de 5 mesaj, yoklama ucu `GET /api/uye/mesaj?kisi=&since=<id>`, okundu POST'la, zilde ayrı ✉️ rozet, şikâyette otomatik etki yok.
+> **F4-05 (GitHub #32, plana sonradan eklendi):** dönen QR girişi GET'te yazmaz — `/c/q/[etkinlik]/[token]` yalnız formu render eder, betik `POST /api/uye/etkinlik action=donen-giris` ile gönderir; sonuç etkinlik sayfasında `?giris=` bandı.
 
 ### F4-01 · Güvenlik önkoşulları (Faz 1'e alınabilir)
 `harita.astro:155-160` popover `innerHTML` → DOM API/`textContent`; `kulup.ts:19` ad uzunluk/karakter doğrulaması; `markdown.ts` `renderer.link` https beyaz listesi (`profil.ts:17-18` regex'i) + `markdown.test.ts` tablosu. **Kabul:** AC-24. **Bağımlı:** yok.

@@ -17,3 +17,13 @@ PRD §0.7: belgede olmayan fikirler burada bekler; hiçbiri onaysız uygulanmaz.
 | 11 | 2026-10-11 | Görevli tarayıcısına JS QR çözücü (iOS Safari'de `BarcodeDetector` yok) ya da PWA + native kamera. | Faz 3'te sistem kamerası akışı + elle kod (assumptions #27); gerçek cihaz ölçümüne göre. |
 | 12 | 2026-10-11 | Etkinlik şikâyeti / moderasyonu (`reports.target_type += event`) ve `events.status` (iptal, taslak). | Bugün görünürlük topluluğun onayına bağlı (assumptions #26). |
 | 13 | 2026-10-11 | Çevrimdışı okutmada tarama anını (istemci saati) güvenli biçimde taşıyıp bitişten sonra senkron olan girişleri kabul etmek. | Bugün bitişten sonra giriş yazılmaz (assumptions #21). |
+| 14 | 2026-10-12 | Harita ızgarasında üye başına "ortak topluluk / ortak kurs" rozeti (PRD §4.6). | Faz 4'te yalnız avatar, ad, seviye; satır başına ek sorgu gerekir. |
+| 15 | 2026-10-12 | Konuşmada canlı "Görüldü" (yoklama yalnız yeni mesaj getirir). | Bugün sayfa yenilenince; şikâyet düğmesi ve "daha eski mesajlar" Faz 4 incelemesinde eklendi. |
+| 16 | 2026-10-12 | ~~Reddedilen şikâyetin yeniden açılabilmesi~~ — **yapıldı** (Faz 4 incelemesi: kapanmış üye/mesaj şikâyeti yeniden açılır; index değişmedi). Kurs/yorumda hâlâ açılmaz. | — |
+| 17 | 2026-10-12 | "Ortak topluluk" bağını sıkılaştırma: topluluktan ayrılma aksiyonu, günlük katılım sınırı, gönderenin üyelik yaşı (24 saat / 7 gün) ya da topluluk bağıyla açılan yeni konuşmalara daha düşük günlük tavan. | Onaylı topluluğa tek tıkla katılan, o topluluktaki herkese (3 yanıtsız mesajla sınırlı) yazabilir — PRD §4.6 tanımı; karar Yusuf'ta (assumptions #50). |
+| 18 | 2026-10-12 | `club_members(user_id)` index'i (ortak topluluk EXISTS'i ve harita topluluk filtresi). | Bugünkü ölçekte tablo taraması önemsiz. |
+| 19 | 2026-10-12 | Engellenenler listesi sayfası; engelin karşılıklı takibi de kaldırması. | Bugün engel profil ya da konuşmadan tek tek yönetilir. |
+| 20 | 2026-10-12 | ~~Bildirimlerin okundu yazımını POST'a taşımak~~ — **yapıldı** (`POST /api/uye/bildirim`, e2e testli). | — |
+| 21 | 2026-10-12 | Etkinlik kaydında da kurs sayfasındaki `data-niyet` deseni (girişten dönüşte ek dokunuşsuz "Yerimi ayır"). | Bugün iki dokunuş (assumptions #37). |
+| 22 | 2026-10-12 | Gizlilik ayarlarını (harita rızası, mesaj ayarı) profil formundan ayırıp tek tek kaydetmek. | Bugün form tek parça: bayat sekmeden kaydetmek ayarları o sekmedeki eski değere döndürür (düşük; inceleme bulgusu). |
+| 23 | 2026-10-12 | Harita il popup'ında 24'ten fazla görünen üye için sayfalama ve rıza anından bağımsız sıralama. | Bugün en yeni 24 rıza; kutuyu kaldırıp işaretlemek üste taşır. |

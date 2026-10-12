@@ -96,3 +96,64 @@ export function iyiDegerlendirildiMi(ortalama: number, adet: number): boolean {
   return adet >= PUAN.eventWellRatedMinCount && ortalama >= PUAN.eventWellRatedMinAvg;
 }
 
+/* ---------------- Mesaj (DM) frenleri — PRD §4.6, F4-03 ---------------- */
+
+/** Hız penceresi (sn) ve pencere başına mesaj sınırı: sohbet akabilsin, sel olmasın */
+export const DM_PENCERE_SN = 30;
+export const DM_PENCERE_LIMIT = 5;
+/** TR gününde başlatılabilecek yeni konuşma (ilk mesajı gönderenin attığı konuşma) */
+export const DM_GUNLUK_YENI_KONUSMA = 20;
+/**
+ * Alıcı yanıtlayana kadar aynı kişiye yazılabilecek mesaj ("mesaj isteği" tavanı): bağ tek taraflı
+ * da kurulabilir (onaylı topluluğa katılmak tek tık) — yanıtsız konuşma taciz kanalı olmasın.
+ */
+export const DM_YANITSIZ_SINIR = 3;
+export const DM_AZAMI_UZUNLUK = 1000;
+
+export type DmPolitika = "everyone" | "mutual" | "nobody";
+export const DM_POLITIKALARI: DmPolitika[] = ["mutual", "everyone", "nobody"];
+export const dmPolitikasiMi = (s: string): s is DmPolitika => (DM_POLITIKALARI as string[]).includes(s);
+
+/** Gönderen → alıcı çifti için kararın girdileri (lib/mesaj.ts mesajDurumu tek sorguda doldurur) */
+export type DmDurum = {
+  kendisi: boolean;
+  /** İki yönden biri: gönderen alıcıyı ya da alıcı göndereni engellemiş */
+  engel: boolean;
+  /** Alıcı gönderene daha önce yazmış (yanıt her zaman serbest: alıcı konuşmaya razı olmuş) */
+  karsiYazmis: boolean;
+  /** Gönderen alıcıya daha önce yazmış (süren konuşma: günlük yeni konuşma sayacına girmez) */
+  benYazmis: boolean;
+  /** Ortak onaylı topluluk ya da karşılıklı takip */
+  bag: boolean;
+  /** Gönderen Sv4+ */
+  sv4: boolean;
+  /** Alıcının ayarı; alıcı yoksa "nobody" */
+  politika: DmPolitika;
+  /** Gönderenin son DM_PENCERE_SN sn'de attığı mesaj */
+  penceredeGonderilen: number;
+  /** Gönderenin bugün başlattığı yeni konuşma */
+  bugunYeniKonusma: number;
+  /** Gönderenin bu alıcıya yazdığı toplam mesaj (alıcı yanıtlamadıysa tavana sayılır) */
+  aliciyaGonderilen: number;
+};
+export type DmKarar = "ok" | "kendin" | "engel" | "hiz" | "kapali" | "bag" | "gunluk" | "yanitsiz";
+
+/**
+ * Mesaj gönderilebilir mi? Gönderim SQL'inin (lib/mesaj.ts mesajGonder WHERE'i) SAF EŞLENİĞİ:
+ * sayfa formu gösterip göstermemeye ve ret gerekçesine bununla karar verir; yazma kararını SQL verir.
+ *  - mutual (varsayılan): yalnız bağ (AC-23) — Sv4 yetmez.
+ *  - everyone: bağ ya da Sv4+ (PRD: bağ yoksa yeni konuşma için Sv4+).
+ *  - nobody: kimse başlatamaz; alıcının kendi yazdığı kişi yanıtlayabilir.
+ *  - Alıcı hiç yazmadıysa gönderen en çok DM_YANITSIZ_SINIR mesaj yazar (yanıt gelince tavan kalkar).
+ */
+export function dmKarar(d: DmDurum): DmKarar {
+  if (d.kendisi) return "kendin";
+  if (d.engel) return "engel";
+  if (d.penceredeGonderilen >= DM_PENCERE_LIMIT) return "hiz";
+  if (d.karsiYazmis) return "ok";
+  if (d.politika === "nobody") return "kapali";
+  if (!d.bag && !(d.politika === "everyone" && d.sv4)) return "bag";
+  if (!d.benYazmis && d.bugunYeniKonusma >= DM_GUNLUK_YENI_KONUSMA) return "gunluk";
+  if (d.aliciyaGonderilen >= DM_YANITSIZ_SINIR) return "yanitsiz";
+  return "ok";
+}

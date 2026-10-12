@@ -1,11 +1,12 @@
 /**
- * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), görevli yönet, elle giriş, değerlendir.
+ * POST /api/uye/etkinlik — etkinlik aç, kayıt ol (RSVP), dönen QR girişi, görevli yönet, elle giriş, değerlendir.
  * Aksiyonlar AÇIK dallardır: bilinmeyen aksiyon 400 (eskiden her şey oluşturmaya düşüyordu).
  */
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import {
+  donenGiris,
   etkinligiDegerlendir,
   etkinlikGorunurMu,
   gorevliEkle,
@@ -109,6 +110,16 @@ export const POST: APIRoute = async (context) => {
     if (k.davetli) p.set("davet", "1");
     if (form.get("priority") === "1" && k.durum === "yeni" && !k.oncelikli) p.set("oncelik", "yok");
     return context.redirect(`${sayfa}?${p}`);
+  }
+
+  // Dönen QR ile kendi girişini doğrula (F4-05, #32): giriş /c/q/ GET'inde DEĞİL burada yazılır.
+  // Tüm sonuçlar etkinlik sayfasına döner (otomatik gönderen /c/q/ sayfasına dönmek döngü olurdu).
+  if (action === "donen-giris") {
+    const kulup = e.clubId ? await db.query.clubs.findFirst({ where: eq(schema.clubs.id, e.clubId) }) : null;
+    // Gizli etkinlikte 404: yönlendirme adresi slug'ı sızdırmasın
+    if (!etkinlikGorunurMu(e, kulup)) return new Response("Etkinlik bulunamadı", { status: 404 });
+    const s = await donenGiris(e, member, metin("token", 40), context.cookies);
+    return context.redirect(`${sayfa}?giris=${s.durum}${s.durum === "geldi" ? `&puan=${s.puan}` : ""}`);
   }
 
   if (action === "staff-ekle" || action === "staff-sil") {

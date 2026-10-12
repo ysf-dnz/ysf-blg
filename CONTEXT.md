@@ -123,3 +123,26 @@ _Avoid_: kaynak önerisi, link
 **Canlılık havuzu**:
 Yayındaki bir kursun son 7 gündeki ilerleme, tamamlama, beğeni ve ek kaynak hareketinden hesaplanan, her pazartesi üretici, katkıcılar ve davet edenler arasında dağıtılan haftalık puan havuzu (en fazla 100).
 _Avoid_: bonus havuzu, airdrop
+
+### Harita ve mesaj
+
+**Haritada görünme**:
+Üyenin adı, profil fotoğrafı ve seviyesiyle kendi ilinde haritada tek tek gösterilmeye verdiği açık rıza (`users.map_visible_at` = rızanın verildiği an; varsayılan kapalı). Yalnız giriş yapmış üyelere görünür; il sayıları rızadan bağımsız ve anonimdir.
+_Avoid_: konum paylaşımı (il düzeyidir, konum değil), herkese açık profil
+
+**Mesaj** / **Konuşma**:
+İki üye arasındaki birebir düz metin yazışma (`messages`); konuşma, iki üyenin karşılıklı mesajlarının tamamıdır. Yorum ve gönderiyle karışmaz; puan üretmez, bildirimlere yazılmaz.
+_Avoid_: DM (kodda ve belgelerde kalır, arayüzde "mesaj"), sohbet, chat, özel mesaj
+
+**Mesaj ayarı**:
+Üyenin "kimden mesaj alırım" seçimi (`users.dm_policy`): ortak topluluğu olanlar ve karşılıklı takipleştikleri (varsayılan) · herkes · kimse. Alıcının kendi yazdığı kişi her ayarda yanıtlayabilir; alıcı yanıtlayana kadar en çok 3 mesaj yazılır.
+_Avoid_: gizlilik ayarı (tek başına belirsiz), DM politikası
+
+**Bağ**:
+İki üye arasında yeni konuşma başlatmaya yeten ilişki: ortak onaylı topluluk üyeliği ya da karşılıklı takip.
+_Avoid_: arkadaşlık, bağlantı (mesajdaki https bağlantısıyla karışır)
+
+**Engel**:
+Bir üyenin başka bir üyeyle etkileşimi iki yönlü kesmesi (`blocks`): birbirlerine mesaj atamaz, haritada birbirlerini görmez, Mesaj düğmesi çıkmaz, birbirlerini takip edemez. Engellenen tarafa söylenmez ("şu an yeni mesaj almıyor" — "kimse" ayarıyla aynı).
+_Avoid_: ban (admin yaptırımıyla karışır), sessize alma
+

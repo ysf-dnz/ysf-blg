@@ -16,11 +16,13 @@ export default defineConfig({
   // Dev sunucuda ilk derleme + eşzamanlı yük: 30 sn varsayılanı yanlış kırmızı üretiyordu
   timeout: 60_000,
   globalSetup: "./tests/e2e/global-setup.ts",
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   projects: [
-    // "etkinlik.spec" auth'tur; misafir olan "etkinlikler.spec" bu desene UYMAZ (kurs/kurslar gibi)
-    { name: "misafir", testIgnore: /auth\.spec|kurs\.spec|etkinlik\.spec/ },
+    // "etkinlik.spec" auth'tur; misafir olan "etkinlikler.spec" bu desene UYMAZ (kurs/kurslar gibi).
+    // "mesaj.spec" (Faz 4: mesaj, engel, üye olarak harita) auth'tur — iki desen BİREBİR aynı kalmalı.
+    { name: "misafir", testIgnore: /auth\.spec|kurs\.spec|etkinlik\.spec|mesaj\.spec/ },
     // Clerk test üyesi tek: oturumlar çakışmasın diye seri + tek worker
-    { name: "auth", testMatch: /auth\.spec|kurs\.spec|etkinlik\.spec/, fullyParallel: false, workers: 1 },
+    { name: "auth", testMatch: /auth\.spec|kurs\.spec|etkinlik\.spec|mesaj\.spec/, fullyParallel: false, workers: 1 },
   ],
   webServer: {
     // Server-mode sonrası: Vercel adapter `astro preview`ü desteklemez

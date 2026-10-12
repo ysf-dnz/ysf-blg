@@ -4,6 +4,7 @@ import { begeniPuaniVer } from "@/lib/rewards.ts";
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
+import { engelDurumu } from "@/lib/mesaj.ts";
 
 export const prerender = false;
 
@@ -22,6 +23,10 @@ export const POST: APIRoute = async (context) => {
     if (!hedef || hedef.id === member.id)
       return context.redirect(`/u/${handle}`);
     if (action === "follow") {
+      // Engel varken (iki yönden biri) takip yazılmaz: takip et / bırak döngüsü engelleyene bildirim
+      // düşüren ikinci bir kanaldı. Sessizce geçilir (engel söylenmez).
+      const engel = await engelDurumu(member.id, hedef.id);
+      if (engel.benim || engel.karsi) return context.redirect(`/u/${handle}`);
       const [ins] = await db
         .insert(schema.follows)
         .values({ followerId: member.id, followedId: hedef.id })

@@ -179,7 +179,9 @@ Adapter bunu `config.json` rotasına yazar; Vercel harf duyarlı olduğu için `
 
 **Vercel WebSocket notu.** Adapter çıktısı `nodejs22.x` + `handler: dist/server/entry.mjs` (`.vercel/output/functions/_render.func/.vc-config.json`); Astro istek modeli fetch `Request/Response`, `upgrade` olayına erişim yok → **Astro + @astrojs/vercel ile WebSocket sunucusu yazılamaz**. Adapter dışı elle yazılmış fonksiyonun Build Output çıktısıyla birleşimi **belirsiz**. v1 kararını değiştirmez.
 
-**Harita.** İl düzeyi yeterli (PRD §7.6); ilçe + harita kütüphanesi ertelendi. Mevcut sıfır bağımlılık SVG korunur.
+**Harita.** İl düzeyi yeterli (PRD §7.6); ilçe ertelendi. ~~Mevcut sıfır bağımlılık SVG korunur.~~ **2026-10-12:** harita Leaflet + OSM karolarına geçti (assumptions #46); Faz 4 üye ızgarası aynı `#harita-veri` JSON bloğunda, yalnız girişli üyeye (#47).
+
+**Faz 4 uygulama notu (2026-10-12).** Yoklama ucu `GET /api/uye/mesaj?kisi=<handle>&since=<mesaj id>` oldu (gönderimle aynı dosya; imleç id — zaman damgasında Postgres µs ↔ JS ms farkı son mesajı yeniden döndürürdü). Okunmamış mesaj sayısı `BildirimZili` adasında bildirim sayısına eklenmez, yanında ayrı rozet. "Okundu" yoklama GET'inde değil sayfa betiğinin POST'unda yazılır (GET durum değiştirmez). Gönderim A ilkeli tek SQL + gönderen başına danışma kilidi (K1.5 deseninin üçüncü kullanımı: puan tavanı, etkinlik kontenjanı, mesaj frenleri).
 
 ---
 
@@ -241,7 +243,7 @@ Bekleyen puanlar iade gerektirmez: `status='expired'`.
 | | `ticket_token_hash` | **Gerekmez**: bilet token = `{rsvpId}.{base32(HMAC(env sırrı, "t:" + rsvpId))}` — ilk parça RSVP'yi bulur, ikinci parça doğrular; kolonsuz. `"t:"`/`"c:"` önekleri bilet ile dönen QR'ı aynı sırla ayırır. `shortcut: sızan bilet tek tek iptal edilemez (RSVP silinir); gereksinim çıkarsa nullable kolon + unique eklenir.` |
 | `users` | `flagged_at` | **Faz 5** (tek kullanıcısı F5-04); lider/lig sorgularına `flagged_at IS NULL`. |
 | | `map_visible_at` | PRD'nin `map_visible + map_consent_at` yerine tek kolon: null = görünmez, dolu = rıza anı. |
-| | `dm_policy everyone\|mutual\|nobody` default `mutual` | Faz 4. |
+| | `dm_policy everyone\|mutual\|nobody` default `mutual` | Faz 4. Uygulamada NULLABLE + varsayılan (NULL = mutual): kolon canlıya koddan önce çıkar. |
 | | `il` | **Açılmaz**; `city` var (`schema.ts:26`), `profil.ts:24`'e il beyaz listesi. Hesap yaşı `created_at`'ten. |
 | `clubs` | `kind` +`vakif · dernek · kurum` | TS only. Dokunulacak: `kulupler.astro:24-28`, `kulup-kur.astro:39-41`, `kulup.ts:20-23` (doğrulamasız cast → beyaz liste), `seed-demo.ts:199`. |
 | `points_ledger` | `reason` +14 | §7. |

@@ -6,6 +6,8 @@ import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { levelFor, pointsToNextLevel } from "@/lib/levels.ts";
 import { earnedPoints, getOrCreateMember } from "@/lib/member.ts";
+import { engelDurumu } from "@/lib/mesaj.ts";
+import { R } from "@/lib/routes.ts";
 
 export const prerender = false;
 
@@ -42,6 +44,12 @@ const [takipciler, takipEdiyorMu] = await Promise.all([
       })
     : Promise.resolve(undefined),
 ]);
+// Engel iki yönlü etkir: biri diğerini engellediyse Mesaj düğmesi yok (F4-04, PRD §4.6). Düğme ayarı
+// "kimse" olan üyede de yoktur: yokluğu tek başına engeli ele vermesin (konuşma sayfası iki durumda da
+// "şu an yeni mesaj almıyor" der). Engelleyen kendi engelini "Engeli kaldır" olarak görür.
+const baskasi = !!ziyaretci && ziyaretci.id !== user.id;
+const engel = baskasi ? await engelDurumu(ziyaretci!.id, user.id) : { benim: false, karsi: false };
+const sikayetBandi = Astro.url.searchParams.get("sikayet");
 const books = await getCollection("books");
 
 // 🏅 Rozet vitrini (kalıcı DB rozetleri)
@@ -92,6 +100,11 @@ const SOSYAL_ETIKET: Record<string, string> = {
 ---
 
 <Base title={`@${user.handle}`} description={`${user.name} — topluluk profili`}>
+  {sikayetBandi && (
+    <p class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft p-3 text-center text-sm text-ink" data-sikayet-bandi>
+      {sikayetBandi === "hiz" ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene." : sikayetBandi === "var" ? "Bu şikâyetin zaten inceleme kuyruğunda." : "Şikâyetin alındı; inceleme kuyruğuna düştü."}
+    </p>
+  )}
   <section class="girih-texture -mx-4 flex flex-wrap items-center gap-6 px-4 py-12">
     {user.avatarUrl && (
       <span class="relative">
@@ -128,9 +141,20 @@ const SOSYAL_ETIKET: Record<string, string> = {
         </p>
       )}
     </div>
-    <div class="ml-auto flex items-center gap-4">
+    <div class="ml-auto flex flex-wrap items-center justify-end gap-4">
       {
-        ziyaretci && ziyaretci.id !== user.id && (
+        baskasi && !engel.benim && !engel.karsi && user.dmPolicy !== "nobody" && (
+          <a
+            href={R.uye.mesaj(user.handle)}
+            class="rounded-full border border-accent px-5 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface"
+            data-mesaj-gonder
+          >
+            ✉️ Mesaj gönder
+          </a>
+        )
+      }
+      {
+        baskasi && (
           <form method="post" action="/api/uye/takip">
             <input type="hidden" name="action" value={takipEdiyorMu ? "unfollow" : "follow"} />
             <input type="hidden" name="handle" value={user.handle} />
@@ -155,6 +179,30 @@ const SOSYAL_ETIKET: Record<string, string> = {
       </div>
     </div>
   </section>
+
+  {
+    baskasi && (
+      <div class="mt-3 flex flex-wrap items-center justify-end gap-4 text-xs text-ink-muted" data-profil-islemler>
+        <form method="post" action="/api/uye/mesaj">
+          <input type="hidden" name="kisi" value={user.handle} />
+          <input type="hidden" name="next" value={R.profil(user.handle)} />
+          <button name="action" value={engel.benim ? "engel-kaldir" : "engelle"} class="cursor-pointer hover:text-red-500" data-engel-dugmesi>
+            {engel.benim ? "Engeli kaldır" : "Engelle"}
+          </button>
+        </form>
+        <details class="relative">
+          <summary class="cursor-pointer list-none hover:text-red-500" data-sikayet-ac>Şikâyet et</summary>
+          <form method="post" action="/api/uye/sikayet" class="absolute right-0 z-10 mt-2 grid w-64 gap-2 rounded-xl border border-line bg-surface-raised p-3 shadow-lg">
+            <input type="hidden" name="targetType" value="user" />
+            <input type="hidden" name="targetId" value={user.id} />
+            <input type="hidden" name="next" value={R.profil(user.handle)} />
+            <input name="reason" maxlength="300" placeholder="Neden? (isteğe bağlı)" class="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink" />
+            <button class="cursor-pointer rounded-full border border-red-400 px-3 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500 hover:text-white">Şikâyeti gönder</button>
+          </form>
+        </details>
+      </div>
+    )
+  }
 
   <section class="mt-8 grid gap-8 lg:grid-cols-[1fr_280px]">
     <div>

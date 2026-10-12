@@ -23,6 +23,17 @@ export function belgeGezintisiMi(request: Request): boolean {
   return !dest || dest === "document";
 }
 
+/**
+ * Kullanıcının KENDİ başlattığı üst düzey gezinti mi (adres çubuğu, yer imi, kamerayla QR okutma,
+ * uygulamadan açılan bağlantı): sec-fetch-site "none". Bir web sayfasındaki bağlantıya tıklamak
+ * (aynı site ya da başka site) DEĞİLDİR. Dönen QR sayfası formu yalnız böyle gezintide kendiliğinden
+ * gönderir; aksi hâlde kullanıcı düğmeye dokunur. Başlığı göndermeyen eski tarayıcı geçer.
+ */
+export function kullaniciGezintisiMi(request: Request): boolean {
+  const site = request.headers.get("sec-fetch-site");
+  return belgeGezintisiMi(request) && (!site || site === "none");
+}
+
 export const KUTUPHANEM_URL = "https://ysf-dnz.github.io/kutuphanem";
 
 /**

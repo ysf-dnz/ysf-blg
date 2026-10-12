@@ -6,6 +6,9 @@ export const LEVEL_THRESHOLDS = [
   0, 5, 20, 65, 155, 515, 2015, 8015, 33015,
 ] as const;
 
+/** Seviye 4 eşiği (kazanılan toplam): şikâyet ağırlığı ve bağsız mesaj başlatma şartı */
+export const SV4_PUAN = LEVEL_THRESHOLDS[3];
+
 export function levelFor(earnedPoints: number): number {
   let level = 1;
   for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {

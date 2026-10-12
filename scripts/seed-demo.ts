@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { and, eq, inArray, like } from "drizzle-orm";
+import { and, eq, inArray, like, or } from "drizzle-orm";
 import * as schema from "../src/db/schema.ts";
 
 const url = process.env.POSTGRES_URL;
@@ -127,6 +127,15 @@ async function temizle() {
   await db.delete(schema.learningList).where(inArray(schema.learningList.userId, ids));
   await db.delete(schema.follows).where(inArray(schema.follows.followerId, ids));
   await db.delete(schema.follows).where(inArray(schema.follows.followedId, ids));
+  // Faz 4: demo üyelerin mesajları ve engelleri (İKİ yön: gerçek/test üyeyle olanlar dahil) ve
+  // bunlara ya da demo üyeye açılmış şikâyetler (FK'siz polimorfik → kuyrukta hayalet kalmasın)
+  const demoMesaj = or(inArray(schema.messages.senderId, ids), inArray(schema.messages.recipientId, ids));
+  const mesajIdleri = (await db.query.messages.findMany({ where: demoMesaj, columns: { id: true } })).map((m) => m.id);
+  if (mesajIdleri.length)
+    await db.delete(schema.reports).where(and(eq(schema.reports.targetType, "message"), inArray(schema.reports.targetId, mesajIdleri)));
+  await db.delete(schema.reports).where(and(eq(schema.reports.targetType, "user"), inArray(schema.reports.targetId, ids)));
+  await db.delete(schema.messages).where(demoMesaj);
+  await db.delete(schema.blocks).where(or(inArray(schema.blocks.blockerId, ids), inArray(schema.blocks.blockedId, ids)));
   await db.delete(schema.referrals).where(inArray(schema.referrals.inviterId, ids));
   await db.delete(schema.referrals).where(inArray(schema.referrals.invitedId, ids));
   await db.delete(schema.applications).where(inArray(schema.applications.userId, ids));
@@ -140,14 +149,18 @@ async function temizle() {
 
 async function kur() {
   const avatar = (s: number) => `https://i.pravatar.cc/150?img=${s}`;
+  // Faz 4: haritada görünme rızası Ayşe (Ankara), Zeynep (İzmir), Elif (İstanbul) — Mehmet (İstanbul) ve
+  // Can (Konya) rıza VERMEDİ: aynı ilde biri görünür biri görünmez (AC-21 kanıtı). Mesaj ayarı:
+  // Mehmet "kimse", Zeynep "herkes", diğerleri varsayılan (ortak topluluk / karşılıklı takip).
+  const gorunur = (gunOnce: number) => new Date(Date.now() - gunOnce * 864e5);
   const [ayse, mehmet, zeynep, can, elif] = await db
     .insert(schema.users)
     .values([
-      { clerkId: "demo_ayse", handle: "ayse-demir", name: "Ayşe Demir", avatarUrl: avatar(47), university: "ODTÜ", city: "Ankara", role: "rep", flair: "🔥", bio: "YZ okuma kulübü başkanı. Öğrenmenin en iyi yolu öğretmektir.", socials: JSON.stringify({ linkedin: "https://linkedin.com/in/ayse-demo", github: "https://github.com/ayse-demo" }) },
-      { clerkId: "demo_mehmet", handle: "mehmet-kaya", name: "Mehmet Kaya", avatarUrl: avatar(12), university: "İTÜ", city: "İstanbul", role: "member" },
-      { clerkId: "demo_zeynep", handle: "zeynep-arslan", name: "Zeynep Arslan", avatarUrl: avatar(32), university: "Ege Üniversitesi", city: "İzmir", role: "member", flair: "📚", socials: JSON.stringify({ youtube: "https://youtube.com/@zeynep-demo" }) },
+      { clerkId: "demo_ayse", handle: "ayse-demir", name: "Ayşe Demir", avatarUrl: avatar(47), university: "ODTÜ", city: "Ankara", role: "rep", flair: "🔥", mapVisibleAt: gorunur(3), bio: "YZ okuma kulübü başkanı. Öğrenmenin en iyi yolu öğretmektir.", socials: JSON.stringify({ linkedin: "https://linkedin.com/in/ayse-demo", github: "https://github.com/ayse-demo" }) },
+      { clerkId: "demo_mehmet", handle: "mehmet-kaya", name: "Mehmet Kaya", avatarUrl: avatar(12), university: "İTÜ", city: "İstanbul", role: "member", dmPolicy: "nobody" },
+      { clerkId: "demo_zeynep", handle: "zeynep-arslan", name: "Zeynep Arslan", avatarUrl: avatar(32), university: "Ege Üniversitesi", city: "İzmir", role: "member", flair: "📚", mapVisibleAt: gorunur(2), dmPolicy: "everyone", socials: JSON.stringify({ youtube: "https://youtube.com/@zeynep-demo" }) },
       { clerkId: "demo_can", handle: "can-yildiz", name: "Can Yıldız", avatarUrl: avatar(59), city: "Konya", role: "member", bio: "Lise son. Go öğreniyorum.", createdAt: new Date(Date.now() - 3 * 864e5) },
-      { clerkId: "demo_elif", handle: "elif-celik", name: "Elif Çelik", avatarUrl: avatar(25), university: "Boğaziçi", city: "İstanbul", role: "member", flair: "🚀", bio: "Yazdıkça öğreniyorum." },
+      { clerkId: "demo_elif", handle: "elif-celik", name: "Elif Çelik", avatarUrl: avatar(25), university: "Boğaziçi", city: "İstanbul", role: "member", flair: "🚀", mapVisibleAt: gorunur(1), bio: "Yazdıkça öğreniyorum." },
     ])
     .returning();
   const U = { ayse: ayse!, mehmet: mehmet!, zeynep: zeynep!, can: can!, elif: elif! };
@@ -183,6 +196,16 @@ async function kur() {
     { followerId: U.mehmet!.id, followedId: U.elif!.id },
     { followerId: U.can!.id, followedId: U.ayse!.id },
     { followerId: U.zeynep!.id, followedId: U.ayse!.id },
+    { followerId: U.elif!.id, followedId: U.ayse!.id }, // Ayşe ↔ Elif karşılıklı takip
+  ]);
+
+  // Birebir mesajlar (Faz 4): Ayşe ↔ Elif konuşması (bağlantılı, sonuncusu okunmamış), Zeynep → Elif
+  const dakikaOnce = (d: number) => new Date(Date.now() - d * 60_000);
+  await db.insert(schema.messages).values([
+    { senderId: U.ayse!.id, recipientId: U.elif!.id, body: "Selam Elif! Maratonun ikinci haftası için okuma planını paylaşır mısın?", createdAt: dakikaOnce(180), readAt: dakikaOnce(170) },
+    { senderId: U.elif!.id, recipientId: U.ayse!.id, body: "Tabii, taslak burada: https://go.dev/doc/effective_go — 4. bölüme kadar gelelim diyorum.", createdAt: dakikaOnce(165), readAt: dakikaOnce(160) },
+    { senderId: U.ayse!.id, recipientId: U.elif!.id, body: "Süper. Cumartesi buluşmasında üzerinden geçeriz 📚", createdAt: dakikaOnce(20) },
+    { senderId: U.zeynep!.id, recipientId: U.elif!.id, body: "İzmir halkasına konuk olur musun? Tarihleri konuşalım.", createdAt: dakikaOnce(600), readAt: dakikaOnce(590) },
   ]);
 
   // Üye yazıları (2'si kitaba bağlı, 1'i yalnız üyeler)
@@ -527,7 +550,9 @@ async function kur() {
   etkinlikler: /etkinlik/${etkinlik!.slug} (6 gün sonra; kontenjan 40, görevliler, /d/demev01 Elif'in daveti)
     · /etkinlik/${maraton!.slug} (DEVAM EDİYOR 13 gün — giriş doğrulaması denenir, 2 giriş; e2e seed'den sonra ~6 gün geçerli)
     · /etkinlik/${bulusma!.slug} (bitti; 3 giriş, 2 değerlendirme, düzenleyen payı +15)
-  profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)`);
+  profiller: /u/elif-celik (takipçili), /u/ayse-demir (rep+flair)
+  harita: /harita (görünenler: Ayşe/Ankara, Zeynep/İzmir, Elif/İstanbul — Mehmet ve Can rızasız; ızgara yalnız girişli üyeye)
+  mesajlar: Ayşe ↔ Elif (3 mesaj, 1 okunmamış) · Zeynep → Elif; ayarlar: Mehmet "kimse", Zeynep "herkes"`);
 }
 
 await temizle();

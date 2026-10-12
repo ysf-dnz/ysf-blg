@@ -21,6 +21,8 @@ export default async function globalSetup() {
   const clerkId =
     data[0]?.id ?? (await clerk.users.createUser({ emailAddress: [emailAddress], skipPasswordRequirement: true })).id;
 
+  process.env.E2E_CLERK_ID = clerkId; // global-teardown test üyesinin şikâyetlerini bununla temizler
+
   // Görevli tarayıcısı e2e'si (F3-04): test üyesi DEMO maraton etkinliğinde giriş görevlisi olur
   // (idempotent; yalnız seed'in açtığı demo etkinlik). Üyenin DB satırı ilk SSR isteğinde açılır —
   // henüz yoksa satır yazılmaz ve spec kendini atlar. Dev = canlı DB: yalnız demo veriye dokunur.
@@ -38,5 +40,32 @@ export default async function globalSetup() {
       where e.slug = 'go-okuma-maratonu-demo' and u.clerk_id = ${clerkId}
         and coalesce(e.ends_at, e.starts_at + interval '2 hours') > now() at time zone 'utc'`;
     if (hazir) process.env.E2E_GOREVLI = "1";
+
+    // Mesaj/harita e2e'si (Faz 4), yalnız demo üyelerle (idempotent): Elif test üyesine OKUNMAMIŞ bir
+    // mesaj yazmış olur (zil rozeti + okundu + yanıt; okunmamışı varsa yenisi eklenmez), Zeynep test
+    // üyesini engellemiş olur (AC-22: mesaj atamaz, haritada göremez). Üye satırı yoksa hiçbiri yazılmaz.
+    await sql`
+      insert into messages (sender_id, recipient_id, body)
+      select e.id, u.id, 'Merhaba! Demo mesaj — buradan yanıtlayabilirsin.'
+      from users e, users u
+      where e.handle = 'elif-celik' and u.clerk_id = ${clerkId}
+        and not exists (select 1 from messages m where m.sender_id = e.id and m.recipient_id = u.id and m.read_at is null)`;
+    await sql`
+      insert into blocks (blocker_id, blocked_id)
+      select z.id, u.id from users z, users u
+      where z.handle = 'zeynep-arslan' and u.clerk_id = ${clerkId}
+      on conflict do nothing`;
+    // Bildirim okundu testi: test üyesinin okunmamış bildirimi yoksa bir tane (idempotent)
+    await sql`
+      insert into notifications (user_id, kind, body, href)
+      select u.id, 'system', 'Demo bildirim — pano açılınca okundu olur.', '/uye'
+      from users u
+      where u.clerk_id = ${clerkId}
+        and not exists (select 1 from notifications n where n.user_id = u.id and n.read_at is null)`;
+    const [mesajHazir] = await sql`
+      select 1 from blocks b join users z on z.id = b.blocker_id join users u on u.id = b.blocked_id
+      where z.handle = 'zeynep-arslan' and u.clerk_id = ${clerkId}
+        and exists (select 1 from users e where e.handle = 'elif-celik' and e.map_visible_at is not null)`;
+    if (mesajHazir) process.env.E2E_MESAJ = "1";
   }
 }

@@ -35,6 +35,9 @@ export const R = {
     quizOlustur: "/uye/quiz-olustur",
     egitimOlustur: "/uye/egitim-olustur",
     biletler: "/uye/biletler",
+    mesajlar: "/uye/mesajlar",
+    /** Birebir konuşma; handle [a-z0-9-] */
+    mesaj: (handle: string) => `/uye/mesajlar/${handle}`,
   },
 } as const;
 

@@ -5,7 +5,7 @@ import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { clubRoleOf } from "@/lib/permissions.ts";
 import { slugifyTitle } from "@/lib/markdown.ts";
-import { ilBul, kulupTuruMu } from "@/lib/topluluk.ts";
+import { ilBul, kulupAdiTemizle, kulupTuruMu } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 
@@ -17,14 +17,17 @@ export const POST: APIRoute = async (context) => {
   const action = String(form.get("action") ?? "");
 
   if (action === "apply") {
-    const name = String(form.get("name") ?? "").trim().slice(0, 60);
+    // Ad kuralı (F4-01): uzunluk + görünmez/işaretleme karakteri; eskiden yalnız trim + kesme vardı
+    const name = kulupAdiTemizle(String(form.get("name") ?? ""));
+    // Düz metin 400 değil yönlendirme: ClientRouter HTML olmayan yanıtta 404 gösterir, form kaybolurdu
+    if (!name) return context.redirect("/kulup-kur?hata=ad");
     // clubs.kind DB'de düz text: beyaz liste yoksa her string yazılabiliyordu
     const kind = String(form.get("kind") ?? "");
     if (!kulupTuruMu(kind)) return new Response("Geçersiz topluluk türü", { status: 400 });
     const place = String(form.get("place") ?? "").trim().slice(0, 80);
     // İl 81 il listesinden: harita pini ve il filtresi serbest metinle eşleşmiyordu
     const il = ilBul(String(form.get("il") ?? ""));
-    if (!name || !place || !il) return new Response("Eksik ya da geçersiz alan", { status: 400 });
+    if (!place || !il) return context.redirect("/kulup-kur?hata=alan");
 
     const slug = `${slugifyTitle(name)}-${Date.now().toString(36).slice(-3)}`;
     const [club] = await db

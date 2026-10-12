@@ -6,6 +6,8 @@ import { ILLER, KULUP_TUR } from "@/lib/topluluk.ts";
 
 export const prerender = false;
 const member = await getOrCreateMember(Astro);
+const hata = Astro.url.searchParams.get("hata");
+const adHatasi = hata === "ad";
 ---
 
 <Base title="Topluluk kur" description="Şehrinde, okulunda ya da kurumunda okuma topluluğu kur.">
@@ -29,10 +31,18 @@ const member = await getOrCreateMember(Astro);
       </p>
     ) : (
       <form method="post" action="/api/uye/kulup" class="mx-auto mt-8 grid max-w-lg gap-4" data-reveal>
+        {adHatasi && (
+          <p class="rounded-2xl border border-red-300 bg-red-50 p-3 text-sm text-red-700" role="alert" data-ad-hatasi>
+            Topluluk adı 3–60 karakter olmalı ve en az bir harf içermeli; &lt; &gt; ve görünmez karakterler kullanılamaz.
+          </p>
+        )}
+        {hata === "alan" && (
+          <p class="rounded-2xl border border-red-300 bg-red-50 p-3 text-sm text-red-700" role="alert">Yer ve il alanlarını doldur.</p>
+        )}
         <input type="hidden" name="action" value="apply" />
         <label class="grid gap-1">
           <span class="text-sm font-medium text-ink">Topluluk adı</span>
-          <input name="name" required maxlength="60" placeholder="Örn. ODTÜ Yapay Zekâ Okuma Kulübü" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
+          <input name="name" required minlength="3" maxlength="60" placeholder="Örn. ODTÜ Yapay Zekâ Okuma Kulübü" class="rounded-lg border border-line bg-surface-raised px-3 py-2" />
         </label>
         <label class="grid gap-1">
           <span class="text-sm font-medium text-ink">Tür</span>

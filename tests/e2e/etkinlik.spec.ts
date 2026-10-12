@@ -164,13 +164,43 @@ test.describe("etkinlik akışı — üye", () => {
     expect(r.status()).toBe(301);
     expect(r.headers()["location"]).toBe(`/c/q/${id}/${tok}`);
 
-    // Güncel token: giriş yazılır (ilk koşum) ya da zaten yazılmıştır (tekrar koşum) → etkinlik sayfası
+    // F4-05 (#32): GET YAZMAZ — betiksiz istek (görsel, ön-yükleme) yönlendirilmez, yalnız formu alır;
+    // giriş durumu istekten önceki hâliyle aynı kalır (seed sonrası ilk koşumda "henüz gelmedi" kanıtı)
+    const girisli = () => page.locator("[data-kayit-kutusu]").getByText(/Girişin doğrulandı ✓/).count();
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    const once = await girisli();
+    const g = await page.request.get(`/c/q/${id}/${donenToken(id, donenPencere())}`, { maxRedirects: 0 });
+    expect(g.status()).toBe(200);
+    expect(await g.text()).toContain("data-donen-formu");
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    expect(await girisli()).toBe(once);
+    // Bayat token POST'u da yazmaz; sonuç etkinlik sayfasına döner (otomatik gönderen sayfaya değil — döngü olmasın)
+    const donenPost = (token: string) =>
+      page.request.post("/api/uye/etkinlik", { form: { action: "donen-giris", eventId: String(id), token }, maxRedirects: 0 });
+    const bayat = await donenPost(donenToken(id, donenPencere(new Date(Date.now() - 120_000))));
+    expect(bayat.status()).toBe(302);
+    expect(bayat.headers()["location"]).toBe("/etkinlik/go-okuma-maratonu-demo?giris=sure");
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    expect(await girisli()).toBe(once);
+
+    // Bir sayfadaki BAĞLANTIDAN gelen ziyaret (sec-fetch-site ≠ none) kendiliğinden göndermez: düğme bekler
+    // (eski "başka siteden açılamaz" freninin karşılığı — tıklatarak kayıt + giriş yazdırılamaz)
+    await page.goto(MARATON, { waitUntil: "domcontentloaded" });
+    await page.evaluate((u) => (location.href = u), `/c/q/${id}/${donenToken(id, donenPencere())}`);
+    await expect(page.getByRole("heading", { name: "Girişini doğrula" })).toBeVisible();
+    await expect(page.locator("form[data-donen-formu]")).not.toHaveAttribute("data-otomatik", "1");
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL(/\/c\/q\//); // gönderilmedi
+
+    // Güncel token: sayfa betiği formu POST'lar (ek dokunuş yok) → giriş yazılır (ilk koşum) ya da zaten yazılmıştır
     await page.goto(`/c/q/${id}/${donenToken(id, donenPencere())}`, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/go-okuma-maratonu-demo\?giris=(geldi|zaten)/);
     await expect(page.locator("[data-kayit-kutusu]").getByText(/Girişin doğrulandı ✓ \(\d{2}:\d{2}\)/)).toBeVisible();
     // Tekrar okutma: yeni giriş yok
-    await page.goto(`/c/q/${id}/${donenToken(id, donenPencere())}`, { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveURL(/giris=zaten/);
+    const tekrar = await donenPost(donenToken(id, donenPencere()));
+    expect(tekrar.headers()["location"]).toBe("/etkinlik/go-okuma-maratonu-demo?giris=zaten");
+    await page.goto("/etkinlik/go-okuma-maratonu-demo?giris=sure", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText(/QR'ın süresi doldu/)).toBeVisible();
     // Bilet de "doğrulandı" gösterir
     await page.goto("/uye/biletler", { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-bilet]", { hasText: "Go Okuma Maratonu" }).getByText(/Girişin doğrulandı ✓/)).toBeVisible();

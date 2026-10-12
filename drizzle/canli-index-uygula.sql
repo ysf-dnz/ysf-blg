@@ -155,3 +155,17 @@ ON CONFLICT DO NOTHING;
 -- sonra şemada `slug: text("slug").notNull()` yapıp push'la (no-op olmalı):
 --   SELECT count(*) FROM events WHERE slug IS NULL;   -- 0 olmalı
 --   ALTER TABLE events ALTER COLUMN slug SET NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- ADIM 8 — Faz 4 harita rızası + mesaj + engel (2026-10-12). `drizzle-kit push` ile
+-- uygulandı (yalnız ADDITIVE; önce `push --strict` ile ifadeler önizlendi, sapma yoktu); kayıt.
+-- Yeni kolonlar: users(map_visible_at timestamp NULL, dm_policy text NULL DEFAULT 'mutual'
+--   — mevcut 16 satır 'mutual' doldu). Yeni tablolar: messages, blocks.
+-- reports.target_type user|message Faz 1'den beri TS enum'unda (DB'de düz text): şema değişmedi.
+-- Mevcut veriye bağlı adım YOK (users.city değerleri 81 il listesiyle uyumlu ölçüldü).
+-- ---------------------------------------------------------------------------
+CREATE UNIQUE INDEX IF NOT EXISTS "blocks_idx" ON "blocks" USING btree ("blocker_id", "blocked_id");
+CREATE INDEX IF NOT EXISTS "messages_recipient_read_idx" ON "messages" USING btree ("recipient_id", "read_at");
+CREATE INDEX IF NOT EXISTS "messages_pair_idx" ON "messages" USING btree ("sender_id", "recipient_id", "created_at");
+CREATE INDEX IF NOT EXISTS "messages_pair_rev_idx" ON "messages" USING btree ("recipient_id", "sender_id", "created_at");
+
