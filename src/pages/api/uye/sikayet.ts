@@ -12,7 +12,7 @@ import { SV4_PUAN } from "@/lib/levels.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { idMi } from "@/lib/mesaj.ts";
 import { sikayetKaydet, sikayetTuruMu } from "@/lib/sikayet.ts";
-import { guvenliYol } from "@/lib/urls.ts";
+import { guvenliYol, yolaParametreEkle } from "@/lib/urls.ts";
 
 export const prerender = false;
 
@@ -55,7 +55,7 @@ export const POST: APIRoute = async (context) => {
       }),
   }[targetType]();
   if (!hedefVar) return new Response("Hedef bulunamadı", { status: 404 });
-  const don = (durum: string) => context.redirect(`${geri}${geri.includes("?") ? "&" : "?"}sikayet=${durum}`);
+  const don = (durum: string) => context.redirect(yolaParametreEkle(geri, "sikayet", durum));
 
   // Saatte 10 freni + yazım tek transaction'da (lib/sikayet.ts). Düz metin 429 değil yönlendirme:
   // ClientRouter HTML olmayan yanıtta kullanıcıya 404 gösterirdi.

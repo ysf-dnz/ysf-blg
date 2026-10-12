@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "playwright.config.ts": {
-    "mtime": 1791765016.3184485,
-    "seen": 1791768098.858355,
+    "mtime": 1791787140.9368472,
+    "seen": 1791792147.552722,
     "ast_hash": "d25eceaf3289cdc3c27eda7a5141a68c",
     "semantic_hash": ""
   },
@@ -66,8 +66,8 @@
     "semantic_hash": "4f7a095413170a81bbb3e99b4d5d6f6f"
   },
   "scripts/seed-demo.ts": {
-    "mtime": 1791761151.4399807,
-    "seen": 1791768098.858458,
+    "mtime": 1791787140.9389393,
+    "seen": 1791792147.5529442,
     "ast_hash": "f6b63d57af09de5f515c17da89db93aa",
     "semantic_hash": ""
   },
@@ -198,8 +198,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.ts": {
-    "mtime": 1791760081.064719,
-    "seen": 1791768098.8590012,
+    "mtime": 1791787140.9395354,
+    "seen": 1791792147.553809,
     "ast_hash": "7c82fd31c263e80807b6f716b49ac764",
     "semantic_hash": ""
   },
@@ -432,8 +432,8 @@
     "semantic_hash": "4594702f3b18a43dc5ae35b754281d3b"
   },
   "src/layouts/Base.astro": {
-    "mtime": 1791762668.0213568,
-    "seen": 1791768098.8600278,
+    "mtime": 1791787140.9405692,
+    "seen": 1791792147.555603,
     "ast_hash": "dfeca1f29f74ea0cf1a2b02bea0db8ce",
     "semantic_hash": ""
   },
@@ -462,8 +462,8 @@
     "semantic_hash": "cf071cef2e2ebbfe2789f917f253fbee"
   },
   "src/lib/economy.ts": {
-    "mtime": 1791765016.3192384,
-    "seen": 1791768098.860103,
+    "mtime": 1791787140.941166,
+    "seen": 1791792147.5558379,
     "ast_hash": "693ab0e6ac5bdd680527e31b279cb775",
     "semantic_hash": ""
   },
@@ -498,8 +498,8 @@
     "semantic_hash": "3e3496e648e19016e1b2f4a5410fb1b8"
   },
   "src/lib/levels.ts": {
-    "mtime": 1791760476.8188505,
-    "seen": 1791768098.86023,
+    "mtime": 1791787140.9420586,
+    "seen": 1791792147.556118,
     "ast_hash": "ed7b2f38733403be1e6a76100becc825",
     "semantic_hash": ""
   },
@@ -552,8 +552,8 @@
     "semantic_hash": ""
   },
   "src/lib/routes.ts": {
-    "mtime": 1791760797.9476602,
-    "seen": 1791768098.8603551,
+    "mtime": 1791787140.9435468,
+    "seen": 1791792147.556421,
     "ast_hash": "3f0d428b10f1479d5f056ad11f912ed4",
     "semantic_hash": ""
   },
@@ -576,9 +576,9 @@
     "semantic_hash": "00330fcdabc2e42cbd9ca2bc729b9d54"
   },
   "src/lib/urls.ts": {
-    "mtime": 1791765016.3261347,
-    "seen": 1791768098.860428,
-    "ast_hash": "230f6be57ce7328e9831ffee9eedb049",
+    "mtime": 1791789224.4010484,
+    "seen": 1791792147.556538,
+    "ast_hash": "cc963691bef497d6a86ccc3293f78bdb",
     "semantic_hash": ""
   },
   "src/middleware.ts": {
@@ -594,8 +594,8 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/admin.ts": {
-    "mtime": 1791765016.3269784,
-    "seen": 1791768098.8604622,
+    "mtime": 1791787140.9456556,
+    "seen": 1791792147.556715,
     "ast_hash": "faf08926da968e46c7f69f4a84f81f1a",
     "semantic_hash": ""
   },
@@ -612,15 +612,15 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/etkinlik.ts": {
-    "mtime": 1791761077.4312072,
-    "seen": 1791768098.8604958,
+    "mtime": 1791787140.9464235,
+    "seen": 1791792147.556899,
     "ast_hash": "94198614428a5a5fb2d840a3dab8a7de",
     "semantic_hash": ""
   },
   "src/pages/api/uye/feed.ts": {
-    "mtime": 1791718584.35426,
-    "seen": 1791719813.8624,
-    "ast_hash": "990bf0a5c376601361e30c06bb14da6b",
+    "mtime": 1791789224.4016225,
+    "seen": 1791792147.5569012,
+    "ast_hash": "f74734f545f4217b4435cc2508b6bae8",
     "semantic_hash": ""
   },
   "src/pages/api/uye/gorev.ts": {
@@ -660,8 +660,8 @@
     "semantic_hash": "54436b651f473bbf998911d1dff83de6"
   },
   "src/pages/api/uye/kulup.ts": {
-    "mtime": 1791765795.8759782,
-    "seen": 1791768098.860726,
+    "mtime": 1791787140.9468274,
+    "seen": 1791792147.55726,
     "ast_hash": "6d027e8ec5d6f0dc43e20ca056741512",
     "semantic_hash": ""
   },
@@ -678,9 +678,9 @@
     "semantic_hash": "4ce9bfdead6a019b7e347816b42abada"
   },
   "src/pages/api/uye/profil.ts": {
-    "mtime": 1791760574.8374593,
-    "seen": 1791768098.860786,
-    "ast_hash": "eebda8d62175c28d077de6f331527c6a",
+    "mtime": 1791789224.4033468,
+    "seen": 1791792147.557354,
+    "ast_hash": "0e9aa911c5d34382e6ac309128f36efe",
     "semantic_hash": ""
   },
   "src/pages/api/uye/quiz-olustur.ts": {
@@ -696,8 +696,8 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/takip.ts": {
-    "mtime": 1791765016.3303604,
-    "seen": 1791768098.8608482,
+    "mtime": 1791787140.9480207,
+    "seen": 1791792147.557447,
     "ast_hash": "3f788305ece9fc6a1d2a886128fb16dc",
     "semantic_hash": ""
   },
@@ -804,9 +804,9 @@
     "semantic_hash": "05292382daa1ff83731c097ac7e9f793"
   },
   "src/pages/harita.astro": {
-    "mtime": 1791768033.6231735,
-    "seen": 1791768098.8613608,
-    "ast_hash": "fea0682a297aabead2b3ea085d126c0a",
+    "mtime": 1791789224.404501,
+    "seen": 1791792147.5584562,
+    "ast_hash": "0d5260cd5558d28a1f4e79109cefca7c",
     "semantic_hash": ""
   },
   "src/pages/hikaye/[id].astro": {
@@ -840,8 +840,8 @@
     "semantic_hash": "f173cb31a3db5274acef68183a2d34f0"
   },
   "src/pages/kulup-kur.astro": {
-    "mtime": 1791765795.876142,
-    "seen": 1791768098.861498,
+    "mtime": 1791787140.9509516,
+    "seen": 1791792147.55867,
     "ast_hash": "4a73ec403242e9ce6518667e92f8670e",
     "semantic_hash": ""
   },
@@ -912,21 +912,21 @@
     "semantic_hash": "20ba5abab42785cedb1e480706b93263"
   },
   "src/pages/topluluk/index.astro": {
-    "mtime": 1791758239.4215786,
-    "seen": 1791768098.861791,
-    "ast_hash": "81cac6637f74552accb02e657480d1c2",
+    "mtime": 1791787468.368813,
+    "seen": 1791792147.5592902,
+    "ast_hash": "5ddff8944f9dc1f3edaf4c998714b19b",
     "semantic_hash": ""
   },
   "src/pages/u/[handle].astro": {
-    "mtime": 1791765016.3337243,
-    "seen": 1791768098.861792,
+    "mtime": 1791787140.9534557,
+    "seen": 1791792147.559291,
     "ast_hash": "ab5499d5b5c531b2b78fc0b755b69e14",
     "semantic_hash": ""
   },
   "src/pages/uye/admin.astro": {
-    "mtime": 1791765016.3344686,
-    "seen": 1791768098.861793,
-    "ast_hash": "c4b744665770a03670237e5cbffb8844",
+    "mtime": 1791789224.4054344,
+    "seen": 1791792147.559293,
+    "ast_hash": "75eec01290a58880cc10aaba66f2d6a5",
     "semantic_hash": ""
   },
   "src/pages/uye/egitim-olustur.astro": {
@@ -942,8 +942,8 @@
     "semantic_hash": ""
   },
   "src/pages/uye/index.astro": {
-    "mtime": 1791763366.220307,
-    "seen": 1791768098.861848,
+    "mtime": 1791787140.9543245,
+    "seen": 1791792147.5594182,
     "ast_hash": "cfba9af9d4420ee6e1e6f54708b0cead",
     "semantic_hash": ""
   },
@@ -954,9 +954,9 @@
     "semantic_hash": "0b768ac330ca7e936a0776951969e56e"
   },
   "src/pages/uye/profil.astro": {
-    "mtime": 1791765016.3370235,
-    "seen": 1791768098.861877,
-    "ast_hash": "14164f4725cf92c80d58b718c4d3aee0",
+    "mtime": 1791789224.4037495,
+    "seen": 1791792147.559464,
+    "ast_hash": "8d10ef60026c031b3612e686408892ea",
     "semantic_hash": ""
   },
   "src/pages/uye/quiz-olustur.astro": {
@@ -972,8 +972,8 @@
     "semantic_hash": ""
   },
   "src/pages/uyeler.astro": {
-    "mtime": 1791768033.6237278,
-    "seen": 1791768098.86193,
+    "mtime": 1791787140.9562962,
+    "seen": 1791792147.559547,
     "ast_hash": "2299a63d77f4f20f561b519f3eb51f39",
     "semantic_hash": ""
   },
@@ -1020,9 +1020,9 @@
     "semantic_hash": "82ef9a40f33fbff923ea09cce74a8d6e"
   },
   "tests/e2e/flows.spec.ts": {
-    "mtime": 1791768033.6247165,
-    "seen": 1791768098.862133,
-    "ast_hash": "e934308754c4a6bfe4055af7964bed2b",
+    "mtime": 1791791141.8924983,
+    "seen": 1791792147.559946,
+    "ast_hash": "6af14cc7a433cf5aa012d949ffa5ddfa",
     "semantic_hash": ""
   },
   "tests/e2e/gate.spec.ts": {
@@ -1164,15 +1164,15 @@
     "semantic_hash": "727b32fab0c9a11b1e8741e19adba474"
   },
   "CLAUDE.md": {
-    "mtime": 1791765746.6284773,
-    "seen": 1791768098.863748,
-    "ast_hash": "2a6d095fe62299a17a15bf595ae19d7a",
+    "mtime": 1791792142.4442258,
+    "seen": 1791792147.562886,
+    "ast_hash": "70532e2da16ba216d96cb9f0c714ea3f",
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1791768095.6203322,
-    "seen": 1791768098.86375,
-    "ast_hash": "9480256c06f6e8245435f01ed2765294",
+    "mtime": 1791792142.4414308,
+    "seen": 1791792147.5628889,
+    "ast_hash": "136d0ea9020eed2b96aa7d7154803039",
     "semantic_hash": ""
   },
   "README.md": {
@@ -1458,8 +1458,8 @@
     "semantic_hash": ""
   },
   "src/features/community/BildirimZili.astro": {
-    "mtime": 1791763366.220886,
-    "seen": 1791768098.859034,
+    "mtime": 1791787140.9400907,
+    "seen": 1791792147.553859,
     "ast_hash": "eea6d802dc60c26017006bc6832f2a91",
     "semantic_hash": ""
   },
@@ -1692,8 +1692,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1791765676.2920623,
-    "seen": 1791768098.863749,
+    "mtime": 1791787140.8796082,
+    "seen": 1791792147.562887,
     "ast_hash": "009db0038972c3202b7fad26f252a8b2",
     "semantic_hash": ""
   },
@@ -6600,15 +6600,15 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/sikayet.ts": {
-    "mtime": 1791765016.3295543,
-    "seen": 1791768098.860847,
-    "ast_hash": "cdf4ac52af02b573b15922dcdbecf819",
+    "mtime": 1791789224.4020467,
+    "seen": 1791792147.557446,
+    "ast_hash": "0f1375eed81de2a9b860cf89aa439c29",
     "semantic_hash": ""
   },
   "src/pages/kurslar/[slug].astro": {
-    "mtime": 1791761077.4326117,
-    "seen": 1791768098.861501,
-    "ast_hash": "dc235f6e5b3e5131529d3e2a5be6db12",
+    "mtime": 1791789224.4028614,
+    "seen": 1791792147.558752,
+    "ast_hash": "49136a65ca2e48542123ca1779b9c177",
     "semantic_hash": ""
   },
   "src/pages/kurslar/index.astro": {
@@ -6630,8 +6630,8 @@
     "semantic_hash": ""
   },
   "tests/e2e/global-setup.ts": {
-    "mtime": 1791765016.3388603,
-    "seen": 1791768098.862157,
+    "mtime": 1791787140.9577549,
+    "seen": 1791792147.559985,
     "ast_hash": "a11e671e47ce4246fa59601a7108b188",
     "semantic_hash": ""
   },
@@ -6660,27 +6660,27 @@
     "semantic_hash": ""
   },
   "docs/adr/0001-kurs-davet-etkinlik-harita.md": {
-    "mtime": 1791762444.7398992,
-    "seen": 1791768098.863793,
+    "mtime": 1791787140.882112,
+    "seen": 1791792147.562954,
     "ast_hash": "8f283657a95dd312bb4a31da02c18e1e",
     "semantic_hash": ""
   },
   "docs/assumptions.md": {
-    "mtime": 1791768095.6206381,
-    "seen": 1791768098.863886,
-    "ast_hash": "4d3c0bdc2b5afae2b56497059c0c025b",
+    "mtime": 1791788007.3662932,
+    "seen": 1791792147.563075,
+    "ast_hash": "79a3292690b5bdaa72374ce8ca707ff6",
     "semantic_hash": ""
   },
   "docs/ideas.md": {
-    "mtime": 1791765676.2913685,
-    "seen": 1791768098.863887,
-    "ast_hash": "846fbbb8d4a646cf218d459205c3753c",
+    "mtime": 1791788007.3653982,
+    "seen": 1791792147.563076,
+    "ast_hash": "6a2f0d33f963b8be0b4caac5fda5828e",
     "semantic_hash": ""
   },
   "docs/prd/kurs-topluluk-ekosistemi-issue-plani.md": {
-    "mtime": 1791762444.739061,
-    "seen": 1791768098.8638878,
-    "ast_hash": "e5dbb46e49df540afe3f1f7fd7408477",
+    "mtime": 1791787339.8959703,
+    "seen": 1791792147.563078,
+    "ast_hash": "4b93f9098a2a99366675a8c4f6c32d38",
     "semantic_hash": ""
   },
   "docs/prd/kurs-topluluk-ekosistemi.md": {
@@ -6792,8 +6792,8 @@
     "semantic_hash": ""
   },
   "src/lib/topluluk.ts": {
-    "mtime": 1791765016.3254812,
-    "seen": 1791768098.860403,
+    "mtime": 1791787140.9443874,
+    "seen": 1791792147.556499,
     "ast_hash": "22046df7fc11591a89cb073a82d4799a",
     "semantic_hash": ""
   },
@@ -6810,14 +6810,14 @@
     "semantic_hash": ""
   },
   "src/pages/c/q/[etkinlik]/[token].astro": {
-    "mtime": 1791765016.3310206,
-    "seen": 1791768098.860905,
+    "mtime": 1791787140.9485207,
+    "seen": 1791792147.5575318,
     "ast_hash": "6c682ec4f06f6f83d1b58f5ca5f4d59e",
     "semantic_hash": ""
   },
   "src/pages/etkinlik/[slug].astro": {
-    "mtime": 1791761077.4320261,
-    "seen": 1791768098.861305,
+    "mtime": 1791787140.950018,
+    "seen": 1791792147.5581608,
     "ast_hash": "14331cc9f122ee0c90256a581b4cf06a",
     "semantic_hash": ""
   },
@@ -6864,8 +6864,8 @@
     "semantic_hash": ""
   },
   "tests/e2e/etkinlik.spec.ts": {
-    "mtime": 1791765016.3377686,
-    "seen": 1791768098.862132,
+    "mtime": 1791787140.9570389,
+    "seen": 1791792147.559907,
     "ast_hash": "801b804241705c159521e4bdeea0d7aa",
     "semantic_hash": ""
   },
@@ -6900,14 +6900,14 @@
     "semantic_hash": ""
   },
   "tests/unit/istek-freni.test.ts": {
-    "mtime": 1791765795.8762681,
-    "seen": 1791768098.862426,
-    "ast_hash": "07a69e5516712e94a199507466eb61a2",
+    "mtime": 1791789270.3290045,
+    "seen": 1791792147.560708,
+    "ast_hash": "0454826c81f03340a03a93f70be054e7",
     "semantic_hash": ""
   },
   "tests/unit/topluluk.test.ts": {
-    "mtime": 1791765016.3426661,
-    "seen": 1791768098.862636,
+    "mtime": 1791787140.9603586,
+    "seen": 1791792147.561085,
     "ast_hash": "1d97725dd418d6dfd09018b002383ea6",
     "semantic_hash": ""
   },
@@ -6924,74 +6924,74 @@
     "semantic_hash": ""
   },
   "src/lib/harita.ts": {
-    "mtime": 1791765016.3211617,
-    "seen": 1791768098.860106,
-    "ast_hash": "23372e1466b9e6a2db5a035d5cd151ff",
+    "mtime": 1791789224.40488,
+    "seen": 1791792147.555916,
+    "ast_hash": "e43f850712bd7b44d9cf1f11852226b1",
     "semantic_hash": ""
   },
   "src/lib/mesaj-kural.ts": {
-    "mtime": 1791765795.8744016,
-    "seen": 1791768098.860254,
+    "mtime": 1791787140.9425309,
+    "seen": 1791792147.556195,
     "ast_hash": "60bf694744104fe9f4296f12b941c56c",
     "semantic_hash": ""
   },
   "src/lib/mesaj.ts": {
-    "mtime": 1791765016.3241107,
-    "seen": 1791768098.860255,
-    "ast_hash": "2e7e4d4004a95a0e528dd9c1233a8ea7",
+    "mtime": 1791787383.1578171,
+    "seen": 1791792147.5561962,
+    "ast_hash": "8ff90c506be5ba8d653231a703d385ff",
     "semantic_hash": ""
   },
   "src/lib/sikayet.ts": {
-    "mtime": 1791765016.3247378,
-    "seen": 1791768098.860356,
+    "mtime": 1791787140.943986,
+    "seen": 1791792147.556423,
     "ast_hash": "08ec1bc2efa24f7d9374280779b007e3",
     "semantic_hash": ""
   },
   "src/pages/api/uye/bildirim.ts": {
-    "mtime": 1791765016.3275864,
-    "seen": 1791768098.860492,
+    "mtime": 1791787140.9458942,
+    "seen": 1791792147.556763,
     "ast_hash": "076929422867c1ca1b0a45d3e55c3ac2",
     "semantic_hash": ""
   },
   "src/pages/api/uye/mesaj.ts": {
-    "mtime": 1791765016.3290148,
-    "seen": 1791768098.8607569,
-    "ast_hash": "82bd61fa78e11b9c13123eadaca87e9b",
+    "mtime": 1791787383.1583345,
+    "seen": 1791792147.557308,
+    "ast_hash": "0015c9f441fe2dd196fbdb010c065254",
     "semantic_hash": ""
   },
   "src/pages/uye/mesajlar/[kisi].astro": {
-    "mtime": 1791765795.8756301,
-    "seen": 1791768098.861875,
-    "ast_hash": "ae7d23dfd2198b66e13eb15a4cfe4750",
+    "mtime": 1791787383.1591039,
+    "seen": 1791792147.559461,
+    "ast_hash": "00796cb1322bb7060f507b3ddfeed1e9",
     "semantic_hash": ""
   },
   "src/pages/uye/mesajlar/index.astro": {
-    "mtime": 1791765016.335931,
-    "seen": 1791768098.861876,
+    "mtime": 1791787140.9553888,
+    "seen": 1791792147.559463,
     "ast_hash": "933afd497ab3dec48d6ef6e35b12ea52",
     "semantic_hash": ""
   },
   "tests/e2e/global-teardown.ts": {
-    "mtime": 1791765016.3395274,
-    "seen": 1791768098.862158,
+    "mtime": 1791787140.9580486,
+    "seen": 1791792147.5599859,
     "ast_hash": "2126ffa4a2bd4e326ed53f975c3acf44",
     "semantic_hash": ""
   },
   "tests/e2e/mesaj.spec.ts": {
-    "mtime": 1791767710.5492294,
-    "seen": 1791768098.862207,
-    "ast_hash": "dddca3ed79d18cddc7a34a9ebcdb5668",
+    "mtime": 1791791385.1158497,
+    "seen": 1791792147.5601358,
+    "ast_hash": "2967c1741e48ebe21a9e321cd78fe504",
     "semantic_hash": ""
   },
   "tests/integration/mesaj-db.test.ts": {
-    "mtime": 1791765016.3408,
-    "seen": 1791768098.862328,
-    "ast_hash": "a75a902642129b5b773f9156eb22f036",
+    "mtime": 1791787533.3785946,
+    "seen": 1791792147.560441,
+    "ast_hash": "e35d73c98cd7e033dc0d4ef6e79aaa49",
     "semantic_hash": ""
   },
   "tests/unit/mesaj.test.ts": {
-    "mtime": 1791765016.3422785,
-    "seen": 1791768098.862519,
+    "mtime": 1791787140.9600096,
+    "seen": 1791792147.560897,
     "ast_hash": "bddae8c4c6cbeccfed46ae755a7e7cad",
     "semantic_hash": ""
   }

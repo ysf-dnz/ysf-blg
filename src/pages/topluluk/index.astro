@@ -117,6 +117,11 @@ const myBooks = member
 <ToplulukLayout title="Topluluk" description="Okuyan üyelerin akışı — beğeni alan puan kazanır.">
   <div class="grid gap-8 lg:grid-cols-[1fr_300px]">
     <div>
+      {Astro.url.searchParams.get("hata") === "hiz" && (
+        <p class="menu-pop mb-4 rounded-2xl border border-accent bg-accent-soft p-3 text-center text-sm text-ink" role="alert" data-hiz-bandi>
+          Çok hızlısın — 30 saniye sonra yeniden dene.
+        </p>
+      )}
       {
         member ? (
           <form method="post" action="/api/uye/feed" class="rounded-2xl border border-line bg-surface-raised p-4">

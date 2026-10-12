@@ -12,7 +12,8 @@ export const prerender = false;
 
 const member = await getOrCreateMember(Astro);
 if (!member) return Astro.redirect("/");
-const kaydedildi = Astro.url.searchParams.get("durum") === "ok";
+const durum = Astro.url.searchParams.get("durum");
+const kaydedildi = durum === "ok" || durum === "gizlilik";
 const ilListesi = ILLER;
 const dmPolitika = member.dmPolicy ?? "mutual";
 const DM_SECENEKLERI = [
@@ -43,7 +44,7 @@ const PLATFORMLAR = [
     {
       kaydedildi && (
         <div class="menu-pop mb-6 rounded-2xl border border-accent bg-accent-soft p-4 text-center text-sm text-ink">
-          Profilin güncellendi ✓{" "}
+          {durum === "gizlilik" ? "Harita ve mesaj ayarların kaydedildi ✓" : "Profilin güncellendi ✓"}{" "}
           {member.mapVisibleAt ? (
             <>Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> üyelere görünüyorsun.</>
           ) : (
@@ -108,16 +109,24 @@ const PLATFORMLAR = [
         }
       </fieldset>
 
+      <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
+        Kaydet
+      </button>
+    </form>
+
+    {/* Ayrı form: profil alanlarını kaydetmek rızayı / mesaj ayarını değiştirmez (ve tersi) */}
+    <form method="post" action="/api/uye/profil" id="gizlilik" class="mt-8 grid scroll-mt-24 gap-4" data-gizlilik-formu>
+      <input type="hidden" name="action" value="gizlilik" />
       <fieldset class="grid gap-4 rounded-2xl border border-line bg-surface-raised p-4">
         <legend class="px-1 text-sm font-medium text-ink">🗺️ Harita ve mesaj</legend>
         <label class="flex items-start gap-3 text-sm text-ink">
-          <input type="checkbox" name="mapVisible" value="1" checked={!!member.mapVisibleAt} class="mt-1 size-4 accent-[var(--accent)]" />
+          <input type="checkbox" name="mapVisible" value="1" checked={!!member.mapVisibleAt} disabled={!member.city} class="mt-1 size-4 accent-[var(--accent)]" />
           <span>
             <strong>Haritada görün.</strong>
             <span class="text-ink-muted">
               Onaylıyorum: adım, profil fotoğrafım ve seviyem, seçtiğim şehirde (yalnız il düzeyinde) haritada
               giriş yapmış üyelere gösterilsin; topluluk, kurs ve takip filtrelerinde yer alayım. Bu kutuyu
-              kaldırdığım an haritadan çıkarım. Şehir seçili değilse haritada görünmem. (Şehrin profilinde ve
+              kaldırdığım an haritadan çıkarım.{!member.city && <strong class="text-ink"> Önce yukarıdan şehrini seçip kaydet.</strong>} (Şehrin profilinde ve
               üye listesinde bu kutudan bağımsız olarak görünür.)
             </span>
           </span>
@@ -130,9 +139,10 @@ const PLATFORMLAR = [
           <span class="text-xs text-ink-muted">Seni rahatsız eden birini profilinden ya da konuşmadan engelleyebilirsin.</span>
         </label>
       </fieldset>
-      <button class="cursor-pointer justify-self-start rounded-full bg-accent px-6 py-2.5 font-medium text-surface transition-transform hover:scale-105 active:scale-[0.97]">
-        Kaydet
+      <button class="cursor-pointer justify-self-start rounded-full border border-accent px-6 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-surface">
+        Ayarları kaydet
       </button>
+      <p class="-mt-2 text-xs text-ink-muted">Bu bölüm ayrı kaydedilir: yukarıdaki profil alanlarında kaydetmediğin değişiklik varsa önce onu kaydet.</p>
     </form>
   </div>
 </Base>

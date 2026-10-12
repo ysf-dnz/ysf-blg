@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { belgeGezintisiMi, kullaniciGezintisiMi } from "@/lib/urls.ts";
+import { belgeGezintisiMi, guvenliYol, kullaniciGezintisiMi, yolaParametreEkle } from "@/lib/urls.ts";
 
 const istek = (basliklar: Record<string, string>) => new Request("https://yusufdeniz.com/x", { headers: basliklar });
 
@@ -48,3 +48,30 @@ describe("GET durum değiştirmez — bekçi (her koşumda; e2e kanıtı yalnız
     expect(readFileSync("src/pages/uye/index.astro", "utf8")).not.toMatch(/update\(\s*schema\.notifications\s*\)/);
   });
 });
+
+describe("dönüş adresine bayrak eklemek site dışına çıkaramaz (açık yönlendirme)", () => {
+  it.each([
+    ["/topluluk", "/topluluk?hata=hiz"],
+    ["/kurslar/x?b=1#soru-cevap", "/kurslar/x?b=1&hata=hiz#soru-cevap"],
+    ["/topluluk#g-5", "/topluluk?hata=hiz#g-5"],
+    // Nokta-segmentli yol YENİDEN YAZILMAZ: URL ile ayrıştırıp pathname basmak bunları //kotu.example yapardı
+    ["/.//kotu.example", "/.//kotu.example?hata=hiz"],
+    ["/..//kotu.example/a", "/..//kotu.example/a?hata=hiz"],
+    ["/%2e%2e//kotu.example", "/%2e%2e//kotu.example?hata=hiz"],
+  ])("%s → %s", (yol, beklenen) => {
+    const sonuc = yolaParametreEkle(yol, "hata", "hiz");
+    expect(sonuc).toBe(beklenen);
+    expect(sonuc).toMatch(/^\/(?![\/\\])/); // tek eğik çizgiyle başlar: tarayıcıda site içinde kalır
+    expect(new URL(sonuc, "https://yusufdeniz.com").host).toBe("yusufdeniz.com");
+  });
+  it("guvenliYol çift eğik çizgi ve ters eğik çizgiyle başlayanı zaten reddeder", () => {
+    const form = (next: string) => {
+      const f = new FormData();
+      f.set("next", next);
+      return f;
+    };
+    for (const kotu of ["//kotu.example", "/\\kotu.example", "https://kotu.example", "kotu"]) expect(guvenliYol(form(kotu), "/x")).toBe("/x");
+    expect(guvenliYol(form("/kurslar/a?b=1#c"), "/x")).toBe("/kurslar/a?b=1#c");
+  });
+});
+

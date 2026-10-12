@@ -79,10 +79,15 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     // Yoklama (12 sn): konuşma açıkken gelen mesaj yenilemeden görünür, şikâyet düğmesiyle birlikte,
     // ve okundu yazılır
     const gelen = `e2e gelen ${Date.now()}`;
+    await expect(balon.locator("[data-zaman]")).not.toContainText("Görüldü");
     await db()`insert into messages (sender_id, recipient_id, body) select e.id, ${await benimId()}, ${gelen} from users e where e.handle = ${ELIF}`;
+    // Karşı taraf mesajımı okudu (demo üye giriş yapamaz → doğrudan DB): "Görüldü" yenilemeden görünür
+    const benimMesajId = Number(await balon.getAttribute("data-mesaj"));
+    await db()`update messages set read_at = now() where id = ${benimMesajId}`;
     const gelenBalon = page.locator('#mesajlar [data-mesaj][data-benden="0"]', { hasText: gelen });
     await expect(gelenBalon).toHaveCount(1, { timeout: 25_000 });
     await expect(gelenBalon.locator("[data-mesaj-sikayet]")).toBeVisible();
+    await expect(balon.locator("[data-zaman]")).toContainText("Görüldü");
 
     // Okundu yazıldı: gelen kutusunda rozet yok, en üstte bu konuşma
     await page.goto("/uye/mesajlar", { waitUntil: "domcontentloaded" });
@@ -93,7 +98,9 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     // Yoklama ucu: imleçten sonrası boş, önbelleksiz; başka üyenin konuşması okunamaz
     const son = await page.request.get(`/api/uye/mesaj?kisi=${ELIF}&since=999999999`);
     expect(son.headers()["cache-control"]).toContain("no-store");
-    expect(await son.json()).toEqual({ mesajlar: [] });
+    const govde = await son.json();
+    expect(govde.mesajlar).toEqual([]);
+    expect(govde.gorulenSon).toBe(benimMesajId); // karşı tarafın okuduğu en yeni mesajım (bu koşumda yazılan)
     expect((await page.request.get("/api/uye/mesaj?kisi=olmayan-uye-xyz")).status()).toBe(404);
   });
 
@@ -120,6 +127,36 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect((await page.request.post("/api/uye/bildirim", { form: { son: "abc" } })).status()).toBe(400);
   });
 
+  test("akış hız freni: 30 sn içinde ikinci gönderi düz metin (→ 404) değil, geldiği sayfada bant", async ({ page }) => {
+    // Ön koşul: az önce yazılmış bir gönderi (canlı akışı kirletmemek için doğrudan yazılır ve silinir)
+    const ben = await benimId();
+    const artikSil = () => db()`delete from feed_posts where user_id = ${ben} and body like 'e2e ikinci%'`;
+    await artikSil(); // önceki kırmızı koşumdan kalan (fren tetiklenmediyse yazılmış) gönderi testi kilitlemesin
+    const [satir] = await db()`insert into feed_posts (user_id, body, category) values (${ben}, 'e2e hız freni ön koşulu', 'ilerleme') returning id`;
+    try {
+      const r = await page.request.post("/api/uye/feed", { form: { action: "post", body: "e2e ikinci gönderi (yazılmamalı)" }, maxRedirects: 0 });
+      expect(r.status()).toBe(302);
+      expect(r.headers()["location"]).toBe("/topluluk?hata=hiz");
+      // Kurs sayfasından gelen yorumda dönüş adresi ve hash korunur
+      const y = await page.request.post("/api/uye/feed", { form: { action: "comment", body: "x", next: "/kurslar/sifirdan-go-learning-go-yol-haritasi-demo?b=1#soru" }, maxRedirects: 0 });
+      expect(y.headers()["location"]).toBe("/kurslar/sifirdan-go-learning-go-yol-haritasi-demo?b=1&hata=hiz#soru");
+      await page.goto("/topluluk?hata=hiz", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("[data-hiz-bandi]")).toContainText("Çok hızlısın");
+      expect((await db()`select count(*)::int n from feed_posts where user_id = ${ben} and body like 'e2e ikinci%'`)[0]!.n).toBe(0);
+      // Kurs sayfası: hata bandı kutlama bandından ÖNCE gelir ve formların dönüş adresine TAŞINMAZ
+      // (taşınsaydı sonraki başarılı yorumdan sonra da "çok hızlısın" çıkardı)
+      await page.goto("/kurslar/sifirdan-go-learning-go-yol-haritasi-demo?b=1&katildin=1&hata=hiz&sikayet=1", { waitUntil: "domcontentloaded" });
+      await expect(page.getByText("Çok hızlısın — 30 saniye sonra yeniden dene.")).toBeVisible();
+      const donusler = await page.locator('main input[name="next"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+      expect(donusler.length).toBeGreaterThan(0);
+      for (const d of donusler) expect(d).not.toMatch(/[?&](hata|sikayet|katildin|davet|yayin|onay)=/);
+      expect(donusler.some((d) => d.includes("?b=1"))).toBe(true); // kalıcı parametre (öğe sırası) korunur
+    } finally {
+      await db()`delete from feed_posts where id = ${satir!.id}`;
+      await artikSil();
+    }
+  });
+
   test("AC-23: bağı olmayan üyeye yeni konuşma başlatılamaz; ayarı 'kimse' olana da — form yok, uç reddeder", async ({ page }) => {
     await page.goto(`/uye/mesajlar/${CAN}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-mesaj-kapali]")).toContainText("yalnız ortak topluluğu olan ya da karşılıklı takipleştiği üyelerden mesaj alıyor");
@@ -140,6 +177,9 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   });
 
   test("AC-22 + AC-21: engelleyene mesaj atılamaz, Mesaj düğmesi yok, haritada görünmez; rızasız üye haritada yok; filtre", async ({ page }) => {
+    // Yarıda kesilmiş bir önceki koşumdan (F4-04 testi zaman aşımına uğradıysa) kalmış engel bu testin
+    // harita beklentisini bozmasın: test üyesinin Ayşe engeli varsa kaldır (idempotent)
+    await page.request.post("/api/uye/mesaj", { form: { action: "engel-kaldir", kisi: AYSE }, maxRedirects: 0 });
     // Zeynep test üyesini engelledi (global-setup): düğme yok, form yok, uç reddeder — ama engel
     // SÖYLENMEZ: düğmenin yokluğu, metin, adres ve durum kodu "kimse" ayarlı Mehmet'inkiyle birebir aynı
     await page.goto(`/u/${MEHMET}`, { waitUntil: "domcontentloaded" });
@@ -257,13 +297,18 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   });
 
   test("F4-02: profilde açık rıza → haritada kendini görür; rızayı kaldırınca çıkar (varsayılan kapalı)", async ({ page }) => {
+    // Profil alanları ve gizlilik ayarları AYRI formdur: önce şehir, sonra rıza
     const kaydet = async (gorun: boolean) => {
       await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
       await page.locator('select[name="city"]').selectOption(gorun ? "Ardahan" : "");
-      await page.locator('input[name="mapVisible"]').setChecked(gorun);
-      await page.getByRole("button", { name: "Kaydet" }).click();
+      await page.getByRole("button", { name: "Kaydet", exact: true }).click();
       await expect(page).toHaveURL(/durum=ok/);
+      if (!gorun) return; // şehir boşalınca rıza da kalkar
+      await page.locator('input[name="mapVisible"]').check();
+      await page.getByRole("button", { name: "Ayarları kaydet" }).click();
+      await expect(page).toHaveURL(/durum=gizlilik/);
     };
+    const profilAlanlari = { city: "Ardahan", university: "", bio: "" };
     try {
       await kaydet(true);
       await expect(page.locator('input[name="mapVisible"]')).toBeChecked();
@@ -271,6 +316,23 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
       const acik = await haritaVerisi(page);
       expect(acik.pinler.find((p) => p.il === "Ardahan")?.uyeler.map((u) => u.h)).toContain(acik.bakan);
       await expect(page.locator("[data-harita-gorunen]")).not.toContainText("Sen görünmüyorsun");
+      // Bayat sekme: profil alanlarını (rıza/mesaj ayarı alanı OLMAYAN form) kaydetmek rızayı değiştirmez
+      expect((await page.request.post("/api/uye/profil", { form: profilAlanlari, maxRedirects: 0 })).status()).toBe(302);
+      expect((await haritaVerisi(page)).handlelar).toContain(acik.bakan);
+      // Dağıtım öncesi açık kalmış TEK formlu sekme (dmPolicy alanı da var, kutu boş): rıza geri çekilir
+      expect((await page.request.post("/api/uye/profil", { form: { ...profilAlanlari, dmPolicy: "mutual" }, maxRedirects: 0 })).status()).toBe(302);
+      expect((await haritaVerisi(page)).handlelar).not.toContain(acik.bakan);
+      // …ama o form rızayı AÇAMAZ (kutu işaretli gelse de): açma yalnız gizlilik formundan
+      await page.request.post("/api/uye/profil", { form: { ...profilAlanlari, dmPolicy: "mutual", mapVisible: "1" }, maxRedirects: 0 });
+      expect((await haritaVerisi(page)).handlelar).not.toContain(acik.bakan);
+      await page.request.post("/api/uye/profil", { form: { action: "gizlilik", mapVisible: "1", dmPolicy: "mutual" }, maxRedirects: 0 });
+      expect((await haritaVerisi(page)).handlelar).toContain(acik.bakan);
+      // Gizlilik formu da profil alanlarına dokunmaz: rızayı kaldır → şehir yerinde
+      expect((await page.request.post("/api/uye/profil", { form: { action: "gizlilik", dmPolicy: "mutual" }, maxRedirects: 0 })).status()).toBe(302);
+      await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
+      await expect(page.locator('select[name="city"]')).toHaveValue("Ardahan");
+      await expect(page.locator('input[name="mapVisible"]')).not.toBeChecked();
+      expect((await haritaVerisi(page)).handlelar).not.toContain(acik.bakan);
     } finally {
       await kaydet(false); // test üyesi canlı haritada kalmasın
     }
@@ -278,11 +340,12 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     const kapali = await haritaVerisi(page);
     expect(kapali.handlelar).not.toContain(kapali.bakan);
     await expect(page.locator("[data-harita-gorunen]")).toContainText("Sen görünmüyorsun");
-    // Şehir yokken rıza kutusu tek başına görünür yapmaz
+    // Şehir yokken rıza tek başına görünür yapmaz: kutu kapalı, uç da yazmaz
     await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
-    await page.locator('input[name="mapVisible"]').check();
-    await page.getByRole("button", { name: "Kaydet" }).click();
-    await expect(page).toHaveURL(/durum=ok/);
+    await expect(page.locator('input[name="mapVisible"]')).toBeDisabled();
+    await page.request.post("/api/uye/profil", { form: { action: "gizlilik", mapVisible: "1", dmPolicy: "mutual" }, maxRedirects: 0 });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator('input[name="mapVisible"]')).not.toBeChecked();
+    expect((await haritaVerisi(page)).handlelar).not.toContain(kapali.bakan);
   });
 });

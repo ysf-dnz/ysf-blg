@@ -218,7 +218,7 @@ const veri = { pinler, bakan: member?.handle ?? null, filtreli };
   import sinirlar from "@/data/il-sinirlari.json";
 
   type Kulup = { slug: string; name: string; members: number };
-  type Uye = { h: string; ad: string; av: string | null; sv: number };
+  type Uye = { h: string; ad: string; av: string | null; sv: number; ortak?: string[] };
   type Etkinlik = { yol: string; ad: string; zaman: string };
   type Pin = { il: string; lat: number; lon: number; uye: number; kulupler: Kulup[]; uyeler: Uye[]; gorunen: number; etkinlikler: Etkinlik[] };
   type Veri = { pinler: Pin[]; bakan: string | null; filtreli: boolean };
@@ -277,6 +277,9 @@ const veri = { pinler, bakan: member?.handle ?? null, filtreli };
         if (bakan && u.h !== bakan)
           satir.append(baglanti(`/uye/mesajlar/${encodeURIComponent(u.h)}`, "shrink-0 rounded-full border border-line px-2 py-0.5 text-xs text-accent hover:border-accent", "Mesaj"));
         izgara.append(satir);
+        // Bakanla ortak topluluk / kurs (yalnız bakanın kendi üyeliklerinden; metin textContent)
+        // div: Leaflet'in `.leaflet-popup-content p { margin }` kuralı p'yi üyeler arasında yüzdürürdü
+        if (u.ortak?.length) izgara.append(el("div", "-mt-1 break-words pl-9 text-xs text-ink-muted", `Ortak: ${u.ortak.join(" · ")}`));
       }
       kap.append(izgara);
       if (p.gorunen > p.uyeler.length) kap.append(el("p", "mt-1 text-xs text-ink-muted", `+${p.gorunen - p.uyeler.length} üye daha`));

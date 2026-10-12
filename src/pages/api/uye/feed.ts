@@ -9,7 +9,7 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
 import { R } from "@/lib/routes.ts";
-import { guvenliYol } from "@/lib/urls.ts";
+import { guvenliYol, yolaParametreEkle } from "@/lib/urls.ts";
 
 /** Basit hız sınırı: aynı üyeden son 30 sn'de gönderi/yorum varsa reddet. */
 async function sonSaniyelerdeVarMi(userId: number): Promise<boolean> {
@@ -37,9 +37,9 @@ export const POST: APIRoute = async (context) => {
 
   if (action === "post" || action === "comment") {
     if (await sonSaniyelerdeVarMi(member.id)) {
-      return new Response("Çok hızlısın — 30 saniye sonra tekrar dene.", {
-        status: 429,
-      });
+      // Düz metin 429 DEĞİL: ClientRouter HTML olmayan yanıtta aksiyon adresine GET atar → kullanıcı
+      // "çok hızlısın" yerine 404 görüyordu. Geldiği sayfaya ?hata=hiz bandıyla döner (hash korunur).
+      return context.redirect(yolaParametreEkle(guvenliYol(form, "/topluluk"), "hata", "hiz"));
     }
   }
 

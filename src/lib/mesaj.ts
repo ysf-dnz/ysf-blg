@@ -218,6 +218,16 @@ export async function okunduYaz(benId: number, kisiId: number, sonId?: number): 
   return rows.length;
 }
 
+/** Benim bu kişiye yazdıklarımdan OKUNMUŞ en yeni mesajın id'si (yoksa 0) — canlı "Görüldü" için yoklamada döner */
+export async function gorulenSon(benId: number, kisiId: number): Promise<number> {
+  const m = schema.messages;
+  const [r] = await db
+    .select({ id: sql<number>`coalesce(max(${m.id}), 0)` })
+    .from(m)
+    .where(and(eq(m.senderId, benId), eq(m.recipientId, kisiId), sql`${m.readAt} is not null`));
+  return Number(r?.id ?? 0);
+}
+
 /** Okunmamış mesaj toplamı (BildirimZili; messages_recipient_read_idx) */
 export async function okunmamisMesaj(benId: number): Promise<number> {
   const [r] = await db

@@ -255,6 +255,11 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
     expect(tumu.map((m) => m.body)).toEqual(["y1", "ben→y"]); // eskiden yeniye
     expect((await ms.konusma(ben.id, y.id, { sonraId: tumu[0]!.id })).map((m) => m.body)).toEqual(["ben→y"]);
     expect(await ms.konusma(x.id, y.id)).toEqual([]); // üçüncü kişi konuşmayı göremez
+    // Canlı "Görüldü": karşı taraf okuyana kadar 0, okuyunca benim okunan son mesajımın id'si
+    expect(await ms.gorulenSon(ben.id, y.id)).toBe(0);
+    expect(await ms.okunduYaz(y.id, ben.id)).toBe(1);
+    expect(await ms.gorulenSon(ben.id, y.id)).toBe(tumu[1]!.id);
+    expect(await ms.gorulenSon(y.id, ben.id)).toBe(0); // y'nin mesajını ben henüz okumadım
     expect((await ms.konusma(ben.id, y.id, { onceId: tumu[1]!.id })).map((m) => m.body)).toEqual(["y1"]); // geçmiş sayfası
   });
 
@@ -343,5 +348,24 @@ describe.skipIf(!URL)("mesaj / engel / harita — gerçek DB", { timeout: 180_00
     await takip(bakan.id, gorunen.id);
     await takip(bakan.id, rizasiz.id);
     expect(await handlelar({ takip: true })).toEqual([gorunen.handle]);
+
+    // Ortak topluluk / kurs (PRD §4.6): yalnız BAKANIN kendi üyeliklerinden türer
+    const kart = async (kim = bakan.id) => (await hr.haritaUyeleri(kim)).get("Ardahan")!.uyeler.find((x) => x.h === gorunen.handle)!;
+    expect((await kart()).ortak).toBeUndefined(); // bakan k'nin üyesi değil, kursa da katılmadı
+    await db.insert(schema.clubMembers).values({ clubId: k.id, userId: bakan.id });
+    await db.insert(schema.courseEnrollments).values({ courseId: kurs!.id, userId: bakan.id });
+    expect((await kart()).ortak).toEqual(["🏛️ Itest Mesaj Kulübü", "🎓 Itest Kurs"]);
+    expect((await kart(ilsiz.id)).ortak).toBeUndefined(); // başka bakana bu bağlar sızmaz
+    // Onay bekleyen topluluk ortak bağ sayılmaz
+    await db.update(schema.clubs).set({ status: "pending" }).where(eq(schema.clubs.id, k.id));
+    expect((await kart()).ortak).toEqual(["🎓 Itest Kurs"]);
+
+    // Sıra rıza anına göre değil kazanılan puana göre (kutuyu kaldırıp işaretleyerek üste çıkılamaz)
+    const sira = async () => (await hr.haritaUyeleri(gorunen.id)).get("Ardahan")!.uyeler.map((x) => x.h).filter((h) => h.endsWith(t));
+    await rw.awardPoints({ userId: engellenen.id, delta: 500, reason: "welcome", refId: `itest:${t}` });
+    expect((await sira())[0]).toBe(engellenen.handle);
+    await db.update(schema.users).set({ mapVisibleAt: new Date() }).where(eq(schema.users.id, gorunen.id)); // rızayı "tazele"
+    expect((await sira())[0]).toBe(engellenen.handle);
+    expect((await hr.haritaUyeleri(gorunen.id)).get("Ardahan")!.uyeler.find((x) => x.h === engellenen.handle)!.sv).toBeGreaterThanOrEqual(5);
   });
 });
