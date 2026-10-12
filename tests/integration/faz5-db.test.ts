@@ -396,6 +396,49 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect((await ledger(g.id, "course_launched")).length).toBe(1); // çift ödeme yok
   });
 
+  it("A3 (karakterizasyon): işaretli 3. katılımcıya 'Suistimal' dense course_launched satırı süresiz pending kalır, kuyruk görmez; tek doğal çıkış 3. temiz katılımcı", async () => {
+    const [ta, tb, tx, up] = await Promise.all([uye("ta", 30), uye("tb", 30), uye("tx", 0), uye("tup", 30)]);
+    const { kurs: kt } = await kurs("takili", up.id);
+    await db.insert(schema.courseEnrollments).values([ta, tb, tx].map((k) => ({ userId: k.id, courseId: kt.id, activatedAt: new Date() })));
+    const ref = `course:${kt.id}`;
+    // Gerçek yazım yolu: 3. katılımcı genç → bekleyen (expiresAt null doğar)
+    expect(await rw.puanOlayi({ userId: up.id, delta: 50, reason: "course_launched", refId: ref, kaynakOlusturulma: tx.createdAt })).toBe(0);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, tx.id)); // ertesi sabah tarama
+    await rw.bekleyenleriIsle(new Date(Date.now() + 365 * 864e5), up.id);
+    expect((await ledger(up.id, "course_launched", ref)).length).toBe(0); // tutma çalışıyor: işaretsiz aktif 2 < 3
+    expect((await ek.isaretliHesaplar()).find((r) => r.id === tx.id)).toMatchObject({ tutulan: 0 }); // kuyruk satırı görmez (refId'de u: yok)
+    expect(await ek.bekleyenleriDusur(tx.id)).toBe(0); // admin "Suistimal" satıra dokunmaz
+    expect(
+      await db.query.pendingPoints.findFirst({ where: and(eq(schema.pendingPoints.userId, up.id), eq(schema.pendingPoints.reason, "course_launched"), eq(schema.pendingPoints.refId, ref)) }),
+    ).toMatchObject({ status: "pending", expiresAt: null }); // bir yıl sonraki işlemeden sonra da pending: süresiz
+    // Tek doğal çıkış: 3. temiz katılımcı aktive olur → sayı 3'e çıkar, satır kesinleşir
+    const td = await uye("td", 30);
+    await db.insert(schema.courseEnrollments).values({ userId: td.id, courseId: kt.id, activatedAt: new Date() });
+    // matures_at = genç hesabın açılışı + 24 s: olgunlaşma da gerekir (devir tarifindeki `new Date()` erken — bir gün sonra)
+    await rw.bekleyenleriIsle(new Date(Date.now() + 2 * 864e5), up.id);
+    expect((await ledger(up.id, "course_launched", ref)).map((r) => r.delta)).toEqual([50]);
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, tx.id));
+  });
+  it.todo("A3 karar (#42): 'Suistimal' sonrası takılı course_launched satırının akıbeti — düşür + genç aktivasyonda yeniden aç, ya da etiket; ikisi de mevcut kuralla çarpışıyor (devir §2.5)");
+
+  it("A1 (karakterizasyon): 'Temiz' sonrası toplu kesinleşme kesinleşme ANININ günlük tavanına sıkışır — 3 × 50 tutulan → 100 yazılır, bir satır confirmed / yazilan 0", async () => {
+    const [p, s] = await Promise.all([uye("tp", 30), uye("ts", 30)]);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, s.id));
+    // Üç ayrı günün olayı (her biri tek başına günlük 100'ün altında): işaretli kaynak → tutulur
+    for (const i of [1, 2, 3])
+      expect(
+        await rw.puanOlayi({ userId: p.id, delta: 50, reason: "course_learner_completed", refId: `course:${900000 + i}:u:${s.id}`, kaynakOlusturulma: s.createdAt, kaynakIsaretli: true }),
+      ).toBe(0);
+    expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 0 });
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, s.id)); // admin "Temiz"
+    expect(await rw.bekleyenleriIsle(new Date(), p.id)).toMatchObject({ kesinlesen: 3 });
+    const satirlar = await db.query.pendingPoints.findMany({ where: and(eq(schema.pendingPoints.userId, p.id), eq(schema.pendingPoints.reason, "course_learner_completed")) });
+    expect(satirlar.map((r) => r.status)).toEqual(["confirmed", "confirmed", "confirmed"]);
+    expect(satirlar.map((r) => r.yazilan).sort()).toEqual([0, 50, 50]); // üçüncü satır tavana takıldı, puansız kapandı
+    expect((await ledger(p.id, "course_learner_completed")).reduce((t, r) => t + r.delta, 0)).toBe(100); // işaret olmasaydı 150
+  });
+  it.todo("A1 karar (#42): tutulan satır tavana takılınca pending kalsın mı / pencere olay tarihinden mi kurulsun — ADR K2 'kırpılan geri kazanılmaz' ve etkinlik-db:463-472 ile çarpışır (devir §2.1–2.2)");
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {
