@@ -188,7 +188,7 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect(vakif.handlelar).toContain(ELIF);
     expect(vakif.handlelar).not.toContain(ZEYNEP);
     expect(vakif.handlelar).not.toContain(AYSE); // vakıf üyesi değil: filtre gerçekten süzüyor
-    expect(await page.locator(".harita-rozet-filtre").count()).toBeGreaterThanOrEqual(1);
+    await expect(page.locator(".harita-rozet-filtre").first()).toBeVisible(); // rozetler sayfa yüklenince çizilir: bekle
     await expect(page.locator("[data-harita-gorunen]")).toContainText(/Filtreye uyan \d+ üye/);
     // ODTÜ kulübü: Ayşe, Elif, Mehmet, Can üye — yalnız rızalı ikisi
     const odtu = (await haritaVerisi(page, "/harita?topluluk=odtu-yz-okuma-demo")).handlelar;
