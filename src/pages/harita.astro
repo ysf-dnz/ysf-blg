@@ -278,7 +278,8 @@ const veri = { pinler, bakan: member?.handle ?? null, filtreli };
           satir.append(baglanti(`/uye/mesajlar/${encodeURIComponent(u.h)}`, "shrink-0 rounded-full border border-line px-2 py-0.5 text-xs text-accent hover:border-accent", "Mesaj"));
         izgara.append(satir);
         // Bakanla ortak topluluk / kurs (yalnız bakanın kendi üyeliklerinden; metin textContent)
-        if (u.ortak?.length) izgara.append(el("p", "-mt-1 truncate pl-9 text-xs text-ink-muted", `Ortak: ${u.ortak.join(" · ")}`));
+        // div: Leaflet'in `.leaflet-popup-content p { margin }` kuralı p'yi üyeler arasında yüzdürürdü
+        if (u.ortak?.length) izgara.append(el("div", "-mt-1 break-words pl-9 text-xs text-ink-muted", `Ortak: ${u.ortak.join(" · ")}`));
       }
       kap.append(izgara);
       if (p.gorunen > p.uyeler.length) kap.append(el("p", "mt-1 text-xs text-ink-muted", `+${p.gorunen - p.uyeler.length} üye daha`));

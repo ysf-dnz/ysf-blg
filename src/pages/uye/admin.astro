@@ -100,7 +100,7 @@ const sikayetliUyeler = new Map(
   ).map((u) => [u.id, u]),
 );
 const SIKAYET_TURU: Record<string, string> = { course: "Kurs", comment: "Yorum", user: "Üye", message: "Mesaj" };
-// Faz 4 ölçümleri (PRD §8: "haritada görünme oranı, mesaj şikâyetleri") — tek sorgu
+// Faz 4 ölçümleri (PRD §8: "haritada görünme oranı, mesaj şikâyetleri")
 const [olcum] = await db
   .select({
     konumlu: sql<number>`count(*) filter (where ${schema.users.city} is not null)`,
@@ -113,7 +113,12 @@ const [mesajOlcum] = await db
     yazan: sql<number>`count(distinct ${schema.messages.senderId}) filter (where ${schema.messages.createdAt} > now() - interval '7 days')`,
   })
   .from(schema.messages);
-const kisiselSikayet = acikSikayetler.filter((r) => r.targetType === "user" || r.targetType === "message").length;
+// Kuyruk listesinin 200'lük penceresinden değil DB'den: pencere dolunca eksik sayardı
+const [sikayetOlcum] = await db
+  .select({ n: sql<number>`count(*) filter (where ${schema.reports.targetType} in ('user', 'message'))` })
+  .from(schema.reports)
+  .where(eq(schema.reports.status, "open"));
+const kisiselSikayet = Number(sikayetOlcum?.n ?? 0);
 const pendingApps = await db.query.applications.findMany({
   where: eq(schema.applications.status, "pending"),
   orderBy: desc(schema.applications.createdAt),

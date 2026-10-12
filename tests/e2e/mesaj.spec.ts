@@ -82,7 +82,8 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     await expect(balon.locator("[data-zaman]")).not.toContainText("Görüldü");
     await db()`insert into messages (sender_id, recipient_id, body) select e.id, ${await benimId()}, ${gelen} from users e where e.handle = ${ELIF}`;
     // Karşı taraf mesajımı okudu (demo üye giriş yapamaz → doğrudan DB): "Görüldü" yenilemeden görünür
-    await db()`update messages set read_at = now() where id = ${Number(await balon.getAttribute("data-mesaj"))}`;
+    const benimMesajId = Number(await balon.getAttribute("data-mesaj"));
+    await db()`update messages set read_at = now() where id = ${benimMesajId}`;
     const gelenBalon = page.locator('#mesajlar [data-mesaj][data-benden="0"]', { hasText: gelen });
     await expect(gelenBalon).toHaveCount(1, { timeout: 25_000 });
     await expect(gelenBalon.locator("[data-mesaj-sikayet]")).toBeVisible();
@@ -99,7 +100,7 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect(son.headers()["cache-control"]).toContain("no-store");
     const govde = await son.json();
     expect(govde.mesajlar).toEqual([]);
-    expect(govde.gorulenSon).toBeGreaterThan(0); // az önce "okundu" yazılan mesajım
+    expect(govde.gorulenSon).toBe(benimMesajId); // karşı tarafın okuduğu en yeni mesajım (bu koşumda yazılan)
     expect((await page.request.get("/api/uye/mesaj?kisi=olmayan-uye-xyz")).status()).toBe(404);
   });
 
@@ -129,6 +130,8 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   test("akış hız freni: 30 sn içinde ikinci gönderi düz metin (→ 404) değil, geldiği sayfada bant", async ({ page }) => {
     // Ön koşul: az önce yazılmış bir gönderi (canlı akışı kirletmemek için doğrudan yazılır ve silinir)
     const ben = await benimId();
+    const artikSil = () => db()`delete from feed_posts where user_id = ${ben} and body like 'e2e ikinci%'`;
+    await artikSil(); // önceki kırmızı koşumdan kalan (fren tetiklenmediyse yazılmış) gönderi testi kilitlemesin
     const [satir] = await db()`insert into feed_posts (user_id, body, category) values (${ben}, 'e2e hız freni ön koşulu', 'ilerleme') returning id`;
     try {
       const r = await page.request.post("/api/uye/feed", { form: { action: "post", body: "e2e ikinci gönderi (yazılmamalı)" }, maxRedirects: 0 });
@@ -140,8 +143,16 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
       await page.goto("/topluluk?hata=hiz", { waitUntil: "domcontentloaded" });
       await expect(page.locator("[data-hiz-bandi]")).toContainText("Çok hızlısın");
       expect((await db()`select count(*)::int n from feed_posts where user_id = ${ben} and body like 'e2e ikinci%'`)[0]!.n).toBe(0);
+      // Kurs sayfası: hata bandı kutlama bandından ÖNCE gelir ve formların dönüş adresine TAŞINMAZ
+      // (taşınsaydı sonraki başarılı yorumdan sonra da "çok hızlısın" çıkardı)
+      await page.goto("/kurslar/sifirdan-go-learning-go-yol-haritasi-demo?b=1&katildin=1&hata=hiz&sikayet=1", { waitUntil: "domcontentloaded" });
+      await expect(page.getByText("Çok hızlısın — 30 saniye sonra yeniden dene.")).toBeVisible();
+      const donusler = await page.locator('main input[name="next"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+      expect(donusler.length).toBeGreaterThan(0);
+      for (const d of donusler) expect(d).toMatch(/^\/kurslar\/sifirdan-go-learning-go-yol-haritasi-demo\?b=1(#|$)/);
     } finally {
       await db()`delete from feed_posts where id = ${satir!.id}`;
+      await artikSil();
     }
   });
 
@@ -303,6 +314,14 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
       await expect(page.locator("[data-harita-gorunen]")).not.toContainText("Sen görünmüyorsun");
       // Bayat sekme: profil alanlarını (rıza/mesaj ayarı alanı OLMAYAN form) kaydetmek rızayı değiştirmez
       expect((await page.request.post("/api/uye/profil", { form: profilAlanlari, maxRedirects: 0 })).status()).toBe(302);
+      expect((await haritaVerisi(page)).handlelar).toContain(acik.bakan);
+      // Dağıtım öncesi açık kalmış TEK formlu sekme (dmPolicy alanı da var, kutu boş): rıza geri çekilir
+      expect((await page.request.post("/api/uye/profil", { form: { ...profilAlanlari, dmPolicy: "mutual" }, maxRedirects: 0 })).status()).toBe(302);
+      expect((await haritaVerisi(page)).handlelar).not.toContain(acik.bakan);
+      // …ama o form rızayı AÇAMAZ (kutu işaretli gelse de): açma yalnız gizlilik formundan
+      await page.request.post("/api/uye/profil", { form: { ...profilAlanlari, dmPolicy: "mutual", mapVisible: "1" }, maxRedirects: 0 });
+      expect((await haritaVerisi(page)).handlelar).not.toContain(acik.bakan);
+      await page.request.post("/api/uye/profil", { form: { action: "gizlilik", mapVisible: "1", dmPolicy: "mutual" }, maxRedirects: 0 });
       expect((await haritaVerisi(page)).handlelar).toContain(acik.bakan);
       // Gizlilik formu da profil alanlarına dokunmaz: rızayı kaldır → şehir yerinde
       expect((await page.request.post("/api/uye/profil", { form: { action: "gizlilik", dmPolicy: "mutual" }, maxRedirects: 0 })).status()).toBe(302);

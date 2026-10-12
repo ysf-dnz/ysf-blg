@@ -92,7 +92,9 @@ export async function haritaUyeleri(
       ),
     )
     .orderBy(asc(u.id))
-    .limit(2000); // shortcut: 2000'den çok görünen üyede il toplamları eksik sayılır; o ölçekte il başına sorguya geçilir
+    // shortcut: 2000'den çok görünen üyede en yüksek id'liler (en yeni üyeler) puandan bağımsız düşer ve il
+    // toplamları eksik sayılır; o ölçekte il başına pencere fonksiyonlu sorguya geçilir
+    .limit(2000);
 
   const kazanilan = await getEarnedMap(rows.map((r) => r.id));
   const puan = (id: number) => kazanilan.get(id) ?? 0;

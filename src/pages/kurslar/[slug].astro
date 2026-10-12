@@ -73,7 +73,11 @@ const girisDonus = (() => {
   return `${Astro.url.pathname}?${p}`;
 })();
 
-const buSayfa = `${Astro.url.pathname}${Astro.url.search}`;
+// Formların dönüş adresi: tek seferlik bant parametreleri TAŞINMAZ — yoksa bir kez "çok hızlısın" /
+// "şikâyetin alındı" / "kursa katıldın" görülen sayfada sonraki her (başarılı) işlemden sonra aynı bant çıkar
+const kalici = new URLSearchParams(Astro.url.search);
+for (const tekSefer of ["hata", "sikayet", "katildin", "davet", "yayin", "onay"]) kalici.delete(tekSefer);
+const buSayfa = `${Astro.url.pathname}${kalici.size ? `?${kalici}` : ""}`;
 const items = await db.query.courseItems.findMany({
   where: eq(schema.courseItems.courseId, course.id),
   orderBy: asc(schema.courseItems.order),
@@ -217,7 +221,10 @@ const kartV = davetKodum && member ? kartSurumu({ kod: davetKodum, davetEden: me
 // Paylaşım linki: davet kodu varsa /d/, yoksa platform daveti (?ref)
 const paylasimLinki = davetLinki ?? `${kok}${R.kurs(course.slug)}${member ? `?ref=${member.handle}` : ""}`;
 
-const bant = Astro.url.searchParams.has("davet")
+// Hata bandı kutlamalardan ÖNCE: frene takılan yorum "kursa katıldın" bandının arkasında sessizce kaybolmasın
+const bant = Astro.url.searchParams.get("hata") === "hiz"
+  ? "Çok hızlısın — 30 saniye sonra yeniden dene."
+  : Astro.url.searchParams.has("davet")
   ? `Davetle katıldın 🎉 İlk öğeyi bitirince sen +${PUAN.inviteWelcome}, davet eden +${PUAN.inviteActivated} kazanır; kursu bitirince +${PUAN.courseCompleted} puan.`
   : Astro.url.searchParams.has("katildin")
   ? `Kursa katıldın 🎉 İlk öğeyi bitirince kurs aktive olur; kursu bitirince +${PUAN.courseCompleted} puan.`
@@ -225,8 +232,6 @@ const bant = Astro.url.searchParams.has("davet")
     ? "Kursun yayında 🚀 Paylaş: ilk 3 katılımcı aktive olunca +50."
     : Astro.url.searchParams.has("onay")
       ? "Kursun admin onayına gitti. Onaylanınca bildirim alırsın; sayfa şimdilik yalnız sana görünür."
-      : Astro.url.searchParams.get("hata") === "hiz"
-        ? "Çok hızlısın — 30 saniye sonra yeniden dene."
       : Astro.url.searchParams.has("sikayet")
         ? Astro.url.searchParams.get("sikayet") === "hiz"
           ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene."

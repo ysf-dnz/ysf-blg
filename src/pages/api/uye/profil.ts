@@ -44,13 +44,16 @@ export const POST: APIRoute = async (context) => {
 
   // İl 81 il listesinden (harita eşleşmesi serbest metinle tutmuyordu); listede yoksa boş
   const city = ilBul(String(form.get("city") ?? ""));
+  // Eski TEK formlu sayfa (Faz 4 ilk sürümü; açık kalmış sekme) dmPolicy alanını da gönderir: o formda
+  // kaldırılan rıza sessizce yok sayılmasın. Yalnız GERİ ÇEKME yönü uygulanır (rıza bu yoldan AÇILMAZ).
+  const eskiFormdaRizaKalkti = form.has("dmPolicy") && form.get("mapVisible") !== "1";
 
   await db
     .update(schema.users)
     .set({
       city,
       // Şehir boşaldıysa haritada yer yok: rıza da kalkar. Şehir varken rızaya DOKUNULMAZ (ayrı form)
-      ...(city ? {} : { mapVisibleAt: null }),
+      ...(city && !eskiFormdaRizaKalkti ? {} : { mapVisibleAt: null }),
       university: String(form.get("university") ?? "").trim().slice(0, 80) || null,
       bio: String(form.get("bio") ?? "").trim().slice(0, 280) || null,
       socials: Object.keys(socials).length ? JSON.stringify(socials) : null,

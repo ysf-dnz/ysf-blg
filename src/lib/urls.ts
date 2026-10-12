@@ -34,6 +34,19 @@ export function kullaniciGezintisiMi(request: Request): boolean {
   return belgeGezintisiMi(request) && (!site || site === "none");
 }
 
+/**
+ * Site içi yola sorgu parametresi ekler (hash korunur). BİLİNÇLİ olarak dize işlemidir: yolu
+ * `new URL()` ile ayrıştırıp `pathname`'i yeniden yazmak nokta-segmentleri çözer —
+ * `/.//kotu.example` → `//kotu.example` olur ve Location'da BAŞKA SİTEYE yönlendirir (guvenliYol'un
+ * süzdüğü şey geri gelir). Ham yol tarayıcıda site içinde kalır.
+ */
+export function yolaParametreEkle(yol: string, ad: string, deger: string): string {
+  const kare = yol.indexOf("#");
+  const govde = kare === -1 ? yol : yol.slice(0, kare);
+  const hash = kare === -1 ? "" : yol.slice(kare);
+  return `${govde}${govde.includes("?") ? "&" : "?"}${ad}=${encodeURIComponent(deger)}${hash}`;
+}
+
 export const KUTUPHANEM_URL = "https://ysf-dnz.github.io/kutuphanem";
 
 /**
