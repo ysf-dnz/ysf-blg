@@ -3,17 +3,20 @@
  * Gizlilik ve kişisel veriler — KVKK aydınlatma TASLAĞI (Faz 5 hesap imzası incelemesi #8; merge incelemesi #17–#22).
  * Metin hukuki danışmanlık değildir; yayından önce Yusuf okur / düzeltir. Veri kalemleri KODDAN türetildi
  * (users, learning_list/book_access, points_ledger, invite_visits, events/event_rsvps/event_staff, messages, blocks,
- * reports, applications, notifications); saklama süreleri `SAKLAMA_GUN` sabitinden okunur (cron aynı sayıyı kullanır).
+ * reports, applications, notifications, club_members, ratings, invite_codes, referrals, campaign_tasks); saklama süreleri `SAKLAMA_GUN` sabitinden okunur (cron aynı sayıyı kullanır).
  * Yeni bir kişisel veri kalemi eklenirse bu tabloya da eklenir. Hesap silme akışı YOK (FK'ler) → talep elle anonimleştirilir.
+ * Canlıya çıkış karşılaştırması (2026-10-12): e-posta ve Google hesabı bağı DB'de YOK (users'ta kolon yok; e-posta girişte
+ * yalnız yönetici yetkisi için okunur — member.ts OWNER_EMAILS), Clerk'te tutulur; kulüp üyeliği/rolü, kurs değerlendirmesi,
+ * davet kodu + kart notu, davet bağı ve avatar süsü tabloya eklendi.
  */
 import Base from "@/layouts/Base.astro";
 import { SAKLAMA_GUN } from "@/lib/economy.ts";
 
 const UYELIK = "Üyelik süresince (silme talebinde elle anonimleştirilir)";
 const kalemler = [
-  ["Hesap bilgileri", "Ad, e-posta, profil görseli ve Google kimliği (Clerk üzerinden giriş); ilk girişte Clerk kaydından alınır", "Üyelik, giriş, bildirim", "Sözleşme (üyelik)", UYELIK],
-  ["Profil", "Kullanıcı adı, biyografi, sosyal bağlantılar, üniversite ve il", "Topluluk profili; il yalnız açık rızanızla üye haritasında", "Rıza / sözleşme", "Siz silene kadar"],
-  ["Topluluk içeriği", "Yazılar, yorumlar, beğeniler, takipler, quiz denemeleri, kitaplık ve açılan kitaplar, kampanya oyları, günlük seri", "Topluluk işleyişi, puan", "Sözleşme", UYELIK],
+  ["Hesap bilgileri", "Ad, profil görseli ve Clerk hesap kimliği; ilk girişte Clerk kaydından alınır. E-posta adresiniz ve Google hesabı bağınız giriş hizmeti Clerk'te tutulur, veri tabanımıza yazılmaz (e-posta girişte yalnız yönetici yetkisi için okunur)", "Üyelik, giriş, bildirim", "Sözleşme (üyelik)", UYELIK],
+  ["Profil", "Kullanıcı adı, biyografi, sosyal bağlantılar, üniversite, il ve mağazadan alınan avatar süsü", "Topluluk profili; il yalnız açık rızanızla üye haritasında", "Rıza / sözleşme", "Siz silene kadar"],
+  ["Topluluk içeriği", "Yazılar, yorumlar, beğeniler, takipler, quiz denemeleri, kitaplık ve açılan kitaplar, kampanya oyları ve üstlendiğiniz görevler, günlük seri, topluluk üyelikleriniz ve rolünüz, kurs değerlendirmeleriniz, davet kodunuz ve kart notunuz, sizi davet eden / davet ettiğiniz üye bağı", "Topluluk işleyişi, puan", "Sözleşme", UYELIK],
   ["Puan defteri", "Kazanılan / harcanan puan, bekleyen puan, seviye, rozet, kurs ilerlemesi", "Topluluk ekonomisi, liderlik ve lig sıralaması", "Sözleşme", UYELIK],
   ["Kayıt imzası", "Kayıt anındaki IP adresinin gizli anahtarla özetlenmiş kısa hash'i (ham IP saklanmaz; ziyaret kayıtlarıyla eşleştirilemez)", "Davet puanı suistimalinin (aynı ağdan açılan çok sayıda hesap) tespiti", "Meşru menfaat", `${SAKLAMA_GUN.kayitImzasi} gün (inceleme süren hesapta karar verilene kadar)`],
   ["Davet ziyareti", "Davet bağlantısına tıklayan cihazın IP ve tarayıcı özetinin hash'i (kimlikle bağlanmaz)", "Hız sınırı, davet istatistiği", "Meşru menfaat", `${SAKLAMA_GUN.davetZiyareti} gün`],
