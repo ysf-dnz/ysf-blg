@@ -51,6 +51,7 @@ test("işaretli üye /uyeler'de sona düşer; üniversite tablosunda ve akışı
   const once = await oku();
   expect(once.uyeler, "demo veri eskimiş olabilir: npm run seed:demo").toContain("elif-celik");
   expect(once.uyeler.indexOf("elif-celik")).toBeLessThan(once.uyeler.length - 1); // işaretsizken sonuncu değil
+  expect(once.uyeler.length, "liste 60'ı aşınca işaretli üye sayfadan düşer; 'sonuncu' beklentisi o zaman yeniden yazılmalı").toBeLessThan(60);
   try {
     await isaret("now()");
     const sonra = await oku();

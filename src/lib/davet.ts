@@ -297,8 +297,8 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
     kod.inviterId,
     n > 0
       ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ +${n} puan${n < PUAN.inviteActivated ? " (haftalık davet tavanına kırpıldı)" : ""}`
-      : // Genç VE işaretli davetlide satır işaret kalkana dek kesinleşmez: "24 saatlik" vaadi yanlış olurdu (devir D3)
-        hesapGencMi(davetli.createdAt) && !davetli.flaggedAt
+      : // Davetli YA DA alıcı işaretliyse satır işaret kalkana dek kesinleşmez: "24 saatlik" vaadi yanlış olurdu (D3 / Y1)
+        hesapGencMi(davetli.createdAt) && !davetli.flaggedAt && !(await isaretliMi(kod.inviterId))
         ? `${davetli.name} "${kurs.title}" kursunda aktive oldu ⚡ Puan hesap 24 saatlik olunca kesinleşir.`
         : (await bekliyorMu(kod.inviterId, "course_invite_activated", `course:${kurs.id}:u:${davetli.id}`))
           ? // İnceleme tutması (işaretli alıcı / kaynak): neden söylenmez, panoda "inceleniyor" görünür
@@ -307,6 +307,12 @@ export async function davetAktivasyonu(katilim: Katilim, kurs: Kurs, davetli: Me
     R.kurs(kurs.slug),
   );
   await ikinciSeviye(kod.inviterId, kurs, davetli, katilim.id);
+}
+
+/** Alıcının işareti: puanOlayi onu okuyup satırı tutar; bildirim metni de aynı bilgiye göre seçilir */
+async function isaretliMi(userId: number): Promise<boolean> {
+  const u = await db.query.users.findFirst({ where: eq(schema.users.id, userId), columns: { flaggedAt: true } });
+  return !!u?.flaggedAt;
 }
 
 /** puanOlayi 0 döndüğünde: puan bekleyende mi (tutuluyor), yoksa tavana mı takıldı? */

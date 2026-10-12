@@ -664,6 +664,20 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, genc.id));
   });
 
+  it("Y1: davet eden (ALICI) işaretliyken genç TEMİZ davetlinin aktivasyonunda bildirim 'Puan bekleyende' der (satır alıcının işareti kalkana dek tutulur)", async () => {
+    const [dEdenHam, uret] = await Promise.all([uye("y1-d", 30), uye("y1-u", 30)]);
+    await db.update(schema.users).set({ flaggedAt: new Date() }).where(eq(schema.users.id, dEdenHam.id));
+    const genc = await uye("y1-g", 0);
+    const { kurs: k } = await kurs("y1", uret.id, 1);
+    await davetleAktive(genc, k, dEdenHam.id);
+    const b = (await db.query.notifications.findMany({ where: eq(schema.notifications.userId, dEdenHam.id) })).map((n) => n.body).filter((x) => x.includes("aktive oldu"));
+    expect(b).toHaveLength(1);
+    expect(b[0]).toContain("Puan bekleyende");
+    expect(b[0]).not.toContain("24 saatlik");
+    expect(await rw.bekleyenleriIsle(new Date(Date.now() + 2 * 864e5), dEdenHam.id)).toMatchObject({ kesinlesen: 0 }); // alıcı işaretli: olgunlaşsa da tutulur
+    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, dEdenHam.id));
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {
