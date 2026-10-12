@@ -201,6 +201,14 @@ html.motion-ok [data-stagger].in > * {
   -webkit-backdrop-filter: blur(10px);
   transition: box-shadow var(--dur-base) ease;
 }
+/* Clerk <Show> statik sayfada <clerk-show><div> sarmalayıcısı üretir (SSR sayfada üretmez). Blok kalırsa
+   pano / zarf / zil / avatar alt alta dizilir → çocukları doğrudan başlık flex'ine katılsın.
+   :not([hidden]) şart: gizli (diğer oturum durumu) yuvayı display ile görünür yapmayalım. */
+.site-header clerk-show,
+.site-header clerk-show > [data-clerk-control-slot-default]:not([hidden]) {
+  display: contents;
+}
+
 .site-header.scrolled {
   box-shadow: 0 1px 12px color-mix(in srgb, var(--ink) 8%, transparent);
 }
