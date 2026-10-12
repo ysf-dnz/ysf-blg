@@ -105,6 +105,7 @@ export const tr = {
   "kitap.girisYap": "Ücretsiz katıl — ilk kitabın hediye 🎁",
   "kitap.acildi": "Bu kitaba erişimin var",
   "footer.rss": "RSS",
+  "footer.gizlilik": "Gizlilik",
   "tema.degistir": "Temayı değiştir",
 } as const;
 

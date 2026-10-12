@@ -49,9 +49,10 @@ export const users = pgTable(
     flaggedAt: timestamp("flagged_at"),
     /**
      * Kayıt imzası (Faz 5 kök çözüm): kayıt anındaki istemci IP'sinin CRON_SECRET HMAC'li kısa hash'i
-     * (davet.ts kisaHash; ham IP saklanmaz, invite_visits.ip_hash ile aynı fonksiyon). Suistimal taraması
-     * hesabın KENDİ imzasına bakar (kimliksiz ziyaret yerine). NULL = adres alınamadı (statik / test), yerel-özel
-     * ağ (dev = canlı DB) ya da 7 gün sonra cron sildi (`imzalariUnut`). Tek okuyucu lib/ekonomi.ts; hiçbir
+     * (davet.ts kisaHash "s:" öneki; ham IP saklanmaz; invite_visits.ip_hash "h:" ile farklı alan → ziyaretle
+     * JOIN edilemez). Suistimal taraması hesabın KENDİ imzasına bakar (kimliksiz ziyaret yerine). NULL = adres
+     * alınamadı (statik / test), yerel-özel ağ (dev = canlı DB), Vercel preview ya da 7 gün sonra cron sildi
+     * (`imzalariUnut`). Tek okuyucu lib/ekonomi.ts; hiçbir
      * sayfaya sızmaz (tests/unit/member.test.ts bekçi). Index yok: tarama 48 saatlik dilime bakar, users küçük.
      */
     signupIpHash: text("signup_ip_hash"),

@@ -15,6 +15,7 @@ import {
 } from "./economy.ts";
 import { DAVET_KAYNAKLI, puanOlayi, satirlar } from "./rewards.ts";
 import { R } from "./routes.ts";
+import { birKez } from "./cron.ts";
 
 /* ---------------- Canlılık havuzu (F5-02) ---------------- */
 
@@ -202,11 +203,16 @@ export const SUISTIMAL_TEMIZ = "suistimal-temiz";
  * ≥ SUISTIMAL_ESIK hesabın 24 saatlik penceresindeki üyeler işaretlenir. Dışarıdan eklenen hiçbir istek (ziyaret,
  * curl, OG botu, yabancının kuklaları) bir hesabı kümeye sokamaz ya da çıkaramaz; farklı ağdan gelen gerçek davetli
  * aynı gün gelse de işaretlenmez. İmzasız (NULL) hesap hiçbir kümeye girmez — NULL hiçbir zaman suçlamaz.
- * Yalnız `member` rolü; adminin temizlediği hesap yeniden işaretlenmez. Cron'da en başta koşar.
- * shortcut: iki ağa yayılan çiftlik (3+3) ve günde ≤ 4 hesap eşiğin altında; IP dağıtan çiftlik görünmez
- * (tavanlar sınırlar: davet 300/7g, referral_joined 24 s bekleyen, havuz 200, beğeni 100). Kuyrukta çok-ağlı
- * küme görülürse davetçi düzeyi "farklı imza ×2 ≤ imzalı" kuralı eklenir (oda arkadaşı çiftlerini de işaretler —
- * bilinçli ertelendi). Aynı ağdan gerçek kalabalık (yurt / kampüs Wi-Fi) sahte pozitif → admin "Temiz".
+ * Pencere hesabın BAĞ OLAYINA çapalı (kodla katılım / kayıt / referral anı, en yenisi) — yaşlandırılmış kukla
+ * (hesabı aç, 2 gün bekle, kodla katıl) kaçamaz; imza 7 günde silinir, ötesi tavanlarla kabul.
+ * Davetçi düzeyi çeşitlilik freni: davetçinin 48 saatlik imzalı hesaplarında farklı imza × 2 > hesap ise küme
+ * işaretlenmez — viral davetçinin CGNAT / kampüs çakışmaları sahte pozitif olmasın (5 kuklalı çiftlik 1 imzadır).
+ * Yalnız `member` rolü; adminin temizlediği hesap NE SAYILIR NE işaretlenir (temiz küme ertesi gün gelen
+ * oda arkadaşını işaretletmez). Cron'da en başta koşar.
+ * shortcut: iki ağa yayılan çiftlik (3+3), günde ≤ 4 hesap ve kuklaları ≥ kukla sayısı kadar gerçek davetliyle
+ * seyrelten çiftlik eşiğin altında; IP dağıtan çiftlik görünmez (tavanlar sınırlar: davet 300/7g, referral_joined
+ * 24 s bekleyen, havuz 200, beğeni 100). Aynı ağdan gerçek kalabalık (yurt / kampüs Wi-Fi) sahte pozitif →
+ * admin "Kümeyi temizle" (`isaretKaldir(id, true)`).
  * @param davetciId yalnız bu davetçi (entegrasyon testi)
  */
 export async function suistimalTara(davetciId?: number): Promise<{ id: number; inviter_id: number }[]> {
@@ -230,33 +236,42 @@ function suistimalCte(davetciId?: number) {
   const yalniz = davetciId ? sql`and b.inviter_id = ${davetciId}` : sql``;
   return sql`
       with bag as (
-        select k.user_id, d.inviter_id from course_enrollments k join invite_codes d on d.id = k.invite_code_id
-        union
-        select r.user_id, d.inviter_id from event_rsvps r join invite_codes d on d.id = r.invite_code_id
-        union
-        -- /?ref= platform daveti GERİ (09fc098 ziyaret kanıtı yüzünden çıkarmıştı): kanıt artık hesabın imzası,
-        -- ziyaretsiz gerçek platform davetlisi kümelenmez; tek ağdan açılan /?ref= kuklaları kümelenir
-        select r.invited_id, r.inviter_id from referrals r
+        -- hesap × davetçi tek satır; olay = bağın EN YENİ anı (kodla katılım / kayıt / referral): pencere buna çapalı,
+        -- hesap yaşına değil — yaşlandırılmış kukla (aç, bekle, sonra kodla katıl) kaçamaz
+        select b.user_id, b.inviter_id, max(b.olay) as olay from (
+          select k.user_id, d.inviter_id, k.joined_at as olay
+            from course_enrollments k join invite_codes d on d.id = k.invite_code_id
+          union all
+          select r.user_id, d.inviter_id, r.created_at from event_rsvps r join invite_codes d on d.id = r.invite_code_id
+          union all
+          -- /?ref= platform daveti GERİ (09fc098 ziyaret kanıtı yüzünden çıkarmıştı): kanıt artık hesabın imzası,
+          -- ziyaretsiz gerçek platform davetlisi kümelenmez; tek ağdan açılan /?ref= kuklaları kümelenir
+          select r.invited_id, r.inviter_id, r.created_at from referrals r
+        ) b group by b.user_id, b.inviter_id
       ), yeni as (
         -- davetçi × imza: AYNI imzalı hesapların 24 saatlik kayan sayımı. İmzasız hesap ne sayılır ne işaretlenir
-        -- (PARTITION BY NULL'ları tek gruba koyar — filtre olmadan 5 imzasız hesap "küme" olurdu)
-        select u.id, u.created_at, u.signup_ip_hash as imza, b.inviter_id,
-          count(*) over (partition by b.inviter_id, u.signup_ip_hash order by u.created_at
+        -- (PARTITION BY NULL'ları tek gruba koyar — filtre olmadan 5 imzasız hesap "küme" olurdu).
+        -- Adminin "Temiz" dediği hesap da ne sayılır ne işaretlenir (temizlenen yurt kümesi kanıt olmayı bırakır)
+        select u.id, b.olay, u.signup_ip_hash as imza, b.inviter_id,
+          count(*) over (partition by b.inviter_id, u.signup_ip_hash order by b.olay
                          range between interval '24 hours' preceding and current row) as pencere
         from users u join bag b on b.user_id = u.id
-        where u.created_at > now() - interval '48 hours' and b.inviter_id <> u.id
-          and u.signup_ip_hash is not null ${yalniz}
+        where b.olay > now() - interval '48 hours' and b.inviter_id <> u.id
+          and u.signup_ip_hash is not null
+          and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
+          ${yalniz}
       ), aday as (
         -- iki şüpheli davetçinin ortak üyesi TEK satır (UPDATE … FROM belirsiz davetçiyi seçerdi)
         select distinct on (y.id) y.id, y.inviter_id
         from yeni y join users u on u.id = y.id
         where u.flagged_at is null and u.role = 'member'
-          and not exists (select 1 from cron_runs c where c.job = ${SUISTIMAL_TEMIZ} and c.period_key = u.id::text)
           -- yalnız KÜMENİN penceresi: aynı davetçi + AYNI imzayla 24 saatte ≥ eşik hesabın 24 saatlik penceresinde
-          -- açılmış olmalı; farklı imzalı ya da pencere dışı hesap işaretlenmez (B4'ün imzalı hâli)
+          -- bağlanmış olmalı; farklı imzalı ya da pencere dışı hesap işaretlenmez (B4'ün imzalı hâli)
           and exists (select 1 from yeni z where z.inviter_id = y.inviter_id and z.imza = y.imza
                       and z.pencere >= ${SUISTIMAL_ESIK}
-                      and y.created_at <= z.created_at and y.created_at >= z.created_at - interval '24 hours')
+                      and y.olay <= z.olay and y.olay >= z.olay - interval '24 hours')
+          -- davetçi düzeyi çeşitlilik: farklı imza × 2 > imzalı hesap ise davetçi viral, küme ağ çakışması sayılır
+          and (select count(distinct z2.imza) * 2 <= count(*) from yeni z2 where z2.inviter_id = y.inviter_id)
         order by y.id, y.inviter_id
       )`;
 }
@@ -267,6 +282,7 @@ function suistimalCte(davetciId?: number) {
  * entegrasyon testi (canlıyı daraltır). Silme değil NULL'lama: satır üyenin.
  */
 export async function imzalariUnut(gunOnce = 7, userIds?: number[]): Promise<number> {
+  if (userIds?.length === 0) return 0; // `in ()` sözdizimi hatasıdır
   const yalniz = userIds ? sql`and id in (${sql.join(userIds.map((i) => sql`${i}`), sql`, `)})` : sql``;
   return satirlar(
     await db.execute(sql`
@@ -290,6 +306,25 @@ export async function bekleyenleriDusur(userId: number): Promise<number> {
 }
 
 /** /uye/admin suistimal kuyruğu: işaretli hesaplar, onları getiren ve tutulan bekleyen puan */
+/**
+ * Admin "Temiz": işaret kalkar + `cron_runs(suistimal-temiz, id)` (tarama yeniden işaretlemez, hesap kanıt da olmaz).
+ * `kume` = aynı ağdan aynı taramada işaretlenen herkes (aynı `signup_ip_hash` ∧ aynı `flagged_at` anı — UPDATE'in
+ * `now()`'u tek ifadede sabittir): yurt / kampüs Wi-Fi'ının 10 gerçek öğrencisi tek dokunuşla temizlenir.
+ * İmzası silinmiş (NULL) hesapta küme yalnız kendisidir. Döndürür: temizlenen id'ler.
+ */
+export async function isaretKaldir(userId: number, kume = false): Promise<number[]> {
+  const ids = satirlar<{ id: number }>(
+    await db.execute(sql`
+      update users set flagged_at = null
+      where flagged_at is not null and (id = ${userId} or (${kume}::boolean and signup_ip_hash is not null
+        and (signup_ip_hash, flagged_at) = (select signup_ip_hash, flagged_at from users where id = ${userId})))
+      returning id
+    `),
+  ).map((r) => r.id);
+  for (const id of ids) await birKez(SUISTIMAL_TEMIZ, String(id));
+  return ids;
+}
+
 export async function isaretliHesaplar() {
   return satirlar<{
     id: number;
@@ -300,6 +335,8 @@ export async function isaretliHesaplar() {
     isaret: string;
     davet_eden: string | null;
     tutulan: number;
+    /** aynı ağdan aynı taramada işaretlenen hesap sayısı (kendisi dahil; imzası silinmişse 1) */
+    kume: number;
   }>(
     await db.execute(sql`
       select u.id, u.handle, u.name,
@@ -307,6 +344,8 @@ export async function isaretliHesaplar() {
         to_char(u.flagged_at + interval '3 hours', 'DD.MM HH24:MI') as isaret,
         (select i.handle from referrals r join users i on i.id = r.inviter_id
           where r.invited_id = u.id limit 1) as davet_eden,
+        greatest(1, (select count(*) from users k where k.signup_ip_hash = u.signup_ip_hash
+          and k.flagged_at = u.flagged_at))::int as kume,
         (select coalesce(sum(p.delta), 0) from pending_points p
           where p.status = 'pending'
             and (p.user_id = u.id or substring(p.ref_id from '(?:^|:)u:([0-9]{1,9})$')::int = u.id))::int as tutulan

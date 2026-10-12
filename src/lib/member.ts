@@ -21,13 +21,15 @@ export function ozelAgMi(ip: string): boolean {
 }
 
 /**
- * Kayıt imzası: istemci IP'sinin HMAC'li kısa hash'i (davet.ts kisaHash — ham IP saklanmaz). Adres yok / getter
- * fırlatır (statik önizleme, test) ya da yerel-özel ağ (dev) → null: imzasız hesap taramada hiçbir kümeye girmez.
+ * Kayıt imzası: istemci IP'sinin HMAC'li kısa hash'i (davet.ts kisaHash, "s:" öneki — ham IP saklanmaz, ziyaret
+ * takma adıyla eşleşmez). Adres yok / getter fırlatır (statik önizleme, test), yerel-özel ağ (dev) ya da Vercel
+ * PREVIEW (canlı DB'yi paylaşır, trafiği gerçek kayıt değil) → null: imzasız hesap taramada hiçbir kümeye girmez.
  */
 export function kayitImzasi(ctx: Ctx): string | null {
+  if (process.env.VERCEL_ENV === "preview") return null;
   try {
     const ip = ctx.clientAddress;
-    return ip && !ozelAgMi(ip) ? kisaHash(ip) : null;
+    return ip && !ozelAgMi(ip) ? kisaHash(ip, "s") : null;
   } catch {
     return null;
   }

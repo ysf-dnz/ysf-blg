@@ -1656,3 +1656,6 @@ Yöntem: her iddia önce test (HEAD'de kırmızı → düzelt → yeşil; karakt
 
 **Kodlanmayan (hâlâ #42):** hesap imzası (şema + `drizzle-kit push` → "push et" onayı), B1 ip penceresi (genişletme farklı-IP koşulunu zayıflatır; hesap imzasıyla birlikte ele alınmalı), A3 takılı `course_launched`, D1, D4, `CANLILIK_ILK_HAFTA` (merge 19 Ekim 06:00 TR sonrasıysa W43), "Suistimal"de ledger iadesi, işaretli üyenin mesaj kısıtı. Y1 ve D3 kapandı.
 
+## 7. Hesap imzası incelemesi (2026-10-12, dal `faz5-hesap-imzasi`, `3a59223..HEAD`)
+
+31 ajanlı düşman inceleme (4 mercek: SQL, suistimal, gerileme, KVKK/altyapı → 14 ham bulgu → her biri 2 bağımsız çürütücü): **14 ayakta, 0 çürütüldü, kritik yok.** Kodlanan düzeltmeler (tek commit): `kisaHash(ip, "s")` alan ayrımı (#1/#7); "Temiz" hesap `yeni` CTE'sinden düşer (#2); `imzalariUnut(_, [])` → 0 (#3); admin "Kümeyi temizle" `isaretKaldir(id, true)` + kuyrukta `kume` (#4); pencere bağ olayına çapalı (#5); davetçi düzeyi çeşitlilik freni (#6); `/gizlilik` taslak + footer (#8); Vercel preview imza yazmaz, XFF kabul (#9); CLAUDE.md / PROGRESS / ADR / PRD planı kalıntıları (#10, #12, #13); `imzalariUnut` 7 gün varsayılanı testte sabit (#11); kullanılmayan `ne` içe aktarımı (#14). `suistimalMi` 4 alanlı saf eşlenik; birim 485. Entegrasyon testleri (3 yeni karakterizasyon + "temiz" testi yeniden) kolon push'undan sonra koşar.

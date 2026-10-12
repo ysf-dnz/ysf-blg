@@ -7,8 +7,7 @@ import { activateReferralIfFirstPost, getOrCreateMember } from "@/lib/member.ts"
 import { PUAN } from "@/lib/points.ts";
 import { R } from "@/lib/routes.ts";
 import { sikayetTuruMu } from "@/lib/sikayet.ts";
-import { birKez } from "@/lib/cron.ts";
-import { SUISTIMAL_TEMIZ, bekleyenleriDusur } from "@/lib/ekonomi.ts";
+import { bekleyenleriDusur, isaretKaldir } from "@/lib/ekonomi.ts";
 
 export const prerender = false;
 
@@ -193,13 +192,11 @@ export const POST: APIRoute = async (context) => {
       );
   }
 
-  // Suistimal kuyruğu (F5-04): işareti kaldır. cron_runs kaydı taramanın aynı hesabı yeniden
-  // işaretlemesini önler (şikâyetle elle işaretleme yine mümkün).
+  // Suistimal kuyruğu (F5-04): işareti kaldır (cron_runs kaydı: tarama yeniden işaretlemez, hesap kanıt olmaz;
+  // şikâyetle elle işaretleme yine mümkün). "Kümeyi temizle": aynı ağdan aynı taramada işaretlenen herkes.
   const flagUserId = Number(form.get("userId") ?? 0);
-  if (action === "flag_clear" && flagUserId) {
-    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, flagUserId));
-    await birKez(SUISTIMAL_TEMIZ, String(flagUserId));
-  }
+  if ((action === "flag_clear" || action === "flag_clear_kume") && flagUserId)
+    await isaretKaldir(flagUserId, action === "flag_clear_kume");
   // Suistimal doğrulandı: işaret KALIR, hesaba ait ve ondan doğan tutulan bekleyenler düşer
   // (yalnız işaretli hesapta — yanlış id ile temiz üyenin bekleyeni düşürülemesin)
   if (action === "flag_confirm" && flagUserId) {

@@ -171,13 +171,16 @@ describe("ekonomi kartı özeti (F5-03)", () => {
 
 describe("suistimal eşiği (F5-04) — tarama SQL'inin saf eşleniği (kanıt: hesabın kendi kayıt imzası)", () => {
   it.each([
-    // [kayıt imzası, aynı davetçi + aynı imzayla 24 saatte hesap] → şüpheli mi
-    [null, 5, false], // imzasız hesaplar küme olmaz — NULL hiçbir zaman suçlamaz
-    [null, 0, false],
-    ["x", SUISTIMAL_ESIK - 1, false], // günde 4 — bilinen kaçış
-    ["x", SUISTIMAL_ESIK, true], // tek cihazdan 5 kukla (B5 artık görünür)
-    ["x", 12, true], // kampüs Wi-Fi'ından 12 gerçek kayıt — bilinçli sahte pozitif, admin "Temiz"
-  ])("imza %s, aynı imza hesap %i → %s", (imza, ayniImzaHesap, beklenen) => {
-    expect(suistimalMi({ imza, ayniImzaHesap })).toBe(beklenen);
+    // [kayıt imzası, aynı davetçi + aynı imzayla 24 saatte hesap, davetçinin imzalı hesabı, farklı imza] → şüpheli mi
+    [null, 5, 5, 1, false], // imzasız hesaplar küme olmaz — NULL hiçbir zaman suçlamaz
+    [null, 0, 0, 0, false],
+    ["x", SUISTIMAL_ESIK - 1, 4, 1, false], // günde 4 — bilinen kaçış
+    ["x", SUISTIMAL_ESIK, 5, 1, true], // tek cihazdan 5 kukla (B5 artık görünür)
+    ["x", 12, 12, 1, true], // kampüs Wi-Fi'ından 12 gerçek kayıt — bilinçli sahte pozitif, admin "Kümeyi temizle"
+    ["x", 5, 8, 4, true], // 5 kukla + 3 gerçek davetli: 4 × 2 ≤ 8 — çiftlik yine görünür
+    ["x", 5, 9, 5, false], // 5 kukla + 4 gerçek: seyreltme kaçışı (bilinçli — gerçek davetli büyümedir)
+    ["x", 5, 25, 21, false], // viral davetçi: 25 davetlinin 5'i aynı CGNAT / kampüs çıkışından — küme değil
+  ])("imza %s, aynı imza %i / davetçi %i hesap, %i farklı imza → %s", (imza, ayniImzaHesap, davetciHesap, davetciFarkliImza, beklenen) => {
+    expect(suistimalMi({ imza, ayniImzaHesap, davetciHesap, davetciFarkliImza })).toBe(beklenen);
   });
 });

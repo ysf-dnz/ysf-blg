@@ -1,0 +1,71 @@
+---
+/**
+ * Gizlilik ve kişisel veriler — KVKK aydınlatma TASLAĞI (Faz 5 hesap imzası incelemesi #8).
+ * Metin hukuki danışmanlık değildir; yayından önce Yusuf okur / düzeltir. Veri kalemleri koddan türetildi:
+ * Clerk (hesap), users (profil, il rızası), signup imzası (7 gün), davet ziyareti takma adı (30 gün),
+ * etkinlik girişi, mesajlar, puan defteri. Yeni bir kişisel veri kalemi eklenirse bu tabloya da eklenir.
+ */
+import Base from "@/layouts/Base.astro";
+
+const kalemler = [
+  ["Hesap bilgileri", "Ad, e-posta, profil görseli, Google kimliği (Clerk üzerinden giriş)", "Üyelik, giriş, bildirim", "Sözleşme (üyelik)", "Hesap silinene kadar"],
+  ["Profil", "Kullanıcı adı, biyografi, sosyal bağlantılar, üniversite / il", "Topluluk profili, harita (il yalnız açık rızayla)", "Rıza", "Siz silene kadar"],
+  ["Kayıt imzası", "Kayıt anındaki IP adresinin gizli anahtarla özetlenmiş kısa hash'i (ham IP saklanmaz)", "Davet puanı suistimalinin (aynı ağdan açılan çok sayıda hesap) tespiti", "Meşru menfaat", "7 gün"],
+  ["Davet ziyareti", "Davet bağlantısına tıklayan cihazın IP ve tarayıcı özetinin hash'i (kimlikle bağlanmaz)", "Hız sınırı, davet istatistiği", "Meşru menfaat", "30 gün"],
+  ["Etkinlik", "Kayıt, giriş zamanı ve yöntemi, değerlendirme", "Etkinlik katılımı ve puan", "Sözleşme", "Hesap silinene kadar"],
+  ["Mesajlar", "Üyeler arası özel mesaj metni", "Üyeler arası iletişim, şikâyet incelemesi", "Sözleşme", "Hesap silinene kadar"],
+  ["Puan defteri", "Kazanılan / harcanan puan, seviye, rozet, kurs ilerlemesi", "Topluluk ekonomisi, liderlik", "Sözleşme", "Hesap silinene kadar"],
+] as const;
+---
+
+<Base title="Gizlilik ve kişisel veriler">
+  <article class="mx-auto max-w-3xl">
+    <h1 class="font-display text-3xl font-semibold text-ink">Gizlilik ve kişisel veriler</h1>
+    <div class="prose prose-lg mt-6 dark:prose-invert prose-a:text-accent">
+      <p>
+        Bu sayfa, 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında hangi verinizi neden ve ne kadar süreyle
+        işlediğimizi açıklar. Veri sorumlusu site sahibidir; iletişim için <a href="/hakkimda">Hakkımda</a> sayfasındaki
+        kanalları kullanabilirsiniz.
+      </p>
+      <p>
+        Kişisel verileriniz satılmaz ve reklam amacıyla üçüncü kişilerle paylaşılmaz. Giriş hizmeti Clerk, veri tabanı
+        Neon ve barındırma Vercel yurt dışında sunucu kullanır; aktarım bu hizmetlerin sözleşmeleriyle sınırlıdır.
+      </p>
+    </div>
+
+    <div class="mt-8 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-line text-left text-ink-muted">
+            <th class="py-2 pr-3 font-medium">Veri</th>
+            <th class="py-2 pr-3 font-medium">İçerik</th>
+            <th class="py-2 pr-3 font-medium">Amaç</th>
+            <th class="py-2 pr-3 font-medium">Dayanak</th>
+            <th class="py-2 font-medium">Süre</th>
+          </tr>
+        </thead>
+        <tbody>
+          {kalemler.map(([veri, icerik, amac, dayanak, sure]) => (
+            <tr class="border-b border-line align-top text-ink">
+              <th scope="row" class="py-2 pr-3 text-left font-medium">{veri}</th>
+              <td class="py-2 pr-3">{icerik}</td>
+              <td class="py-2 pr-3">{amac}</td>
+              <td class="py-2 pr-3">{dayanak}</td>
+              <td class="py-2">{sure}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose prose-lg mt-8 dark:prose-invert prose-a:text-accent">
+      <h2>Haklarınız</h2>
+      <p>
+        KVKK'nın 11. maddesi uyarınca verilerinize erişme, düzeltme, silme, işlemeye itiraz etme ve işlemenin
+        kapsamını öğrenme hakkınız vardır. Profil ve harita görünürlüğünü <a href="/uye/profil">profil ayarlarından</a>
+        değiştirebilir, hesabınızın silinmesini iletişim kanallarından isteyebilirsiniz.
+      </p>
+      <p class="text-sm text-ink-muted">Son güncelleme: 12 Ekim 2026.</p>
+    </div>
+  </article>
+</Base>

@@ -74,6 +74,8 @@ describe("IP/UA takma adı — imzalarla alan ayrımı", () => {
     for (const metin of ["t:123", "c:5:57812345"]) expect(kisaHash(metin)).not.toBe(ham(metin));
     expect(kisaHash("1.2.3.4")).toBe(ham("h:1.2.3.4"));
     expect(kisaHash("1.2.3.4")).toBe(kisaHash("1.2.3.4")); // hız sınırı sayımı için kararlı
+    expect(kisaHash("1.2.3.4", "s")).toBe(ham("s:1.2.3.4")); // kayıt imzası ayrı alan: ziyaret takma adıyla eşleşmez
+    expect(kisaHash("1.2.3.4", "s")).not.toBe(kisaHash("1.2.3.4"));
   });
 });
 

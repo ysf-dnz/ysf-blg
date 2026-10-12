@@ -107,5 +107,6 @@ export const en: Record<UiKey, string> = {
   "kitap.girisYap": "Join free — your first book is a gift 🎁",
   "kitap.acildi": "You have access to this book",
   "footer.rss": "RSS",
+  "footer.gizlilik": "Privacy",
   "tema.degistir": "Toggle theme",
 };

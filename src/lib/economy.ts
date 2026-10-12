@@ -294,9 +294,19 @@ export const SUISTIMAL_ESIK = 5;
  * Davet çiftliği şüphesi — lib/ekonomi.ts suistimalCte'nin SAF EŞLENİĞİ (ikisi birlikte değişir).
  * Kanıt hesabın KENDİ kayıt imzası (users.signup_ip_hash), kimliksiz /d/ ziyareti DEĞİL: dışarıdan eklenen hiçbir
  * istek bir hesabı kümeye sokamaz ya da çıkaramaz. İmzasız (NULL) hesap hiçbir kümeye girmez — NULL hiçbir zaman
- * suçlamaz. User-agent sayılmaz. Kapsam kuralları (yalnız kümenin 24 s penceresi, role=member, admin "Temiz") SQL'de.
- * shortcut: iki ağa yayılan çiftlik (3+3) eşiğin altında kalır — bilinçli ertelendi (bkz. ekonomi.ts).
+ * suçlamaz. User-agent sayılmaz. Davetçi düzeyi çeşitlilik freni: davetçinin 48 saatlik imzalı hesaplarında farklı
+ * imza × 2 > hesap ise (viral davetçi, CGNAT / kampüs çakışması) küme işaretlenmez. Kapsam kuralları (pencere bağ
+ * olayına çapalı, yalnız kümenin 24 s penceresi, role=member, admin "Temiz" sayılmaz) SQL'de.
+ * shortcut: iki ağa yayılan çiftlik (3+3) ve kuklaları ≥ kukla sayısı gerçek davetliyle seyrelten çiftlik eşiğin
+ * altında kalır — bilinçli (bkz. ekonomi.ts).
  */
-export function suistimalMi(d: { imza: string | null; ayniImzaHesap: number }): boolean {
-  return d.imza !== null && d.ayniImzaHesap >= SUISTIMAL_ESIK;
+export function suistimalMi(d: {
+  imza: string | null;
+  /** aynı davetçi + aynı imzayla 24 saatlik penceredeki hesap */
+  ayniImzaHesap: number;
+  /** davetçinin 48 saatlik İMZALI hesap sayısı ve bunlardaki farklı imza sayısı */
+  davetciHesap: number;
+  davetciFarkliImza: number;
+}): boolean {
+  return d.imza !== null && d.ayniImzaHesap >= SUISTIMAL_ESIK && d.davetciFarkliImza * 2 <= d.davetciHesap;
 }

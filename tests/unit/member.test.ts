@@ -17,9 +17,18 @@ describe("kayıt imzası (Faz 5 kök çözüm)", () => {
   it.each(["203.0.113.7", "172.32.0.1", "11.0.0.1", "2a02:4780:1:1::1"])("herkese açık %s → HMAC'li kısa hash, ham IP yok", (ip) => {
     expect(ozelAgMi(ip)).toBe(false);
     const imza = kayitImzasi(ctx(ip));
-    expect(imza).toBe(kisaHash(ip));
-    expect(imza).toHaveLength(32);
-    expect(imza).not.toContain(ip.split(":")[0]!.split(".")[0]!);
+    expect(imza).toBe(kisaHash(ip, "s"));
+    expect(imza).not.toBe(kisaHash(ip)); // ziyaret takma adı ("h:") ile farklı alan: invite_visits ile JOIN edilemez
+    expect(imza).toMatch(/^[0-9a-f]{32}$/);
+    expect(imza).not.toContain(ip);
+  });
+  it("Vercel preview → null (canlı DB'yi paylaşır; trafiği gerçek kayıt değil)", () => {
+    process.env.VERCEL_ENV = "preview";
+    try {
+      expect(kayitImzasi(ctx("203.0.113.7"))).toBeNull();
+    } finally {
+      delete process.env.VERCEL_ENV;
+    }
   });
   it("adres yok ya da getter fırlatır → null (statik önizleme, test)", () => {
     expect(kayitImzasi(ctx())).toBeNull();

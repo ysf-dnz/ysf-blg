@@ -237,7 +237,10 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
         <SocialLinks />
         <div class="mt-3 flex items-center justify-between">
           <p>© {new Date().getFullYear()} {t("site.title")}</p>
-          <a href="/rss.xml" class="hover:text-accent">{t("footer.rss")}</a>
+          <span class="flex gap-4">
+            <a href="/gizlilik" class="hover:text-accent">{t("footer.gizlilik")}</a>
+            <a href="/rss.xml" class="hover:text-accent">{t("footer.rss")}</a>
+          </span>
         </div>
       </div>
     </footer>

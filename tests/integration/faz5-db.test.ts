@@ -5,7 +5,7 @@
  * Havuz ve tarama yalnız test verisine daraltılır (kursIdleri / davetciId): canlı kurslar ödenmez.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { AstroCookies } from "astro";
 
 const URL = process.env.POSTGRES_URL_TEST;
@@ -20,7 +20,6 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   let ek: typeof import("@/lib/ekonomi.ts");
   let ec: typeof import("@/lib/economy.ts");
   let lg: typeof import("@/lib/league.ts");
-  let cr: typeof import("@/lib/cron.ts");
   type Uye = Db["schema"]["users"]["$inferSelect"];
   type Kurs = Db["schema"]["courses"]["$inferSelect"];
   const uyeler: number[] = [];
@@ -79,7 +78,6 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     ek = await import("@/lib/ekonomi.ts");
     ec = await import("@/lib/economy.ts");
     lg = await import("@/lib/league.ts");
-    cr = await import("@/lib/cron.ts");
   });
 
   afterAll(async () => {
@@ -323,11 +321,12 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     const { kurs: k } = await kurs(ad, (await uye(`${ad}u`, 30)).id);
     const kod = await dv.davetKoduUret(d.id, k.id);
     const IMZA = `itest-imza-${ad}-${t}`;
-    /** imza: undefined → davetçinin ortak imzası (çiftlik), string → verilen, null → imzasız */
-    const davetli = async (i: number, saatOnce = 0, rol: "member" | "rep" = "member", imza: string | null | undefined = undefined) => {
+    /** imza: undefined → davetçinin ortak imzası (çiftlik), string → verilen, null → imzasız.
+     *  katilimSaatOnce: kodla katılım anı (pencere BUNA çapalı); varsayılan hesap açılışıyla aynı */
+    const davetli = async (i: number, saatOnce = 0, rol: "member" | "rep" = "member", imza: string | null | undefined = undefined, katilimSaatOnce = saatOnce) => {
       const g = await uye(`${ad}g${i}`, saatOnce / 24, imza === undefined ? IMZA : imza);
       if (rol !== "member") await db.update(schema.users).set({ role: rol }).where(eq(schema.users.id, g.id));
-      await db.insert(schema.courseEnrollments).values({ userId: g.id, courseId: k.id, inviteCodeId: kod.id });
+      await db.insert(schema.courseEnrollments).values({ userId: g.id, courseId: k.id, inviteCodeId: kod.id, joinedAt: new Date(Date.now() - katilimSaatOnce * 3600e3) });
       return g;
     };
     const ziyaret = (ip: string, saatOnce = 0) =>
@@ -392,6 +391,49 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(new Set(hepsi.map((r) => r.inviter_id))).toEqual(new Set([Math.min(a.d.id, b.d.id)]));
   });
 
+  it("yaşlandırılmış kukla (inceleme #5): 3 gün önce açılan 5 aynı imzalı hesap BUGÜN kodla katılırsa kümelenir — pencere bağ olayına çapalı; 3 gün önce katılmış olsalardı 'yeni' değil", async () => {
+    const a = await davetci2("yk");
+    const kukla = await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i, 72, "member", undefined, 0))); // hesap 72 s, katılım şimdi
+    expect(await a.adaylar()).toEqual(kukla.map((g) => g.id).sort());
+    const b = await davetci2("ye");
+    await Promise.all([1, 2, 3, 4, 5].map((i) => b.davetli(i, 72))); // hesap da katılım da 72 s önce
+    expect(await b.adaylar()).toEqual([]);
+  });
+
+  it("viral davetçi (inceleme #6): 25 davetlinin 5'i aynı imzadan (CGNAT / kampüs çıkışı) → farklı imza × 2 > hesap, küme İŞARETLENMEZ; 5 kukla + 3 gerçek davetli → çiftlik görünür", async () => {
+    const v = await davetci2("vr");
+    const ayni = await Promise.all([1, 2, 3, 4, 5].map((i) => v.davetli(i)));
+    await Promise.all(Array.from({ length: 20 }, (_, i) => v.davetli(10 + i, 0, "member", `itest-imza-vr-${i}-${t}`)));
+    expect(await v.adaylar()).toEqual([]); // 21 farklı imza × 2 = 42 > 25
+    const c = await davetci2("ci");
+    const kukla = await Promise.all([1, 2, 3, 4, 5].map((i) => c.davetli(i)));
+    await Promise.all([6, 7, 8].map((i) => c.davetli(i, 0, "member", `itest-imza-ci-${i}-${t}`)));
+    expect(await c.adaylar()).toEqual(kukla.map((g) => g.id).sort()); // 4 farklı × 2 = 8 ≤ 8
+    expect(ayni.length).toBe(5);
+  });
+
+  it("küme temizleme (inceleme #2/#4): yurt Wi-Fi'ının 5 öğrencisi işaretlenir → kuyrukta kume=5 → 'Kümeyi temizle' tek dokunuşta hepsini temizler, 5 cron_runs; temiz hesaplar kanıt olmayı bırakır: ertesi gün aynı ağdan gelen 6. oda arkadaşı işaretlenmez", async () => {
+    const y = await davetci2("yurt");
+    const ogrenciler = await Promise.all([1, 2, 3, 4, 5].map((i) => y.davetli(i)));
+    const ids = ogrenciler.map((g) => g.id).sort();
+    expect((await ek.suistimalTara(y.d.id)).map((r) => r.id).sort()).toEqual(ids);
+    const kuyruk = await ek.isaretliHesaplar();
+    for (const id of ids) expect(kuyruk.find((r) => r.id === id)).toMatchObject({ kume: 5 });
+    // tek hesabı temizle (kume=false): yalnız o
+    expect(await ek.isaretKaldir(ids[0]!, false)).toEqual([ids[0]]);
+    expect((await ek.isaretliHesaplar()).find((r) => r.id === ids[1])).toMatchObject({ kume: 4 });
+    // kümeyi temizle: kalan 4 birlikte
+    expect((await ek.isaretKaldir(ids[1]!, true)).sort()).toEqual(ids.slice(1));
+    const sonra = await db.query.users.findMany({ where: inArray(schema.users.id, ids) });
+    expect(sonra.every((u) => u.flaggedAt === null)).toBe(true);
+    const temiz = await db.query.cronRuns.findMany({ where: and(eq(schema.cronRuns.job, ek.SUISTIMAL_TEMIZ), inArray(schema.cronRuns.periodKey, ids.map(String))) });
+    expect(temiz).toHaveLength(5);
+    // temiz hesaplar sayılmaz: 6. oda arkadaşı tek başına (pencere = 1) → aday değil
+    const altinci = await y.davetli(6);
+    expect(await y.adaylar()).toEqual([]);
+    expect(await ek.isaretKaldir(altinci.id, true)).toEqual([]); // işaretsiz hesapta no-op
+  });
+
   it("işaretli KAYNAK ve ALICI: bekleyen olgunlaşmaz; işaret kalkınca kesinleşir", async () => {
     const [k1, k2] = kuklalar;
     const kursId = ana.id;
@@ -421,13 +463,14 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect((await ledger(davetci.id, "course_learner_activated")).length).toBe(0);
   });
 
-  it("admin 'temiz' dediği hesabı tarama yeniden işaretlemez; işaretsiz bırakılan yeniden işaretlenir", async () => {
+  it("admin 'temiz' dediği hesabı tarama yeniden işaretlemez ve KANIT saymaz (kalan 4 eşiğin altında); 6. kukla gelince kayıtsız bırakılan ve yeni gelen yeniden işaretlenir", async () => {
     const [k1, , k3] = kuklalar;
-    // admin.ts flag_clear ile aynı iki adım
-    await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, k3!.id));
-    await cr.birKez(ek.SUISTIMAL_TEMIZ, String(k3!.id));
+    expect(await ek.isaretKaldir(k3!.id, false)).toEqual([k3!.id]); // admin.ts flag_clear
+    expect(await ek.suistimalTara(davetci.id)).toEqual([]); // k3 sayılmaz → k1,k2,k4,k5 = 4 < eşik
+    const k6 = await uye("sk6", 0, `itest-imza-${t}`);
+    await db.insert(schema.referrals).values({ inviterId: davetci.id, invitedId: k6.id });
     const yeniden = await ek.suistimalTara(davetci.id);
-    expect(yeniden.map((r) => r.id)).toEqual([k1!.id]); // önceki testte işareti (kayıtsız) kaldırılan
+    expect(yeniden.map((r) => r.id).sort()).toEqual([k1!.id, k6.id].sort()); // k1: önceki testte işareti (kayıtsız) kaldırılan
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, k3!.id) }))!.flaggedAt).toBeNull();
   });
 
@@ -761,10 +804,11 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: taze.id, refId: `yorum:itest-lk-${t}-y` })).toBe(true);
   });
 
-  it("imzalariUnut: 30 günden yaşlı hesabın kayıt imzası NULL olur, genç hesabın kalır (yalnız verilen id'ler)", async () => {
-    const [eski, genc] = await Promise.all([uye("im-e", 40), uye("im-g", 2)]);
+  it("imzalariUnut (varsayılan 7 gün): 8 günlük hesabın kayıt imzası NULL olur, 6 günlük kalır (yalnız verilen id'ler); boş dizi fırlatmaz, 0", async () => {
+    const [eski, genc] = await Promise.all([uye("im-e", 8), uye("im-g", 6)]);
     await db.update(schema.users).set({ signupIpHash: `itest-imza-${t}` }).where(inArray(schema.users.id, [eski.id, genc.id]));
-    expect(await ek.imzalariUnut(30, [eski.id, genc.id])).toBe(1);
+    expect(await ek.imzalariUnut(undefined, [])).toBe(0); // inceleme #3: `in ()` sözdizimi hatasıydı
+    expect(await ek.imzalariUnut(undefined, [eski.id, genc.id])).toBe(1);
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, eski.id) }))!.signupIpHash).toBeNull();
     expect((await db.query.users.findFirst({ where: eq(schema.users.id, genc.id) }))!.signupIpHash).toBe(`itest-imza-${t}`);
   });

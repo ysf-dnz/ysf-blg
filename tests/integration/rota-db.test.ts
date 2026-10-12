@@ -249,7 +249,7 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
       return (await db.query.users.findFirst({ where: eq(schema.users.id, u.id) }))!;
     };
     const ipli = await yap("ip", "203.0.113.7");
-    expect(ipli.signupIpHash).toBe(dv2.kisaHash("203.0.113.7"));
+    expect(ipli.signupIpHash).toBe(dv2.kisaHash("203.0.113.7", "s")); // kayıt alanı; ziyaret takma adı ("h:") değil
     expect(ipli.signupIpHash).not.toContain("203.0.113.7");
     expect(ipli.signupIpHash).toHaveLength(32);
     const ipsiz = await yap("yok");
