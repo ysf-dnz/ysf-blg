@@ -249,11 +249,12 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     const kampanyaId = Number(r1.headers.get("location")!.split("/").pop());
     expect((await gorev.POST(baglam(baskan, { action: "create", campaignId: String(kampanyaId), title: "Itest kendi görevi", rewardPoints: "500" }))).status).toBe(303);
     const task = (await db.query.campaignTasks.findFirst({ where: eq(schema.campaignTasks.campaignId, kampanyaId) }))!;
-    for (const form of [
+    const adimlar: Record<string, string>[] = [
       { action: "claim", taskId: String(task.id) },
       { action: "submit", taskId: String(task.id), url: "https://example.com/itest-c2b" },
       { action: "approve", taskId: String(task.id) },
-    ])
+    ];
+    for (const form of adimlar)
       expect((await gorev.POST(baglam(baskan, form))).headers.get("location"), form.action).toBe(`/kampanya/${kampanyaId}`);
     expect((await ledger(baskan.id, "task_done", String(task.id))).map((r) => r.delta)).toEqual([Math.round(500 * PUAN.campaignMultiplier)]); // 750, tek hesap
   });
