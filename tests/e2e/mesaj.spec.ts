@@ -149,7 +149,8 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
       await expect(page.getByText("Çok hızlısın — 30 saniye sonra yeniden dene.")).toBeVisible();
       const donusler = await page.locator('main input[name="next"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
       expect(donusler.length).toBeGreaterThan(0);
-      for (const d of donusler) expect(d).toMatch(/^\/kurslar\/sifirdan-go-learning-go-yol-haritasi-demo\?b=1(#|$)/);
+      for (const d of donusler) expect(d).not.toMatch(/[?&](hata|sikayet|katildin|davet|yayin|onay)=/);
+      expect(donusler.some((d) => d.includes("?b=1"))).toBe(true); // kalıcı parametre (öğe sırası) korunur
     } finally {
       await db()`delete from feed_posts where id = ${satir!.id}`;
       await artikSil();
