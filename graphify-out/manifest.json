@@ -462,9 +462,9 @@
     "semantic_hash": "cf071cef2e2ebbfe2789f917f253fbee"
   },
   "src/lib/economy.ts": {
-    "mtime": 1791797107.3701928,
-    "seen": 1791798354.4307818,
-    "ast_hash": "bd7783f89c72774545de6ca0d02954be",
+    "mtime": 1791814760.9502265,
+    "seen": 1791815647.625134,
+    "ast_hash": "bba703767c5b2cc5a8517919319f17c7",
     "semantic_hash": ""
   },
   "src/lib/i18n/en.ts": {
@@ -492,9 +492,9 @@
     "semantic_hash": "f91924cb6dc4cfe47ed8e488b2be0b2b"
   },
   "src/lib/league.ts": {
-    "mtime": 1791807568.274732,
-    "seen": 1791812184.237327,
-    "ast_hash": "468ca616f08a03b33220fb7cfe28b646",
+    "mtime": 1791814955.8310251,
+    "seen": 1791815647.625275,
+    "ast_hash": "9f2e3333fb334b3a0456531513dc6193",
     "semantic_hash": ""
   },
   "src/lib/levels.ts": {
@@ -510,21 +510,21 @@
     "semantic_hash": ""
   },
   "src/lib/member.ts": {
-    "mtime": 1791718708.533682,
-    "seen": 1791719813.861862,
-    "ast_hash": "4bf10a8a58d48346a53f3a4ebef68768",
+    "mtime": 1791814760.9490302,
+    "seen": 1791815647.6253178,
+    "ast_hash": "7324b1257d4938ecdf381e8533d821a2",
     "semantic_hash": ""
   },
   "src/lib/permissions.ts": {
-    "mtime": 1786189570.8219619,
-    "seen": 1788064083.159567,
-    "ast_hash": "b51523047284e9b68049d7558d672995",
-    "semantic_hash": "b51523047284e9b68049d7558d672995"
+    "mtime": 1791812736.9172802,
+    "seen": 1791815647.6253629,
+    "ast_hash": "4b3c94641ddeb50038dcb25a4b8669ed",
+    "semantic_hash": ""
   },
   "src/lib/points.ts": {
-    "mtime": 1791797107.3711495,
-    "seen": 1791798354.431176,
-    "ast_hash": "98e615f60afe9a5daa83869fc720631d",
+    "mtime": 1791814760.9400494,
+    "seen": 1791815647.625364,
+    "ast_hash": "51f6aa24f9a7d80b0ed33d05d330cc94",
     "semantic_hash": ""
   },
   "src/lib/posts.ts": {
@@ -546,9 +546,9 @@
     "semantic_hash": "13f96ef03c89a3f1e96211afb2914f8b"
   },
   "src/lib/rewards.ts": {
-    "mtime": 1791811489.2545161,
-    "seen": 1791812184.237546,
-    "ast_hash": "297a02b19ca1145ff012a4ead312ba39",
+    "mtime": 1791814921.4052725,
+    "seen": 1791815647.62543,
+    "ast_hash": "f1a77bd006cfff7ce8aa2155683c7fba",
     "semantic_hash": ""
   },
   "src/lib/routes.ts": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "src/pages/api/cron/gunluk.ts": {
-    "mtime": 1791811073.8196065,
-    "seen": 1791812184.237719,
-    "ast_hash": "ff907e7e9cf30663ac5b85f6680e50e1",
+    "mtime": 1791814958.2007205,
+    "seen": 1791815647.625601,
+    "ast_hash": "32bc2f4565f0e35b9516c047a2e0f269",
     "semantic_hash": ""
   },
   "src/pages/api/uye/admin.ts": {
@@ -606,9 +606,9 @@
     "semantic_hash": "7bbb6eb26e9569a69aff5e66ae818fdf"
   },
   "src/pages/api/uye/egitim.ts": {
-    "mtime": 1791806806.6620054,
-    "seen": 1791812184.237858,
-    "ast_hash": "7dfd451dc9145e6c076b8d3d09218928",
+    "mtime": 1791812736.9184601,
+    "seen": 1791815647.62576,
+    "ast_hash": "078b1278484ea592cdf1a4f446a14a7a",
     "semantic_hash": ""
   },
   "src/pages/api/uye/etkinlik.ts": {
@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/gorev.ts": {
-    "mtime": 1788151993.9779112,
-    "seen": 1788152366.220746,
-    "ast_hash": "cb73c6bbbb41fc1cb7346878ef1e9f76",
+    "mtime": 1791814760.9463007,
+    "seen": 1791815647.6258628,
+    "ast_hash": "aaec99b74996afc0c1a8122cdd372d7f",
     "semantic_hash": ""
   },
   "src/pages/api/uye/hediye-et.ts": {
@@ -642,10 +642,10 @@
     "semantic_hash": ""
   },
   "src/pages/api/uye/kampanya.ts": {
-    "mtime": 1786276600.732272,
-    "seen": 1788064083.15959,
-    "ast_hash": "b1023a4201b700239bc90dbcce516409",
-    "semantic_hash": "b1023a4201b700239bc90dbcce516409"
+    "mtime": 1791814964.9394915,
+    "seen": 1791815647.625914,
+    "ast_hash": "a888ad4bf7e675d4f378294932d4e3b4",
+    "semantic_hash": ""
   },
   "src/pages/api/uye/kitap-ac.ts": {
     "mtime": 1788151993.9842625,
@@ -822,10 +822,10 @@
     "semantic_hash": "4aa33ce4f812874a20c1f36f4cb90c86"
   },
   "src/pages/kampanya/[id].astro": {
-    "mtime": 1786292914.4350536,
-    "seen": 1788064083.159625,
-    "ast_hash": "398e36f6bcdec4c68ee7d1dc5daf6e65",
-    "semantic_hash": "398e36f6bcdec4c68ee7d1dc5daf6e65"
+    "mtime": 1791814760.9484715,
+    "seen": 1791815647.6269178,
+    "ast_hash": "b63fe81c075dd88573544377644bc60d",
+    "semantic_hash": ""
   },
   "src/pages/kategori/[kategori]/[...page].astro": {
     "mtime": 1784634397.4910417,
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "src/pages/kulup/[slug].astro": {
-    "mtime": 1791797107.3736322,
-    "seen": 1791798354.433791,
-    "ast_hash": "280a8afb7a22d2c49b49ae1f4e6a2d12",
+    "mtime": 1791812736.9225545,
+    "seen": 1791815647.6269922,
+    "ast_hash": "e3da85cacc3727791446d5e1067794cf",
     "semantic_hash": ""
   },
   "src/pages/kulupler.astro": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "src/pages/uye/index.astro": {
-    "mtime": 1791794181.3918014,
-    "seen": 1791798354.434487,
-    "ast_hash": "dbb52f1ca6f6f7abd80201256bf2ae31",
+    "mtime": 1791814760.9493895,
+    "seen": 1791815647.627489,
+    "ast_hash": "339e434b94dbd6c0623d0278eeb1c69f",
     "semantic_hash": ""
   },
   "src/pages/uye/magaza.astro": {
@@ -1164,15 +1164,15 @@
     "semantic_hash": "727b32fab0c9a11b1e8741e19adba474"
   },
   "CLAUDE.md": {
-    "mtime": 1791812179.5391486,
-    "seen": 1791812184.242093,
-    "ast_hash": "1545efa9c4d77caae09f63a66d8fc24e",
+    "mtime": 1791815644.438304,
+    "seen": 1791815647.6297789,
+    "ast_hash": "30a3af1b2addada6a6920b6ba3c2b37f",
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1791812179.538144,
-    "seen": 1791812184.242115,
-    "ast_hash": "c7247b1b3b66df14aec55f89c1005f2a",
+    "mtime": 1791815644.4377682,
+    "seen": 1791815647.629798,
+    "ast_hash": "e87edc960d3540a1b06999b85d693eca",
     "semantic_hash": ""
   },
   "README.md": {
@@ -6624,9 +6624,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/auth.spec.ts": {
-    "mtime": 1791808228.9349663,
-    "seen": 1791812184.240033,
-    "ast_hash": "6df52a2404b7dd39cb2e56b3b8880c4d",
+    "mtime": 1791814760.9498377,
+    "seen": 1791815647.627826,
+    "ast_hash": "995c9003c6ecd28b4667190720110da5",
     "semantic_hash": ""
   },
   "tests/e2e/global-setup.ts": {
@@ -6660,15 +6660,15 @@
     "semantic_hash": ""
   },
   "docs/adr/0001-kurs-davet-etkinlik-harita.md": {
-    "mtime": 1791797819.4431005,
-    "seen": 1791798354.438123,
-    "ast_hash": "8fd9a1d17963e1b6f3ed61f1584747d7",
+    "mtime": 1791814760.951133,
+    "seen": 1791815647.629835,
+    "ast_hash": "62c94fd0d139ee2ce6f97d3738eaad21",
     "semantic_hash": ""
   },
   "docs/assumptions.md": {
-    "mtime": 1791811725.3735092,
-    "seen": 1791812184.242252,
-    "ast_hash": "02343a809e51522ee454a07bd4739a54",
+    "mtime": 1791814760.9531846,
+    "seen": 1791815647.6299012,
+    "ast_hash": "68e1f1095d8ea34ca7e7de323cde898b",
     "semantic_hash": ""
   },
   "docs/ideas.md": {
@@ -6702,9 +6702,9 @@
     "semantic_hash": ""
   },
   "src/lib/davet.ts": {
-    "mtime": 1791811459.0515082,
-    "seen": 1791812184.237161,
-    "ast_hash": "72e69868245f510f7f8ddb1a7e1e9f24",
+    "mtime": 1791813270.2553148,
+    "seen": 1791815647.625133,
+    "ast_hash": "0df64d0da6ffc3a703f179439c2bc6c8",
     "semantic_hash": ""
   },
   "src/pages/api/kart/[kod]/[dosya].ts": {
@@ -6786,9 +6786,9 @@
     "semantic_hash": ""
   },
   "src/lib/etkinlik.ts": {
-    "mtime": 1791807725.618159,
-    "seen": 1791812184.2372081,
-    "ast_hash": "4f17d4fc2febe9bd7064bd363e4a6256",
+    "mtime": 1791813107.486481,
+    "seen": 1791815647.6251578,
+    "ast_hash": "63aeaf82931a7155d49f4103ee0c4273",
     "semantic_hash": ""
   },
   "src/lib/topluluk.ts": {
@@ -6882,9 +6882,9 @@
     "semantic_hash": ""
   },
   "tests/integration/etkinlik-db.test.ts": {
-    "mtime": 1791808906.8685446,
-    "seen": 1791812184.240449,
-    "ast_hash": "4bd355a40b84b6683c7328a783f0c2b3",
+    "mtime": 1791812999.1194594,
+    "seen": 1791815647.628315,
+    "ast_hash": "f3419cde75e68559f4dabf0109ac9ab4",
     "semantic_hash": ""
   },
   "tests/unit/etkinlik.test.ts": {
@@ -7002,9 +7002,9 @@
     "semantic_hash": ""
   },
   "src/lib/ekonomi.ts": {
-    "mtime": 1791811447.5640037,
-    "seen": 1791812184.237185,
-    "ast_hash": "216276aca49a17278a01dd005c7fd600",
+    "mtime": 1791813567.3932862,
+    "seen": 1791815647.625134,
+    "ast_hash": "738d37ca8c5f5eb923226ee0007480be",
     "semantic_hash": ""
   },
   "tests/component/ekonomi-karti.test.ts": {
@@ -7020,15 +7020,15 @@
     "semantic_hash": ""
   },
   "tests/integration/faz5-db.test.ts": {
-    "mtime": 1791811073.8559875,
-    "seen": 1791812184.2404501,
-    "ast_hash": "0751f11a81f30f6ccfa50cc2dc57ae23",
+    "mtime": 1791814760.9549575,
+    "seen": 1791815647.628316,
+    "ast_hash": "8a3b0ddc2b2fceb1aebf99f8e2875038",
     "semantic_hash": ""
   },
   "tests/unit/faz5-ekonomi.test.ts": {
-    "mtime": 1791797107.376889,
-    "seen": 1791798354.4357991,
-    "ast_hash": "67eb4b72748177f2381d06ee5328eb0c",
+    "mtime": 1791814760.9554267,
+    "seen": 1791815647.628449,
+    "ast_hash": "20bddee940b826871650b2f9a35002fe",
     "semantic_hash": ""
   },
   "scripts/itest-artik-kontrol.mjs": {
@@ -7038,21 +7038,21 @@
     "semantic_hash": ""
   },
   "tests/integration/rota-db.test.ts": {
-    "mtime": 1791811570.8371983,
-    "seen": 1791812184.240451,
-    "ast_hash": "996a4c70ba4c8a1525f12a9be7bb740b",
+    "mtime": 1791814760.956142,
+    "seen": 1791815647.628339,
+    "ast_hash": "3418ea22f6bff46348698c0ec8a419ed",
     "semantic_hash": ""
   },
   "tests/unit/cron-gunluk.test.ts": {
-    "mtime": 1791808536.9236538,
-    "seen": 1791812184.2404768,
-    "ast_hash": "d5e8cf27d478bb463185d2065b903b91",
+    "mtime": 1791814855.459858,
+    "seen": 1791815647.628363,
+    "ast_hash": "3950ca00372f1948b854f4402dd01206",
     "semantic_hash": ""
   },
   "docs/devir/faz5-fable-devir.md": {
-    "mtime": 1791812179.5420098,
-    "seen": 1791812184.242254,
-    "ast_hash": "cdf005e9622ce7ebc27be706356dacb8",
+    "mtime": 1791813761.528205,
+    "seen": 1791815647.6299021,
+    "ast_hash": "312c24b387931c7bcb14198177b0f1a1",
     "semantic_hash": ""
   },
   "docs/devir/faz5-fable-prompt.md": {
