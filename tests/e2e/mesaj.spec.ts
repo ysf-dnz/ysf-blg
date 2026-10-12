@@ -158,6 +158,7 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect(JSON.stringify(await zeynepJson.json())).not.toMatch(/engel/i);
     expect((await zeynepJson.json()).durum).toBe("kapali");
     // Engel varken takip de yazılmaz (takip et / bırak döngüsü bildirim kanalı olmasın)
+    await page.goto(`/u/${ZEYNEP}`, { waitUntil: "domcontentloaded" });
     await page.locator('form[action="/api/uye/takip"] button').click();
     await expect(page).toHaveURL(new RegExp(`/u/${ZEYNEP}$`));
     await expect(page.locator('form[action="/api/uye/takip"] button')).toHaveText("Takip et");
