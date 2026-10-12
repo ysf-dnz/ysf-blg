@@ -46,20 +46,10 @@ const [balance, earned, access, notifs, yaziSayisi, kulubum] = await Promise.all
   }),
 ]);
 
-// Bildirimler görüldü → okundu işaretle. readAt sütunu şemada vardı ama
-// HİÇ yazılmıyordu; bu yüzden zil sayacı hiç sıfırlanamazdı.
+// Bildirimler görüldü → okundu. GET'te YAZILMAZ: zile ön-yükleme (hover) panoyu açmadan sayacı
+// sıfırlıyordu. Aşağıdaki betik sayfa gerçekten açılınca POST /api/uye/bildirim ile yazar.
 const okunmamisSayisi = notifs.filter((n) => !n.readAt).length;
-if (okunmamisSayisi > 0) {
-  await db
-    .update(schema.notifications)
-    .set({ readAt: new Date() })
-    .where(
-      and(
-        eq(schema.notifications.userId, member.id),
-        isNull(schema.notifications.readAt),
-      ),
-    );
-}
+const sonBildirimId = notifs.reduce((m, n) => Math.max(m, n.id), 0);
 
 
 // Yolculuk görevleri: eksik algıla, sıradaki adımı göster (Zeigarnik)
@@ -669,6 +659,19 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
         </a>
       </div>
       <script>
+        // Bildirimleri okundu yaz (bir kez). Zil adası gecikmeli gelebilir: rozet iki kez kaldırılır.
+        document.addEventListener("astro:page-load", async () => {
+          const kutu = document.querySelector<HTMLElement>("#bildirimler");
+          if (!kutu || !Number(kutu.dataset.okunmamis) || kutu.dataset.gonderildi) return;
+          kutu.dataset.gonderildi = "1";
+          const veri = new FormData();
+          veri.set("son", kutu.dataset.son ?? "0");
+          const r = await fetch("/api/uye/bildirim", { method: "POST", body: veri }).catch(() => null);
+          if (!r?.ok) return;
+          const kaldir = () => document.querySelector("[data-bildirim-rozet]")?.remove();
+          kaldir();
+          setTimeout(kaldir, 2500);
+        });
         // Panodaki kopyala düğmesi (kitap sayfasındaki desenle aynı)
         document.addEventListener("click", async (e) => {
           const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-ref-kopyala]");
@@ -680,7 +683,7 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
         });
       </script>
     </div>
-    <div id="bildirimler" class="scroll-mt-24 rounded-2xl border border-line bg-surface-raised p-6" data-reveal>
+    <div id="bildirimler" class="scroll-mt-24 rounded-2xl border border-line bg-surface-raised p-6" data-reveal data-okunmamis={okunmamisSayisi} data-son={sonBildirimId}>
       <h2 class="font-display text-xl font-semibold text-ink">
         🔔 Bildirimler
         {okunmamisSayisi > 0 && (

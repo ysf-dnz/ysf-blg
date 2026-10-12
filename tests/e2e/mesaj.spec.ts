@@ -83,6 +83,30 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect((await page.request.get("/api/uye/mesaj?kisi=olmayan-uye-xyz")).status()).toBe(404);
   });
 
+  test("bildirimler: /uye GET'i okundu yazmaz (ön-yükleme sayacı sıfırlamasın); pano açılınca betik POST'lar", async ({ page }) => {
+    const rozet = page.locator("[data-bildirim-rozet]");
+    const zil = page.locator('header a[href="/uye#bildirimler"]');
+    await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
+    await expect(zil).toBeVisible(); // ada geldi
+    const okunmamisVardi = (await rozet.count()) > 0; // yeniden denemede okunmuş olabilir
+    // Betiksiz GET (zile hover ön-yüklemesi, görsel isteği): sayaç DEĞİŞMEZ
+    expect((await page.request.get("/uye")).status()).toBe(200);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(zil).toBeVisible();
+    expect((await rozet.count()) > 0).toBe(okunmamisVardi);
+    test.skip(!okunmamisVardi, "okunmamış bildirim yok (yeniden deneme) — GET kanıtı yukarıda");
+    // Pano gerçekten açılınca betik okundu POST'unu atar
+    const okundu = page.waitForResponse((r) => r.url().endsWith("/api/uye/bildirim") && r.request().method() === "POST");
+    await page.goto("/uye");
+    expect((await okundu).status()).toBe(204);
+    await expect(page.locator("#bildirimler")).toContainText("yeni"); // bu görüntülemede hâlâ "N yeni" vurgulu
+    await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });
+    await expect(zil).toBeVisible();
+    await expect(rozet).toHaveCount(0);
+    // son=0 / bozuk istek yazmaz
+    expect((await page.request.post("/api/uye/bildirim", { form: { son: "abc" } })).status()).toBe(400);
+  });
+
   test("AC-23: bağı olmayan üyeye yeni konuşma başlatılamaz; ayarı 'kimse' olana da — form yok, uç reddeder", async ({ page }) => {
     await page.goto(`/uye/mesajlar/${CAN}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-mesaj-kapali]")).toContainText("yalnız ortak topluluğu olan ya da karşılıklı takipleştiği üyelerden mesaj alıyor");

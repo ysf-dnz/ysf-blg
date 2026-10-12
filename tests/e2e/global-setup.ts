@@ -53,6 +53,13 @@ export default async function globalSetup() {
       select z.id, u.id from users z, users u
       where z.handle = 'zeynep-arslan' and u.clerk_id = ${clerkId}
       on conflict do nothing`;
+    // Bildirim okundu testi: test üyesinin okunmamış bildirimi yoksa bir tane (idempotent)
+    await sql`
+      insert into notifications (user_id, kind, body, href)
+      select u.id, 'system', 'Demo bildirim — pano açılınca okundu olur.', '/uye'
+      from users u
+      where u.clerk_id = ${clerkId}
+        and not exists (select 1 from notifications n where n.user_id = u.id and n.read_at is null)`;
     const [mesajHazir] = await sql`
       select 1 from blocks b join users z on z.id = b.blocker_id join users u on u.id = b.blocked_id
       where z.handle = 'zeynep-arslan' and u.clerk_id = ${clerkId}
