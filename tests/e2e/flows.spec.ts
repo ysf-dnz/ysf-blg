@@ -31,6 +31,8 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     await rozet.click();
     const popup = page.locator(".leaflet-popup");
     await expect(popup.locator("a[href^='/kulup/']").first()).toBeVisible();
+    // Üye sayısı kulübün GERÇEK üye sayısı (seed: ODTÜ 4, vakıf 2) — ilişkili alt sorgu tablo adı atılınca hep "1" çıkıyordu
+    expect(Number((await popup.locator("a[href^='/kulup/']").first().textContent())?.match(/· (\d+) üye/)?.[1])).toBeGreaterThanOrEqual(2);
     // Popup harita kutusunun içinde tamamen görünür (autoPan) — eski SVG popover'ı overflow-hidden'da kesiliyordu
     // Yaklaşan etkinliklerle uzayan popup için autoPan animasyonu sürer → oturana kadar yokla
     await expect
@@ -59,6 +61,14 @@ test.describe("akış yönlendirmeleri (misafir)", () => {
     await expect(popup.getByText("Yaklaşan etkinlikler")).toBeVisible();
     await expect(popup.locator('a[href="/etkinlik/canli-quiz-gecesi-demo"]')).toBeVisible();
     await expect(popup.locator("[data-harita-uyeler]")).toHaveCount(0);
+  });
+
+  test("üyeler: listedeki puan üyenin profilindeki kazanılan puanla aynı (ilişkili alt sorgu doğru üyeyi toplar)", async ({ page }) => {
+    await page.goto("/u/elif-celik", { waitUntil: "domcontentloaded" });
+    const puan = Number((await page.locator("[data-ticker]").first().textContent())?.trim()); // seed: 460
+    expect(puan).toBeGreaterThan(100);
+    await page.goto("/uyeler?q=Elif", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('a[href="/u/elif-celik"]')).toContainText(`${puan}p`);
   });
 
   test("kulüp kurma sayfası misafiri üyeliğe yönlendirir", async ({ page }) => {

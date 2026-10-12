@@ -228,7 +228,9 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     // Mesaj şikâyeti (konuşma): yalnız GELEN mesajda düğme var
     await page.goto(`/uye/mesajlar/${ELIF}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator('#mesajlar [data-benden="1"] [data-mesaj-sikayet]')).toHaveCount(0);
-    // Yanlış dokunuşa karşı onay: reddedilirse gönderilmez, kabul edilirse gönderilir
+    // Yanlış dokunuşa karşı onay: reddedilirse gönderilmez, kabul edilirse gönderilir.
+    // Onay sayfa betiğiyle gelir → betik kurulana kadar bekle (kurulmadan tıklanırsa onaysız gönderilir)
+    await expect(page.locator('#mesajlar[data-init="1"]')).toBeVisible();
     page.once("dialog", (d) => d.dismiss());
     await page.locator('#mesajlar [data-benden="0"] [data-mesaj-sikayet]').first().click();
     await expect(page).toHaveURL(new RegExp(`/uye/mesajlar/${ELIF}$`));

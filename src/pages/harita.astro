@@ -38,7 +38,10 @@ for (const r of cityRows) {
   if (match) memberByIl.set(match, (memberByIl.get(match) ?? 0) + Number(r.c));
 }
 
-const memberCount = sql<number>`(select count(*) from ${schema.clubMembers} where ${schema.clubMembers.clubId} = ${schema.clubs.id})`;
+// DİKKAT: tek tablolu select'te Drizzle, seçim listesindeki sql`` içinde kolonların tablo adını ATAR
+// (${schema.clubs.id} → "id") → ilişkili alt sorgu kendi tablosunun id'siyle karşılaştırırdı (her kulüp
+// "1 üye" görünüyordu). Dış başvuru düz metin olarak tablo adıyla yazılır.
+const memberCount = sql<number>`(select count(*) from club_members cm where cm.club_id = "clubs"."id")`;
 const clubs = await db
   .select({ id: schema.clubs.id, slug: schema.clubs.slug, name: schema.clubs.name, il: schema.clubs.il, members: memberCount })
   .from(schema.clubs)

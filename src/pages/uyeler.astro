@@ -8,7 +8,10 @@ import { levelFor } from "@/lib/levels.ts";
 export const prerender = false;
 
 const q = Astro.url.searchParams.get("q")?.trim() ?? "";
-const earnedExpr = sql<number>`coalesce((select sum(case when ${schema.pointsLedger.delta} > 0 then ${schema.pointsLedger.delta} else 0 end) from ${schema.pointsLedger} where ${schema.pointsLedger.userId} = ${schema.users.id}), 0)`;
+// DİKKAT: tek tablolu select'in seçim listesinde Drizzle sql`` içindeki kolonların tablo adını atar
+// (${schema.users.id} → "id") → alt sorgu points_ledger.user_id = points_ledger.id'ye dönüşüp herkese aynı
+// yanlış puanı gösteriyordu (sıralama doğruydu: ORDER BY'da ad atılmaz). Dış başvuru düz metinle yazılır.
+const earnedExpr = sql<number>`coalesce((select sum(case when pl.delta > 0 then pl.delta else 0 end) from points_ledger pl where pl.user_id = "users"."id"), 0)`;
 
 const rows = await db
   .select({
