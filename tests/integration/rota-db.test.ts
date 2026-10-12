@@ -235,6 +235,32 @@ describe.skipIf(!URL)("rotalar — gerçek DB", { timeout: 180_000 }, () => {
     expect((await ledger(yeni.id, "welcome")).map((r) => r.delta)).toEqual([PUAN.welcome]); // yeni üyenin karşılaması değişmedi
   });
 
+  it("kayıt imzası: getOrCreateMember clientAddress'ten HMAC'li kısa hash yazar (ham IP yok); adres alınamazsa NULL", async () => {
+    const dv2 = await import("@/lib/davet.ts");
+    const yap = async (ek: string, clientAddress?: string) => {
+      const clerkId = `demo_itest_rt_imza_${ek}_${t}`;
+      const ctx = {
+        locals: { auth: () => ({ userId: clerkId }), currentUser: async () => ({ fullName: `Itest Imza ${ek}`, username: null, primaryEmailAddress: { emailAddress: `itest-imza-${ek}@example.com` }, imageUrl: null }) },
+        cookies: { get: () => undefined, delete() {} },
+        ...(clientAddress ? { clientAddress } : {}),
+      } as never;
+      const u = (await member.getOrCreateMember(ctx))!;
+      uyeler.push(u.id);
+      return (await db.query.users.findFirst({ where: eq(schema.users.id, u.id) }))!;
+    };
+    const ipli = await yap("ip", "203.0.113.7");
+    expect(ipli.signupIpHash).toBe(dv2.kisaHash("203.0.113.7"));
+    expect(ipli.signupIpHash).not.toContain("203.0.113.7");
+    expect(ipli.signupIpHash).toHaveLength(32);
+    const ipsiz = await yap("yok");
+    expect(ipsiz.signupIpHash).toBeNull();
+    // clientAddress getter fırlatırsa (statik önizleme) da null
+    const firlatan = { locals: { auth: () => ({ userId: `demo_itest_rt_imza_f_${t}` }), currentUser: async () => ({ fullName: "Itest Imza F", username: null, primaryEmailAddress: { emailAddress: "itest-imza-f@example.com" }, imageUrl: null }) }, cookies: { get: () => undefined, delete() {} }, get clientAddress(): string { throw new Error("clientAddress yok"); } } as never;
+    const f = (await member.getOrCreateMember(firlatan))!;
+    uyeler.push(f.id);
+    expect((await db.query.users.findFirst({ where: eq(schema.users.id, f.id) }))!.signupIpHash).toBeNull();
+  });
+
   /* ---------------- api/uye/kampanya.ts + gorev.ts (C2) ---------------- */
 
   it("C2 (kapandı): onay bekleyen toplulukta kampanya açılamaz (403); topluluk onaylanınca zincir çalışır ve ÜYEYE task_done yazılır", async () => {

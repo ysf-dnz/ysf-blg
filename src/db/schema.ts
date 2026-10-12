@@ -47,11 +47,18 @@ export const users = pgTable(
      * ona ya da ondan doğan bekleyen puanlar olgunlaşmaz (admin işareti kaldırınca kesinleşir).
      */
     flaggedAt: timestamp("flagged_at"),
+    /**
+     * Kayıt imzası (Faz 5 kök çözüm): kayıt anındaki istemci IP'sinin CRON_SECRET HMAC'li kısa hash'i
+     * (davet.ts kisaHash; ham IP saklanmaz). Suistimal taraması hesabın KENDİ imzasına bakar (kimliksiz
+     * ziyaret yerine). NULL = adres alınamadı ya da 30 gün sonra cron sildi (`imzalariUnut`).
+     */
+    signupIpHash: text("signup_ip_hash"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     uniqueIndex("users_clerk_id_idx").on(t.clerkId),
     uniqueIndex("users_handle_idx").on(t.handle),
+    index("users_signup_ip_idx").on(t.signupIpHash, t.createdAt),
   ],
 );
 

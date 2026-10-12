@@ -267,6 +267,21 @@ function suistimalCte(davetciId?: number) {
       )`;
 }
 
+/**
+ * Kayıt imzalarını unut (kişisel veri en az): hesap `gunOnce` günden yaşlıysa `signup_ip_hash` NULL — tarama zaten
+ * yalnız 48 saatlik yeni hesaplara bakar. Cron günlük; `userIds` yalnız entegrasyon testi (canlıyı daraltır).
+ */
+export async function imzalariUnut(gunOnce = 30, userIds?: number[]): Promise<number> {
+  const yalniz = userIds ? sql`and id in (${sql.join(userIds.map((i) => sql`${i}`), sql`, `)})` : sql``;
+  return satirlar(
+    await db.execute(sql`
+      update users set signup_ip_hash = null
+      where signup_ip_hash is not null and created_at < now() - ${gunOnce} * interval '1 day' ${yalniz}
+      returning id
+    `),
+  ).length;
+}
+
 /** Bir hesaba ait ve ondan doğan (refId sonu `u:{id}`) bekleyen puanları düşür — admin "suistimal" kararı */
 export async function bekleyenleriDusur(userId: number): Promise<number> {
   return satirlar(

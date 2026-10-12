@@ -51,6 +51,7 @@ vi.mock("@/lib/social.ts", () => ({ isaretsizKazananSql: {} }));
 vi.mock("@/lib/ekonomi.ts", () => ({
   suistimalTara: () => (h.log.push("suistimalTara"), h.tarama()),
   canlilikHavuzuDagit: () => h.havuz(),
+  imzalariUnut: vi.fn(async () => 0),
 }));
 
 import { birKezCalistir } from "@/lib/cron.ts";
@@ -85,6 +86,7 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
       "ozelLigleriKapat",
       "bekleyen",
       "davet-ziyaret-temizlik",
+      "imza-temizlik",
       "etkinlikSonrasiIsle",
       "canlilik-havuzu",
     ]);
@@ -119,7 +121,7 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
     hata.mockRestore();
     expect(r.status).toBe(200);
     expect(await r.json()).toMatchObject({ ok: true, suistimalHata: "itest: tarama patladı" });
-    expect(h.log.slice(1)).toEqual(["bayat-gorev", "aktifSezon", "ozelLigleriKapat", "bekleyen", "davet-ziyaret-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
+    expect(h.log.slice(1)).toEqual(["bayat-gorev", "aktifSezon", "ozelLigleriKapat", "bekleyen", "davet-ziyaret-temizlik", "imza-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
   });
 
   it("işaretlenen sayısı rapora yazılır", async () => {
@@ -158,7 +160,7 @@ describe("GET /api/cron/gunluk (DB'siz)", () => {
       expect(r.status).toBe(200);
       expect(await r.json()).toMatchObject({ ok: true, sezonKapandi: ["2026 Eylül"], sezonHata: ["2026 Ağustos: itest: sezon patladı"] });
       expect(hata).toHaveBeenCalled();
-      expect(h.log.slice(-4)).toEqual(["bekleyen", "davet-ziyaret-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
+      expect(h.log.slice(-5)).toEqual(["bekleyen", "davet-ziyaret-temizlik", "imza-temizlik", "etkinlikSonrasiIsle", "canlilik-havuzu"]);
     } finally {
       h.bitenler = [];
       h.patlayanSezon = "";

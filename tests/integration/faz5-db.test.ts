@@ -755,6 +755,14 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     expect(await rw.begeniPuaniVer({ begenenId: begenen.id, yazarId: taze.id, refId: `yorum:itest-lk-${t}-y` })).toBe(true);
   });
 
+  it("imzalariUnut: 30 günden yaşlı hesabın kayıt imzası NULL olur, genç hesabın kalır (yalnız verilen id'ler)", async () => {
+    const [eski, genc] = await Promise.all([uye("im-e", 40), uye("im-g", 2)]);
+    await db.update(schema.users).set({ signupIpHash: `itest-imza-${t}` }).where(inArray(schema.users.id, [eski.id, genc.id]));
+    expect(await ek.imzalariUnut(30, [eski.id, genc.id])).toBe(1);
+    expect((await db.query.users.findFirst({ where: eq(schema.users.id, eski.id) }))!.signupIpHash).toBeNull();
+    expect((await db.query.users.findFirst({ where: eq(schema.users.id, genc.id) }))!.signupIpHash).toBe(`itest-imza-${t}`);
+  });
+
   /* ---------------- F5-03: ekonomi kartı ---------------- */
 
   it("ekonomi kartı: tek satır, sayısal alanlar, test verisi sayılır", async () => {

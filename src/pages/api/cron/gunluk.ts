@@ -13,7 +13,7 @@ import { birKez, birKezCalistir } from "@/lib/cron.ts";
 import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
 import { aktifSezon, bitenSezonlar, kulupIciSiralama, sezonKapat } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey } from "@/lib/rewards.ts";
-import { canlilikHavuzuDagit, suistimalTara } from "@/lib/ekonomi.ts";
+import { canlilikHavuzuDagit, imzalariUnut, suistimalTara } from "@/lib/ekonomi.ts";
 import { isoHafta, sonTamamlananHafta } from "@/lib/economy.ts";
 import { CANLILIK_ILK_HAFTA } from "@/lib/points.ts";
 
@@ -166,6 +166,10 @@ export const GET: APIRoute = async ({ request }) => {
     return silinen.length;
   });
   if (temizlik !== undefined) rapor.davetZiyaretTemizlik = temizlik;
+
+  // 6b) Kayıt imzaları 30 gün saklanır (kişisel veri en az; tarama yalnız 48 saatlik hesaplara bakar)
+  const imza = await birKezCalistir("imza-temizlik", bugun, () => imzalariUnut());
+  if (imza !== undefined) rapor.imzaTemizlik = imza;
 
   // 7) Etkinlik sonrası (ADR 0001 K2 — bekleyen satır YOK, canlı sayım): bitişten 48 saat sonra
   // düzenleyen payı (min(giriş,100)×5), 7 gün sonra iyi değerlendirme (+50). Etkinlik başına

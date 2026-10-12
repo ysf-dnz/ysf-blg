@@ -6,10 +6,21 @@ import { and, eq, sql } from "drizzle-orm";
 import { awardPoints, puanOlayi, sayacRozetleri } from "@/lib/rewards.ts";
 import { db, schema } from "@/db/client.ts";
 import { PUAN } from "./points.ts";
+import { kisaHash } from "./davet.ts";
 import type { APIContext, AstroGlobal } from "astro";
 
 type Ctx = Pick<AstroGlobal | APIContext, "locals"> &
-  Partial<Pick<AstroGlobal | APIContext, "cookies">>;
+  Partial<Pick<AstroGlobal | APIContext, "cookies" | "clientAddress">>;
+
+/** Kayıt imzası: istemci IP'sinin HMAC'li kısa hash'i (ham IP yok); statik önizleme / test / dev'de adres yoksa null */
+export function kayitImzasi(ctx: Ctx): string | null {
+  try {
+    const ip = ctx.clientAddress;
+    return ip ? kisaHash(ip) : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Site sahibi — ilk girişte admin rolü alır */
 const OWNER_EMAILS = ["sn.yusufdeniz@gmail.com"];
@@ -55,6 +66,7 @@ export async function getOrCreateMember(ctx: Ctx): Promise<Member | null> {
       name,
       avatarUrl: clerkUser?.imageUrl,
       role: OWNER_EMAILS.includes(email.toLowerCase()) ? "admin" : "member",
+      signupIpHash: kayitImzasi(ctx),
     })
     .onConflictDoNothing({ target: schema.users.clerkId })
     .returning();
