@@ -44,9 +44,9 @@ const [takipciler, takipEdiyorMu] = await Promise.all([
       })
     : Promise.resolve(undefined),
 ]);
-// Mesaj düğmesi yalnız BEN engellediysem gizlenir (F4-04). Karşı tarafın engelinde düğme kalır ve
-// konuşma sayfası "şu an yeni mesaj almıyor" der ("kimse" ayarıyla aynı): düğmenin yokluğu engeli
-// ele verirdi. Engelleyen kendi engelini "Engeli kaldır" olarak görür.
+// Engel iki yönlü etkir: biri diğerini engellediyse Mesaj düğmesi yok (F4-04, PRD §4.6). Düğme ayarı
+// "kimse" olan üyede de yoktur: yokluğu tek başına engeli ele vermesin (konuşma sayfası iki durumda da
+// "şu an yeni mesaj almıyor" der). Engelleyen kendi engelini "Engeli kaldır" olarak görür.
 const baskasi = !!ziyaretci && ziyaretci.id !== user.id;
 const engel = baskasi ? await engelDurumu(ziyaretci!.id, user.id) : { benim: false, karsi: false };
 const sikayetBandi = Astro.url.searchParams.get("sikayet");
@@ -143,7 +143,7 @@ const SOSYAL_ETIKET: Record<string, string> = {
     </div>
     <div class="ml-auto flex flex-wrap items-center justify-end gap-4">
       {
-        baskasi && !engel.benim && (
+        baskasi && !engel.benim && !engel.karsi && user.dmPolicy !== "nobody" && (
           <a
             href={R.uye.mesaj(user.handle)}
             class="rounded-full border border-accent px-5 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-surface"

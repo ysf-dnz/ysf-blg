@@ -140,11 +140,14 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
   });
 
   test("AC-22 + AC-21: engelleyene mesaj atılamaz, Mesaj düğmesi yok, haritada görünmez; rızasız üye haritada yok; filtre", async ({ page }) => {
-    // Zeynep test üyesini engelledi (global-setup): form yok, uç reddeder — ama engel SÖYLENMEZ:
-    // Mesaj düğmesi yerinde, metin / adres / durum kodu "kimse" ayarlı Mehmet'inkiyle birebir aynı
+    // Zeynep test üyesini engelledi (global-setup): düğme yok, form yok, uç reddeder — ama engel
+    // SÖYLENMEZ: düğmenin yokluğu, metin, adres ve durum kodu "kimse" ayarlı Mehmet'inkiyle birebir aynı
+    await page.goto(`/u/${MEHMET}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("[data-profil-islemler]")).toBeVisible();
+    await expect(page.locator("[data-mesaj-gonder]")).toHaveCount(0);
     await page.goto(`/u/${ZEYNEP}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-profil-islemler]")).toBeVisible();
-    await expect(page.locator("[data-mesaj-gonder]")).toHaveCount(1);
+    await expect(page.locator("[data-mesaj-gonder]")).toHaveCount(0);
     await page.goto(`/uye/mesajlar/${ZEYNEP}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-mesaj-kapali]")).toHaveText(/şu an yeni mesaj almıyor/);
     await expect(page.locator("[data-mesaj-kapali]")).not.toContainText(/engel/i);
