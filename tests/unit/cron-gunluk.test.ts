@@ -41,7 +41,7 @@ vi.mock("@/lib/rewards.ts", async (orig) => ({
 vi.mock("@/lib/social.ts", () => ({ isaretsizKazananSql: {} }));
 vi.mock("@/lib/ekonomi.ts", () => ({
   suistimalTara: () => (h.log.push("suistimalTara"), h.tarama()),
-  canlilikHavuzuDagit: (hafta: unknown) => h.havuz(hafta as never),
+  canlilikHavuzuDagit: () => h.havuz(),
 }));
 
 import { birKezCalistir } from "@/lib/cron.ts";
