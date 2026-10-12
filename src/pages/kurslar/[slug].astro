@@ -225,6 +225,8 @@ const bant = Astro.url.searchParams.has("davet")
     ? "Kursun yayında 🚀 Paylaş: ilk 3 katılımcı aktive olunca +50."
     : Astro.url.searchParams.has("onay")
       ? "Kursun admin onayına gitti. Onaylanınca bildirim alırsın; sayfa şimdilik yalnız sana görünür."
+      : Astro.url.searchParams.get("hata") === "hiz"
+        ? "Çok hızlısın — 30 saniye sonra yeniden dene."
       : Astro.url.searchParams.has("sikayet")
         ? Astro.url.searchParams.get("sikayet") === "hiz"
           ? "Saatte en çok 10 şikâyet gönderebilirsin; biraz sonra yeniden dene."

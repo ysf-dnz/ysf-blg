@@ -1,6 +1,6 @@
 ---
 /** Admin paneli: bekleyen yazılar + başvurular (yalnızca role=admin). */
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 import Base from "@/layouts/Base.astro";
 import { db, schema } from "@/db/client.ts";
 import { getOrCreateMember } from "@/lib/member.ts";
@@ -100,6 +100,20 @@ const sikayetliUyeler = new Map(
   ).map((u) => [u.id, u]),
 );
 const SIKAYET_TURU: Record<string, string> = { course: "Kurs", comment: "Yorum", user: "Üye", message: "Mesaj" };
+// Faz 4 ölçümleri (PRD §8: "haritada görünme oranı, mesaj şikâyetleri") — tek sorgu
+const [olcum] = await db
+  .select({
+    konumlu: sql<number>`count(*) filter (where ${schema.users.city} is not null)`,
+    gorunen: sql<number>`count(*) filter (where ${schema.users.mapVisibleAt} is not null)`,
+  })
+  .from(schema.users);
+const [mesajOlcum] = await db
+  .select({
+    mesaj: sql<number>`count(*) filter (where ${schema.messages.createdAt} > now() - interval '7 days')`,
+    yazan: sql<number>`count(distinct ${schema.messages.senderId}) filter (where ${schema.messages.createdAt} > now() - interval '7 days')`,
+  })
+  .from(schema.messages);
+const kisiselSikayet = acikSikayetler.filter((r) => r.targetType === "user" || r.targetType === "message").length;
 const pendingApps = await db.query.applications.findMany({
   where: eq(schema.applications.status, "pending"),
   orderBy: desc(schema.applications.createdAt),
@@ -239,6 +253,11 @@ const pendingApps = await db.query.applications.findMany({
 
   <section class="mt-10">
     <h2 class="font-display text-xl font-semibold text-ink">Şikâyet kuyruğu ({sikayetGruplari.length})</h2>
+    <p class="mt-1 text-sm text-ink-muted" data-faz4-olcum>
+      Haritada görünen <strong class="text-ink">{Number(olcum?.gorunen ?? 0)}</strong> / konumlu {Number(olcum?.konumlu ?? 0)} üye ·
+      son 7 günde <strong class="text-ink">{Number(mesajOlcum?.mesaj ?? 0)}</strong> mesaj ({Number(mesajOlcum?.yazan ?? 0)} gönderen) ·
+      açık üye/mesaj şikâyeti <strong class="text-ink">{kisiselSikayet}</strong>
+    </p>
     {sikayetGruplari.length === 0 && <p class="mt-2 text-ink-muted">Açık şikâyet yok.</p>}
     <div class="mt-4 space-y-4">
       {sikayetGruplari.map((g) => {

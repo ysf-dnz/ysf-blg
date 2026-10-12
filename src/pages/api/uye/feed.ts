@@ -37,9 +37,11 @@ export const POST: APIRoute = async (context) => {
 
   if (action === "post" || action === "comment") {
     if (await sonSaniyelerdeVarMi(member.id)) {
-      return new Response("Çok hızlısın — 30 saniye sonra tekrar dene.", {
-        status: 429,
-      });
+      // Düz metin 429 DEĞİL: ClientRouter HTML olmayan yanıtta aksiyon adresine GET atar → kullanıcı
+      // "çok hızlısın" yerine 404 görüyordu. Geldiği sayfaya ?hata=hiz bandıyla döner (hash korunur).
+      const geri = new URL(guvenliYol(form, "/topluluk"), "http://x");
+      geri.searchParams.set("hata", "hiz");
+      return context.redirect(`${geri.pathname}${geri.search}${geri.hash}`);
     }
   }
 
