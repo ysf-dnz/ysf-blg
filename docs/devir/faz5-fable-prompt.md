@@ -15,7 +15,7 @@ DURUM
 
 NEDEN SEN
 1. İnceleme düzeltmeleri commit'i `09fc098` incelenmeden dala girdi. Sonradan iki mercekle bakıldı: 11 bulgu, 10'u çürütmeden geçti (6 doğrulandı, 4 kısmen; yüksek yok, biri orta). Çoğu puan motorunda: `puanOlayi`, `bekleyeniKesinlestir`, `bekleyenleriIsle`.
-2. 125 kuralın 35'i güçlü testle kilitli, 35'i zayıf, 55'i testsiz. Faz 5 kurallarını sınayan hiçbir test rotadan geçmiyor: entegrasyon lib fonksiyonlarını doğrudan çağırıyor; `api/uye/admin.ts`'in `flag_*` dalları ve `api/cron/gunluk.ts` hiçbir testte koşmuyor.
+2. 125 kuralın 35'i güçlü testle kilitli, 35'i zayıf, 55'i testsiz (00a95a4 anının sayımı; Fable 2026-10-12 kilitlemeleri sonrası yeniden sayılmadı). Faz 5 kurallarını sınayan hiçbir test rotadan geçmiyor: entegrasyon lib fonksiyonlarını doğrudan çağırıyor; `api/uye/admin.ts`'in `flag_*` dalları ve `api/cron/gunluk.ts` hiçbir testte koşmuyor.
 3. Kök çözümler şema / üye oluşturma yolu / mevcut ekonomi kararı istiyor.
 4. Entegrasyon takımının bir koşumu 3 dosyada kırmızıydı (11 başarısız + 7 atlanan); hata metni yakalanmadı, sonraki iki koşum 67/67. CLAUDE.md'deki "Neon soğuk başlangıcı" açıklaması KANITSIZ bir hipotezdir.
 Devir belgesindeki hiçbir iddia TEST koşturularak doğrulanmadı; hepsi kod okuması. Tek istisna §1 C1 (sezon kapanmıyor): canlıda salt-okunur SELECT ile görüldü.
