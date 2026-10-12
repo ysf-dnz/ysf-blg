@@ -17,10 +17,6 @@ const sayimlar = {
   "seasons name itest-%": n(sql`select count(*)::int as n from seasons where name like 'itest-%'`),
   "invite_visits ip_hash itest-%": n(sql`select count(*)::int as n from invite_visits where ip_hash like 'itest-%'`),
   "users flagged_at dolu (itest)": n(sql`select count(*)::int as n from users where flagged_at is not null and clerk_id like 'demo\\_itest\\_%'`),
-  "cron_runs etkinlik-* (sahipsiz)": n(
-    sql`select count(*)::int as n from cron_runs c where c.job in ('etkinlik-host', 'etkinlik-degerlendirme')
-      and c.period_key ~ '^[0-9]+$' and not exists (select 1 from events e where e.id = c.period_key::int)`,
-  ),
   "cron_runs suistimal-temiz (sahipsiz)": n(
     sql`select count(*)::int as n from cron_runs c where c.job = 'suistimal-temiz' and not exists (select 1 from users u where u.id::text = c.period_key)`,
   ),
@@ -29,6 +25,11 @@ const sayimlar = {
 const bilgi = {
   "users flagged_at dolu (hepsi)": n(sql`select count(*)::int as n from users where flagged_at is not null`),
   "cron_runs suistimal-temiz (hepsi)": n(sql`select count(*)::int as n from cron_runs where job = 'suistimal-temiz'`),
+  // seed:demo demo etkinliğini silince canlı cron'un etkinlik kilidi sahipsiz kalır (meşru) → yalnız bilgi
+  "cron_runs etkinlik-* (sahipsiz)": n(
+    sql`select count(*)::int as n from cron_runs c where c.job in ('etkinlik-host', 'etkinlik-degerlendirme')
+      and c.period_key ~ '^[0-9]+$' and not exists (select 1 from events e where e.id = c.period_key::int)`,
+  ),
 };
 let kirli = false;
 for (const [ad, p] of Object.entries(sayimlar)) {

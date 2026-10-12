@@ -358,6 +358,19 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
   });
   it.todo("B5 karar (#42): kayıt anında hesap imzası (şema + getOrCreateMember) — ziyaretsiz çiftlik ve /?ref= çiftliği ancak böyle görünür (devir §1 B5, #64 kök çözüm)");
 
+  it("tarama aday sorgusu: iki şüpheli davetçinin ORTAK üyeleri parametresiz adaylarda kişi başına TEK satır (en küçük inviter_id) — UPDATE … FROM ile aynı küme", async () => {
+    const [a, b] = [await davetci2("ds1"), await davetci2("ds2")];
+    const ortak = await Promise.all([1, 2, 3, 4, 5].map((i) => a.davetli(i)));
+    await db.insert(schema.courseEnrollments).values(ortak.map((g) => ({ userId: g.id, courseId: b.k.id, inviteCodeId: b.kod.id })));
+    for (let i = 0; i < 5; i++) await Promise.all([a.ziyaret("tek"), b.ziyaret("tek")]);
+    const ids = ortak.map((g) => g.id).sort();
+    expect(await a.adaylar()).toEqual(ids);
+    expect(await b.adaylar()).toEqual(ids);
+    const hepsi = (await ek.suistimalAdaylari()).filter((r) => ids.includes(r.id)); // parametresiz: yalnız SELECT, yazmaz
+    expect(hepsi.map((r) => r.id).sort()).toEqual(ids); // iki davetçi altında olsa da tek satır
+    expect(new Set(hepsi.map((r) => r.inviter_id))).toEqual(new Set([Math.min(a.d.id, b.d.id)]));
+  });
+
   it("işaretli KAYNAK ve ALICI: bekleyen olgunlaşmaz; işaret kalkınca kesinleşir", async () => {
     const [k1, k2] = kuklalar;
     const kursId = ana.id;

@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { neon } from "@neondatabase/serverless";
 
-// İki test de demo Elif'in işaretini yazıp geri alır; misafir projesi paralel → aynı dosyada seri
-test.describe.configure({ mode: "serial" });
+// İki test de demo Elif'in işaretini yazıp geri alır; misafir projesi paralel → aynı dosyada sırayla (bağımsız: default)
+test.describe.configure({ mode: "default" });
 
 /**
  * Faz 5 (F5-04): işaretli (users.flagged_at) üye liderlik tablolarında görünmez.
