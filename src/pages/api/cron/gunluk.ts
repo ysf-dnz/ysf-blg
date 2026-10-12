@@ -3,8 +3,8 @@
  * Kimlik: Authorization: Bearer CRON_SECRET (Vercel) veya x-cron-secret.
  * Her iş cron_runs (job, period_key UNIQUE) ile idempotent: aynı dönem
  * ikinci kez çalışmaz; endpoint elle de güvenle tetiklenebilir.
- * İşler: bayat görev, sezon, ayın kitabı, özel ligler, bekleyen puanlar, davet ziyaret
- * temizliği, etkinlik sonrası (düzenleyen payı + iyi değerlendirme).
+ * İşler: bayat görev, sezon, ayın kitabı, özel ligler, suistimal taraması, bekleyen puanlar,
+ * davet ziyaret temizliği, etkinlik sonrası (düzenleyen payı + iyi değerlendirme), canlılık havuzu.
  */
 import type { APIRoute } from "astro";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
@@ -13,6 +13,10 @@ import { birKez, birKezCalistir } from "@/lib/cron.ts";
 import { etkinlikSonrasiIsle } from "@/lib/etkinlik.ts";
 import { aktifSezon, kulupIciSiralama, kulupSiralamasi } from "@/lib/league.ts";
 import { awardBadge, bekleyenleriIsle, gunKey, hazineKitabiAc } from "@/lib/rewards.ts";
+import { isaretsizKazananSql } from "@/lib/social.ts";
+import { canlilikHavuzuDagit, suistimalTara } from "@/lib/ekonomi.ts";
+import { sonTamamlananHafta } from "@/lib/economy.ts";
+import { CANLILIK_ILK_HAFTA } from "@/lib/points.ts";
 
 export const prerender = false;
 
@@ -67,6 +71,7 @@ async function sezonKapat(sezon: typeof schema.seasons.$inferSelect) {
           sql`${schema.pointsLedger.delta} > 0`,
           sql`${schema.pointsLedger.createdAt} >= ${sezon.startsAt}`,
           sql`${schema.pointsLedger.createdAt} < ${sezon.endsAt}`,
+          isaretsizKazananSql,
         ),
       )
       .groupBy(schema.pointsLedger.userId)
@@ -180,6 +185,11 @@ export const GET: APIRoute = async ({ request }) => {
   // 4) Biten özel ligler
   await ozelLigleriKapat();
 
+  // 5a) Suistimal taraması (F5-04) — bekleyenlerden ÖNCE: işaretlenen hesabın bekleyeni olgunlaşmasın.
+  // Kilitsiz: UPDATE idempotent (yalnız flagged_at IS NULL satırları), her koşumda güvenle çalışır.
+  const isaretlenen = await suistimalTara();
+  if (isaretlenen.length) rapor.suistimal = isaretlenen.length;
+
   // 5) Bekleyen puanlar: olgunlaşanlar kesinleşir, süresi dolanlar düşer (ADR 0001 K2)
   const bekleyen = await birKezCalistir("bekleyen", bugun, () => bekleyenleriIsle());
   if (bekleyen !== undefined) rapor.bekleyen = bekleyen;
@@ -199,6 +209,14 @@ export const GET: APIRoute = async ({ request }) => {
   // tek-atış kilit; tek bozuk etkinlik diğerlerini durdurmaz (içeride yakalanır).
   const etkinlik = await etkinlikSonrasiIsle();
   if (etkinlik.host || etkinlik.iyiDegerlendirme || etkinlik.hata) rapor.etkinlik = etkinlik;
+
+  // 8) Canlılık havuzu (F5-02): son TAMAMLANAN TR haftası — ilk kez pazartesi koşar, cron atlanırsa
+  // ertesi gün telafi eder. Açılıştan önceki haftalar ödenmez.
+  const hafta = sonTamamlananHafta();
+  if (hafta.etiket >= CANLILIK_ILK_HAFTA) {
+    const canlilik = await birKezCalistir("canlilik-havuzu", hafta.etiket, () => canlilikHavuzuDagit(hafta));
+    if (canlilik !== undefined) rapor.canlilikHavuzu = { hafta: hafta.etiket, ...canlilik };
+  }
 
   return new Response(JSON.stringify({ ok: true, ...rapor }), {
     headers: { "content-type": "application/json" },
