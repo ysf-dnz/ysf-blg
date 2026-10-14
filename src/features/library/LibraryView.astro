@@ -183,7 +183,7 @@ const toplamKaynak = notebooks.reduce((s, n) => s + n.data.sourceCount, 0);
           {cat.data.full && (
             <p class="mt-1 text-sm text-ink-muted">{cat.data.full}</p>
           )}
-          <ul class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(byCategory.get(cat.data.id) ?? []).map((nb) => (
               <li>
                 <NotebookCard notebook={nb.data} />

@@ -13,7 +13,6 @@ export const prerender = false;
 const member = await getOrCreateMember(Astro);
 if (!member) return Astro.redirect("/");
 const durum = Astro.url.searchParams.get("durum");
-const kaydedildi = durum === "ok" || durum === "gizlilik";
 const ilListesi = ILLER;
 const dmPolitika = member.dmPolicy ?? "mutual";
 const DM_SECENEKLERI = [
@@ -42,9 +41,9 @@ const PLATFORMLAR = [
 <Base title="Profilim">
   <div class="mx-auto max-w-lg">
     {
-      kaydedildi && (
+      durum === "ok" && (
         <div class="menu-pop mb-6 rounded-2xl border border-accent bg-accent-soft p-4 text-center text-sm text-ink">
-          {durum === "gizlilik" ? "Harita ve mesaj ayarların kaydedildi ✓" : "Profilin güncellendi ✓"}{" "}
+          Profilin güncellendi ✓{" "}
           {member.mapVisibleAt ? (
             <>Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> üyelere görünüyorsun.</>
           ) : (
@@ -59,7 +58,7 @@ const PLATFORMLAR = [
       puanların takımına da yazılır.
     </p>
 
-    <form method="post" action="/api/uye/profil" class="mt-6 grid gap-4">
+    <form method="post" action="/api/uye/profil" class="mt-6 grid gap-4" data-profil-formu>
       <label class="grid gap-1">
         <span class="text-sm font-medium text-ink">Şehir</span>
         <select name="city" class="rounded-lg border border-line bg-surface-raised px-3 py-2">
@@ -102,7 +101,7 @@ const PLATFORMLAR = [
                 type="url"
                 value={socials[p.key] ?? ""}
                 placeholder={p.ph}
-                class="rounded-lg border border-line bg-surface px-3 py-1.5"
+                class="w-full min-w-0 rounded-lg border border-line bg-surface px-3 py-1.5"
               />
             </label>
           ))
@@ -117,10 +116,23 @@ const PLATFORMLAR = [
     {/* Ayrı form: profil alanlarını kaydetmek rızayı / mesaj ayarını değiştirmez (ve tersi) */}
     <form method="post" action="/api/uye/profil" id="gizlilik" class="mt-8 grid scroll-mt-24 gap-4" data-gizlilik-formu>
       <input type="hidden" name="action" value="gizlilik" />
+      {/* Kayıt #gizlilik'e döner: bant formun başında, sayfanın tepesinde kalsaydı görünmezdi */}
+      {
+        durum === "gizlilik" && (
+          <p role="status" data-gizlilik-bandi class="menu-pop rounded-2xl border border-accent bg-accent-soft p-3 text-center text-sm text-ink">
+            Kaydedildi ✓{" "}
+            {member.mapVisibleAt ? (
+              <>Artık <a href="/harita" class="font-medium text-accent hover:underline">haritada</a> üyelere görünüyorsun.</>
+            ) : (
+              <>Haritada adınla görünmüyorsun.</>
+            )}
+          </p>
+        )
+      }
       <fieldset class="grid gap-4 rounded-2xl border border-line bg-surface-raised p-4">
         <legend class="px-1 text-sm font-medium text-ink">🗺️ Harita ve mesaj</legend>
-        <label class="flex items-start gap-3 text-sm text-ink">
-          <input type="checkbox" name="mapVisible" value="1" checked={!!member.mapVisibleAt} disabled={!member.city} class="mt-1 size-4 accent-[var(--accent)]" />
+        <label class="flex min-h-11 items-start gap-3 text-sm text-ink">
+          <input type="checkbox" name="mapVisible" value="1" checked={!!member.mapVisibleAt} disabled={!member.city} class="mt-0.5 size-5 accent-[var(--accent)]" />
           <span>
             <strong>Haritada görün.</strong>
             <span class="text-ink-muted">
@@ -133,7 +145,7 @@ const PLATFORMLAR = [
         </label>
         <label class="grid gap-1">
           <span class="text-sm font-medium text-ink">Kimden mesaj alırım</span>
-          <select name="dmPolicy" class="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
+          <select name="dmPolicy" class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm">
             {DM_SECENEKLERI.map((s) => <option value={s.deger} selected={dmPolitika === s.deger}>{s.ad}</option>)}
           </select>
           <span class="text-xs text-ink-muted">Seni rahatsız eden birini profilinden ya da konuşmadan engelleyebilirsin.</span>
@@ -145,4 +157,22 @@ const PLATFORMLAR = [
       <p class="-mt-2 text-xs text-ink-muted">Bu bölüm ayrı kaydedilir: yukarıdaki profil alanlarında kaydetmediğin değişiklik varsa önce onu kaydet.</p>
     </form>
   </div>
+
+  <script>
+    // Kutu / seçim dokununca kaydedilir: "Ayarları kaydet" yüzen çubuğun altında kalınca kutu "tutuk" görünüyordu;
+    // düğme JS'siz yol olarak kalır. Profil formunda kaydedilmemiş değişiklik varsa kendiliğinden GÖNDERİLMEZ (sayfa
+    // yenilenince yazılan kaybolurdu). Delegasyon: astro:page-load ilk yüklemede window load'da gelir, ondan önceki
+    // dokunuş kaçardı. form.action değil (name="action" girdisi gölgeler); requestSubmit iOS < 16'da yok.
+    let profilKirli = false;
+    document.addEventListener("astro:after-swap", () => (profilKirli = false));
+    document.addEventListener("input", (e) => {
+      if ((e.target as Element).closest("form[data-profil-formu]")) profilKirli = true;
+    });
+    document.addEventListener("change", (e) => {
+      const el = e.target as Element;
+      const form = el.closest<HTMLFormElement>("form[data-gizlilik-formu]");
+      if (form && !profilKirli && el.matches('input[name="mapVisible"], select[name="dmPolicy"]'))
+        HTMLFormElement.prototype.submit.call(form);
+    });
+  </script>
 </Base>

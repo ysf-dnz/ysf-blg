@@ -94,6 +94,12 @@
   }
 }
 
+/* Yüzen Öğren/Üret çubuğu (FloatingNudges, fixed bottom-4) görünürken içeriğin sonu altında kalmasın. Katmansız:
+   main'in py-8 utility'sini ezer; çubuk kapanınca boşluk kalkar, :has desteksiz tarayıcıda eski davranış. */
+body:has([data-nudge]:not([hidden])) main#icerik {
+  padding-bottom: 5.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

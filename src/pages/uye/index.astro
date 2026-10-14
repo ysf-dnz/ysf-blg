@@ -70,10 +70,18 @@ const gorevler = [
     odul: "+100",
   },
   {
-    ok: !!(member.city || member.university),
+    ok: !!member.city && !!member.university,
     baslik: "Profilini tamamla",
-    aciklama: "Şehrini seç, haritada görün; üniversiteni yaz, takımına puan kazandır.",
+    aciklama: "Şehrini ve üniversiteni yaz; puanların üniversite tablosuna sayılır.",
     href: "/uye/profil",
+    odul: "🎓",
+  },
+  // Ayrı görev: harita açık rızadır ve puan VERMEZ (eski metin puanı haritaya bağlıyordu, rızayı hiç sormuyordu)
+  {
+    ok: !!member.mapVisibleAt,
+    baslik: "Haritada görün",
+    aciklama: "Şehrindeki okurlara görün (rızayla; puan vermez).",
+    href: "/uye/profil#gizlilik",
     odul: "🗺️",
   },
   {

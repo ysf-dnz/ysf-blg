@@ -304,8 +304,7 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
       await page.getByRole("button", { name: "Kaydet", exact: true }).click();
       await expect(page).toHaveURL(/durum=ok/);
       if (!gorun) return; // şehir boşalınca rıza da kalkar
-      await page.locator('input[name="mapVisible"]').check();
-      await page.getByRole("button", { name: "Ayarları kaydet" }).click();
+      await page.locator('input[name="mapVisible"]').check(); // dokunuş kaydeder (düğmeye basılmaz — B1)
       await expect(page).toHaveURL(/durum=gizlilik/);
     };
     const profilAlanlari = { city: "Ardahan", university: "", bio: "" };

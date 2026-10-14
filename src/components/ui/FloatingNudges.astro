@@ -4,7 +4,8 @@
  *  · sağ alt ✍️ "Üret"  — yazma/paylaşma kısayolları
  *  · sol alt 📖 "Öğren" — okuma/araştırma kısayolları
  * Nazik = 4 sn gecikmeli belirir, tek tıkla kapanır, oturum boyunca
- * bir daha rahatsız etmez (sessionStorage), içeriği örtmez.
+ * bir daha rahatsız etmez (sessionStorage). Görünürken main'e alt boşluk
+ * verilir (global.css `body:has([data-nudge]…)`) — içeriğin sonu altında kalmaz.
  */
 const uretMenu = [
   { href: "/uye/yaz", ikon: "✍️", ad: "Yazı yaz", not: "+100 puan" },

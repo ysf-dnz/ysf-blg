@@ -157,7 +157,12 @@ if (beslenen.length) {
             <ul class="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-1.5 text-left text-xs text-ink-muted">
               <li class="rounded-lg bg-surface px-2.5 py-1.5">📥 Kitabı bilgisayarına indir</li>
               <li class="rounded-lg bg-surface px-2.5 py-1.5">📖 Sitede oku (Drive)</li>
-              <li class="rounded-lg bg-surface px-2.5 py-1.5">💬 NotebookLM ile kitaba soru sor</li>
+              {/* Vaat yalnız defteri bağlı kitapta (884'ün 15'i); yoksa her açılan kitapta olan bir değer — link değil, misafir DOM'una id girmez */}
+              {notebookId ? (
+                <li class="rounded-lg bg-surface px-2.5 py-1.5">💬 NotebookLM ile kitaba soru sor</li>
+              ) : (
+                <li class="rounded-lg bg-surface px-2.5 py-1.5">📚 Profilindeki okuma rafında görünür</li>
+              )}
               <li class="rounded-lg bg-surface px-2.5 py-1.5">📝 Bölüm bölüm Türkçe özet</li>
               {moduller.length > 0 ? (
                 <li class="rounded-lg bg-surface px-2.5 py-1.5">🎧 {moduller.length} ek içerik: slayt · podcast · infografik</li>

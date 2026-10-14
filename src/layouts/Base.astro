@@ -108,14 +108,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
       {t("nav.icerigeAtla")}
     </a>
     <header class="site-header">
-      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
+      {/* Girişli başlık ✉️ + 🔔 + Clerk ile 369 px ister: 360 px altında yalnız o zaman satır sarar (yoksa sayfa yana taşar) */}
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 max-[360px]:has-[[data-dm-zil]]:flex-wrap">
         <a
           href={localizePath("/", lang)}
           class="brand-link font-display text-xl font-semibold tracking-tight text-ink hover:text-accent"
         >
           {t("site.title")}
         </a>
-        <nav class="flex items-center gap-1 sm:gap-2" aria-label="Ana menü">
+        <nav class="ml-auto flex items-center gap-1 sm:gap-2" aria-label="Ana menü">
           <div class="hidden items-center gap-1 sm:flex sm:gap-2">
             {
               nav.map((item) => (
