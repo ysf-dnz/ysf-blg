@@ -206,7 +206,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     </main>
 
     <script>
-      import { initMotion } from "@/features/motion/init.ts";
+      import { baslikYuksekliginiIzle, initMotion } from "@/features/motion/init.ts";
       import { closePop } from "@/features/motion/waapi.ts";
 
       // Mobil menü: dışarı tıklayınca veya Escape ile kapanır.
@@ -228,6 +228,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
         if (e.key === "Escape" && menu?.open) closeMenu(menu);
       });
 
+      // Yapışkan alt çubukların ofseti ilk yüklemede `load`'u (astro:page-load) beklemesin
+      baslikYuksekliginiIzle();
       // Animasyon motoru: ilk yüklemede ve her soft-nav sonrasında
       document.addEventListener("astro:page-load", initMotion);
     </script>

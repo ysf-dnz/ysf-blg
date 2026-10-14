@@ -40,6 +40,9 @@
   --line: #e4e2dc;
   --accent: var(--color-cini-600);
   --accent-soft: var(--color-cini-100);
+  /* Yapışkan başlığın yüksekliği: motion/init.ts ölçüp yazar (girişli / dar ekranda büyür);
+     betik koşana dek misafir başlığı (her genişlikte 76 px) */
+  --header-h: 76px;
 }
 
 [data-theme="dark"] {

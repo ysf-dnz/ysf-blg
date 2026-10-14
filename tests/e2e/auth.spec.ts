@@ -106,6 +106,28 @@ const tasanlar = (page: Page) =>
     return [`scrollWidth ${sw} > ${W}`, ...[...document.querySelectorAll("body *")].filter((e) => e.getBoundingClientRect().right > W + 1).slice(0, 5).map(ad)];
   });
 
+// Yapışkan alt çubuk girişli başlığın hemen altında: dar ekranda logo iki satır (375 px'te 88 px) — sabit
+// top-[65px] 23 px altına giriyordu. Başlık --header-h ile ölçülür; Clerk düğmesi sonradan gelince de güncellenir.
+test("girişli dar ekranda yapışkan yazı çubuğu başlığın altına girmez", async ({ page }) => {
+  test.skip(!process.env.E2E_CLERK_USER, "CLERK_SECRET_KEY yok (.env.local) — auth e2e atlandı");
+  await page.goto("/");
+  await clerk.signIn({ page, emailAddress: process.env.E2E_CLERK_USER! });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/uye/yaz", { waitUntil: "load" });
+  await page.locator(".cl-userButtonTrigger").waitFor(); // başlığın son hâli
+  await page.evaluate(() => {
+    // Yapışkan öğe ebeveyninin (#editor-form) sınırında kalır: ebeveyn uzatılır, sayfa kaydırılır
+    document.querySelector("main#icerik .sticky")!.parentElement!.append(Object.assign(document.createElement("div"), { style: "height:3000px" }));
+    window.scrollTo({ top: 1500, behavior: "instant" }); // smooth kaydırmanın ara karesinde (scrollY ≈ 32) eski 65 px de 0 verirdi
+  });
+  const fark = () =>
+    page.evaluate(() => {
+      const baslik = document.querySelector(".site-header")!.getBoundingClientRect().bottom;
+      return Math.round(document.querySelector("main#icerik .sticky")!.getBoundingClientRect().top - baslik);
+    });
+  await expect.poll(fark, { message: "çubuk üstü − başlık altı" }).toBe(0);
+});
+
 // B4 + B5 (üye): 320 px'te taşma yok (girişli başlık 369 px istiyordu, profil formu 506, yazı çubuğu 413); yüzen çubuk
 // görünürken main'in sonu kaydırılınca profil formunun son düğmesi çubuğun altında kalmaz
 test("üye sayfaları 320 px'te yatay taşmaz; yüzen çubuk profil formunun son düğmesini örtmez", async ({ page }) => {
