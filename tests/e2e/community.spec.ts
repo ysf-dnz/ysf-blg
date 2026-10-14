@@ -39,6 +39,19 @@ test.describe("topluluk alanı — sekme çubuğu ve akış", () => {
     expect(overflow).toBe(false);
   });
 
+  // Seviye TOPLAM kazanılandan (levels.ts): liderlik eskiden dönem toplamından hesaplıyordu — 144 kazanılan (Sv 4)
+  // üye, son 7 günün 64 puanıyla "Sv 3" görünüyordu (profil ve pano Sv 4). Aynı üye her sekmede aynı seviyede olmalı.
+  test("liderlikte seviye dönemden bağımsız: aynı üyenin Sv'si 7 gün / 30 gün / tüm zamanlar sekmelerinde aynı", async ({ request }) => {
+    const seviyeler = async (t: string) => {
+      const html = await (await request.get(`/lider?t=${t}`)).text();
+      return new Map([...html.matchAll(/@([a-z0-9-]+) · Sv (\d)/g)].map((m) => [m[1]!, m[2]!]));
+    };
+    const tum = await seviyeler("all");
+    expect(tum.size, "tüm zamanlar tablosu boş — npm run seed:demo").toBeGreaterThan(0);
+    for (const t of ["7", "30"])
+      for (const [handle, sv] of await seviyeler(t)) if (tum.has(handle)) expect(sv, `${handle} ?t=${t}`).toBe(tum.get(handle));
+  });
+
   // Başlık yüksekliği --header-h ile ölçülür (motion/init.ts): sabit top-[65px] misafirde bile 11 px altına giriyordu
   test("yapışkan sekme çubuğu kaydırınca başlığın hemen altında durur (375 + 1280 px)", async ({ page }) => {
     for (const width of [375, 1280]) {

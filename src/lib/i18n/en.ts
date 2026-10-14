@@ -90,6 +90,8 @@ export const en: Record<UiKey, string> = {
   "uye.katil": "Join",
   "uye.panel": "My space",
   "uye.puan": "points",
+  "uye.harcanabilirPuan": "spendable points",
+  "uye.toplamKazanilan": "earned in total",
   "uye.seviye": "Level",
   "uye.hosgeldinBaslik": "Welcome aboard!",
   "uye.hosgeldinKitap": "Your first book is a gift — start reading now:",

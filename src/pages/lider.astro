@@ -7,8 +7,8 @@
 import { and, desc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import ToplulukLayout from "@/layouts/ToplulukLayout.astro";
 import { db, schema } from "@/db/client.ts";
-import { levelFor } from "@/lib/levels.ts";
 import { aktifSezon, kulupSiralamasi } from "@/lib/league.ts";
+import { getLevelsMap } from "@/lib/social.ts";
 
 export const prerender = false;
 
@@ -45,6 +45,10 @@ const rows = await db
   )
   .orderBy(desc(earnedExpr))
   .limit(20);
+// Seviye TOPLAM kazanılandan (levels.ts; profil ve pano da öyle): dönem toplamından hesaplanınca 7 günde
+// az kazanan üye burada bir alt seviyede görünüyordu (144 kazanılan → Sv 4, son 7 günün 64'ü → "Sv 3")
+const seviyeler = await getLevelsMap(rows.map((r) => r.userId));
+const donem = tab === "7" ? "7 gün" : tab === "30" ? "30 gün" : "toplam";
 
 // Üniversite takım tablosu (tüm zamanlar)
 const uniRows = await db
@@ -154,7 +158,8 @@ const kalanGun = sezon
     )
   }
 
-  <div class:list={["mt-6 grid gap-8 lg:grid-cols-[1fr_320px]", tab === "lig" && "hidden"]}>
+  {/* grid-cols-1: örtük auto sütun kırılmayan en uzun içeriğe (truncate ad, uzun handle) büyüyüp 320 px'te sayfayı taşırıyordu (/kutuphane B4 ile aynı kök) */}
+  <div class:list={["mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]", tab === "lig" && "hidden"]}>
     <ol class="space-y-2" data-stagger>
       {rows.length === 0 && <p class="text-ink-muted">Bu dönemde henüz puan kazanılmadı.</p>}
       {
@@ -170,12 +175,15 @@ const kalanGun = sezon
               {r.avatarUrl && <img src={r.avatarUrl} alt="" width="36" height="36" class="size-9 rounded-full" />}
               <span class="min-w-0 flex-1">
                 <span class="block truncate font-medium text-ink">{r.name}</span>
-                <span class="text-xs text-ink-muted">
-                  @{r.handle} · Sv {levelFor(Number(r.total))}
+                <span class="text-xs break-words text-ink-muted">
+                  @{r.handle} · Sv {seviyeler.get(r.userId) ?? 1}
                   {r.university && ` · ${r.university}`}
                 </span>
               </span>
-              <span class="font-display text-lg font-semibold text-accent">{r.total}</span>
+              <span class="shrink-0 text-right">
+                <span class="block font-display text-lg font-semibold text-accent">{r.total}</span>
+                <span class="block text-[11px] text-ink-muted" data-donem>p · {donem}</span>
+              </span>
             </a>
           </li>
         ))
