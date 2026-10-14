@@ -4,6 +4,8 @@
  * Çıkış kodu 1: itest artığı (üye / kurs / kulüp / etkinlik / sezon / ziyaret), işaretli itest hesabı ya da
  * sahipsiz `suistimal-temiz` kaydı var. Gerçek işaretler bilgi olarak basılır. Admin listesi her koşumda
  * basılır; önceki koşumla aynı olmalı (test hiçbir satırın rolünü değiştirmez). `npm run itest:artik`.
+ * Bildirim gövdesi de taranır (sert): 2026-10-12'de C1 testinin itest sezon adı gerçek üyelere rozet bildirimi olarak
+ * gitti ve satır sayımları bunu görmedi; itest dışı üyeye yeni rozet meşru da olabildiği için o satır yalnız bilgi.
  */
 import { neon } from "@neondatabase/serverless";
 
@@ -22,6 +24,7 @@ const sayimlar = {
   "cron_runs suistimal-temiz (sahipsiz)": n(
     sql`select count(*)::int as n from cron_runs c where c.job = 'suistimal-temiz' and not exists (select 1 from users u where u.id::text = c.period_key)`,
   ),
+  "notifications body itest": n(sql`select count(*)::int as n from notifications where body like '%itest%'`),
 };
 // Bilgi (çıkış kodunu etkilemez): gerçek işaretler ve admin kararları Faz 5 canlıya çıkınca meşru olur
 const bilgi = {
@@ -31,6 +34,11 @@ const bilgi = {
   "cron_runs etkinlik-* (sahipsiz)": n(
     sql`select count(*)::int as n from cron_runs c where c.job in ('etkinlik-host', 'etkinlik-degerlendirme')
       and c.period_key ~ '^[0-9]+$' and not exists (select 1 from events e where e.id = c.period_key::int)`,
+  ),
+  // Meşru ödüller (cron sezon şampiyonu, seviye rozetleri) de düşer → yalnız bilgi; test koşumunun ardından 0'dan büyükse bak
+  "badges itest dışı üyeye son 24 s": n(
+    sql`select count(*)::int as n from badges b join users u on u.id = b.user_id
+      where u.clerk_id not like 'demo\\_itest\\_%' and b.created_at > now() - interval '24 hours'`,
   ),
 };
 let kirli = false;

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { createHmac } from "node:crypto";
 import type { AstroCookies } from "astro";
-import { CROCKFORD, davetCereziOku, davetKanali, kisaHash, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
+import { SAKLAMA_GUN } from "@/lib/economy.ts";
+import { CROCKFORD, davetCereziKur, davetCereziOku, davetKanali, kisaHash, KOD_UZUNLUK, kodNormalize, kodUret, qrIcerigi, uygulamaIciTarayici } from "@/lib/davet.ts";
 
 describe("davet kodu — Crockford Base32", () => {
   it("alfabe I, L, O, U içermez; 32 karakter", () => {
@@ -64,6 +66,18 @@ describe("karşılama çerezi: {course|event}:{hedefId}:{codeId}", () => {
     expect(davetCereziOku(cerez("course:5:9"), 5)).toBe(9);
     expect(davetCereziOku(cerez("event:5:9"), 5)).toBeNull();
     expect(davetCereziOku(undefined, 5)).toBeNull();
+  });
+  // /gizlilik çerez cümlesi SAKLAMA_GUN.davetZiyareti'yi basar: iki çerez de aynı sabitten okumalı (eskiden ayrı 30'lar)
+  it("ysf_davet süresi SAKLAMA_GUN.davetZiyareti gün", () => {
+    let secenek: { maxAge?: number } | undefined;
+    const cookies = { set: (_ad: string, _deger: string, s: { maxAge?: number }) => (secenek = s) } as unknown as AstroCookies;
+    davetCereziKur(cookies, { kurs: { id: 5 }, kod: { id: 9 } } as never, true);
+    expect(secenek?.maxAge).toBe(SAKLAMA_GUN.davetZiyareti * 86400);
+  });
+  it("ysf_ref (Base.astro) süresi sabit sayı değil, SAKLAMA_GUN'dan", () => {
+    const kaynak = readFileSync("src/layouts/Base.astro", "utf8");
+    expect(kaynak).not.toMatch(/Max-Age=\d/);
+    expect(kaynak).toContain("refMaxAge: SAKLAMA_GUN.davetZiyareti * 86400");
   });
 });
 

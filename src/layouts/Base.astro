@@ -11,6 +11,7 @@ import JsonLd from "@/features/seo/JsonLd.astro";
 import SocialLinks from "@/features/site/SocialLinks.astro";
 import FloatingNudges from "@/components/ui/FloatingNudges.astro";
 import Analytics from "@/features/site/Analytics.astro";
+import { SAKLAMA_GUN } from "@/lib/economy.ts";
 import type { SeoProps } from "@/features/seo/Seo.astro";
 
 interface Props {
@@ -84,7 +85,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
         document.addEventListener("astro:after-swap", applyTheme);
       })();
     </script>
-    <script is:inline>
+    <script is:inline define:vars={{ refMaxAge: SAKLAMA_GUN.davetZiyareti * 86400 }}>
       // Davet çerezi (F1-00): ana sayfa statik servis edilir, middleware koşmaz →
       // canlıda /?ref= hiç çerez kurmuyordu. Aynı kural, aynı çerez; istemcide. ClientRouter
       // gezintisinde de koşar (astro:page-load): middleware artık yalnız belge gezintisinde yazar.
@@ -92,7 +93,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
         function kur() {
           var r = new URLSearchParams(location.search).get("ref");
           if (r && /^[a-z0-9-]{2,40}$/.test(r))
-            document.cookie = "ysf_ref=" + r + "; Max-Age=2592000; Path=/; SameSite=Lax";
+            document.cookie = "ysf_ref=" + r + "; Max-Age=" + refMaxAge + "; Path=/; SameSite=Lax";
         }
         kur();
         document.addEventListener("astro:page-load", kur);

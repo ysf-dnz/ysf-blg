@@ -5,7 +5,7 @@
  * Havuz ve tarama yalnız test verisine daraltılır (kursIdleri / davetciId): canlı kurslar ödenmez.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, like, lt, notInArray, notLike } from "drizzle-orm";
 import type { AstroCookies } from "astro";
 
 const URL = process.env.POSTGRES_URL_TEST;
@@ -778,7 +778,17 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
     const ad = `itest-sezon-${t}`;
     const [s1] = await db.insert(schema.seasons).values([{ name: ad, startsAt: bas, endsAt: bit }, { name: ad, startsAt: bas, endsAt: bit }]).returning(); // çift açılmış
     const [bos] = await db.insert(schema.seasons).values({ name: `itest-bos-${t}`, startsAt: new Date("2022-01-01T00:00:00Z"), endsAt: new Date("2022-02-01T00:00:00Z") }).returning();
+    // Ön koşul: pencerede bu testin üyeleri DIŞINDA pozitif puan olmamalı — olursa kapanış gerçek bir kulübü şampiyon
+    // yapar ve gerçek üyelere rozet yazar (2026-10-12'de oldu) → rozet yazılmadan kırmızı, satırlar mesajda
+    const yabanciPuan = (s: Date, e: Date) =>
+      db
+        .select({ userId: schema.pointsLedger.userId, createdAt: schema.pointsLedger.createdAt, delta: schema.pointsLedger.delta, reason: schema.pointsLedger.reason })
+        .from(schema.pointsLedger)
+        .where(and(gt(schema.pointsLedger.delta, 0), gte(schema.pointsLedger.createdAt, s), lt(schema.pointsLedger.createdAt, e), notInArray(schema.pointsLedger.userId, [m1.id, m2.id, m3.id])));
+    let sizinti: { id: number; userId: number; body: string }[] = [];
     try {
+      expect(await yabanciPuan(bas, bit)).toEqual([]);
+      expect(await yabanciPuan(bos!.startsAt, bos!.endsAt)).toEqual([]);
       expect(await lg.sezonKapat(s1!)).toEqual({ sampiyonKulupId: kulup!.id, ilk10: 2 }); // m1 + m3; işaretli m2 yok
       const satirlar = await db.query.seasons.findMany({ where: eq(schema.seasons.name, ad) });
       expect(satirlar.map((x) => [x.status, x.championClubId])).toEqual([["closed", kulup!.id], ["closed", kulup!.id]]); // aynı adlı ikisi de kapandı
@@ -797,7 +807,21 @@ describe.skipIf(!URL)("faz 5 ekonomi — gerçek DB", { timeout: 180_000 }, () =
       await db.delete(schema.cronRuns).where(and(eq(schema.cronRuns.job, "sezon-ilk10"), inArray(schema.cronRuns.periodKey, [m1, m2, m3].map((m) => `${ad}:${m.id}`))));
       await db.delete(schema.seasons).where(inArray(schema.seasons.name, [ad, `itest-bos-${t}`]));
       await db.update(schema.users).set({ flaggedAt: null }).where(eq(schema.users.id, m2.id));
+      // Güvenlik ağı: bu koşumun sezon adı itest DIŞI bir üyeye rozet bildirimi olarak gittiyse geri alınır — sessiz
+      // değil: silinenler konsola, test kırmızı. Rozet yalnız test başladıktan sonrakidir (kulüp anı = DB saati).
+      sizinti = await db
+        .select({ id: schema.notifications.id, userId: schema.notifications.userId, body: schema.notifications.body })
+        .from(schema.notifications)
+        .innerJoin(schema.users, eq(schema.users.id, schema.notifications.userId))
+        .where(and(eq(schema.notifications.kind, "badge"), like(schema.notifications.body, `%${t}%`), notLike(schema.users.clerkId, "demo\\_itest\\_%")));
+      if (sizinti.length) {
+        console.error("C1 sızıntısı geri alındı (itest dışı üyeye rozet bildirimi):", sizinti);
+        const kimler = sizinti.map((x) => x.userId);
+        await db.delete(schema.badges).where(and(inArray(schema.badges.userId, kimler), eq(schema.badges.kind, "sezon-sampiyonu"), gte(schema.badges.createdAt, kulup!.createdAt)));
+        await db.delete(schema.notifications).where(inArray(schema.notifications.id, sizinti.map((x) => x.id)));
+      }
     }
+    expect(sizinti).toEqual([]);
   });
 
   it("like_received kişi başı kayan 7 gün tavanı (100): dolu yazara beğeni puan üretmez, taze yazara üretir", async () => {

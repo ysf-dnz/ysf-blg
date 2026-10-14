@@ -11,7 +11,7 @@ import { db, schema } from "@/db/client.ts";
 import type { Member } from "./member.ts";
 import { PUAN } from "./points.ts";
 import { bekleyenYaz, puanOlayi } from "./rewards.ts";
-import { hesapGencMi } from "./economy.ts";
+import { hesapGencMi, SAKLAMA_GUN } from "./economy.ts";
 import { etkinlikBitis, etkinlikGorunurMu } from "./etkinlik-kural.ts";
 import { R } from "./routes.ts";
 
@@ -171,7 +171,6 @@ export async function davetKoduUret(
 /* ---------------- Karşılama çerezi ---------------- */
 
 export const DAVET_CEREZ = "ysf_davet";
-const CEREZ_GUN = 30;
 
 /**
  * Değer `{course|event}:{hedefId}:{codeId}` — davet eden koddan türer, ad/handle taşınmaz.
@@ -181,7 +180,7 @@ export function davetCereziKur(cookies: AstroCookies, h: DavetHedefi | EtkinlikD
   const deger = "kurs" in h ? `course:${h.kurs.id}:${h.kod.id}` : `event:${h.etkinlik.id}:${h.kod.id}`;
   cookies.set(DAVET_CEREZ, deger, {
     path: "/",
-    maxAge: 60 * 60 * 24 * CEREZ_GUN,
+    maxAge: 60 * 60 * 24 * SAKLAMA_GUN.davetZiyareti, // /gizlilik ve ysf_ref (Base.astro) aynı sayıyı okur
     sameSite: "lax",
     httpOnly: true,
     secure,
