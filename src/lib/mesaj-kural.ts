@@ -119,3 +119,39 @@ export function retMetni(
       return `${o.ad} şu an yeni mesaj almıyor.`;
   }
 }
+
+/**
+ * Konuşma sayfasının isteği nasıl sonuçlandı. Oturum düşünce middleware giriş sayfasına yönlendirir;
+ * istekler `redirect: "manual"` ile atılır → yanıt `opaqueredirect` (izlenseydi gönderilen metin giriş
+ * sayfasının kökenine POST edilir, fetch CORS'ta reddedilir ve ağ hatasından ayırt edilemezdi).
+ * 401 ucun kendi "oturum" yanıtı. fetch reddi (çevrimdışı), 5xx ve 429 geçicidir ("ag").
+ */
+export type IstekSonucu = "tamam" | "oturum" | "ag";
+export function istekSonucu(r: { type: string; status: number; ok: boolean } | null | undefined): IstekSonucu {
+  if (!r) return "ag";
+  if (r.type === "opaqueredirect" || r.status === 401) return "oturum";
+  return r.ok ? "tamam" : "ag";
+}
+
+/**
+ * Oturum yanıtı bu kadar yoklama art arda gelirse bant görünür (≈ 12 sn): uykudan ya da arka plandan dönen
+ * sekmenin ilk yoklaması Clerk belirteci tazelenmeden gidebilir — tek 307 yanlış alarm olurdu.
+ */
+export const YOKLAMA_OTURUM_ESIGI = 2;
+/** Ağ hatası bu kadar yoklama art arda sürerse bant görünür (≈ 36 sn): tek kopukluk uyarı çıkarmasın */
+export const YOKLAMA_AG_ESIGI = 3;
+/**
+ * Yoklama bandı. Sessiz kalan sayfa "mesaj yok" sanılır: oturum düştüyse yenilemeden yeni mesaj gelmez
+ * (Clerk kesintisinde F4-03 e2e'si böyle düştü). Eşik altındaki hata gösterileni DEĞİŞTİRMEZ ("ayni" —
+ * gönderimin açtığı oturum bandı kalır); bant yalnız başarılı yoklamada kalkar.
+ */
+export function yoklamaBandi(sonuc: IstekSonucu, ardArdaHata: number): "oturum" | "ag" | "gizle" | "ayni" {
+  if (sonuc === "tamam") return "gizle";
+  if (sonuc === "oturum" && ardArdaHata >= YOKLAMA_OTURUM_ESIGI) return "oturum";
+  if (sonuc === "ag" && ardArdaHata >= YOKLAMA_AG_ESIGI) return "ag";
+  return "ayni";
+}
+export const YOKLAMA_BANDI_METNI = {
+  oturum: "Oturumun kapanmış görünüyor; yeni mesajları görmek ve göndermek için sayfayı yenile.",
+  ag: "Yeni mesajlar alınamıyor; bağlantı gelince kendiliğinden devam eder.",
+} as const;
