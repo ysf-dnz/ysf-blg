@@ -19,9 +19,8 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      # Server-mode (Vercel adapter): statik çıktı dist/client'ta (lighthouserc.json staticDistDir)
       - name: Lighthouse CI
         run: npx lhci autorun
-      - name: Playwright
-        run: |
-          npx playwright install --with-deps chromium
-          npm run test:e2e
+      # e2e CI'da YOK: dev sunucusu Clerk anahtarı + DB ister (canlı Neon'a CI'dan bağlanılmaz) →
+      # yerelde `npm run qa` (check + birim + build + çıktı bekçisi + e2e).
