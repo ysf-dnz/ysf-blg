@@ -130,15 +130,18 @@ test("girişli dar ekranda yapışkan yazı çubuğu başlığın altına girmez
 
 // B4 + B5 (üye): 320 px'te taşma yok (girişli başlık 369 px istiyordu, profil formu 506, yazı çubuğu 413); yüzen çubuk
 // görünürken main'in sonu kaydırılınca profil formunun son düğmesi çubuğun altında kalmaz
-test("üye sayfaları 320 px'te yatay taşmaz; yüzen çubuk profil formunun son düğmesini örtmez", async ({ page }) => {
+// 640 / 768: girişli başlık (5 bağlantı + Panom + ✉️ + 🔔 + avatar) 640–880 px'te sayfayı 852–883 px'e taşırıyordu
+test("üye sayfaları 320, 640 ve 768 px'te yatay taşmaz; yüzen çubuk profil formunun son düğmesini örtmez", async ({ page }) => {
   test.skip(!process.env.E2E_CLERK_USER, "CLERK_SECRET_KEY yok (.env.local) — auth e2e atlandı");
   await page.goto("/");
   await clerk.signIn({ page, emailAddress: process.env.E2E_CLERK_USER! });
-  await page.setViewportSize({ width: 320, height: 700 });
-  for (const yol of ["/uye", "/uye/profil", "/uye/magaza", "/uye/yaz"]) {
-    await page.goto(yol, { waitUntil: "load" });
-    await page.locator(".cl-userButtonTrigger").waitFor(); // başlığın en geniş hâli: Clerk düğmesi istemcide gelir
-    expect(await tasanlar(page), yol).toEqual([]);
+  for (const width of [320, 640, 768]) {
+    await page.setViewportSize({ width, height: 700 });
+    for (const yol of ["/uye", "/uye/profil", "/uye/magaza", "/uye/yaz"]) {
+      await page.goto(yol, { waitUntil: "load" });
+      await page.locator(".cl-userButtonTrigger").waitFor(); // başlığın en geniş hâli: Clerk düğmesi istemcide gelir
+      expect(await tasanlar(page), `${width} px ${yol}`).toEqual([]);
+    }
   }
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/uye/profil", { waitUntil: "domcontentloaded" });

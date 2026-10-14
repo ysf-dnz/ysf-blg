@@ -38,6 +38,18 @@ test.describe("320 px'te yatay taşma yok (misafir)", () => {
     });
 });
 
+// Tablet: menü bağlantıları 640 px'te (sm) açılınca başlık sığmıyordu (misafir 640'ta 642, girişli 640–880 px'te
+// 852–883) → bağlantılar lg'den itibaren. Başlık her sayfada aynı: iki sayfa yeter.
+for (const width of [640, 768])
+  test.describe(`${width} px'te yatay taşma yok (misafir başlığı)`, () => {
+    test.use({ viewport: { width, height: 900 } });
+    for (const yol of ["/", "/topluluk"])
+      test(yol, async ({ page }) => {
+        await page.goto(yol, { waitUntil: "load" });
+        expect(await tasanlar(page)).toEqual([]);
+      });
+  });
+
 // B5: yüzen Öğren/Üret çubuğu (fixed bottom-4) görünürken main'e alt boşluk verilir; kapatılınca kalkar
 test("yüzen çubuk görünürken içeriğin sonunda boşluk var, kapatınca kalkar (375 px)", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
