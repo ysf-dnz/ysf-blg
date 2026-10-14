@@ -79,12 +79,33 @@ function initProgress() {
   update();
 }
 
+let baslikGozlemci: ResizeObserver | undefined;
+/**
+ * Yapışkan alt çubuklar (topluluk sekmeleri, hoşgeldin, yazı) `top-(--header-h)` ile başlığın hemen altına
+ * oturur. Başlık yüksekliği sabit DEĞİL (misafir 76 px, girişli dar ekranda logo iki satır 88 px, < 360 px'te
+ * başlık sarar 120 px; server island ve Clerk düğmesi sonradan gelir) → ölçülür, değişince yeniden yazılır.
+ * İlk yüklemede Base hemen çağırır (astro:page-load window `load`'u bekler); her gezintide initHeader.
+ * ClientRouter <html> niteliklerini yeni sayfanınkiyle değiştirir → değişken gezintide yeniden yazılmalı.
+ */
+export function baslikYuksekliginiIzle() {
+  const header = document.querySelector<HTMLElement>(".site-header");
+  // Sayfa geçişinde başlık değişir: eski gözlemci bırakılır (her gezintide birikmesin)
+  baslikGozlemci?.disconnect();
+  if (!header) return;
+  const yaz = () => document.documentElement.style.setProperty("--header-h", `${header.getBoundingClientRect().height}px`);
+  yaz();
+  if (typeof ResizeObserver === "undefined") return;
+  baslikGozlemci = new ResizeObserver(yaz);
+  baslikGozlemci.observe(header);
+}
+
 function initHeader() {
   const header = document.querySelector<HTMLElement>(".site-header");
   if (!header) return;
   const onScroll = () => header.classList.toggle("scrolled", scrollY > 8);
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
+  baslikYuksekliginiIzle();
 }
 
 export function initMotion() {

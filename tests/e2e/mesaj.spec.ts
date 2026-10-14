@@ -104,6 +104,55 @@ test.describe("mesaj, engel ve üye haritası — üye (Faz 4)", () => {
     expect((await page.request.get("/api/uye/mesaj?kisi=olmayan-uye-xyz")).status()).toBe(404);
   });
 
+  test("F4-03: oturum düşünce yoklama ve gönderim sessiz kalmaz — bant, metin alanda kalır, başka kökene istek yok; düzelince bant kalkar", async ({ page }) => {
+    await page.goto(`/uye/mesajlar/${ELIF}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#mesajlar[data-init]")).toBeAttached(); // betik kuruldu (astro:page-load ilk yüklemede window load'da)
+    const bant = page.locator("[data-yoklama-bandi]");
+    const yenile = bant.getByRole("button", { name: "Sayfayı yenile" });
+    // 12 sn beklemeden yoklat: görünür sekmede visibilitychange anında yoklar
+    const yoklat = () => page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    const uc = (u: URL) => u.pathname === "/api/uye/mesaj";
+    const disari: string[] = [];
+    page.on("request", (r) => {
+      if (new URL(r.url()).hostname === "example.com") disari.push(`${r.method()} ${r.url()}`);
+    });
+    await expect(bant).toBeHidden();
+
+    // Oturum düştü: middleware giriş sayfasına yönlendirir; istekler redirect: "manual" → izlenmez.
+    // Tek 307 bant açmaz (uykudan dönen sekmenin ilk yoklaması — birim testte), ikincisi açar
+    await page.route(uc, (r) => r.fulfill({ status: 307, headers: { location: "https://example.com/sign-in" } }));
+    await yoklat();
+    await yoklat();
+    await expect(bant).toContainText("Oturumun kapanmış");
+    await expect(yenile).toBeVisible();
+
+    // Gönderim: metin alanda kalır, "bağlantını kontrol et" yanıltması yok, metin başka kökene POST edilmez
+    const alan = page.locator("[data-mesaj-formu] textarea");
+    const metin = `e2e oturum ${Date.now()}`;
+    await alan.fill(metin);
+    await page.getByRole("button", { name: "Gönder" }).click();
+    await expect(page.getByRole("button", { name: "Gönder" })).toBeEnabled();
+    await expect(alan).toHaveValue(metin);
+    await expect(page.locator("[data-mesaj-hata]")).toBeHidden();
+    await expect(bant).toContainText("Oturumun kapanmış");
+    expect(disari).toEqual([]);
+
+    // Oturum geri geldi: ilk başarılı yoklamada bant kalkar
+    await page.unroute(uc);
+    await yoklat();
+    await expect(bant).toBeHidden();
+
+    // Çevrimdışı: art arda üçüncü kopuklukta bant (yenileme çağrısı yok); bağlantı gelince kalkar
+    await page.route(uc, (r) => r.abort("internetdisconnected"));
+    for (let i = 0; i < 3; i++) await yoklat();
+    await expect(bant).toContainText("Yeni mesajlar alınamıyor");
+    await expect(yenile).toBeHidden();
+    await page.unroute(uc);
+    await yoklat();
+    await expect(bant).toBeHidden();
+    await alan.fill(""); // gönderilmemiş deneme metni kalmasın
+  });
+
   test("bildirimler: /uye GET'i okundu yazmaz (ön-yükleme sayacı sıfırlamasın); pano açılınca betik POST'lar", async ({ page }) => {
     const rozet = page.locator("[data-bildirim-rozet]");
     const zil = page.locator('header a[href="/uye#bildirimler"]');

@@ -117,7 +117,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
           {t("site.title")}
         </a>
         <nav class="ml-auto flex items-center gap-1 sm:gap-2" aria-label="Ana menü">
-          <div class="hidden items-center gap-1 sm:flex sm:gap-2">
+          <div class="hidden items-center gap-1 lg:flex lg:gap-2">
             {
               nav.map((item) => (
                 <a
@@ -147,10 +147,11 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
             </SignInButton>
           </Show>
           <Show when="signed-in">
-            {/* Dar ekranda başlık ✉️ + 🔔 ile dolar (Faz 4): pano bağlantısı mobil menüye iner */}
+            {/* Girişli başlık (5 bağlantı + Panom + ✉️ + 🔔 + avatar) ~890 px'in altında sığmaz (640–880 px'te sayfa
+               yana taşıyordu): bağlantılar ve Panom lg'den itibaren, altında mobil menüde */}
             <a
               href="/uye"
-              class="nav-underline hidden rounded-md px-2 py-2 text-sm text-ink-muted transition-colors hover:text-accent sm:inline-block"
+              class="nav-underline hidden rounded-md px-2 py-2 text-sm text-ink-muted transition-colors hover:text-accent lg:inline-block"
               title={t("uye.panel")}
             >
               {t("uye.panel")}
@@ -159,7 +160,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
             <BildirimZili server:defer />
             <UserButton />
           </Show>
-          <details class="relative sm:hidden" id="mobil-menu">
+          <details class="relative lg:hidden" id="mobil-menu">
             <summary
               class="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent [&::-webkit-details-marker]:hidden"
               aria-label={t("nav.menu")}
@@ -206,7 +207,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     </main>
 
     <script>
-      import { initMotion } from "@/features/motion/init.ts";
+      import { baslikYuksekliginiIzle, initMotion } from "@/features/motion/init.ts";
       import { closePop } from "@/features/motion/waapi.ts";
 
       // Mobil menü: dışarı tıklayınca veya Escape ile kapanır.
@@ -228,6 +229,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
         if (e.key === "Escape" && menu?.open) closeMenu(menu);
       });
 
+      // Yapışkan alt çubukların ofseti ilk yüklemede `load`'u (astro:page-load) beklemesin
+      baslikYuksekliginiIzle();
       // Animasyon motoru: ilk yüklemede ve her soft-nav sonrasında
       document.addEventListener("astro:page-load", initMotion);
     </script>

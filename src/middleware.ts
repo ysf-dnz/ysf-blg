@@ -1,4 +1,5 @@
 import { clerkMiddleware } from "@clerk/astro/server";
+import { SAKLAMA_GUN } from "@/lib/economy.ts";
 import { belgeGezintisiMi } from "@/lib/urls.ts";
 
 const KORUMALI = [/^\/uye(\/|$)/, /^\/api\/uye(\/|$)/];
@@ -13,7 +14,7 @@ export const onRequest = clerkMiddleware((auth, context) => {
   if (ref && /^[a-z0-9-]{2,40}$/.test(ref) && belgeGezintisiMi(context.request)) {
     context.cookies.set("ysf_ref", ref, {
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: 60 * 60 * 24 * SAKLAMA_GUN.davetZiyareti, // Base.astro (istemci) ve /gizlilik aynı sabiti okur
       sameSite: "lax",
     });
   }

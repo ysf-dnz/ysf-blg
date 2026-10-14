@@ -79,6 +79,11 @@ describe("karşılama çerezi: {course|event}:{hedefId}:{codeId}", () => {
     expect(kaynak).not.toMatch(/Max-Age=\d/);
     expect(kaynak).toContain("refMaxAge: SAKLAMA_GUN.davetZiyareti * 86400");
   });
+  it("ysf_ref (middleware, SSR belge gezintisi) süresi de SAKLAMA_GUN'dan — A4'te atlanmıştı", () => {
+    const kaynak = readFileSync("src/middleware.ts", "utf8");
+    expect(kaynak).toContain("maxAge: 60 * 60 * 24 * SAKLAMA_GUN.davetZiyareti");
+    expect(kaynak).not.toMatch(/maxAge:\s*[\d\s*]+,/); // yalnız sayılardan oluşan süre yok
+  });
 });
 
 describe("IP/UA takma adı — imzalarla alan ayrımı", () => {

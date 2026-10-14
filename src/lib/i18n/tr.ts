@@ -88,6 +88,8 @@ export const tr = {
   "uye.katil": "Katıl",
   "uye.panel": "Panom",
   "uye.puan": "puan",
+  "uye.harcanabilirPuan": "harcanabilir puan",
+  "uye.toplamKazanilan": "toplam kazanılan",
   "uye.seviye": "Seviye",
   "uye.hosgeldinBaslik": "Aramıza hoş geldin!",
   "uye.hosgeldinKitap": "İlk kitabın hediye — hemen okumaya başla:",

@@ -105,6 +105,12 @@ const sayfa = R.uye.mesaj(kisi.handle);
       }
     </ol>
 
+    {/* Yoklama sessiz kalmasın: oturum düştüyse ya da bağlantı art arda kopuksa (betik doldurur) */}
+    <p class="mb-3 hidden rounded-2xl border border-accent bg-accent-soft p-3 text-sm text-ink" role="status" data-yoklama-bandi>
+      <span data-yoklama-metni></span>
+      <button type="button" class="ml-1 cursor-pointer font-medium text-accent underline" data-yoklama-yenile hidden>Sayfayı yenile</button>
+    </p>
+
     <p class:list={["rounded-2xl border border-red-300 bg-red-50 p-3 text-sm text-red-700", !hata && "hidden"]} role="alert" data-mesaj-hata>{hata}</p>
 
     {
@@ -138,7 +144,7 @@ const sayfa = R.uye.mesaj(kisi.handle);
 </Base>
 
 <script>
-  import { metniParcala } from "@/lib/mesaj-kural.ts";
+  import { istekSonucu, metniParcala, YOKLAMA_BANDI_METNI, yoklamaBandi } from "@/lib/mesaj-kural.ts";
 
   type Gelen = { id: number; benden: boolean; govde: string; zaman: string };
 
@@ -250,6 +256,15 @@ const sayfa = R.uye.mesaj(kisi.handle);
     if (liste.dataset.gecmis) return;
     const kisi = liste.dataset.kisi ?? "";
     const hataKutusu = document.querySelector<HTMLElement>("[data-mesaj-hata]");
+    const bant = document.querySelector<HTMLElement>("[data-yoklama-bandi]");
+    const bantGoster = (durum: "oturum" | "ag" | null) => {
+      if (!bant) return;
+      bant.classList.toggle("hidden", !durum);
+      bant.querySelector("[data-yoklama-metni]")!.textContent = durum ? YOKLAMA_BANDI_METNI[durum] : "";
+      bant.querySelector<HTMLButtonElement>("[data-yoklama-yenile]")!.hidden = durum !== "oturum";
+    };
+    bant?.querySelector("[data-yoklama-yenile]")?.addEventListener("click", () => location.reload());
+    let ardArdaHata = 0;
     const asagi = () => (liste.scrollTop = liste.scrollHeight);
     // Eski mesajları okumak için yukarı kaydırmış kullanıcıyı gelen mesaj en alta atmasın
     const altta = () => liste.scrollHeight - liste.scrollTop - liste.clientHeight < 80;
@@ -261,7 +276,8 @@ const sayfa = R.uye.mesaj(kisi.handle);
       veri.set("action", "okundu");
       veri.set("kisi", kisi);
       veri.set("son", liste.dataset.son ?? "0"); // gösterilen en yeni mesaja kadar
-      const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" } }).catch(() => null);
+      // redirect: "manual" — oturum düşünce giriş sayfasına yönlendirmeyi izleme (bant yoklamadan gelir)
+      const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" }, redirect: "manual" }).catch(() => null);
       if (!r?.ok) return;
       const { okunmamis } = (await r.json()) as { okunmamis: number };
       const yaz = () => {
@@ -277,8 +293,13 @@ const sayfa = R.uye.mesaj(kisi.handle);
     yokla = async () => {
       const r = await fetch(`/api/uye/mesaj?kisi=${encodeURIComponent(kisi)}&since=${liste.dataset.son ?? 0}`, {
         headers: { accept: "application/json" },
+        redirect: "manual", // oturum düşmesi ağ hatasından ayrılsın (istekSonucu)
       }).catch(() => null);
-      if (!r?.ok) return;
+      const sonuc = istekSonucu(r);
+      ardArdaHata = sonuc === "tamam" ? 0 : ardArdaHata + 1;
+      const karar = yoklamaBandi(sonuc, ardArdaHata);
+      if (karar !== "ayni") bantGoster(karar === "gizle" ? null : karar);
+      if (sonuc !== "tamam" || !r) return;
       const { mesajlar, gorulenSon } = (await r.json()) as { mesajlar: Gelen[]; gorulenSon?: number };
       let gelenVar = false;
       const kaydir = altta() || mesajlar.some((m) => m.benden);
@@ -316,15 +337,19 @@ const sayfa = R.uye.mesaj(kisi.handle);
       const veri = new FormData(form);
       const gonderilen = alan.value;
       alan.value = "";
-      // form.action DEĞİL: formdaki name="action" alanı o özelliği gölgeler (DOM adlandırılmış erişimi)
-      const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" } }).catch(() => null);
+      // form.action DEĞİL: formdaki name="action" alanı o özelliği gölgeler (DOM adlandırılmış erişimi).
+      // redirect: "manual": oturum düşünce metin giriş sayfasının kökenine POST edilmesin
+      const r = await fetch("/api/uye/mesaj", { method: "POST", body: veri, headers: { accept: "application/json" }, redirect: "manual" }).catch(() => null);
       if (dugme) dugme.disabled = false;
-      const sonuc = r ? ((await r.json().catch(() => null)) as { durum?: string; mesaj?: string } | null) : null;
+      const oturumYok = istekSonucu(r) === "oturum";
+      const sonuc = r && !oturumYok ? ((await r.json().catch(() => null)) as { durum?: string; mesaj?: string } | null) : null;
       if (hataKutusu) {
-        const hata = sonuc?.durum === "ok" ? "" : (sonuc?.mesaj ?? "Mesaj gönderilemedi; bağlantını kontrol edip yeniden dene.");
+        // Oturum düştüyse "bağlantını kontrol et" yanıltır: gerekçe yenileme çağrısıyla bantta
+        const hata = oturumYok || sonuc?.durum === "ok" ? "" : (sonuc?.mesaj ?? "Mesaj gönderilemedi; bağlantını kontrol edip yeniden dene.");
         hataKutusu.textContent = hata;
         hataKutusu.classList.toggle("hidden", !hata);
       }
+      if (oturumYok) bantGoster("oturum");
       if (sonuc?.durum !== "ok") {
         if (!alan.value) alan.value = gonderilen;
         return;

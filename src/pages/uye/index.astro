@@ -335,9 +335,12 @@ const siradakiAcilimSeviye = [3, 5, 7].find((lv) => lv > level);
       </p>
     </div>
     <div class="ml-auto flex flex-wrap gap-4 text-center">
-      <div class="rounded-xl border border-line bg-surface-raised px-5 py-3">
+      {/* Bakiye (kazanılan − harcanan) ile kazanılan ayrı etiketli: profil ve liderlik kazanılanı gösterir,
+         seviye de ondan hesaplanır (levels.ts) — ikisine de yalnız "puan" demek üç farklı sayı gibi görünüyordu */}
+      <div class="rounded-xl border border-line bg-surface-raised px-5 py-3" title="Seviye toplam kazanılandan hesaplanır; harcamalar seviyeyi düşürmez.">
         <p class="font-display text-2xl font-semibold text-accent" data-ticker>{balance}</p>
-        <p class="text-xs text-ink-muted">{t("uye.puan")}</p>
+        <p class="text-xs text-ink-muted">{t("uye.harcanabilirPuan")}</p>
+        {earned !== balance && <p class="text-[11px] text-ink-muted" data-kazanilan>{t("uye.toplamKazanilan")} {earned}</p>}
       </div>
       <div class="rounded-xl border border-line bg-surface-raised px-5 py-3">
         <p class="font-display text-2xl font-semibold text-accent">Sv {level}</p>

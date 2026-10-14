@@ -8,7 +8,17 @@ import {
   dmPolitikasiMi,
   type DmDurum,
 } from "@/lib/economy.ts";
-import { govdeGecerliMi, govdeTemizle, mesajZamani, metniParcala, retMetni } from "@/lib/mesaj-kural.ts";
+import {
+  govdeGecerliMi,
+  govdeTemizle,
+  istekSonucu,
+  mesajZamani,
+  metniParcala,
+  retMetni,
+  YOKLAMA_AG_ESIGI,
+  YOKLAMA_OTURUM_ESIGI,
+  yoklamaBandi,
+} from "@/lib/mesaj-kural.ts";
 
 const link = (deger: string) => ({ tur: "link", deger });
 const metin = (deger: string) => ({ tur: "metin", deger });
@@ -167,5 +177,35 @@ describe("ret metni ve zaman", () => {
   });
   it("mesaj zamanı TR saatiyle (UTC 21:30 → ertesi gün 00:30)", () => {
     expect(mesajZamani(new Date("2026-10-11T21:30:00Z"))).toBe("12 Eki 00:30");
+  });
+});
+
+describe("konuşma yoklaması oturum düşmesini sessizce yutmaz (F4-03)", () => {
+  const yanit = (type: string, status: number) => ({ type, status, ok: status >= 200 && status < 300 });
+  it.each([
+    [yanit("opaqueredirect", 0), "oturum"], // middleware giriş sayfasına yönlendirdi (redirect: "manual")
+    [yanit("basic", 401), "oturum"], // ucun kendi "oturum" yanıtı
+    [yanit("basic", 200), "tamam"],
+    [yanit("basic", 500), "ag"],
+    [yanit("basic", 429), "ag"],
+    [null, "ag"], // fetch reddi: çevrimdışı
+  ] as const)("%j → %s", (r, beklenen) => {
+    expect(istekSonucu(r)).toBe(beklenen);
+  });
+
+  it("oturum bandı ikinci art arda yanıtta çıkar: uykudan dönen sekmenin tek 307'si yanlış alarm vermez", () => {
+    expect(YOKLAMA_OTURUM_ESIGI).toBe(2);
+    expect(yoklamaBandi("oturum", 1)).toBe("ayni");
+    expect(yoklamaBandi("oturum", YOKLAMA_OTURUM_ESIGI)).toBe("oturum");
+  });
+  it("ağ bandı eşik kadar art arda kopuklukta çıkar (tek kopukluk uyarı vermez)", () => {
+    expect(YOKLAMA_AG_ESIGI).toBe(3);
+    expect(yoklamaBandi("ag", YOKLAMA_AG_ESIGI - 1)).toBe("ayni");
+    expect(yoklamaBandi("ag", YOKLAMA_AG_ESIGI)).toBe("ag");
+    expect(yoklamaBandi("oturum", YOKLAMA_AG_ESIGI + 1)).toBe("oturum"); // kopukluktan sonra oturum da düşerse gerekçe oturum
+  });
+  it("bant yalnız başarılı yoklamada kalkar; eşik altı hata gösterileni değiştirmez (gönderimin açtığı bant kalır)", () => {
+    expect(yoklamaBandi("tamam", 0)).toBe("gizle");
+    expect(yoklamaBandi("ag", 1)).toBe("ayni");
   });
 });
